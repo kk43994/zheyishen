@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>《这一身》UI 基础模块审批图</title>
+    <style>
+      html, body { margin: 0; min-height: 100%; background: #111116; }
+      body { display: grid; place-items: start center; }
+      canvas { display: block; width: 960px; height: 1080px; image-rendering: pixelated; }
+    </style>
+  </head>
+  <body>
+    <canvas id="review" width="960" height="1080" aria-label="《这一身》UI 基础模块审批图"></canvas>
+    <script type="module">
+      import {
+        UI_ARCHIVE_FONT_STACK,
+        UI_FONT,
+        UI_FONT_STACK,
+        UI_PALETTE,
+        applyPixelDiscipline,
+        drawArchiveFrame,
+        drawCutCornerPanel,
+        drawDeterministicWear,
+        drawLifeChapterTrack,
+        drawPaperFold,
+        drawRedStamp,
+        drawResponseMarker,
+        drawStatusIcon,
+        drawStatusReadout,
+        drawStitchDivider,
+      } from '/src/ui-theme.ts';
+
+      const canvas = document.querySelector('#review');
+      const ctx = canvas.getContext('2d');
+      applyPixelDiscipline(ctx);
+
+      const P = UI_PALETTE;
+      ctx.fillStyle = P.night;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      drawDeterministicWear(ctx, 0, 0, canvas.width, canvas.height, 20260719, 3, '#222027', 1);
+
+      const text = (value, x, y, font = UI_FONT.body, color = P.paperLight, align = 'left') => {
+        ctx.font = font;
+        ctx.fillStyle = color;
+        ctx.textAlign = align;
+        ctx.fillText(value, x, y);
+      };
+
+      text('《这一身》CANVAS UI 基础语言', 48, 56, `bold 24px ${UI_ARCHIVE_FONT_STACK}`);
+      text('不是菜单皮肤，是一份逐章被折叠、盖章、穿在身上的人生档案', 48, 83, UI_FONT.body, P.paperDim);
+      drawRedStamp(ctx, 760, 37, 145, 55, '内部档案', 76);
+      drawStitchDivider(ctx, 48, 112, 864, 'horizontal', P.paperShadow, 8, 5);
+
+      text('01 / 颜色不是阵营，是材料', 48, 148, UI_FONT.title);
+      const swatches = [
+        ['纸色', P.paper], ['墨黑', P.ink], ['旧红', P.oldRed],
+        ['雨衣黄', P.raincoatYellow], ['病房蓝灰', P.hospitalBlueGray], ['月白呼吸', P.breath],
+      ];
+      swatches.forEach(([label, color], index) => {
+        const x = 48 + index * 144;
+        ctx.fillStyle = P.paperShadow;
+        ctx.fillRect(x - 1, 165, 128, 36);
+        ctx.fillStyle = color;
+        ctx.fillRect(x, 166, 126, 34);
+        ctx.fillStyle = P.night;
+        ctx.fillRect(x + 1, 201, 124, 20);
+        text(label, x + 63, 215, UI_FONT.label, color, 'center');
+      });
+
+      text('02 / 档案、折角与磨损', 48, 262, UI_FONT.title);
+      drawArchiveFrame(ctx, 48, 280, 410, 190, P.paper, P.ink, P.oldRed);
+      drawPaperFold(ctx, 426, 282, 28, P.paper, P.paperShadow, P.ink);
+      text('命运档案 · 第四章', 76, 318, `bold 16px ${UI_ARCHIVE_FONT_STACK}`, P.ink);
+      text('事情已经发生。', 76, 351, UI_FONT.title, P.oldRed);
+      text('这张纸只记录你把它咽下，还是吐出去。', 76, 380, UI_FONT.body, P.inkSoft);
+      drawStitchDivider(ctx, 76, 400, 352, 'horizontal', P.paperShadow, 6, 4);
+      text('任何一侧都不替你证明勇敢或软弱。', 76, 429, UI_FONT.small, P.paperShadow);
+      drawDeterministicWear(ctx, 58, 289, 390, 170, 44, 6, '#B7AEA2', 1);
+
+      drawCutCornerPanel(ctx, 488, 280, 424, 190, P.nightRaised, P.hospitalBlueGray, 6, 2);
+      text('像素纪律', 520, 316, UI_FONT.title, P.paperLight);
+      const rules = ['整数坐标与整数像素描边', '平面色块，不使用渐变', '切角与折角，不使用圆角卡片', '磨损使用固定种子，不逐帧闪烁'];
+      rules.forEach((rule, index) => {
+        ctx.fillStyle = index === 3 ? P.raincoatYellow : P.hospitalBlueGray;
+        ctx.fillRect(520, 341 + index * 28, 8, 8);
+        text(rule, 540, 349 + index * 28, UI_FONT.small, P.paperDim);
+      });
+      drawRedStamp(ctx, 776, 390, 105, 45, '不退回', 91);
+
+      text('03 / 一关就是一生', 48, 516, UI_FONT.title);
+      drawCutCornerPanel(ctx, 48, 534, 864, 132, P.nightRaised, P.inkSoft, 4, 1);
+      text('正典八章', 72, 560, UI_FONT.label, P.paperDim);
+      drawLifeChapterTrack(ctx, 82, 585, 800, 8, 3, '降生|童年|少年|青年|成年|中年|老年|死亡', 1);
+      text('MVP 六段（同一条人生，不是六个关卡）', 72, 635, UI_FONT.small, P.paperShadow);
+      drawLifeChapterTrack(ctx, 380, 633, 500, 6, 4, '童年|少年|青年|成年|中年|暮年', 0);
+
+      text('04 / 战斗 HUD 先读符号，再读数字', 48, 711, UI_FONT.title);
+      drawStatusReadout(ctx, 48, 731, 130, 'life', '生命', '21 / 30', P.oldRed);
+      drawStatusReadout(ctx, 186, 731, 130, 'shield', '护盾', '08', P.raincoatYellow);
+      drawStatusReadout(ctx, 324, 731, 130, 'coins', '零钱', '17', P.raincoatYellow);
+      drawStatusReadout(ctx, 462, 731, 130, 'fate', '命运', '03', P.hospitalBlueGray);
+      drawStatusReadout(ctx, 600, 731, 96, 'breath-power', '劲', '1.18', P.breath);
+      drawStatusReadout(ctx, 704, 731, 96, 'breath-speed', '速', '0.92', P.breath);
+      drawStatusReadout(ctx, 808, 731, 104, 'breath-range', '程', '1.34', P.breath);
+
+      drawCutCornerPanel(ctx, 48, 777, 864, 90, P.nightRaised, P.inkSoft, 4, 1);
+      text('《一口气》', 72, 805, UI_FONT.label, P.paperLight);
+      ['breath-power', 'breath-speed', 'breath-range'].forEach((kind, index) => {
+        drawStatusIcon(ctx, 183 + index * 80, 793, kind, 2, P.breath);
+      });
+      text('所有变化仍保留一小块月白核心', 470, 807, UI_FONT.small, P.paperDim);
+      drawStitchDivider(ctx, 72, 826, 816, 'horizontal', P.paperShadow, 7, 4);
+      text('劲 1.18', 183, 852, UI_FONT.label, P.oldRed, 'center');
+      text('速 0.92', 343, 852, UI_FONT.label, P.hospitalBlueGray, 'center');
+      text('程 1.34', 503, 852, UI_FONT.label, P.raincoatYellow, 'center');
+      text('普通人的一切从 1.00 开始', 858, 852, UI_FONT.small, P.paperShadow, 'right');
+
+      text('05 / 命运回应：方向，不是道德考试', 48, 912, UI_FONT.title);
+      drawResponseMarker(ctx, 48, 932, 250, 'swallow', '← 咽下', '让事实进入身体');
+      drawArchiveFrame(ctx, 330, 914, 300, 118, P.paper, P.ink, P.oldRed);
+      drawPaperFold(ctx, 602, 916, 24, P.paper, P.paperShadow, P.ink);
+      text('名单上有你的名字', 480, 950, UI_FONT.title, P.ink, 'center');
+      text('工作已经失去，回应仍属于你。', 480, 981, UI_FONT.small, P.inkSoft, 'center');
+      drawRedStamp(ctx, 425, 993, 110, 28, '事实落账', 108);
+      drawResponseMarker(ctx, 662, 932, 250, 'exhale', '吐出 →', '把回应送回世界');
+
+      text('低饱和纸色 / 墨黑 / 旧红 / 雨衣黄 / 病房蓝灰 · 960 × 1080 静态审批稿', 48, 1055, UI_FONT.tiny, P.paperShadow);
+      text(`字体：${UI_FONT_STACK.split(',')[0]}`, 912, 1055, UI_FONT.tiny, P.paperShadow, 'right');
+      document.body.dataset.rendered = 'true';
+    </script>
+  </body>
+</html>

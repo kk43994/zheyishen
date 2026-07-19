@@ -1,0 +1,12 @@
+node_modules/
+dist/
+release/
+output/
+tmp/
+archive/
+.playwright-cli/
+.ruff_cache/
+*.log
+.DS_Store
+.env.local
+.env.*.local

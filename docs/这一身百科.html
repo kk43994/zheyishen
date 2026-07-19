@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>《这一身》百科 · 故事线正典</title>
+<style>
+  :root{
+    --paper:#E9E3D4;      /* 纸色 */
+    --paper-2:#DFD8C6;
+    --ink:#1A1713;        /* 墨黑 */
+    --ink-2:#453F36;
+    --ink-3:#6E675B;
+    --oldred:#9E3B33;     /* 旧红 · 唯一高饱和 */
+    --oldred-soft:#B0554A;
+    --rainyellow:#A8842F; /* 雨衣黄 */
+    --wardblue:#63737B;   /* 病房蓝灰 */
+    --moon:#EDE6D4;       /* 月白 */
+    --card:#F1ECDF;
+    --line:#C8C0AC;
+    --bg:var(--paper);
+    --fg:var(--ink);
+    --fg-2:var(--ink-2);
+    --fg-3:var(--ink-3);
+    --moon-face:#E5DCC4;
+    --moon-halo:rgba(110,103,91,.14);
+    --q1:#7E7A6E; --q2:#5F7581; --q3:#9E3B33; --q4:#8A6E22;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#14110D; --fg:#E4DCC9; --fg-2:#B8AF9B; --fg-3:#847C6C;
+      --card:#1D1913; --line:#3A342A;
+      --oldred:#C25549; --oldred-soft:#A34438;
+      --rainyellow:#C7A44E; --wardblue:#8A9AA2; --moon:#EDE6D4;
+      --moon-face:#D8CBA8; --moon-halo:rgba(237,230,212,.15);
+      --q1:#8B867A; --q2:#7E93A0; --q3:#C25549; --q4:#C7A44E;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14110D; --fg:#E4DCC9; --fg-2:#B8AF9B; --fg-3:#847C6C;
+    --card:#1D1913; --line:#3A342A;
+    --oldred:#C25549; --oldred-soft:#A34438;
+    --rainyellow:#C7A44E; --wardblue:#8A9AA2; --moon:#EDE6D4;
+    --moon-face:#D8CBA8; --moon-halo:rgba(237,230,212,.15);
+    --q1:#8B867A; --q2:#7E93A0; --q3:#C25549; --q4:#C7A44E;
+  }
+  :root[data-theme="light"]{
+    --bg:#E9E3D4; --fg:#1A1713; --fg-2:#453F36; --fg-3:#6E675B;
+    --card:#F1ECDF; --line:#C8C0AC;
+    --oldred:#9E3B33; --oldred-soft:#B0554A;
+    --rainyellow:#A8842F; --wardblue:#63737B; --moon:#EDE6D4;
+    --moon-face:#E5DCC4; --moon-halo:rgba(110,103,91,.14);
+    --q1:#7E7A6E; --q2:#5F7581; --q3:#9E3B33; --q4:#8A6E22;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    line-height:1.85; font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .serif{font-family:"Songti SC","STSong","Noto Serif CJK SC","SimSun",serif}
+
+  .frame{max-width:1180px;margin:0 auto;padding:0 20px}
+  .cols{display:grid;grid-template-columns:200px minmax(0,1fr);gap:48px}
+  @media (max-width:900px){.cols{grid-template-columns:minmax(0,1fr)}}
+
+  /* ── 卷首 ── */
+  header.hero{position:relative;overflow:hidden;padding:96px 0 72px;text-align:center}
+  .moonwrap{position:absolute;inset:0;display:flex;justify-content:center;pointer-events:none}
+  .moon{
+    width:420px;height:420px;border-radius:50%;margin-top:-60px;
+    background:radial-gradient(circle at 38% 32%, var(--moon-face) 0%, var(--moon-face) 55%, transparent 72%);
+    box-shadow:0 0 140px 60px var(--moon-halo);
+    opacity:.5;
+  }
+  .hero .frame{position:relative}
+  .eyebrow{font-size:12px;letter-spacing:.5em;color:var(--fg-3);text-indent:.5em;margin-bottom:26px}
+  h1.title{
+    margin:0;font-size:clamp(56px,11vw,104px);font-weight:900;line-height:1.15;
+    letter-spacing:.06em;text-wrap:balance;
+  }
+  .flip{position:relative;display:inline-block;color:var(--oldred)}
+  .flip .g{position:absolute;left:0;top:0;opacity:0;animation:flip 12s ease-in-out infinite}
+  .flip .s{animation:flop 12s ease-in-out infinite}
+  @keyframes flip{0%,58%{opacity:0}70%,88%{opacity:1}100%{opacity:0}}
+  @keyframes flop{0%,58%{opacity:1}70%,88%{opacity:0}100%{opacity:1}}
+  @media (prefers-reduced-motion: reduce){
+    .flip .g{animation:none;opacity:0}
+    .flip .s{animation:none;opacity:1}
+  }
+  .tagline{margin:30px auto 8px;font-size:clamp(18px,3vw,24px);color:var(--fg-2);letter-spacing:.12em}
+  .tagline2{font-size:14px;color:var(--fg-3);letter-spacing:.2em}
+  .meta-line{margin-top:44px;font-size:12px;color:var(--fg-3);letter-spacing:.15em}
+  .meta-line b{color:var(--fg-2);font-weight:600}
+
+  /* ── 目录轨 ── */
+  nav.rail{position:sticky;top:24px;align-self:start;font-size:13px}
+  nav.rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+  nav.rail a{
+    display:block;padding:7px 0 7px 16px;color:var(--fg-3);text-decoration:none;
+    border-left:2px solid transparent;margin-left:-1.5px;letter-spacing:.05em;
+  }
+  nav.rail a:hover{color:var(--oldred)}
+  nav.rail a:focus-visible{outline:2px solid var(--oldred);outline-offset:2px}
+  nav.rail .rl{font-size:11px;letter-spacing:.35em;color:var(--fg-3);margin:0 0 12px;text-indent:.1em}
+  @media (max-width:900px){
+    nav.rail{position:sticky;top:0;background:var(--bg);z-index:9;padding:10px 0;border-bottom:1px solid var(--line)}
+    nav.rail .rl{display:none}
+    nav.rail ol{display:flex;gap:4px;overflow-x:auto;border-left:none;padding-bottom:4px}
+    nav.rail a{white-space:nowrap;border-left:none;border-bottom:2px solid transparent;padding:4px 10px;margin:0}
+  }
+
+  /* ── 词条 ── */
+  main{padding:24px 0 120px}
+  section.entry{padding:64px 0 8px;border-top:1px solid var(--line);margin-top:56px}
+  section.entry:first-of-type{border-top:none;margin-top:0;padding-top:24px}
+  .vol{font-size:12px;letter-spacing:.45em;color:var(--oldred);margin:0 0 14px;text-indent:.1em}
+  h2{font-size:clamp(26px,4vw,36px);font-weight:900;margin:0 0 10px;letter-spacing:.06em;text-wrap:balance}
+  .lede{color:var(--fg-2);max-width:38em;margin:0 0 28px}
+  h3{font-size:18px;font-weight:700;margin:40px 0 12px;letter-spacing:.05em}
+  p{max-width:40em}
+  .dim{color:var(--fg-3)}
+
+  /* 命运牌式引文 */
+  blockquote.fate{
+    margin:28px 0;padding:26px 28px;max-width:34em;
+    background:var(--card);border:1px solid var(--line);border-radius:3px;
+    position:relative;
+  }
+  blockquote.fate::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--oldred);
+  }
+  blockquote.fate p{margin:0;font-size:clamp(17px,2.6vw,21px);line-height:1.9;font-weight:600}
+  blockquote.fate cite{display:block;margin-top:14px;font-style:normal;font-size:12px;color:var(--fg-3);letter-spacing:.15em}
+
+  /* 表 */
+  .tbl-wrap{overflow-x:auto;margin:20px 0}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+  th{font-size:12px;font-weight:600;letter-spacing:.15em;color:var(--fg-3);text-align:left;padding:10px 14px;border-bottom:1px solid var(--fg-3)}
+  td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  td:first-child{font-weight:700;white-space:nowrap}
+  tr:hover td{background:var(--card)}
+  .num{font-variant-numeric:tabular-nums}
+
+  /* 红线 */
+  .redlines{display:grid;gap:16px;margin:24px 0}
+  .redline{
+    border:1px solid var(--line);border-radius:3px;background:var(--card);
+    padding:22px 24px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;
+  }
+  .redline .no{
+    font-family:"Songti SC","STSong",serif;font-size:28px;font-weight:900;color:var(--oldred);
+    line-height:1;padding-top:2px;
+  }
+  .redline h4{margin:0 0 6px;font-size:16px;letter-spacing:.05em}
+  .redline p{margin:0;font-size:14px;color:var(--fg-2)}
+  .redline .src{display:block;margin-top:10px;font-size:12px;color:var(--fg-3)}
+  .redline .src q{color:var(--oldred-soft);quotes:"「" "」"}
+
+  /* 五类对象 litany */
+  .litany{margin:26px 0;padding:0;list-style:none;max-width:36em}
+  .litany li{
+    padding:14px 0;border-bottom:1px dashed var(--line);
+    font-size:15px;color:var(--fg-2);
+  }
+  .litany li b{color:var(--fg);font-weight:700;margin-right:.8em}
+
+  /* 一口气七龄 */
+  .breaths{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:24px 0}
+  .breath{
+    border:1px solid var(--line);border-radius:3px;padding:16px 16px 14px;background:var(--card);
+  }
+  .breath .age{font-size:11px;letter-spacing:.3em;color:var(--fg-3);margin-bottom:8px}
+  .breath .line{font-size:14px;font-weight:700;line-height:1.6}
+  .breath.last{border-color:var(--oldred);}
+  .breath.last .line{color:var(--oldred)}
+
+  /* 五毒 */
+  .poisons{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin:24px 0}
+  .poison{border:1px solid var(--line);border-radius:3px;background:var(--card);padding:18px}
+  .poison .ch{font-family:"Songti SC","STSong",serif;font-size:34px;font-weight:900;line-height:1;color:var(--oldred)}
+  .poison .mean{font-size:13px;color:var(--fg-2);margin:10px 0 12px;min-height:3.2em}
+  .poison dl{margin:0;font-size:12px}
+  .poison dt{color:var(--fg-3);letter-spacing:.2em;font-size:11px;margin-top:8px}
+  .poison dd{margin:2px 0 0;color:var(--fg-2)}
+
+  /* 咽吐 */
+  .swipe{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:40em;margin:26px 0}
+  @media (max-width:560px){.swipe{grid-template-columns:1fr}}
+  .swipe .side{border:1px solid var(--line);border-radius:3px;padding:20px 22px;background:var(--card)}
+  .swipe .dir{font-size:11px;letter-spacing:.3em;color:var(--fg-3)}
+  .swipe h4{margin:6px 0 8px;font-size:22px;font-weight:900}
+  .swipe p{margin:0;font-size:13.5px;color:var(--fg-2)}
+  .swipe .l h4{color:var(--wardblue)}
+  .swipe .r h4{color:var(--oldred)}
+
+  /* 道具卡 */
+  .stage-h{display:flex;align-items:baseline;gap:14px;margin:44px 0 14px}
+  .stage-h h3{margin:0}
+  .stage-h .cnt{font-size:12px;color:var(--fg-3);letter-spacing:.1em}
+  .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:14px}
+  .item{
+    border:1px solid var(--line);border-radius:3px;background:var(--card);
+    padding:16px 16px 14px;display:flex;flex-direction:column;gap:8px;
+  }
+  .item .top{display:flex;align-items:center;gap:12px}
+  .glyph{
+    width:40px;height:40px;flex:none;border-radius:3px;display:flex;align-items:center;justify-content:center;
+    font-family:"Songti SC","STSong",serif;font-weight:900;font-size:20px;color:var(--bg);
+  }
+  .item .nm{font-weight:700;font-size:14.5px;line-height:1.4}
+  .q{font-size:10.5px;letter-spacing:.15em;padding:2px 7px;border-radius:2px;border:1px solid currentColor;white-space:nowrap}
+  .q1{color:var(--q1)} .q2{color:var(--q2)} .q3{color:var(--q3)} .q4{color:var(--q4)}
+  .item .fl{font-size:12.5px;color:var(--fg-3);font-family:"Songti SC","STSong",serif;min-height:2.6em}
+  .item .fx{font-size:12px;display:grid;gap:3px}
+  .item .fx span{display:block}
+  .fx .pos::before{content:"正 ";color:var(--wardblue);font-weight:700;letter-spacing:.1em}
+  .fx .neg::before{content:"负 ";color:var(--oldred);font-weight:700;letter-spacing:.1em}
+  .fx .eff::before{content:"效 ";color:var(--rainyellow);font-weight:700;letter-spacing:.1em}
+  .fx .look::before{content:"貌 ";color:var(--wardblue);font-weight:700;letter-spacing:.1em}
+  .fx .iron::before{content:"讽 ";color:var(--fg-3);font-weight:700;letter-spacing:.1em}
+  .fx .pos,.fx .neg,.fx .eff,.fx .look,.fx .iron{color:var(--fg-2)}
+  .item.plan{border-style:dashed}
+  .item.plan .glyph{opacity:.8}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+  .chip{font-size:12.5px;border:1px dashed var(--line);color:var(--fg-3);border-radius:999px;padding:4px 13px}
+
+  /* 组合 */
+  .combos td:nth-child(2){font-family:"Songti SC","STSong",serif;font-weight:700}
+  .tagok{font-size:10.5px;color:var(--rainyellow);border:1px solid var(--rainyellow);border-radius:2px;padding:1px 6px;letter-spacing:.1em;white-space:nowrap}
+
+  /* 两扇门 */
+  .doors{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:26px 0}
+  @media (max-width:640px){.doors{grid-template-columns:1fr}}
+  .door{border:1px solid var(--line);border-radius:3px;padding:24px;background:var(--card)}
+  .door .sig{font-size:11px;letter-spacing:.3em;margin-bottom:10px}
+  .door.warm .sig{color:var(--rainyellow)}
+  .door.cold .sig{color:var(--oldred)}
+  .door h4{margin:0 0 10px;font-size:20px;font-weight:900}
+  .door p{font-size:13.5px;color:var(--fg-2);margin:0 0 10px}
+  .door ul{margin:0;padding-left:1.2em;font-size:13px;color:var(--fg-2)}
+  .door li{margin:4px 0}
+  .rate{font-size:12px;color:var(--fg-3);margin-top:8px}
+
+  /* 考古表 */
+  .arch td:nth-child(2){color:var(--fg-3)}
+  .arch td:nth-child(3){font-weight:700}
+  .who{font-size:11px;color:var(--fg-3);letter-spacing:.1em;white-space:nowrap}
+
+  /* 卷末 */
+  .mottos{display:grid;gap:0;margin:24px 0;max-width:38em}
+  .mottos p{
+    margin:0;padding:20px 4px;border-bottom:1px dashed var(--line);
+    font-family:"Songti SC","STSong",serif;font-size:17px;font-weight:700;line-height:1.9;
+  }
+  .item .art{width:40px;height:40px;flex:none;background:#101014;border:1px solid var(--line);border-radius:3px;display:flex;align-items:center;justify-content:center}
+  .item .art svg{width:34px;height:34px}
+  .beast .art{width:64px;height:64px;flex:none;background:#101014;border:1px solid var(--line);border-radius:3px;display:flex;align-items:center;justify-content:center}
+  .beast .art svg{width:54px;height:54px}
+  .beast .art .pg{font-family:"Songti SC","STSong",serif;font-size:26px;font-weight:900;color:#4c4a52}
+  .beast .bstat{font-size:11px;color:var(--fg-3);font-variant-numeric:tabular-nums}
+  .mottos p .src{display:block;font-family:"PingFang SC",sans-serif;font-weight:400;font-size:11px;color:var(--fg-3);letter-spacing:.2em;margin-top:6px}
+  footer{margin-top:80px;padding-top:28px;border-top:1px solid var(--line);font-size:12px;color:var(--fg-3);letter-spacing:.08em;line-height:2.2}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="frame">
+    <p class="eyebrow">一个男人的一生，被压缩成一个跑不出去的夜晚</p>
+    <h1 class="title serif">这一<span class="flip"><span class="s">身</span><span class="g" aria-hidden="true">生</span></span></h1>
+    <p class="tagline serif">这一生，最后都穿成了这一身。</p>
+    <p class="tagline2">每一件道具，都是他活过的证据</p>
+    <p class="meta-line">故事线正典 · <b>V0.4「人生构筑 · 自由走位」</b> · 原代号《血月回响》 · 2026-07-18 立卷</p>
+  </div>
+</header>
+
+<div class="frame cols">
+  <nav class="rail" aria-label="卷目录">
+    <p class="rl">卷 目</p>
+    <ol>
+      <li><a href="#root">根命题</a></li>
+      <li><a href="#redline">三条红线</a></li>
+      <li><a href="#world">世界观</a></li>
+      <li><a href="#chapters">八章人生</a></li>
+      <li><a href="#breath">一口气</a></li>
+      <li><a href="#poison">五毒</a></li>
+      <li><a href="#fate">命运牌</a></li>
+      <li><a href="#items">道具志</a></li>
+      <li><a href="#beasts">怪物图鉴</a></li>
+      <li><a href="#combos">组合名鉴</a></li>
+      <li><a href="#doors">两扇门</a></li>
+      <li><a href="#arch">词汇考古</a></li>
+      <li><a href="#mottos">主题句集</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <!-- 根命题 -->
+    <section class="entry" id="root">
+      <p class="vol">卷 一</p>
+      <h2 class="serif">根命题</h2>
+      <p class="lede">整个游戏立在一句话上。其余一切——自由走位、命运牌、穿戴道具、唯一攻击——都是这句话的推论。</p>
+      <blockquote class="fate serif">
+        <p>事情是改不了的，<br>怎么做是可以选择的。</p>
+        <cite>—— 作者原话 · 2026-07-18 开发实录</cite>
+      </blockquote>
+      <p>它有两个更完整的表达，分别面向玩家与面向系统：</p>
+      <blockquote class="fate serif">
+        <p>发生什么，你说了不算。<br>成为怎样的人，你还可以选。</p>
+        <cite>—— 命运牌系统核心句</cite>
+      </blockquote>
+      <p>由此推出全部设计：<b>关卡</b>是男人慢慢长大；<b>怪物</b>是他从降生到老死遇到的各种困难；<b>道具</b>是困难被他背上身之后的形态；<b>唯一的攻击</b>被这一生反复揉捏。玩家操纵的从来不是英雄，而是一个普通男人的<b>反应与取舍</b>。</p>
+    </section>
+
+    <!-- 三条红线 -->
+    <section class="entry" id="redline">
+      <p class="vol">卷 二</p>
+      <h2 class="serif">三条设计红线</h2>
+      <p class="lede">作者在开发实录中明确划下、任何后续开发不得违背的三条边界。把它们当 bug 修，就是违背正典。</p>
+      <div class="redlines">
+        <div class="redline">
+          <div class="no">壹</div>
+          <div>
+            <h4>出生绝不允许兜底人物</h4>
+            <p>每一局的出生档案必须是 AI 真实生成的一生。代码中的出生案例只是给 AI 看的风格参照，绝不能在生成失败时被塞进玩家的这一局。AI 实时生成一个前所未有的人生，正是这款游戏"突破传统游戏的一个点"。</p>
+            <span class="src">出处：<q>不要有兜底人物出现了。兜底的案例只是给 AI 看的，每一次都应该是 AI 生成的。</q></span>
+          </div>
+        </div>
+        <div class="redline">
+          <div class="no">贰</div>
+          <div>
+            <h4>出生要千奇百怪</h4>
+            <p>穷人、富人、普通人、古怪的家庭——世界上的人本就千奇百怪，出生池不能塌缩成单一叙事。数值由预算控制，但人生的解释必须无限。</p>
+            <span class="src">出处：<q>世界上的人不应该千奇百怪吗？怎么感觉只有穷人没有富人？</q></span>
+          </div>
+        </div>
+        <div class="redline">
+          <div class="no">叁</div>
+          <div>
+            <h4>AI 可以慢，但必须无感</h4>
+            <p>生成需要时间就用开场演出遮住它：黑屏引句、逐段显现的背景故事、逐层绘制的身体——让等待成为仪式，而不是加载条。失败路径同样要无感：静默重试，不把失败亮给玩家。</p>
+            <span class="src">出处：<q>大不了 AI 生成需要时间的话，前面搞个用户无感过渡无感加载嘛。</q></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 世界观 -->
+    <section class="entry" id="world">
+      <p class="vol">卷 三</p>
+      <h2 class="serif">世界观</h2>
+      <p class="lede">黑暗童话，而不是现实纪录片。场景、人物和怪物采用夸张、隐喻和梦境逻辑；具体物件来自当代生活，因此玩家能立刻认出。</p>
+      <p>有一个夜晚，一个男人的一生会被压缩在里面。他可以往任何方向跑，但跑不出去——没有人跑得出自己的一生。童年的床底、少年的教室、青年的车站、成年的家、中年的办公室和晚年的病房，随着他的奔跑依次从黑暗里长出来，又褪回去。</p>
+      <p>他遇见的怪物并不生活在另一个世界。它们是饥饿、比较、羞耻、失业、沉默、账单、疾病和失去，在梦中获得的身体。<b>每击败一段困难，困难不会真正死亡，而是缩成一件普通物品，穿到他的身上。</b></p>
+      <h3>五类核心对象</h3>
+      <ul class="litany serif">
+        <li><b>怪物</b>是困难正在发生时的形态。</li>
+        <li><b>命运牌</b>是已经发生、无法撤销的人生事实。</li>
+        <li><b>道具</b>是困难被男人背在身上之后的形态。</li>
+        <li><b>咽下或吐出</b>，是他面对事实时仍然拥有的选择。</li>
+        <li><b>商城</b>是他愿意拿人生中的什么去交换。</li>
+      </ul>
+      <h3>他可以跑，但逃不出这个夜晚</h3>
+      <p>V0.4 裁决：主角自由走位（吸血鬼幸存者式），攻击始终自动索敌。命运牌代表"事情是改不了的"；走位代表"怎么做是可以选择的"——先面对哪个困难、绕开哪个、为哪扇门冒险穿过怪潮，每一秒都在回答根命题。战场是吸血鬼幸存者式的无限地图——他往任何方向都能一直跑，但永远跑不出这个夜晚；环境随年龄从小到大慢慢渐变，床底的立柱变成教室的课桌，课桌变成车站的齿轮与病房的床栏，八章人生成为地图上依次渐变的地貌。道具的重量真实压在身体上：石头书包更慢、驼背转身迟钝、雨衣越淋越沉——"这一身越穿越重"第一次有了身体手感。</p>
+      <h3>美术裁决 · 程序化像素人偶</h3>
+      <p>主角不是一张预先画死的高清 Sprite，也不由 AI 每局生成图片。主角是一具<b>由代码实时拼装、但最终落在低分辨率像素格上的模块化人偶</b>：头、脸、头发、躯干、四肢、衣服、伤痕、道具与影子都有固定锚点；AI 只返回肤色、脸型、眼型、发型、体型、站姿与基础服装等受控参数，Canvas 再用矩形、整数折线和有限色块把他画出来。</p>
+      <p>实现采用低分辨率离屏 Canvas：单个角色基准格固定为 40×56 逻辑像素，脚底根点固定在 (20,49)，基础轮廓使用整数 2 像素深色描边。所有坐标、描边与挂点必须是整数，关闭抗锯齿与平滑缩放，再以最近邻方式放大。主角只维护一套标准四方向身体：高矮通过躯干与腿部像素行的整数增删生成，胖瘦通过身体区域像素列的整数重映射生成；贴身衣物共用同一映射，眼镜、手机等刚性道具只跟随变形后的锚点移动，不改变自身像素比例。这样看起来接近《吸血鬼幸存者》与低分辨率地下室 Roguelite 的精灵，但底层仍是可随时修改的矢量规则。漂粉可以直接替换头发色块，雨衣可以覆盖肩部与背部锚点，断掉的脊梁骨可以移动躯干与头部锚点，修眉刀可以改变眉线并增加伤痕；年龄增长同样只修改比例、姿势与局部颜色，不需要为每一种组合重新画整张人物图。</p>
+      <ul class="litany serif">
+        <li><b>程序绘制</b>：主角、《一口气》及所有会被组合持续改变的部分。</li>
+        <li><b>栅格图集</b>：敌人、Boss、地块、固定场景物件与道具图标。</li>
+        <li><b>AI 生图</b>：只用于风格探索和固定资源草案，不能成为每局实时角色图片。</li>
+        <li><b>像素纪律</b>：有限调色板、无渐变、无亚像素、无抗锯齿、整数倍放大。</li>
+      </ul>
+      <p class="dim">这条管线的首要目标不是追求一张图有多精细，而是保证数十件道具同时穿上时，主角仍然能被代码稳定控制、即时变化并保持清楚的身体轮廓。</p>
+      <h3>出生是第一张命运牌</h3>
+      <p>按下"开始这一生"后，玩家不能挑选职业、天赋或家庭。规则引擎先抽出生预算，AI 再据此实时编造家庭、身体、环境与早期经历——并起一个由具体童年小事形成的外号（如因长期叼奶瓶被叫"叼奶弟弟"）。数值不无限，人生的解释可以无限。</p>
+      <p>战斗中，左下角常驻一枚<b>从外号里取字的字章角标</b>（《馒头兜》就是一枚「兜」字章），边框颜色对应出生轮廓，特质以 ↑↓ 箭头外显。点开它，每条属性都带着 AI 按本局故事写下的缘由——"早点摊收摊后总有人给他留蛋花汤，碗底还压着两片葱"，所以生命 +5。<b>AI 选特质必须能从故事里读出来由</b>，这是硬校验，不是文案自觉。</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>出生轮廓</th><th class="num">概率</th><th>机械结构</th></tr></thead>
+        <tbody>
+          <tr><td>普通人</td><td class="num">25%</td><td>没有 BUFF 或 DEBUFF，所有基础值保持标准</td></tr>
+          <tr><td>有得有失</td><td class="num">45%</td><td>一个加成与一个缺口，总预算接近零</td></tr>
+          <tr><td>被命运偏爱</td><td class="num">15%</td><td>一个小至中等加成，偶尔附带轻微代价</td></tr>
+          <tr><td>从缺口开始</td><td class="num">15%</td><td>一个可构筑的负面，数值受限并提高结果页挑战标记</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- 八章人生 -->
+    <section class="entry" id="chapters">
+      <p class="vol">卷 四</p>
+      <h2 class="serif">八章人生</h2>
+      <p class="lede">关卡就是男人慢慢长大。MVP 压缩为六场遭遇，但数据与视觉系统必须支撑完整人生。</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>章节</th><th>场景</th><th>核心困难</th><th>代表怪物</th></tr></thead>
+        <tbody>
+          <tr><td>降生</td><td>摇篮森林</td><td>饥饿、哭泣、被忽视</td><td>哭蛾、空奶瓶</td></tr>
+          <tr><td>童年</td><td>床底王国</td><td>恐惧、服从、父母期待</td><td>床下的呼吸、红叉</td></tr>
+          <tr><td>少年</td><td>千眼教室</td><td>比较、羞耻、身份模仿</td><td>统一答案、他们都在说</td></tr>
+          <tr><td>青年</td><td>齿轮车站</td><td>自我价值、工作、欲望、孤独</td><td>打卡齿轮、错过的车</td></tr>
+          <tr><td>成年</td><td>屋檐下的家</td><td>亲密、责任、代际伤害</td><td>沉默的父亲、未接来电</td></tr>
+          <tr><td>中年</td><td>没有关灯的办公室</td><td>失业、衰老的父母、未走的路</td><td>下个月账单、打包的纸箱</td></tr>
+          <tr><td>老年</td><td>白发荒原</td><td>疾病、孤独、记忆、失去</td><td>忘记名字的人、空椅子</td></tr>
+          <tr><td>死亡</td><td>月亮背面</td><td>接受终点</td><td>收灯人</td></tr>
+        </tbody>
+      </table></div>
+      <h3>一关就是一生</h3>
+      <p>V0.4：整个游戏只有一关。六个阶段（MVP 将降生并入童年、老年并入暮年）不是六个关卡，而是同一张无限地图上连续渐变的时间段，单局基线约 8 分钟。怪物死后掉落金币实体，要跑过去吸——贪毒越深，吸取半径越大。每个阶段末尾有 15–20 秒的<b>过渡带</b>：怪潮变稀，旧地貌褪去、新地貌长出，主角身体进入下一龄段——命运牌正是在过渡带里出现，事实落账的那一步，正好是他长大的那一步。敌潮与地貌同步换代：童年是哭蛾与空奶瓶，少年换成"统一答案"与"他们都在说"，中年换成"下个月账单"。暮年末段，四周黑暗向内收拢，无限地图第一次有了边；黑暗收到一盏路灯的光圈大小时，收灯人出现。</p>
+      <h3>父亲章节</h3>
+      <p>"沉默的父亲"不是恶父 Boss。第一阶段，父亲像一件没有表情的厚重盔甲；第二阶段盔甲裂开，里面露出另一个同样害怕的小男孩。击败后获得的不是武器，而是《父亲的雨衣》——它提供保护，也把沉默、重量和不会表达的爱一起传下来。重点不是原谅或控诉，而是让玩家看见代际伤害如何以"保护"的名义被继承。</p>
+      <h3>最终 Boss · 收灯人</h3>
+      <p>收灯人不会被杀死。它披着空斗篷，斗篷里是开局时那个什么都没穿戴的小孩。最终战检验整局构筑，同时逐步要求玩家面对自己穿在身上的东西：继续背负全部击穿终点、主动脱下一部分换取不同结局、把某件物品留给身后的孩子，或面对最后一张命运牌《这一生》，选择怎样交出最后一口气。</p>
+    </section>
+
+    <!-- 一口气 -->
+    <section class="entry" id="breath">
+      <p class="vol">卷 五</p>
+      <h2 class="serif">唯一攻击 ·《一口气》</h2>
+      <p class="lede">主角从出生到死亡永远只有一种攻击：一小团像橡皮泥一样可以被反复揉捏的月白色气息。构筑的乐趣不是同时拥有很多攻击，而是看同一个最普通的攻击最终被人生揉成什么样子。</p>
+      <p>所有道具只能做两件事：改变这唯一攻击的形状、材质、轨迹、节奏、生命周期与命中反应；或让它产生<b>继承全部已有变化</b>的分裂体、回声与残留物。即使父亲的雨衣产生雨滴，雨滴也必须是当前主攻击被雨水拆分后的形态，并继承情书的追踪、书包的重量、手表的停滞和修眉刀的锋利。</p>
+      <div class="breaths">
+        <div class="breath"><div class="age">出 生</div><div class="line serif">第一口气，和第一声哭。</div></div>
+        <div class="breath"><div class="age">少 年</div><div class="line serif">不服这口气。</div></div>
+        <div class="breath"><div class="age">青 年</div><div class="line serif">想争一口气。</div></div>
+        <div class="breath"><div class="age">成 年</div><div class="line serif">咽不下这口气。</div></div>
+        <div class="breath"><div class="age">中 年</div><div class="line serif">终于能喘口气。</div></div>
+        <div class="breath"><div class="age">老 年</div><div class="line serif">越来越微弱的呼吸。</div></div>
+        <div class="breath last"><div class="age">死 亡</div><div class="line serif">最后一口气。</div></div>
+      </div>
+      <p class="dim">初始形态：不规则小椭圆，略像逗号或柔软的种子；月白 #E8E1D3，边缘淡灰褐；笔直、匀速、单发；命中只有一个很小、很软的波纹；声音是轻微呼气声，不用枪响或刀砍。初始攻击必须普通、安静，甚至显得有些弱——所有复杂性都来自这一局穿在身上的东西。无论它最终变成湿信纸、骨节、泪滴还是声波，内部都保留一小块最初的月白色核心。</p>
+      <p><b>普通人的一切都是 1。</b>战斗界面里《一口气》的劲、速、程从 1.00 起步显示——出生特质、命运选择和穿戴道具把它推离 1，每一格偏移都查得到出处：出生角标里写着"从小凑在电视跟前看到雪花屏——射程 ×0.88"，命运牌上印着"被一拳打在眼眶上——射程−8%"。</p>
+    </section>
+
+    <!-- 五毒 -->
+    <section class="entry" id="poison">
+      <p class="vol">卷 六</p>
+      <h2 class="serif">五毒 · 隐藏的人格构筑</h2>
+      <p class="lede">贪、嗔、痴、慢、疑——不是善恶分，也不是人格诊断，而是记录玩家习惯用什么方式面对这一生躲不开的诱惑。界面不显示"贪+1"；玩家先承担具体选择，系统只通过后续事件、外貌、弹道和结算让倾向逐渐显形。</p>
+      <div class="poisons">
+        <div class="poison"><div class="ch">贪</div><div class="mean">总想再多拿一点，用占有抵抗失去</div>
+          <dl><dt>力 量</dt><dd>囤积、吸附、回收弹体、额外奖励</dd><dt>代 价</dt><dd>负重、债务、舍不得放下</dd></dl></div>
+        <div class="poison"><div class="ch">嗔</div><div class="mean">把受过的伤还回去，用愤怒证明疼痛</div>
+          <dl><dt>力 量</dt><dd>反伤、折返、残血增伤、爆裂</dd><dt>代 价</dt><dd>自伤、射程收缩、无法停手</dd></dl></div>
+        <div class="poison"><div class="ch">痴</div><div class="mean">明知看不清仍然执着，用幻想维持关系</div>
+          <dl><dt>力 量</dt><dd>幻影、复制、异变、追踪</dd><dt>代 价</dt><dd>假目标、效果错位、真假难分</dd></dl></div>
+        <div class="poison"><div class="ch">慢</div><div class="mean">通过傲慢、体面和比较确认自身价值</div>
+          <dl><dt>力 量</dt><dd>暴击、变宽、处决、拒绝退让</dd><dt>代 价</dt><dd>治疗受限、失误惩罚、构筑变脆</dd></dl></div>
+        <div class="poison"><div class="ch">疑</div><div class="mean">不相信别人也不相信自己，用犹豫推迟结论</div>
+          <dl><dt>力 量</dt><dd>重掷、分裂选项、延迟结算、预见</dd><dt>代 价</dt><dd>奖励迟到、效果反复、机会消失</dd></dl></div>
+      </div>
+      <blockquote class="fate serif">
+        <p>人躲得过一次选择，<br>躲不过反复选择之后穿成的这一身。</p>
+        <cite>—— 五毒系统核心句</cite>
+      </blockquote>
+      <p class="dim">五毒越高不代表结局越坏，而代表相关构筑越极端。最终 Boss 读取最高的两项生成对应阶段；结算页最后才揭示这一身最深的毒。已实装的第一处身体化外显：<b>贪越深，捡钱的手伸得越远</b>——每点贪增加金币吸取半径。</p>
+    </section>
+
+    <!-- 命运牌 -->
+    <section class="entry" id="fate">
+      <p class="vol">卷 七</p>
+      <h2 class="serif">命运牌 · 咽下与吐出</h2>
+      <p class="lede">没有牌库、没有手牌、没有能量费。人生事件发生时，只出现一张不可跳过的命运牌：事实先落账，然后玩家只能选择怎样回应。</p>
+      <div class="swipe">
+        <div class="side l">
+          <div class="dir">左 滑</div>
+          <h4 class="serif">咽 下</h4>
+          <p>让事情进入自己、改变自己。不等于软弱——它同时包含接纳与压抑。</p>
+        </div>
+        <div class="side r">
+          <div class="dir">右 滑</div>
+          <h4 class="serif">吐 出</h4>
+          <p>把回应送回外部世界。不等于勇敢——它同时包含表达与伤害。</p>
+        </div>
+      </div>
+      <p>两个方向都必须承认事情已经发生；任何回应都不能撤销基础事实。不提供跳过、关闭、重掷和"稍后再说"。例：事件《名单上有你的名字》已经造成被裁员的事实并令工牌异变——咽下《先别告诉家里》延迟伤害、偏向疑；吐出《问清楚补偿》获得零钱与债务、偏向贪。<b>无论向哪边滑，他都已经失去了工作。</b></p>
+      <p>咽吐与五毒是两个维度：咽吐记录回应的<b>方向</b>，五毒记录回应背后的<b>执念</b>。同一次咽下可能源于贪、痴或疑；同一次吐出可能源于嗔、慢，也可能只是一次不增加毒性的真实求助。左右两边都要有可理解的动机、机械收益和真实代价——玩家无法用"永远左滑"或"永远右滑"通过道德考试。</p>
+      <h3>规则引擎先掷命，AI 再解释命</h3>
+      <p>每次生成前，本地规则引擎先抽取不可见的"事实预算"与"回应预算"；AI 只能在预算内编排事件，不能把负面事实偷改成可拒绝的选项，也不能创造无限奖励。<span class="dim">事情由命运落账，随机性的诗意由 AI 完成，随机性的公平由游戏完成。</span>AI 永远不输出代码，只返回白名单校验过的结构化操作。</p>
+      <h3>属性明账：变化印在牌面上</h3>
+      <p>每个回应最多携带 3 项属性变化——伤害、射速、射程、弹宽、<b>移速</b>、弹速，单项 ±15% 封顶、总额 ≤30%。<b>滑牌之前就印在选项下方</b>，选完永久留进构筑。数值额度归规则引擎，AI 只有解释权：染了黄毛觉得自己混得开，弄来一辆二手小电驴——移速+12%；跟人起冲突被一拳打在眼眶上——射程−8%。</p>
+      <h3>连续剧：上一次的选择是这一次的起因</h3>
+      <p>每次咽下或吐出都写入记忆，AI 被强制要求延续事件线：上次咽下漂粉染了黄毛，这次就是他自觉混得开、骑车去接妹妹、被路人一拳打碎眼镜。滑牌之后，AI 还会用一句 20–70 字的"命运回响"解释这次选择在他身上留下了什么，以字幕浮现，不打断战斗。</p>
+      <h3>亲口回应命运</h3>
+      <p>命运牌下方有一个输入框：<b>你可以替他亲口说</b>（24 字内）。AI 判定这句话更接近咽下还是吐出、提炼成回应名、写出它真的说出口之后的样子与代价，并按明账规则定属性与五毒。<b>无论你说得多离谱，命运都不拒绝——它只负责把这句话圆进现实里。</b>你说过的话会被记住，后续的命运必须承认它。</p>
+      <blockquote class="fate serif">
+        <p>玩家输入：「不装了，其实我是奥特曼」<br>——对方沉默三秒，要求你当场变身；你只好举起漂粉袋，围观者于是相信你至少是某种危险生物。<br><span class="dim">吐出 · 射程+3% · 痴+1 慢+1</span></p>
+        <cite>—— 实测验收案例 · 2026-07-19</cite>
+      </blockquote>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>命运轮廓</th><th>允许结果</th><th>设计目的</th></tr></thead>
+        <tbody>
+          <tr><td>微光</td><td>小幅正收益，附带叙事变化</td><td>给低谷局留下出口</td></tr>
+          <tr><td>交换</td><td>一正一负，价值大致相等</td><td>制造真正选择</td></tr>
+          <tr><td>诱惑</td><td>立即强收益，留下长期代价</td><td>支持危险构筑</td></tr>
+          <tr><td>反噬</td><td>当前物品的负面被放大</td><td>检验玩家是否愿意转型</td></tr>
+          <tr><td>荒诞</td><td>数值变化小，规则或外貌变化大</td><td>制造传播性和黑色幽默</td></tr>
+          <tr><td>沉默</td><td>可能什么都没有发生</td><td>保留人生的不讲道理</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- 道具志 -->
+    <section class="entry" id="items">
+      <p class="vol">卷 八</p>
+      <h2 class="serif">道具志</h2>
+      <p class="lede">道具要讽刺人生百态：初一看"哇趣好有梗"，玩起来荒诞但清晰，回头看指向一种真实的人生困境。正典共录 72 件——<b>全部 72 件已实装</b>。虚线卡时代结束。等级描述物品在心里留下多深的痕迹——<span class="q q1">Ⅰ 杂物</span> <span class="q q2">Ⅱ 旧物</span> <span class="q q3">Ⅲ 心结</span> <span class="q q4">Ⅳ 遗物</span>。</p>
+
+      <div class="stage-h"><h3>童年与教育</h3><span class="cnt">6 件 · 全部实装</span></div>
+      <div class="items">
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="11" stroke="#aaa69d" stroke-width="2.5"/><circle cx="16" cy="16" r="1.8" fill="#aaa69d"/><circle cx="24" cy="16" r="1.8" fill="#aaa69d"/><circle cx="16" cy="24" r="1.8" fill="#aaa69d"/><circle cx="24" cy="24" r="1.8" fill="#aaa69d"/></svg></div><div><div class="nm">校服上掉下来的纽扣</div></div><span class="q q1">Ⅰ 杂物</span></div>
+          <div class="fl serif">"他把它攥了一整天。"</div>
+          <div class="fx"><span class="pos">每第 3 轮攻击额外 +1 弹</span><span class="neg">没有负面作用</span><span class="look">胸前缺扣，手腕系着纽扣</span><span class="iron">小事被孩子保存成全部安全感</span></div></div>
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 30 L28 9" stroke="#9a754d" stroke-width="3.4"/><path d="M15 19 L24 25" stroke="#9a754d" stroke-width="2.6"/></svg></div><div><div class="nm">床底下的木剑</div></div><span class="q q1">Ⅰ 杂物</span></div>
+          <div class="fl serif">"黑暗里，它确实锋利过。"</div>
+          <div class="fx"><span class="pos">伤害 +45% · 弹宽 +30%</span><span class="neg">射程 −35%</span><span class="look">木剑斜背在身后</span><span class="iron">想象出来的勇敢</span></div></div>
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="8" width="16" height="24" stroke="#a64049" stroke-width="2.2"/><path d="M15.5 15 L24.5 25 M24.5 15 L15.5 25" stroke="#a64049" stroke-width="2.4"/></svg></div><div><div class="nm">写满红叉的练习册</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"错过的题，总得重新做。"</div>
+          <div class="fx"><span class="pos">弹道到终点折返并强化</span><span class="neg">基础伤害 −12%</span><span class="look">练习册绑在背后，红叉爬上脸</span><span class="iron">标准答案与失败羞耻</span></div></div>
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="14" width="20" height="17" rx="4" stroke="#756d65" stroke-width="2.4"/><path d="M14 14 A6 6 0 0 1 26 14" stroke="#756d65" stroke-width="2.4"/></svg></div><div><div class="nm">装满石头的书包</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"大人说，这都是为你好。"</div>
+          <div class="fx"><span class="pos">伤害 +40% · 穿透 +2</span><span class="neg">弹速 −45% · 主角驼背</span><span class="look">书包压弯主角的背</span><span class="iron">"都是为你好"的重量</span></div></div>
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M15 8 L8 15 L12 32 L28 32 L32 15 L25 8 L20 12 Z" stroke="#566d7c" stroke-width="2.2"/></svg></div><div><div class="nm">小了一号的校服</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"他长大了，衣服却不允许。"</div>
+          <div class="fx"><span class="pos">射速 +22%</span><span class="neg">最大生命 −6 · 弹宽 −15%</span><span class="look">衣服绷紧、袖口过短</span><span class="iron">被要求长大，又不被允许改变</span></div></div>
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="20" r="6" stroke="#aac0c0" stroke-width="2"/><circle cx="26.5" cy="20" r="6" stroke="#aac0c0" stroke-width="2"/><path d="M19 20 H21 M28 14 L31.5 25" stroke="#aac0c0" stroke-width="2"/></svg></div><div><div class="nm">裂了一边的眼镜</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"他第一次看清远方，也看不清自己。"</div>
+          <div class="fx"><span class="pos">射程 +55% · 暴击 +14%</span><span class="neg">弹宽 −35%</span><span class="look">一边镜片裂开</span><span class="iron">看清远方，却看不清自己</span></div></div>
+      </div>
+
+      <div class="stage-h"><h3>少年、亚文化与网络情绪</h3><span class="cnt">7 件 · 全部实装</span></div>
+      <div class="items">
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="17" cy="23" r="5.5" fill="#b8a83f"/><circle cx="24" cy="17" r="7" fill="#b8a83f"/></svg></div><div><div class="nm">剩了半袋的漂粉</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"那年他觉得，先被看见才算存在。"</div>
+          <div class="fx"><span class="pos">射速 +22% · 暴击 +8%</span><span class="neg">敌人逼近速度 +15%</span><span class="look">头发染黄且不断掉色</span><span class="iron">用显眼叛逆制造身份</span></div></div>
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="16.5" width="26" height="7" stroke="#9fa8aa" stroke-width="2.2"/><path d="M11 20 H29" stroke="#9fa8aa" stroke-width="1.6"/></svg></div><div><div class="nm">同桌的修眉刀</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"她说只是修眉，夏天却从不卷袖子。"</div>
+          <div class="fx"><span class="pos">伤害 +18% · 暴击 +25%</span><span class="neg">最大生命 −8 · 弹宽 −55%</span><span class="look">手臂出现多道陈旧伤痕</span><span class="iron">求救被模仿成小众审美</span></div></div>
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><g transform="rotate(-28 20 20)"><rect x="7" y="15" width="26" height="11" rx="5.5" fill="#b088a3"/><rect x="20" y="15" width="13" height="11" rx="5.5" fill="#eee1ea"/></g></svg></div><div><div class="nm">OD 妹给的小药丸</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"她说，吃了以后今晚就不会做梦。"</div>
+          <div class="fx"><span class="pos">每场随机大幅强化一项弹道</span><span class="neg">同时随机削弱另一项弹道</span><span class="look">瞳孔、脸色与动作失真</span><span class="iron">痛苦、药物与圈层身份混在一起</span></div></div>
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="12" width="24" height="16" fill="#b3a488"/><path d="M8 12 L20 21 L32 12" stroke="#786f67" stroke-width="1.8"/></svg></div><div><div class="nm">前桌的情书</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"信封上没有他的名字。"</div>
+          <div class="fx"><span class="pos">弹道强追踪</span><span class="neg">散射角增大 · 伤害 −8%</span><span class="look">信封露在胸前，纸片绕身</span><span class="iron">欲望与没有回应的感情</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#7d8a95">哭</div><div><div class="nm">我一直在哭</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"发出去的时候，他正面无表情地刷下一条。"</div>
+          <div class="fx"><span class="eff">每次受到负面状态，产生一枚穿透敌人的眼泪；射程与命中宽度下降</span><span class="look">表情不变，两道夸张眼泪持续流下，泪水积在衣领与已穿戴物品上</span><span class="iron">真实情绪被压缩成可复制、可围观、可快速划走的网络后缀</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#8a8274">圈</div><div><div class="nm">朋友圈仅三天可见</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fx"><span class="eff">近期获得的道具更强，旧物逐渐褪色</span><span class="look">身后出现不断消失的相框</span><span class="iron">选择性展示与记忆删除</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#6f7d88">读</div><div><div class="nm">凌晨三点的已读</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fx"><span class="eff">无人攻击时积蓄伤害，受击后清空</span><span class="look">手机屏幕一直亮着"已读"</span><span class="iron">在线不等于回应</span></div></div>
+      </div>
+
+      <div class="stage-h"><h3>青年、消费与职场</h3><span class="cnt">8 件 · 全部实装</span></div>
+      <div class="items">
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="13" r="5" stroke="#c59b53" stroke-width="2.4"/><path d="M17 17 L29 29 L32 26 M24 24 L27 21" stroke="#c59b53" stroke-width="2.4"/></svg></div><div><div class="nm">出租屋唯一的钥匙</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"自由与孤独，是同一扇门。"</div>
+          <div class="fx"><span class="pos">弹道消失时产生小型爆炸</span><span class="neg">射程 −12%</span><span class="look">钥匙挂在腰间摆动</span><span class="iron">自由与孤独是同一扇门</span></div></div>
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="12" width="24" height="16" fill="#b99368"/><path d="M8 12 L20 21 L32 12" stroke="#786f67" stroke-width="1.8"/></svg></div><div><div class="nm">第一次工资的信封</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"那天他第一次觉得自己有用。"</div>
+          <div class="fx"><span class="pos">每 5 枚零钱使伤害 +6%</span><span class="neg">花钱会立刻失去加成</span><span class="look">一只手始终攥着信封</span><span class="iron">价值被第一次收入证明</span></div></div>
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7 L25 13 L22.5 27 L20 33 L17.5 27 L15 13 Z" fill="#84313e"/></svg></div><div><div class="nm">没有商标的领带</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"系上它，他们也许会认真听。"</div>
+          <div class="fx"><span class="pos">伤害 +18% · 暴击 +18%</span><span class="neg">最大生命 −10</span><span class="look">领带越来越紧，脸色变白</span><span class="iron">体面与窒息</span></div></div>
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="11" width="20" height="18" stroke="#64748a" stroke-width="2.4"/><path d="M14 22 H26" stroke="#64748a" stroke-width="2.2"/></svg></div><div><div class="nm">已经注销的旧工牌</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"名字还在，门已经打不开了。"</div>
+          <div class="fx"><span class="pos">每件穿戴物使伤害 +5%</span><span class="neg">商城价格 +20%</span><span class="look">工牌仍挂着，门禁灯变红</span><span class="iron">名字还在，身份已被拿走</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#7a6f85">音</div><div><div class="nm">领导撤回的六十秒语音</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fx"><span class="eff">每次咽下储存沉默时间，下次吐出时释放声波</span><span class="look">耳边悬着不断撤回的语音条</span><span class="iron">服从、猜测与隐形加班</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#9a8154">袋</div><div><div class="nm">凌晨三点的外卖袋</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fx"><span class="eff">低生命时缓慢恢复，但所有主动治疗降低</span><span class="look">油渍袋挂在椅背和腰间</span><span class="iron">对身体的延期付款</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#7f8a6e">费</div><div><div class="nm">自动续费到明年的会员</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fx"><span class="eff">每场自动获得短暂增益，同时扣除零钱</span><span class="look">身后挂着不断增长的账单条</span><span class="iron">被遗忘的小额持续剥夺</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#a05548">链</div><div><div class="nm">全家帮砍仍差一刀的链接</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fx"><span class="eff">每拥有一件低级物品就提高奖励，永远无法满值</span><span class="look">红色进度条缠住身体</span><span class="iron">人情关系被平台计量</span></div></div>
+      </div>
+
+      <div class="stage-h"><h3>亲密关系、家庭与中年</h3><span class="cnt">6 件 · 全部实装</span></div>
+      <div class="items">
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 8 L7 15 L11 33 L29 33 L33 15 L26 8 L20 12 Z" stroke="#a8862f" stroke-width="2.2"/><path d="M14 8 A8 8 0 0 1 26 8" stroke="#a8862f" stroke-width="2.2"/></svg></div><div><div class="nm">父亲的雨衣</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fl serif">"他没有拥抱过你，但那天雨很大。"</div>
+          <div class="fx"><span class="pos">每场抵挡首次受伤；受伤释放继承全部效果的雨滴</span><span class="neg">射速 −18% · 身体变得沉重</span><span class="look">过大的旧雨衣改变整个轮廓</span><span class="iron">不会表达的保护与代际继承</span></div></div>
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="13" y="7" width="14" height="26" rx="3" stroke="#668785" stroke-width="2.2"/><circle cx="20" cy="28" r="1.6" fill="#668785"/></svg></div><div><div class="nm">没打出去的电话</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"号码一直都没有换。"</div>
+          <div class="fx"><span class="pos">能量溢出时储存声波</span><span class="neg">每层来电使射速 −3%</span><span class="look">电话缠在手腕，屏幕不断闪</span><span class="iron">自尊、思念与延迟沟通</span></div></div>
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M13 13 Q20 6 27 13 L24 31 L20 22 L16 31 Z" fill="#a89f7e"/></svg></div><div><div class="nm">女儿换下的乳牙</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fl serif">"他开始害怕自己先离开。"</div>
+          <div class="fx"><span class="pos">每场首次致命伤保留 1 生命并爆发</span><span class="neg">基础伤害 −10%</span><span class="look">乳牙成为项链，身后出现孩子剪影</span><span class="iron">守护与害怕先离开</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#7e97a0">水</div><div><div class="nm">相亲桌上没拆的矿泉水</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fx"><span class="eff">双方都不受伤时积累暴击，一受伤立即清空</span><span class="look">手边一直放着未拆水瓶</span><span class="iron">亲密关系被条件表格化</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#77705f">爸</div><div><div class="nm">家长群里的"孩子他爸"</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fx"><span class="eff">所有继承体与附属弹道增强，本体伤害下降</span><span class="look">主角姓名逐渐被群昵称覆盖</span><span class="iron">个体身份被家庭角色吞没</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#6d6a75">离</div><div><div class="nm">没有按下发送的离婚协议</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fx"><span class="eff">可暂时移除一件道具效果，结束后负面翻倍</span><span class="look">一张折叠纸卡在内袋</span><span class="iron">关系中的拖延与机会成本</span></div></div>
+      </div>
+
+      <div class="stage-h"><h3>衰老、疾病与失去</h3><span class="cnt">6 件 · 全部实装</span></div>
+      <div class="items">
+        <div class="item"><div class="top"><div class="glyph" style="background:#a0524a">检</div><div><div class="nm">体检报告上的向上箭头</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fx"><span class="eff">每项超出基础值的属性继续提高，低于基础值的继续下降</span><span class="look">红色箭头在身体各处闪烁</span><span class="iron">人被缩成一组异常指标</span></div></div>
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="20" r="10" stroke="#81a0aa" stroke-width="2.4"/><path d="M20 20 V13 M20 20 L25.5 23.5" stroke="#81a0aa" stroke-width="2.2"/></svg></div><div><div class="nm">慢了七分钟的手表</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"身体还在走，时间已经不同步。"</div>
+          <div class="fx"><span class="pos">每 7 秒冻结弹道 1 秒，恢复后加速</span><span class="neg">弹速 −15%</span><span class="look">手腕延迟，动作与影子不同步</span><span class="iron">身体与时间脱节</span></div></div>
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="13" y="12" width="14" height="21" rx="3" stroke="#9fb0ac" stroke-width="2.2"/><rect x="15.5" y="7" width="9" height="5" stroke="#9fb0ac" stroke-width="2"/></svg></div><div><div class="nm">药房最下面的白瓶子</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"标签说一天一次，他记不清了。"</div>
+          <div class="fx"><span class="pos">射速 +30%</span><span class="neg">每场开始失去 2 生命 · 伤害 −10%</span><span class="look">药瓶逐渐挂满腰间</span><span class="iron">用药维持运转而不是恢复</span></div></div>
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="8" width="20" height="24" stroke="#b6aa94" stroke-width="2.2"/><circle cx="16.5" cy="16" r="2.5" stroke="#b6aa94" stroke-width="1.6"/><path d="M12 28 L18 19 L23 26 L26 22 L28 28" stroke="#b6aa94" stroke-width="1.8"/></svg></div><div><div class="nm">少了一个人的合照</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fl serif">"回忆越来越满，屋子越来越空。"</div>
+          <div class="fx"><span class="pos">每第 4 轮额外发射两枚高伤弹道</span><span class="neg">生命低于一半时射速 −15%</span><span class="look">照片别在衣服内侧</span><span class="iron">回忆越来越满，现实越来越空</span></div></div>
+        <div class="item"><div class="top"><div class="art"><svg viewBox="0 0 40 40" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="7" width="20" height="26" stroke="#76553d" stroke-width="2.6"/></svg></div><div><div class="nm">一直空着的相框</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"他一直说，等大家有空。"</div>
+          <div class="fx"><span class="pos">所有终点爆炸范围扩大</span><span class="neg">弹道存在时间 −25%</span><span class="look">空相框悬在主角影子里</span><span class="iron">"等大家有空"的无限延期</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#6e8783">电</div><div><div class="nm">医院走廊的共享充电宝</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fx"><span class="eff">射速恢复更快，但每个章节持续扣零钱</span><span class="look">充电线像输液管缠绕身体</span><span class="iron">等待、焦虑与按分钟收费</span></div></div>
+      </div>
+
+      <div class="stage-h"><h3>里屋专属遗物</h3><span class="cnt">6 件 · 全部实装</span></div>
+      <div class="items">
+        <div class="item"><div class="top"><div class="glyph" style="background:#8f887a">脊</div><div><div class="nm">断掉的脊梁骨</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fl serif">"他们说男人要做家里的顶梁柱。"</div>
+          <div class="fx"><span class="pos">每条负面词条增伤 12% · 每 3 条负面穿透 +1</span><span class="neg">支付一口气 · 治疗 −30% · 永久弯腰</span><span class="look">影子里的脊柱断成两截；负面越多，弹体骨节越长</span><span class="iron">"男人必须成为顶梁柱"与被赞美的自我消耗</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#8d8b84">年</div><div><div class="nm">提前花掉的十年</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fl serif">"未来的他没有同意，但合同已经生效。"</div>
+          <div class="fx"><span class="pos">每 10 秒提前释放 5 轮攻击</span><span class="neg">爆发后停止呼吸 2 秒</span><span class="look">头发提前变白，动作短暂凝固</span><span class="iron">用未来换现在的效率</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#7f8591">麻</div><div><div class="nm">没有痛觉的夜晚</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fl serif">"他把麻木误认成了坚强。"</div>
+          <div class="fx"><span class="pos">未结算伤害持续提高攻击</span><span class="neg">8 秒后全额结算 · 普通治疗失效</span><span class="look">身体颜色逐渐褪去</span><span class="iron">把麻木误认为坚强</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#96789c">三</div><div><div class="nm">她没说名字的第三颗药</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fx"><span class="eff">攻击周期性极端变形，药效结束后随机崩落</span><span class="look">瞳孔、轮廓和弹道持续错位</span><span class="iron">痛苦被当作圈层通行证</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#8a6a4f">贷</div><div><div class="nm">已经签好名字的网贷合同</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fx"><span class="eff">正面词条暂时复制，账单抽到时负面也复制</span><span class="look">合同像绷带缠满身体</span><span class="iron">将未来收入抵押给即时欲望</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#6b6f7e">名</div><div><div class="nm">把名字卖掉的合同</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fx"><span class="eff">每件穿戴物继续增伤，但姓名从 UI 与结算消失</span><span class="look">工牌遮住脸，只留下编号</span><span class="iron">价值与身份被组织吞没</span></div></div>
+      </div>
+
+      <div class="stage-h"><h3>留灯间 · 被爱过的证据</h3><span class="cnt">4 件 · 全部实装</span></div>
+      <div class="items">
+        <div class="item"><div class="top"><div class="glyph" style="background:#a68d55">饭</div><div><div class="nm">母亲留在锅里的那碗饭</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fx"><span class="eff">溢出治疗转化成继承攻击配方的温热蒸汽，经过商城后逐渐变凉</span><span class="iron">无论多晚，锅里总有一只倒扣的碗</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#6f8577">吗</div><div><div class="nm">凌晨两点朋友发来的"在吗"</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fx"><span class="eff">每次咽下储存一条未回复消息，低生命时下一次吐出将其接通为护盾与攻击</span><span class="iron">这一次，有人接了</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#7c828e">梯</div><div><div class="nm">有人替你按住的电梯</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fx"><span class="eff">即将消失的攻击在终点等待下一轮，然后两批一起返回</span><span class="iron">有人愿意为你多等三秒</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#8f7a49">锁</div><div><div class="nm">一直没有换的家门锁</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fx"><span class="eff">终点攻击打开家门并折返，离主角越近伤害越高</span><span class="iron">那把钥匙，一直都开得了门</span></div></div>
+      </div>
+      <p class="dim">留灯间另可出现两件已实装遗物：《父亲的雨衣》《女儿换下的乳牙》——被爱过的证据强大，但仍包含责任、等待或失去。</p>
+
+      <div class="stage-h"><h3>肉身与羞耻</h3><span class="cnt">8 件 · 全部实装 · 以撒基准：先好笑半秒，再难受三秒</span></div>
+      <div class="items">
+        <div class="item"><div class="top"><div class="glyph" style="background:#8a8154">憋</div><div><div class="nm">憋回去的那泡尿</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"会开到第三个小时。他练出来了。"</div>
+          <div class="fx"><span class="eff">站定不动时伤害持续积攒；移速下降</span><span class="iron">连膀胱都要服从纪律</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#96603f">杯</div><div><div class="nm">酒局上代喝的那杯</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"领导说，小周能喝。"</div>
+          <div class="fx"><span class="eff">受伤概率把伤害吐还敌人；开局随机眩晕两秒</span><span class="iron">身体是递给酒桌的投名状</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#6f6a5a">发</div><div><div class="nm">外卖里吃出的头发</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"他挑出来，拍了照，最后还是吃完了。"</div>
+          <div class="fx"><span class="eff">低生命免费恢复一次；所有治疗永久降低</span><span class="iron">又穷，又讲究不起</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#9b9271">枕</div><div><div class="nm">没洗的枕套</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"上面有一个人形的黄印子。"</div>
+          <div class="fx"><span class="eff">静止两秒进入"躺平"减伤 50%；起身后一秒迟钝</span><span class="iron">躺平是仅剩的自我保护</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#6d6458">烟</div><div><div class="nm">藏在袜子里的烟</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"一天一根。戒了十年。"</div>
+          <div class="fx"><span class="eff">受伤后短暂加速；最大生命随时间缓慢流失</span><span class="iron">慢性自毁被叫做解压</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#8f7e8e">两</div><div><div class="nm">验孕棒</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fl serif">"两道杠那天，他在楼道里坐到天亮。"</div>
+          <div class="fx"><span class="eff">孩子剪影复制继承全部效果的弹道；零钱消耗翻倍</span><span class="iron">先成为父亲，再学会当人</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#7c8a72">卡</div><div><div class="nm">健身房年卡</div></div><span class="q q1">Ⅰ 杂物</span></div>
+          <div class="fl serif">"去过三次。教练还在给他发消息。"</div>
+          <div class="fx"><span class="eff">移速 +8%；每章自动扣一枚零钱</span><span class="iron">买的不是健康，是"有在管自己"的错觉</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#83795f">笑</div><div><div class="nm">遗照选用的那张</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fl serif">"照相馆师傅说，笑一点。他就笑了。"</div>
+          <div class="fx"><span class="eff">死亡后以照片的笑容再战五秒；结算立绘固定为这个笑容</span><span class="iron">人这辈子最配合的一次摆拍</span></div></div>
+      </div>
+
+      <div class="stage-h"><h3>网络情绪 · 增补</h3><span class="cnt">9 件 · 全部实装</span></div>
+      <div class="items">
+        <div class="item"><div class="top"><div class="glyph" style="background:#6f7d88">输</div><div><div class="nm">对方正在输入…</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"输入了很久。最后收到的是'嗯'。"</div>
+          <div class="fx"><span class="eff">敌人出手前出现预警气泡；预警偶尔是假的</span><span class="iron">被一个输入框吊了一整晚</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#8a8274">哈</div><div><div class="nm">五个哈</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"他回了'哈哈哈哈哈'。少一个都显得没礼貌。"</div>
+          <div class="fx"><span class="eff">小伤害概率被"一笑而过"；真实治疗下降</span><span class="iron">情绪全权交给表情包代办</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#7a6f85">歌</div><div><div class="nm">年度听歌报告</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"你最爱的那首歌，今年循环了 800 遍。全在凌晨。"</div>
+          <div class="fx"><span class="eff">局内越深夜伤害越高；开局生命 −2</span><span class="iron">大数据比他妈先知道他不对劲</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#a08194">粉</div><div><div class="nm">momo 的头像</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"换上粉色小恐龙之后，他终于敢说话了。"</div>
+          <div class="fx"><span class="eff">未被锁定时暴击大增；被锁定时伤害下降</span><span class="iron">只有没有名字的时候才敢做自己</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#5f7581">聊</div><div><div class="nm">和 AI 聊到凌晨</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fl serif">"它记得他说过的每一句话。这是它最不像人的地方。"</div>
+          <div class="fx"><span class="eff">可预览命运牌一侧回应；关系类道具效果减半</span><span class="iron">这个时代最耐心的倾听者是个语言模型</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#7f8a6e">签</div><div><div class="nm">连续签到 1847 天</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"断在住院那一周。"</div>
+          <div class="fx"><span class="eff">每场开局固定小增益；漏触发一次本局永久失效</span><span class="iron">他的坚持全喂给了一个 APP</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#a05548">包</div><div><div class="nm">抢到的 0.87 元红包</div></div><span class="q q1">Ⅰ 杂物</span></div>
+          <div class="fl serif">"群里都说谢谢老板。他也说了。"</div>
+          <div class="fx"><span class="eff">击杀概率掉零钱</span><span class="iron">快乐明码标价，不足一元</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#6d6a75">安</div><div><div class="nm">晚安之后的两小时</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"发完晚安，他又刷了两小时。"</div>
+          <div class="fx"><span class="eff">低生命射速提高；时间越久最大生命缓慢下降</span><span class="iron">睡不着不是困不困，是不甘心</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#77705f">删</div><div><div class="nm">对方已开启朋友验证</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"他想转发个段子过去，才发现自己早就被删了。"</div>
+          <div class="fx"><span class="eff">失去道具时一次性爆发；关系类商品涨价</span><span class="iron">这个时代的绝交是静音的</span></div></div>
+      </div>
+
+      <div class="stage-h"><h3>梦核与童年</h3><span class="cnt">12 件 · 全部实装 · 熟悉的东西回来时，带着一点不对劲</span></div>
+      <div class="items">
+        <div class="item"><div class="top"><div class="glyph" style="background:#7e97a0">珠</div><div><div class="nm">当年最强的那颗弹珠</div></div><span class="q q1">Ⅰ 杂物</span></div>
+          <div class="fl serif">"全班都输给过它。上周搬家，它从铁盒里滚出来——只是颗玻璃珠。"</div>
+          <div class="fx"><span class="eff">《一口气》偶尔变成弹珠，命中后反弹三次</span><span class="iron">它没有变小，是他的世界变大了</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#9a8154">跑</div><div><div class="nm">练了一个暑假的跑法</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"胳膊向后，压低身子。那年他觉得这样跑最快。"</div>
+          <div class="fx"><span class="eff">移速 +12%，奔跑姿势改变；急停滑步半格</span><span class="iron">现在他还这样跑——在地铁关门前</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#7a6f85">闪</div><div><div class="nm">交掉的闪现</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"关键团，他闪现撞了墙。后来的很多关键时刻，他也是这样。"</div>
+          <div class="fx"><span class="eff">获得一次短距离闪现，冷却很长；小概率闪反方向</span><span class="iron">人生没有取消施法</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#6f7d88">把</div><div><div class="nm">再来一把就睡</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"凌晨三点，他说这是最后一把。这话他说了十年。"</div>
+          <div class="fx"><span class="eff">章末满血则下章攻击提高；每章开场慢半拍</span><span class="iron">不是想赢，是不甘心就这样结束今天</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#5f7581">眼</div><div><div class="nm">眼保健操</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"'闭眼。'广播说。他闭上眼，再睁开，三十岁了。"</div>
+          <div class="fx"><span class="eff">主动闭眼半秒获得无敌帧；睁眼后敌人似乎变快</span><span class="iron">为革命保护视力，第四节，轮刮眼眶</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#8b93a0">雪</div><div><div class="nm">雪花屏</div></div><span class="q q3">Ⅲ 心结</span></div>
+          <div class="fl serif">"电视没信号了。他盯着雪花看了很久，总觉得里面有东西。"</div>
+          <div class="fx"><span class="eff">致命伤时画面闪成雪花，这次伤害没有发生；战斗偶尔闪一帧雪花</span><span class="iron">那台电视早就扔了。雪花有时候还来</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#8a6a4f">册</div><div><div class="nm">大扫除清掉的卡册</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"他集齐了全班羡慕的一切。妈妈大扫除那天，全没了。"</div>
+          <div class="fx"><span class="eff">每章随机复制一件已有道具效果，章末消失</span><span class="iron">大人的一次大扫除，清空一个宇宙</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#6f8577">服</div><div><div class="nm">关服那天</div></div><span class="q q4">Ⅳ 遗物</span></div>
+          <div class="fl serif">"他养的那只电子宠物还在等他喂食。服务器关闭那天，没有人通知它。"</div>
+          <div class="fx"><span class="eff">小剪影替挡一次致命伤后消失；之后治疗降低</span><span class="iron">有些死亡不发讣告，只发停服公告</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#96789c">6</div><div><div class="nm">抽象话十级</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"6。乐。急了。他用三个字聊完了这些年所有的天。"</div>
+          <div class="fx"><span class="eff">嘲讽敌人吸引仇恨并降其防御；"咽下"回应效果减弱</span><span class="iron">会说的字越来越少，没说的话越来越多</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#7e97a0">冰</div><div><div class="nm">小卖部的冰柜</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"五毛钱的快乐在最底层，要把整只手臂伸进冰雾里。"</div>
+          <div class="fx"><span class="eff">命中概率冰冻减速敌人</span><span class="iron">那家小卖部拆了。冰雾有时候还在梦里冒</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#a8842f">铃</div><div><div class="nm">课间十分钟</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"铃一响就往外冲。那时候快乐只需要十分钟。"</div>
+          <div class="fx"><span class="eff">每章开始 10 秒移速攻速大增；结束后短暂疲惫</span><span class="iron">现在给他一天假，他躺着刷完了手机</span></div></div>
+        <div class="item"><div class="top"><div class="glyph" style="background:#a0524a">暑</div><div><div class="nm">暑假作业最后一页</div></div><span class="q q2">Ⅱ 旧物</span></div>
+          <div class="fl serif">"8 月 30 日晚上，全家总动员。"</div>
+          <div class="fx"><span class="eff">每章最后 10 秒伤害翻倍；章节前段效果降低</span><span class="iron">截止日期是第一生产力，从小练的</span></div></div>
+      </div>
+
+      <p class="dim">道具文案固定四层：名字（一个具体物件、网络口癖或身份称呼）、记忆（一句没有讲完的往事）、正面（学会的能力）、负面（留下的代价）。禁止只设计"攻击力+10%"且没有外貌与规则变化的物品；每件道具必须至少改变一项主角外貌、至少改变一个弹道或战斗规则，并能与至少三类其他物品发生系统关系。负面效果必须被视为可构筑资源——负负得正，是作者最早的构筑直觉之一。</p>
+    </section>
+
+<!-- 怪物图鉴 -->
+    <section class="entry" id="beasts">
+      <p class="vol">卷 九</p>
+      <h2 class="serif">怪物图鉴</h2>
+      <p class="lede">它们不生活在另一个世界——是饥饿、比较、羞耻、失业、沉默、账单、疾病和失去，在梦中获得的身体。每只怪的行为必须同时成立于玩法与隐喻。实线卡为已实装（画像与数值取自游戏本体，数值为童年基准、随人生阶段成长），虚线卡为计划中。</p>
+
+      <div class="stage-h"><h3>怪潮与六位 Boss · 已实装</h3><span class="cnt">19 种 · 一关一 Boss，Boss 不死阶段不结算</span></div>
+      <div class="items">
+        <div class="item beast"><div class="top"><div class="art"><svg viewBox="0 0 52 52"><ellipse cx="26" cy="28" rx="14" ry="16" fill="#15141b"/><circle cx="21" cy="24" r="2" fill="#d8d0c1"/><circle cx="31" cy="24" r="2" fill="#d8d0c1"/></svg></div><div><div class="nm">床下的呼吸</div><div class="bstat">生命13 · 速度44 · 伤害4</div></div><span class="q q1">童年</span></div>
+          <div class="fl serif">"它只在灯灭之后存在，声音和你的呼吸一模一样。"</div>
+          <div class="fx"><span class="eff">慢速漂近，贴身鸣叫造成小伤</span><span class="iron">无人回应的哭声</span></div></div>
+        <div class="item beast"><div class="top"><div class="art"><svg viewBox="0 0 52 52"><rect x="15" y="11" width="22" height="30" fill="#d8d2c5"/><path d="M20 20 L32 32 M32 20 L20 32" stroke="#a63649" stroke-width="4" stroke-linecap="round"/></svg></div><div><div class="nm">红叉</div><div class="bstat">生命21 · 速度36 · 伤害4</div></div><span class="q q2">少年</span></div>
+          <div class="fl serif">"每一张错题都会自己长脚，追着人跑。"</div>
+          <div class="fx"><span class="eff">快速逼近，命中后短暂后撤再扑</span><span class="iron">失败的羞耻被公示</span></div></div>
+        <div class="item beast"><div class="top"><div class="art"><svg viewBox="0 0 52 52"><ellipse cx="26" cy="25" rx="14" ry="10" fill="#6e526c"/><ellipse cx="26" cy="27" rx="8" ry="3" fill="#15141b"/><path d="M30 32 L37 38 L27 33 Z" fill="#6e526c"/></svg></div><div><div class="nm">他们都在说</div><div class="bstat">生命15 · 速度54 · 伤害3</div></div><span class="q q2">少年</span></div>
+          <div class="fl serif">"一张只有嘴的脸。说什么不重要，说就行。"</div>
+          <div class="fx"><span class="eff">全场最快，环绕游走贴身消耗</span><span class="iron">议论与围观</span></div></div>
+        <div class="item beast"><div class="top"><div class="art"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="13" fill="none" stroke="#a58b62" stroke-width="5"/><path d="M26 8 L26 13 M26 39 L26 44 M8 26 L13 26 M39 26 L44 26 M13.3 13.3 L16.8 16.8 M35.2 35.2 L38.7 38.7 M13.3 38.7 L16.8 35.2 M35.2 16.8 L38.7 13.3" stroke="#a58b62" stroke-width="4"/><circle cx="26" cy="26" r="4" fill="#c8b078"/></svg></div><div><div class="nm">打卡齿轮</div><div class="bstat">生命38 · 速度32 · 伤害6</div></div><span class="q q3">青年</span></div>
+          <div class="fl serif">"它不恨你。它只是准点。"</div>
+          <div class="fx"><span class="eff">缓慢碾近，碰撞伤害高</span><span class="iron">必须绕开的机器节奏</span></div></div>
+        <div class="item beast"><div class="top"><div class="art"><svg viewBox="0 0 52 52"><rect x="14" y="10" width="24" height="32" fill="#d7d0c2"/><path d="M18 18 H34 M18 24 H34 M18 30 H34" stroke="#90525e" stroke-width="2"/><text x="26" y="40" text-anchor="middle" font-size="13" font-weight="bold" fill="#9d394a">¥</text></svg></div><div><div class="nm">下个月账单</div><div class="bstat">生命48 · 速度28 · 伤害7</div></div><span class="q q3">中年</span></div>
+          <div class="fl serif">"打死一张，下个月还有一张。"</div>
+          <div class="fx"><span class="eff">成队从四面合围，皮糙肉厚</span><span class="iron">从不缺席的截止日</span></div></div>
+        <div class="item beast"><div class="top"><div class="art"><svg viewBox="0 0 52 52"><rect x="12" y="8" width="28" height="36" fill="#d8d2c5" stroke="#a63649" stroke-width="2"/><path d="M19 19 L33 33 M33 19 L19 33" stroke="#a63649" stroke-width="5" stroke-linecap="round"/><rect x="9" y="5" width="28" height="36" fill="none" stroke="#77727b" stroke-width="1.5"/></svg></div><div><div class="nm">统一答案 <span class="dim">精英</span></div><div class="bstat">生命≈100+ · 伤害7</div></div><span class="q q3">少年</span></div>
+          <div class="fl serif">"所有目光都在批改你。"</div>
+          <div class="fx"><span class="eff">少年阶段Boss：每8秒召唤一排红叉；小题未清，本体减伤50%</span><span class="iron">标准化的挤压</span></div></div>
+        <div class="item beast"><div class="top"><div class="art"><svg viewBox="0 0 52 52"><path d="M12 44 L17 20 Q26 9 35 20 L40 44 Z" fill="#777044"/><circle cx="26" cy="17" r="6" fill="#242329"/><path d="M15 16 A12 12 0 0 1 37 16" fill="none" stroke="#bda34f" stroke-width="3"/></svg></div><div><div class="nm">沉默的父亲 <span class="dim">精英</span></div><div class="bstat">生命240+ · 伤害9</div></div><span class="q q4">成年</span></div>
+          <div class="fl serif">"雨声先到，父亲后到。全程没有一句台词——这是设计，不是省略。"</div>
+          <div class="fx"><span class="eff">成年Boss·两阶段：盔甲期单次伤害上限4；半血裂开露出小孩并提速1.5倍</span><span class="iron">代际伤害以保护为名</span></div></div>
+        <div class="item beast"><div class="top"><div class="art"><svg viewBox="0 0 52 52"><path d="M9 46 Q15 8 26 13 Q37 8 43 46 Z" fill="#15151b"/><circle cx="26" cy="26" r="6" fill="none" stroke="#d0b264" stroke-width="3"/><circle cx="26" cy="26" r="2.5" fill="#d0b264"/></svg></div><div><div class="nm">收灯人 <span class="dim">终Boss</span></div><div class="bstat">生命430+ · 伤害12</div></div><span class="q q4">死亡</span></div>
+          <div class="fl serif">"它不凶，也不坏，它只是准时。整场只说一句：「到点了。」"</div>
+          <div class="fx"><span class="eff">终Boss：黑暗收拢后现身；每10秒光圈再收缩并召唤忘记名字的人</span><span class="iron">从来没有人杀死过"准时"</span></div></div>
+      </div>
+
+              <div class="item beast"><div class="top"><div class="art"><span class="pg" style="color:#5a5065">黑</span></div><div><div class="nm">没人相信的怪物 <span class="dim">Boss</span></div><div class="bstat">生命150+ · 童年</div></div><span class="q q1">童年</span></div>
+          <div class="fl serif">"大人说床底下什么都没有。它听见了，很不服气。"</div>
+          <div class="fx"><span class="eff">童年Boss：半血分裂出两只床下的呼吸</span><span class="iron">恐惧说不出口，就会变成两个</span></div></div>
+        <div class="item beast"><div class="top"><div class="art"><span class="pg" style="color:#a58b62">车</span></div><div><div class="nm">末班车 <span class="dim">Boss</span></div><div class="bstat">生命260+ · 青年</div></div><span class="q q3">青年</span></div>
+          <div class="fl serif">"末班车不等人。它撞人。"</div>
+          <div class="fx"><span class="eff">青年Boss：预警→冲锋→疲惫循环；仅疲惫期受1.7倍伤</span><span class="iron">机会只在喘气时才追得上</span></div></div>
+        <div class="item beast"><div class="top"><div class="art"><span class="pg" style="color:#d5885f">催</span></div><div><div class="nm">上门催收 <span class="dim">Boss</span></div><div class="bstat">生命340+ · 中年</div></div><span class="q q3">中年</span></div>
+          <div class="fl serif">"门被敲响了。它有你的地址。"</div>
+          <div class="fx"><span class="eff">中年Boss：每7秒寄账单，3.5秒内付2零钱否则扣8生命</span><span class="iron">有钱扣钱，没钱扣命</span></div></div>
+      <div class="stage-h"><h3>怪潮 · 图鉴余录</h3><span class="cnt">全部实装</span></div>
+      <div class="items">
+        <div class="item beast"><div class="top"><div class="art"><span class="pg">哭</span></div><div><div class="nm">哭蛾</div><div class="bstat">生命8 · 速度48 · 伤害2</div></div><span class="q q1">降生</span></div>
+          <div class="fx"><span class="eff">绕灯扑翼，撒下催泪鳞粉</span><span class="iron">婴儿房里没人起夜的那种哭</span></div></div>
+        <div class="item beast"><div class="top"><div class="art"><span class="pg">影</span></div><div><div class="nm">空奶瓶</div><div class="bstat">生命10 · 冲刺型 · 伤害3</div></div><span class="q q1">降生</span></div>
+          <div class="fx"><span class="eff">从地面涌起，直线扑向主角</span><span class="iron">最原始的匮乏</span></div></div>
+        <div class="item beast"><div class="top"><div class="art"><span class="pg">车</span></div><div><div class="nm">错过的车</div><div class="bstat">已实装为青年Boss「末班车」</div></div><span class="q q3">青年</span></div>
+          <div class="fx"><span class="eff">预警后横穿地图的车流冲刺</span><span class="iron">错过就不再来的机会</span></div></div>
+        <div class="item beast"><div class="top"><div class="art"><span class="pg">铃</span></div><div><div class="nm">未接来电</div><div class="bstat">生命30 · 铃声光环</div></div><span class="q q3">成年</span></div>
+          <div class="fx"><span class="eff">追踪主角的铃声圈，圈内持续压力</span><span class="iron">躲不掉的责任</span></div></div>
+        <div class="item beast"><div class="top"><div class="art"><span class="pg">默</span></div><div><div class="nm">没人说话</div><div class="bstat">生命34 · 减速力场</div></div><span class="q q3">成年</span></div>
+          <div class="fx"><span class="eff">移动缓慢的减速力场</span><span class="iron">家里没人说话的那几年</span></div></div>
+        <div class="item beast"><div class="top"><div class="art"><span class="pg">牌</span></div><div><div class="nm">打包的纸箱</div><div class="bstat">生命30 · 偷零钱</div></div><span class="q q3">中年</span></div>
+          <div class="fx"><span class="eff">命中时偷取一层增益</span><span class="iron">被收回的身份</span></div></div>
+        <div class="item beast"><div class="top"><div class="art"><span class="pg">忘</span></div><div><div class="nm">忘记名字的人</div><div class="bstat">生命90 · 免疫击退</div></div><span class="q q4">暮年</span></div>
+          <div class="fx"><span class="eff">极慢，但无法被击退</span><span class="iron">无法阻止的遗忘</span></div></div>
+        <div class="item beast"><div class="top"><div class="art"><span class="pg">椅</span></div><div><div class="nm">空椅子</div><div class="bstat">生命70 · 静止吸火力</div></div><span class="q q4">暮年</span></div>
+          <div class="fx"><span class="eff">静止不动，靠近时吸走弹体</span><span class="iron">失去者留下的空位</span></div></div>
+      </div>
+      <p class="dim">数值成长规则：每进一个人生阶段怪物生命 +30%，同阶段内随时间再缓慢上浮——困难不会变少，只会跟着他一起长大。敌潮与地貌同步换代（吸血鬼幸存者式波次表）。</p>
+    </section>
+
+    <!-- 组合名鉴 -->
+    <section class="entry" id="combos">
+      <p class="vol">卷 十</p>
+      <h2 class="serif">组合名鉴</h2>
+      <p class="lede">大部分组合通过共同事件自然产生；少量高记忆点组合拥有专属名称。组合名是游戏最浓缩的叙事单位——两件破烂接在一起，长出一句人生。</p>
+      <div class="tbl-wrap"><table class="combos">
+        <thead><tr><th>组合</th><th>名称</th><th>变化</th></tr></thead>
+        <tbody>
+          <tr><td>情书 + 父亲雨衣 <span class="tagok">已实装</span></td><td>《那天雨太大，我没有听见》</td><td>信纸被浸湿，变慢但增加重量与穿透，字迹沿弹道滴落</td></tr>
+          <tr><td>石头书包 + 慢表 <span class="tagok">已实装</span></td><td>《大人说这都是为你好》</td><td>越慢的弹道越重，冻结后一次性压穿敌群</td></tr>
+          <tr><td>情书 + 红叉练习册</td><td>《被退回的信》</td><td>未命中的信纸被红笔批改后折返，二次命中伤害提高</td></tr>
+          <tr><td>漂粉 + 父亲雨衣</td><td>《那年他觉得自己很酷》</td><td>黄色不断被雨冲掉，掉色雨滴标记敌人</td></tr>
+          <tr><td>修眉刀 + 小药丸</td><td>《被当成风格的求救》</td><td>受伤时出现大量点赞与爱心，但完全不提供治疗</td></tr>
+          <tr><td>上两件 + 没打出的电话</td><td>《这一次有人接了》</td><td>累积的假点赞转化为真实护盾，并清除一次失真负面</td></tr>
+          <tr><td>乳牙 + 父亲雨衣</td><td>《后来我也成了他》</td><td>雨衣优先保护孩子剪影，再将伤害化为雨</td></tr>
+          <tr><td>少一人合照 + 空相框</td><td>《等大家有空》</td><td>空相框复制合照弹道，每次复制照片进一步褪色</td></tr>
+          <tr><td>脊梁骨 + 石头书包</td><td>《这点重量不算什么》</td><td>弹道越慢越重，停留时间持续转化为伤害与穿透</td></tr>
+          <tr><td>脊梁骨 + 领带 + 旧工牌</td><td>《能屈能伸》</td><td>"伸"字被红笔划掉；弯腰程度转化为暴击，暴击时出现"收到"</td></tr>
+          <tr><td>脊梁骨 + 父亲雨衣</td><td>《他当年也是这样站着的》</td><td>身后出现同样弯腰的父亲轮廓，两代人的雨滴继承同一攻击配方</td></tr>
+        </tbody>
+      </table></div>
+      <p class="dim">正典共录 16 组命名组合，此处选载 11 组；MVP 已实装机制 2 组，其余按开发顺序补齐。验收句：三件以上物品能够形成可命名的玩法机器。</p>
+    </section>
+
+    <!-- 两扇门 -->
+    <section class="entry" id="doors">
+      <p class="vol">卷 十一</p>
+      <h2 class="serif">两扇门 · 留灯间与里屋</h2>
+      <p class="lede">整局最高强度的 Ⅳ 级物品藏在两条路线后面。两条路线不是善恶值——系统奖励的不是"当好人"，而是没有把所有问题都用自我消耗解决。</p>
+      <div class="doors">
+        <div class="door warm">
+          <div class="sig">暖黄色窗灯</div>
+          <h4 class="serif">留灯间</h4>
+          <p>一间普通、安静的小屋。桌上留着暖灯，锅里还有饭，没有 NPC，也没有价格。展示三件"被爱过的证据"，只能免费带走一件——进入的机会本身就是代价。</p>
+          <ul>
+            <li>母亲留在锅里的那碗饭 · 溢出治疗化为温热蒸汽</li>
+            <li>凌晨两点朋友发来的"在吗" · 低生命时接通为护盾</li>
+            <li>有人替你按住的电梯 · 消失的攻击在终点等待下一轮</li>
+          </ul>
+        </div>
+        <div class="door cold">
+          <div class="sig">红色空肺</div>
+          <h4 class="serif">里 屋</h4>
+          <p>藏在商城柜台后的脏帘子里。冷白灯闪烁，镜子里的主角比本人老十岁。可以拿走多件——只要仍付得起。不收零钱，只收最大生命、年龄、记忆、五毒或身份。</p>
+          <ul>
+            <li>一口气 = 12 点最大生命，胸口留下永久的空洞</li>
+            <li>断掉的脊梁骨 · 获得后不可主动丢弃</li>
+            <li>部分物品要求提前老去十年，或从结算页失去姓名</li>
+          </ul>
+        </div>
+      </div>
+      <p class="rate">两扇门同时出现的概率仅 5%；选择一边，另一扇门本局永久关闭——这是整局最重的构筑决策。人可以放下一件东西，但不能假装自己从未拥有过它。</p>
+    </section>
+
+    <!-- 词汇考古 -->
+    <section class="entry" id="arch">
+      <p class="vol">卷 十二</p>
+      <h2 class="serif">词汇考古</h2>
+      <p class="lede">正典词汇的演化路径，还原自 2026-07-18 开发实录。作者的口语如何被翻译成系统——每一次翻译都经过作者批准。</p>
+      <div class="tbl-wrap"><table class="arch">
+        <thead><tr><th>作者最初说的</th><th>&rarr;</th><th>最终形态</th><th>裁决</th></tr></thead>
+        <tbody>
+          <tr><td>"低头，或者忍，但感觉又不太好"</td><td>&rarr;</td><td>咽下 / 吐出</td><td class="who">演绎获批："我觉得可以"</td></tr>
+          <tr><td>"六大罪？五大罪？七大罪？…贪嗔痴那个"</td><td>&rarr;</td><td>五毒（贪嗔痴慢疑）</td><td class="who">共同摸索定案</td></tr>
+          <tr><td>"以撒的天使房恶魔房这样的机制"</td><td>&rarr;</td><td>留灯间 / 里屋</td><td class="who">演绎，主题化</td></tr>
+          <tr><td>"初始攻击做成什么样？以撒是眼泪"</td><td>&rarr;</td><td>《一口气》</td><td class="who">演绎获批："这个设计好啊"</td></tr>
+          <tr><td>手牌 5 张 &rarr; "看不过来，就 3 张吧" &rarr; "干脆就是 AI 生成的随机事件"</td><td>&rarr;</td><td>命运牌（无牌库）</td><td class="who">作者的关键转向</td></tr>
+          <tr><td>"因为小时候经常叼奶瓶，所有人都叫他叼奶弟弟"</td><td>&rarr;</td><td>AI 外号 + 缘由系统</td><td class="who">作者原创</td></tr>
+          <tr><td>"断掉的脊梁骨，灰色幽默，地狱笑话"</td><td>&rarr;</td><td>里屋首席遗物</td><td class="who">作者原创</td></tr>
+          <tr><td>"以撒 + 杀戮尖塔 + 炉石传说 + 吸血鬼幸存者"</td><td>&rarr;</td><td>炉石元素随牌库一同消解</td><td class="who">默认发生，待作者追认</td></tr>
+          <tr><td>《血月回响》（V0.2 移动割草基线）</td><td>&rarr;</td><td>《这一身》（V0.3 人生构筑）</td><td class="who">"游戏名都可以改了"</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- 主题句集 -->
+    <section class="entry" id="mottos">
+      <p class="vol">卷 十三</p>
+      <h2 class="serif">主题句集</h2>
+      <p class="lede">散落在正典各处、可直接用于标题演出、章节转场与结算页的句子。</p>
+      <div class="mottos">
+        <p>这一生，最后都穿成了这一身。<span class="src">主宣传语</span></p>
+        <p>每一件道具，都是他活过的证据。<span class="src">辅助宣传语</span></p>
+        <p>他打败的困难没有消失，只是换了一个名字，留在了他的身上。<span class="src">世界观总句</span></p>
+        <p>人的一生，前半程不断穿上别人交给他的东西，后半程才学会决定哪些是自己。<span class="src">核心主题</span></p>
+        <p>玩家不能选择从哪里开始，只能决定后来怎样面对。<span class="src">出生系统</span></p>
+        <p>这一生咽下去的东西，最后都变成了他吐出的那一口气。<span class="src">命运牌系统</span></p>
+        <p>数值不无限，人生的解释可以无限。<span class="src">AI 设计原则</span></p>
+        <p>他没有赢，只是终于松了这一口气。<span class="src">最终主题句</span></p>
+      </div>
+      <footer>
+        《这一身》故事线正典 · 依据《游戏开发计划书 V0.3》与 2026-07-18 开发实录整理<br>
+        标题演出：开局显示《这一身》，通关结算时最后一个字从"身"过渡为"生"，完成主题闭环。<br>
+        本页配色遵守程序化像素圣经：低饱和纸色 · 墨黑 · 旧红 · 雨衣黄 · 病房蓝灰；主角与《一口气》使用整数像素格实时拼装，单画面高饱和强调色不超过一种。
+      </footer>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>
