@@ -205,7 +205,10 @@ def build_section() -> str:
     icon_manifest = json.loads(ITEMS_JSON.read_text(encoding="utf-8"))
     icon_atlas = Image.open(ITEMS_PNG).convert("RGBA")
     cell, cols = icon_manifest["cell"], icon_manifest["cols"]
-    parts.append('<div class="stage-h"><h3>道具图标 · 七十二件人生物证</h3>'
+    cn_digits = '〇一二三四五六七八九'
+    icon_total = len(icon_manifest['index'])
+    cn_count = ('' if icon_total < 20 else cn_digits[icon_total // 10]) + '十' + (cn_digits[icon_total % 10] if icon_total % 10 else '')
+    parts.append(f'<div class="stage-h"><h3>道具图标 · {cn_count}件人生物证</h3>'
                  '<span class="cnt">image2 生图基底 + 程序规整 · 奖励卡/当铺/档案页共用</span></div>')
     for quality in (4, 3, 2, 1):
         group = [(item_id, name) for item_id, name, q in relics if int(q) == quality]

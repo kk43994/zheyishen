@@ -102,7 +102,7 @@ ITEMS: list[tuple[str, str]] = [
     ("shop-freezer", "a small shop chest freezer with frost on the lid, slightly open"),
     ("server-shutdown", "an old egg-shaped virtual pet keychain toy, a tiny pixel creature on its small screen looking out, screen light dimming"),
     ("painless-night", "a bed floating in a dark void, blanket perfectly flat"),
-    ("ktv-song", "a KTV microphone lying beside an untouched fruit plate in a dark private room, cable coiled, cold screen glow"),
+    ("ktv-song", "a single wired KTV microphone lying tilted with its cable loosely coiled, a tiny untouched fruit plate beside it, isolated objects, no background scene"),
     ("breath-on-glass", "a frosted winter window pane covered in breath fog, one small patch freshly wiped clean, night outside"),
 ]
 
