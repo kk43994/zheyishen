@@ -236,16 +236,15 @@ export class PixelHeroRenderer {
       state.appearance.bodyBuild,
     );
     this.recolorAtlasFrame(sourceImage, state, hairMask);
-    target.clearRect(0, 0, HERO_FRAME_WIDTH, HERO_FRAME_HEIGHT);
-    drawHeroItemMutationPass(target, state, 'behind');
-    drawHeroItemPixelPass(target, state, 'behind');
-    const bodyCanvas = document.createElement('canvas');
-    bodyCanvas.width = HERO_FRAME_WIDTH;
-    bodyCanvas.height = HERO_FRAME_HEIGHT;
-    const bodyContext = bodyCanvas.getContext('2d', { alpha: true });
-    if (!bodyContext) throw new Error('无法合成主角像素帧');
-    bodyContext.putImageData(sourceImage, 0, 0);
-    target.drawImage(bodyCanvas, 0, 0);
+    const assembledCanvas = document.createElement('canvas');
+    assembledCanvas.width = HERO_FRAME_WIDTH;
+    assembledCanvas.height = HERO_FRAME_HEIGHT;
+    const assembled = assembledCanvas.getContext('2d', { alpha: true });
+    if (!assembled) throw new Error('无法合成主角像素帧');
+    assembled.imageSmoothingEnabled = false;
+    drawHeroItemMutationPass(assembled, state, 'behind');
+    drawHeroItemPixelPass(assembled, state, 'behind');
+    assembled.putImageData(sourceImage, 0, 0);
     if (state.items.includes('fathers-raincoat')) {
       const raincoat = heroStyle1Atlas.sliceRaincoat(
         state.motion,
@@ -254,10 +253,53 @@ export class PixelHeroRenderer {
         state.appearance.stature,
         state.appearance.bodyBuild,
       );
-      if (raincoat) target.drawImage(raincoat, 0, 0);
+      if (raincoat) assembled.drawImage(raincoat, 0, 0);
     }
-    drawHeroItemPixelPass(target, state, 'front');
-    drawHeroItemMutationPass(target, state, 'front');
+    drawHeroItemPixelPass(assembled, state, 'front');
+    drawHeroItemMutationPass(assembled, state, 'front');
+    const assembledImage = assembled.getImageData(0, 0, HERO_FRAME_WIDTH, HERO_FRAME_HEIGHT);
+    this.applyAgeMorph(assembledImage, state);
+    target.clearRect(0, 0, HERO_FRAME_WIDTH, HERO_FRAME_HEIGHT);
+    target.putImageData(assembledImage, 0, 0);
+  }
+
+  /** Keeps the approved atlas identity while making later life chapters visibly older. */
+  private applyAgeMorph(image: ImageData, state: PixelHeroState): void {
+    const age = state.ageStep;
+    if (age < 3) return;
+    const source = new Uint8ClampedArray(image.data);
+    const sideLean = state.facing === 'left' ? -1 : state.facing === 'right' ? 1 : 0;
+    const shift = sideLean * Math.min(2, age - 2);
+    image.data.fill(0);
+    for (let y = 0; y < HERO_FRAME_HEIGHT; y += 1) {
+      // Keep the feet and root fixed. Only the upper body leans into age.
+      const dx = y < 44 ? shift : 0;
+      for (let x = 0; x < HERO_FRAME_WIDTH; x += 1) {
+        const destinationX = x + dx;
+        if (destinationX < 0 || destinationX >= HERO_FRAME_WIDTH) continue;
+        const sourceOffset = (y * HERO_FRAME_WIDTH + x) * 4;
+        const destinationOffset = (y * HERO_FRAME_WIDTH + destinationX) * 4;
+        image.data[destinationOffset] = source[sourceOffset]!;
+        image.data[destinationOffset + 1] = source[sourceOffset + 1]!;
+        image.data[destinationOffset + 2] = source[sourceOffset + 2]!;
+        image.data[destinationOffset + 3] = source[sourceOffset + 3]!;
+      }
+    }
+
+    if (age < 4) return;
+    // A few deterministic one-pixel creases are enough at this resolution;
+    // they stay within skin pixels and never alter the approved silhouette.
+    const wrinkle = [146, 119, 100] as const;
+    for (let y = 18; y <= 24; y += 3) {
+      for (let x = 13; x < 28; x += 5) {
+        const offset = (y * HERO_FRAME_WIDTH + x) * 4;
+        if (image.data[offset + 3]! === 255 && image.data[offset]! >= 180 && image.data[offset + 1]! >= 160) {
+          image.data[offset] = wrinkle[0];
+          image.data[offset + 1] = wrinkle[1];
+          image.data[offset + 2] = wrinkle[2];
+        }
+      }
+    }
   }
 
   private recolorAtlasFrame(
@@ -325,6 +367,8 @@ export class PixelHeroRenderer {
   ): void {
     const target = state.items.includes('bleach-powder')
       ? [215, 200, 79]
+      : state.ageStep >= 4
+        ? [103, 98, 98]
       : state.appearance.hairColor === 'brown'
         ? [68, 52, 47]
         : state.appearance.hairColor === 'soft_black'

@@ -22,6 +22,16 @@ ENEMIES = (
     "silent-father-p2",
     "lamp-keeper",
     "uniform-answer",
+    "cry-moth",
+    "hunger-shadow",
+    "closet-dark",
+    "missed-call",
+    "silence",
+    "badge-thief",
+    "debt-collector",
+    "forgetter",
+    "empty-chair",
+    "last-bus",
 )
 ASSET_DIR = Path("src/assets/enemies")
 OUTPUT_DIR = Path("output/imagegen/zhe-yi-shen-enemies-v1")
@@ -408,6 +418,377 @@ def draw_death(enemy: str, frame: int) -> Image.Image:
     return result
 
 
+BOTTLE = (176, 192, 196, 255)
+
+
+def recolor_map(image: Image.Image, mapping: dict) -> Image.Image:
+    result = image.copy()
+    pixels = result.load()
+    for y in range(FRAME):
+        for x in range(FRAME):
+            if pixels[x, y] in mapping:
+                pixels[x, y] = mapping[pixels[x, y]]
+    return result
+
+
+def draw_cry_moth(motion: str, frame: int) -> Image.Image:
+    image = blank()
+    draw = ImageDraw.Draw(image)
+    if motion == "move":
+        spread = (0, 2, 3, 2)[frame]
+        bob = (0, -1, 0, 1)[frame]
+    elif motion == "attack":
+        spread = (4, 0)[frame]
+        bob = (-1, 1)[frame]
+    else:
+        spread = (1, 2)[frame % 2]
+        bob = (0, 1)[frame % 2]
+    cx = 16
+    top = 9 + bob
+    draw.polygon([(cx - 3, top + 3), (cx - 8 - spread, top - 2), (cx - 10 - spread, top + 5), (cx - 4, top + 9)], fill=VIOLET)
+    draw.polygon([(cx + 3, top + 3), (cx + 8 + spread, top - 2), (cx + 10 + spread, top + 5), (cx + 4, top + 9)], fill=VIOLET)
+    draw.polygon([(cx - 3, top + 8), (cx - 7 - spread, top + 9), (cx - 8 - spread, top + 14), (cx - 2, top + 12)], fill=VIOLET_LIGHT)
+    draw.polygon([(cx + 3, top + 8), (cx + 7 + spread, top + 9), (cx + 8 + spread, top + 14), (cx + 2, top + 12)], fill=VIOLET_LIGHT)
+    draw.point((cx - 7 - spread, top + 2), fill=PAPER)
+    draw.point((cx - 6 - spread, top + 3), fill=PAPER)
+    draw.point((cx + 7 + spread, top + 2), fill=PAPER)
+    draw.point((cx + 6 + spread, top + 3), fill=PAPER)
+    draw.rectangle((cx - 1, top + 1, cx + 1, top + 13), fill=INK)
+    draw.line((cx - 1, top + 1, cx - 3, top - 3), fill=COAL)
+    draw.line((cx + 1, top + 1, cx + 3, top - 3), fill=COAL)
+    draw.point((cx - 1, top + 3), fill=RED_DARK)
+    draw.point((cx + 1, top + 3), fill=RED_DARK)
+    if motion == "attack":
+        drop_y = top + 16 + frame * 3
+        draw.point((cx - 5, drop_y), fill=SIGNAL)
+        draw.point((cx + 5, drop_y - 2), fill=SIGNAL)
+        draw.point((cx, min(29, drop_y + 2)), fill=SIGNAL)
+    if motion == "hurt":
+        image = recolor_hurt(image)
+        draw = ImageDraw.Draw(image)
+        draw.line((cx - 4 + frame, top, cx + 4 - frame, top + 11), fill=PAPER)
+    if motion == "move":
+        image = shifted(image, (-1, 0, 1, 0)[frame])
+    return image
+
+
+def draw_hunger_shadow(motion: str, frame: int) -> Image.Image:
+    image = blank()
+    draw = ImageDraw.Draw(image)
+    lean = 0
+    if motion == "move":
+        bob = (0, -1, 0, 1)[frame]
+    elif motion == "attack":
+        lean = (2, 4)[frame]
+        bob = (0, 1)[frame]
+    else:
+        bob = (0, 1)[frame % 2]
+    left, right = 11 + lean, 21 + lean
+    top, bottom = 9 + bob, 28 + bob
+    draw.polygon([(14 + lean, top - 5), (18 + lean, top - 5), (17 + lean, top - 2), (15 + lean, top - 2)], fill=SKIN)
+    draw.rectangle((13 + lean, top - 2, 19 + lean, top), fill=SHADOW)
+    draw.rectangle((left, top + 1, right, bottom), fill=BOTTLE)
+    draw.rectangle((left + 1, top + 2, right - 1, bottom - 1), fill=COAL)
+    for i in range(3):
+        draw.line((right - 3, top + 5 + i * 6, right - 1, top + 5 + i * 6), fill=BOTTLE)
+    draw.rectangle((left + 2, bottom - 3, left + 5, bottom - 1), fill=PAPER)
+    draw.point((left + 4, top + 6), fill=WORN)
+    draw.point((left + 6, top + 7), fill=WORN)
+    if motion == "attack":
+        draw.line((left - 6, top + 8, left - 2, top + 8), fill=WORN)
+        draw.line((left - 5 - frame, bottom - 6, left - 2, bottom - 6), fill=WORN)
+    if motion == "hurt":
+        image = recolor_map(image, {BOTTLE: HURT, COAL: RED_DARK})
+        draw = ImageDraw.Draw(image)
+        draw.line((left + 1 + frame, top + 2, right - 1 - frame, bottom - 4), fill=PAPER)
+    if motion == "move":
+        image = shifted(image, (-1, 0, 1, 0)[frame])
+    return image
+
+
+def draw_closet_dark(motion: str, frame: int) -> Image.Image:
+    image = blank()
+    draw = ImageDraw.Draw(image)
+    bob = (0, -1, 0, 1)[frame] if motion == "move" else 0
+    if motion == "attack":
+        gap = (6, 10)[frame]
+    elif motion == "idle":
+        gap = (2, 3)[frame]
+    else:
+        gap = 3
+    top, bottom = 3 + bob, 29 + bob
+    left, right = 6, 26
+    mid = 16
+    draw.rectangle((left, top, right, bottom - 2), fill=COAL)
+    draw.rectangle((left + 1, top + 1, right - 1, bottom - 3), fill=WORN)
+    draw.line((left + 1, top + 3, right - 1, top + 3), fill=COAL)
+    draw.rectangle((mid - gap // 2, top + 4, mid + gap // 2, bottom - 4), fill=INK)
+    eye_y = top + 10
+    if motion == "attack":
+        draw.rectangle((mid - 3, eye_y - 1, mid - 1, eye_y), fill=RED)
+        draw.rectangle((mid + 1, eye_y - 1, mid + 3, eye_y), fill=RED)
+        draw.polygon([(mid - gap, bottom - 4), (mid + gap, bottom - 4), (mid + gap + 3, bottom), (mid - gap - 3, bottom)], fill=INK)
+    else:
+        draw.point((mid - 1 - gap // 3, eye_y), fill=PAPER)
+        draw.point((mid + 1 + gap // 3, eye_y), fill=PAPER)
+    draw.point((mid - gap // 2 - 2, top + 13), fill=BRASS_LIGHT)
+    draw.point((mid + gap // 2 + 2, top + 13), fill=BRASS_LIGHT)
+    draw.rectangle((left + 1, bottom - 2, left + 3, bottom), fill=INK)
+    draw.rectangle((right - 3, bottom - 2, right - 1, bottom), fill=INK)
+    spill = (1, 2, 3, 2)[frame] if motion == "move" else 1 + frame % 2
+    draw.rectangle((left - spill, bottom - 1, left - 1, bottom), fill=INK)
+    draw.rectangle((right + 1, bottom - 1, right + spill, bottom), fill=INK)
+    if motion == "hurt":
+        image = recolor_map(image, {WORN: HURT, COAL: RED_DARK})
+        draw = ImageDraw.Draw(image)
+        draw.line((left + 3 + frame * 2, top + 2, right - 6 - frame, bottom - 5), fill=PAPER)
+    if motion == "move":
+        image = shifted(image, (-1, 0, 1, 0)[frame])
+    return image
+
+
+def draw_missed_call(motion: str, frame: int) -> Image.Image:
+    image = blank()
+    draw = ImageDraw.Draw(image)
+    bob = (0, -1, 0, 1)[frame] if motion == "move" else 0
+    top = 6 + bob
+    left, right = 11, 21
+    draw.rectangle((left, top, right, top + 21), fill=COAL)
+    draw.rectangle((left + 1, top + 1, right - 1, top + 20), fill=INK)
+    draw.rectangle((left + 1, top + 1, right - 1, top + 2), fill=COAL)
+    screen_on = not (motion == "idle" and frame == 1)
+    screen_color = RED if motion == "attack" else SIGNAL if screen_on else COAL
+    draw.rectangle((left + 2, top + 3, right - 2, top + 10), fill=screen_color)
+    if screen_on and motion != "attack":
+        draw.rectangle((right - 4, top + 4, right - 3, top + 5), fill=RED)
+        draw.line((left + 3, top + 8, left + 6, top + 8), fill=INK)
+    if motion == "attack":
+        draw.rectangle((left + 3, top + 5, left + 4, top + 8), fill=PAPER)
+        draw.rectangle((right - 5, top + 5, right - 4, top + 8), fill=PAPER)
+    for row in range(3):
+        for col in range(3):
+            draw.point((left + 3 + col * 3, top + 13 + row * 3), fill=WORN)
+    draw.rectangle((right - 2, top - 3, right - 1, top - 1), fill=COAL)
+    if motion == "attack":
+        wave = 1 + frame * 2
+        draw.line((left - 3 - wave, top + 4, left - 3 - wave, top + 8), fill=SIGNAL)
+        draw.line((right + 3 + wave, top + 4, right + 3 + wave, top + 8), fill=SIGNAL)
+    if motion == "hurt":
+        image = recolor_hurt(image)
+        draw = ImageDraw.Draw(image)
+        draw.line((left + 1 + frame, top + 1, right - 1 - frame, top + 19), fill=PAPER)
+    if motion == "move":
+        image = shifted(image, (-1, 1, 1, -1)[frame])
+    return image
+
+
+def draw_silence(motion: str, frame: int) -> Image.Image:
+    image = blank()
+    draw = ImageDraw.Draw(image)
+    bob = (0, -1, 0, 1)[frame] if motion == "move" else 0
+    jump = 2 if motion == "attack" and frame == 1 else 0
+    table_y = 15 + bob
+    draw.rectangle((5, table_y, 27, table_y + 2), fill=WORN)
+    draw.line((5, table_y, 27, table_y), fill=BRASS)
+    leg_lift = (0, 1, 0, 1) if motion == "move" else (0, 0, 0, 0)
+    draw.rectangle((7, table_y + 3, 8, 28 + bob - leg_lift[frame % 4]), fill=INK)
+    draw.rectangle((24, table_y + 3, 25, 28 + bob - leg_lift[(frame + 1) % 4]), fill=INK)
+    bowl_y = table_y - 3 - jump
+    draw.rectangle((8, bowl_y, 12, bowl_y + 2), fill=PAPER)
+    draw.line((8, bowl_y, 12, bowl_y), fill=SHADOW)
+    draw.rectangle((20, bowl_y, 24, bowl_y + 2), fill=PAPER)
+    draw.line((20, bowl_y, 24, bowl_y), fill=SHADOW)
+    if motion != "attack":
+        steam_shift = frame % 2
+        draw.point((10, bowl_y - 4 + steam_shift), fill=COAL)
+        draw.point((11, bowl_y - 6 + steam_shift), fill=COAL)
+        draw.point((22, bowl_y - 5 - steam_shift), fill=COAL)
+        draw.point((21, bowl_y - 7 - steam_shift), fill=COAL)
+    else:
+        ring = 2 + frame * 3
+        draw.line((16 - ring, table_y - 6, 16 - ring + 1, table_y - 6), fill=WORN)
+        draw.line((16 + ring - 1, table_y - 6, 16 + ring, table_y - 6), fill=WORN)
+        draw.point((16 - ring, table_y - 9), fill=COAL)
+        draw.point((16 + ring, table_y - 9), fill=COAL)
+    if motion == "hurt":
+        image = recolor_map(image, {WORN: HURT, INK: RED_DARK})
+        draw = ImageDraw.Draw(image)
+        draw.line((8 + frame * 2, table_y - 8, 24 - frame * 2, table_y + 10), fill=PAPER)
+    if motion == "move":
+        image = shifted(image, (-1, 0, 1, 0)[frame])
+    return image
+
+
+def draw_badge_thief(motion: str, frame: int) -> Image.Image:
+    image = blank()
+    draw = ImageDraw.Draw(image)
+    bob = (0, -1, 0, 1)[frame] if motion == "move" else (0, 1)[frame % 2] if motion == "idle" else 0
+    top = 10 + bob
+    left, right = 8, 24
+    bottom = top + 14
+    draw.rectangle((left, top, right, bottom), fill=BRASS)
+    draw.rectangle((left, top, right, top + 2), fill=BRASS_LIGHT)
+    draw.line((16, top, 16, bottom), fill=PAPER)
+    draw.line((left, top + 7, right, top + 7), fill=SHADOW)
+    if motion == "attack":
+        flap = (3, 5)[frame]
+        draw.polygon([(left, top), (left + 6, top), (left + 2, top - flap)], fill=BRASS_LIGHT)
+        draw.rectangle((13, top - flap - 2, 19, top - flap), fill=SKIN)
+        draw.point((12, top - flap - 1), fill=SKIN)
+        draw.point((20, top - flap - 1), fill=SKIN)
+    else:
+        draw.line((left + 2, top - 2, left + 6, top - 1), fill=BRASS_LIGHT)
+    strap_sway = frame % 2
+    draw.line((right - 3, bottom, right - 3 + strap_sway, bottom + 3), fill=SIGNAL)
+    draw.rectangle((right - 4 + strap_sway, bottom + 3, right - 2 + strap_sway, bottom + 5), fill=PAPER)
+    step = (0, 1, 0, 1)[frame] if motion == "move" else 0
+    draw.rectangle((left + 3, bottom + 1, left + 5, bottom + 4 - step), fill=INK)
+    draw.rectangle((14, bottom + 1, 16, bottom + 3 + step), fill=INK)
+    draw.point((left + 9, top + 4), fill=SHADOW)
+    draw.point((left + 10, top + 5), fill=SHADOW)
+    if motion == "hurt":
+        image = recolor_map(image, {BRASS: HURT, BRASS_LIGHT: RED})
+        draw = ImageDraw.Draw(image)
+        draw.line((left + 2 + frame * 2, top - 1, right - 2 - frame, bottom + 2), fill=PAPER)
+    if motion == "move":
+        image = shifted(image, (-1, 0, 1, 0)[frame])
+    return image
+
+
+def draw_debt_collector(motion: str, frame: int) -> Image.Image:
+    image = blank()
+    draw = ImageDraw.Draw(image)
+    bob = (0, -1, 0, 1)[frame] if motion == "move" else 0
+    top, bottom = 3 + bob, 29 + bob
+    left, right = 8, 24
+    draw.rectangle((left - 1, top, right + 1, bottom), fill=INK)
+    draw.rectangle((left + 1, top + 2, right - 1, bottom - 1), fill=WORN)
+    if motion == "attack":
+        gap = (3, 6)[frame]
+        draw.rectangle((right - 1 - gap, top + 2, right - 1, bottom - 1), fill=INK)
+        fist_y = top + 12
+        draw.rectangle((right - gap - 4, fist_y, right - gap + 1, fist_y + 4), fill=SKIN)
+        draw.line((right - gap + 2, fist_y + 1, right - gap + 4, fist_y + 1), fill=WORN)
+        draw.line((right - gap + 2, fist_y + 3, right - gap + 5, fist_y + 3), fill=WORN)
+    draw.rectangle((left + 3, top + 6, left + 9, top + 11), fill=PAPER)
+    draw.rectangle((left + 4, top + 7, left + 5, top + 8), fill=RED)
+    draw.line((left + 4, top + 10, left + 8, top + 10), fill=SHADOW)
+    draw.rectangle((left + 6, top + 14, left + 12, top + 18), fill=RED_DARK)
+    draw.line((left + 7, top + 16, left + 11, top + 16), fill=PAPER)
+    draw.point((right - 4, top + 13), fill=BRASS_LIGHT)
+    if motion == "idle" and frame == 1:
+        draw.line((right - 8, top + 8, right - 7, top + 7), fill=BRASS_LIGHT)
+        draw.line((right - 8, top + 11, right - 7, top + 12), fill=BRASS_LIGHT)
+    if motion == "hurt":
+        image = recolor_map(image, {WORN: HURT})
+        draw = ImageDraw.Draw(image)
+        draw.line((left + 2 + frame * 2, top + 3, right - 4 - frame, bottom - 3), fill=PAPER)
+    if motion == "move":
+        image = shifted(image, (-1, 0, 1, 0)[frame])
+    return image
+
+
+def draw_forgetter(motion: str, frame: int) -> Image.Image:
+    image = blank()
+    draw = ImageDraw.Draw(image)
+    bob = (0, 0, 1, 1)[frame] if motion == "move" else (0, 1)[frame % 2] if motion == "idle" else 0
+    head_x = 14
+    head_y = 6 + bob
+    draw.rectangle((head_x - 2, head_y, head_x + 3, head_y + 5), fill=SKIN)
+    draw.rectangle((head_x - 3, head_y - 1, head_x + 4, head_y + 1), fill=WORN)
+    draw.polygon([
+        (9, 29 + bob), (10, 15 + bob), (12, 11 + bob), (17, 11 + bob),
+        (21, 14 + bob), (23, 20 + bob), (23, 29 + bob),
+    ], fill=COAL)
+    draw.line((10, 18 + bob, 12, 24 + bob), fill=INK)
+    if motion == "attack":
+        reach = (3, 6)[frame]
+        draw.rectangle((17, 15 + bob, 21 + reach, 17 + bob), fill=COAL)
+        draw.rectangle((21 + reach, 14 + bob, 23 + reach, 17 + bob), fill=SKIN)
+    dissolve_from = 17 if motion == "attack" else 19
+    pixels = image.load()
+    for y in range(FRAME):
+        for x in range(dissolve_from, FRAME):
+            if pixels[x, y][3] and (x + y + frame) % 2 == 0:
+                pixels[x, y] = (0, 0, 0, 0)
+    if motion == "hurt":
+        image = recolor_map(image, {COAL: HURT})
+        draw = ImageDraw.Draw(image)
+        draw.line((10 + frame, head_y + 2, 20 - frame, 26 + bob), fill=PAPER)
+    if motion == "move":
+        image = shifted(image, (-1, 0, 1, 0)[frame])
+    return image
+
+
+def draw_empty_chair(motion: str, frame: int) -> Image.Image:
+    image = blank()
+    draw = ImageDraw.Draw(image)
+    tilt = (0, 1)[frame % 2] if motion in ("idle", "move") else 0
+    if motion == "move":
+        tilt = (-1, 0, 1, 0)[frame]
+    draw.rectangle((10 + tilt, 5, 22 + tilt, 7), fill=BRASS)
+    draw.rectangle((10 + tilt, 7, 11 + tilt, 17), fill=WORN)
+    draw.rectangle((21 + tilt, 7, 22 + tilt, 17), fill=WORN)
+    draw.line((13 + tilt, 9, 19 + tilt, 9), fill=WORN)
+    draw.rectangle((8, 17, 24, 20), fill=WORN)
+    draw.line((8, 17, 24, 17), fill=BRASS_LIGHT)
+    draw.rectangle((9, 21, 10, 29), fill=INK)
+    draw.rectangle((22, 21, 23, 29), fill=INK)
+    draw.line((10, 24, 22, 24), fill=INK)
+    if motion == "move":
+        draw.point((12 + frame * 3, 21), fill=SHADOW)
+    if motion == "attack":
+        shade_alpha = frame
+        draw.rectangle((13, 10 - shade_alpha, 18, 16), fill=INK)
+        draw.rectangle((14, 6 - shade_alpha, 17, 9 - shade_alpha), fill=INK)
+        draw.point((12, 12 - shade_alpha), fill=INK)
+        draw.point((19, 12 - shade_alpha), fill=INK)
+    if motion == "hurt":
+        image = recolor_map(image, {WORN: HURT, BRASS: RED})
+        draw = ImageDraw.Draw(image)
+        draw.line((10 + frame * 2, 6, 21 - frame, 27), fill=PAPER)
+    return image
+
+
+def draw_last_bus(motion: str, frame: int) -> Image.Image:
+    image = blank()
+    draw = ImageDraw.Draw(image)
+    bob = (0, -1, 0, 0)[frame] if motion == "move" else 0
+    lurch = (1, 3)[frame] if motion == "attack" else 0
+    top = 9 + bob
+    left, right = 3 + lurch, 28 + lurch
+    draw.rectangle((min(29, left), top, min(29, right), top + 15), fill=COAL)
+    draw.rectangle((min(29, left + 1), top + 1, min(29, right - 1), top + 3), fill=INK)
+    window_right = min(29, right - 2)
+    draw.rectangle((left + 2, top + 4, window_right, top + 8), fill=RAIN_LIGHT)
+    for sep in range(left + 6, window_right - 1, 5):
+        draw.line((sep, top + 4, sep, top + 8), fill=COAL)
+    draw.rectangle((min(29, right - 6), top + 4, min(29, right - 3), top + 10), fill=WORN)
+    draw.rectangle((left + 2, top + 1, left + 8, top + 3), fill=RED)
+    draw.point((left + 4, top + 2), fill=PAPER)
+    draw.point((left + 6, top + 2), fill=PAPER)
+    draw.line((left, top + 12, min(29, right), top + 12), fill=INK)
+    wheel_y = top + 15
+    for wheel_x in (left + 6, right - 8):
+        wx = min(27, wheel_x)
+        draw.rectangle((wx - 2, wheel_y - 1, wx + 2, wheel_y + 3), fill=INK)
+        hub = ((0, -1), (1, 0), (0, 1), (-1, 0))[frame % 4]
+        draw.point((wx + hub[0], wheel_y + 1 + hub[1]), fill=WORN)
+    if motion == "attack":
+        beam_y = top + 10
+        draw.polygon([(min(29, right), beam_y), (min(30, right + 2), beam_y - 2 - frame), (min(30, right + 2), beam_y + 3 + frame)], fill=RAIN_LIGHT)
+        draw.point((min(29, right - 1), beam_y), fill=PAPER)
+    else:
+        draw.point((min(29, right - 1), top + 10), fill=RAIN_LIGHT)
+    if motion == "hurt":
+        image = recolor_map(image, {COAL: HURT, INK: RED_DARK})
+        draw = ImageDraw.Draw(image)
+        draw.line((left + 4 + frame * 2, top + 1, right - 8 - frame, top + 14), fill=PAPER)
+    if motion == "move":
+        image = shifted(image, (-1, 0, 1, 0)[frame])
+    return image
+
+
 DRAWERS = {
     "fear": draw_fear,
     "red-mark": draw_red_mark,
@@ -418,7 +799,33 @@ DRAWERS = {
     "silent-father-p2": draw_silent_father_p2,
     "lamp-keeper": draw_lamp_keeper,
     "uniform-answer": draw_uniform_answer,
+    "cry-moth": draw_cry_moth,
+    "hunger-shadow": draw_hunger_shadow,
+    "closet-dark": draw_closet_dark,
+    "missed-call": draw_missed_call,
+    "silence": draw_silence,
+    "badge-thief": draw_badge_thief,
+    "debt-collector": draw_debt_collector,
+    "forgetter": draw_forgetter,
+    "empty-chair": draw_empty_chair,
+    "last-bus": draw_last_bus,
 }
+
+# 全部敌怪已切换为混合管线图集（scripts/process_enemy_hybrid_atlases.py 产出）；
+# 本脚本重跑时回读运行时图集，程序化 drawer 仅作为断供兜底。
+HYBRID_OVERRIDE_ENEMIES = set(ENEMIES)
+
+
+def read_runtime_motion_frames(enemy: str, motion: str, count: int) -> list[Image.Image] | None:
+    path = ASSET_DIR / f"{enemy}.png"
+    if enemy not in HYBRID_OVERRIDE_ENEMIES or not path.exists():
+        return None
+    atlas = Image.open(path).convert("RGBA")
+    row = MOTION_ROWS[motion]
+    return [
+        atlas.crop((frame * FRAME, row * FRAME, (frame + 1) * FRAME, (row + 1) * FRAME))
+        for frame in range(count)
+    ]
 
 
 def validate_frame(image: Image.Image, label: str) -> dict[str, object]:
@@ -474,7 +881,7 @@ def main() -> None:
         validation[enemy] = {}
         atlas = Image.new("RGBA", (FRAME * 4, FRAME * len(MOTIONS)), TRANSPARENT)
         for motion, count in MOTIONS.items():
-            motion_frames = [
+            motion_frames = read_runtime_motion_frames(enemy, motion, count) or [
                 draw_death(enemy, frame) if motion == "death" else DRAWERS[enemy](motion, frame)
                 for frame in range(count)
             ]

@@ -7,9 +7,12 @@ import {
 import { generateLocalFateEvent, POISON_KEYS, validateFateEvent } from './fate';
 import type { HeroFacing } from './hero-morph';
 import { PixelHeroRenderer } from './hero-pixel';
-import { DEFAULT_APPEARANCE, getOriginModifiers, getOriginTrait } from './origins';
+import { DEFAULT_APPEARANCE, commitOriginWheels, getOriginModifiers, getOriginTrait, rollOriginWheels } from './origins';
 import { FATE_ITEM_IDS, getItem, ITEM_IDS } from './relics';
+import { comboArtAtlas } from './combo-art';
+import { itemIconAtlas } from './item-icons';
 import { POISON_LABELS } from './types';
+import { PROP_VARIANTS, worldEntityAtlas, worldPropAtlas } from './world-props';
 import {
   applyPixelDiscipline,
   drawArchiveFrame,
@@ -63,11 +66,12 @@ const HURT_IFRAME = 0.75;
 const HERO_ATTACK_ANIMATION_DURATION = 0.22;
 const TITLE_BACKGROUND_URL = new URL('./assets/ui/title-life-night.png', import.meta.url).href;
 
+// 出生的一口气必须是虚弱的：低伤、短程、细弱——所有强度都由这一生揉出来
 const BASE_VECTOR: AttackVector = {
-  damage: 7.5,
+  damage: 6.2,
   fireInterval: 0.72,
-  range: 250,
-  width: 5.5,
+  range: 232,
+  width: 4.6,
   projectileSpeed: 280,
   projectileCount: 1,
   spread: 0.15,
@@ -81,6 +85,48 @@ const BASE_VECTOR: AttackVector = {
   explosion: 0,
   bloodOnHit: 0,
 };
+
+// 组合彩蛋正典（与百科组合名鉴一致）；artKey 对应 combo-art 图集
+interface ComboDef {
+  name: string;
+  artKey: string;
+  items: readonly ItemId[];
+  line: string;
+}
+
+const COMBO_DEFS: readonly ComboDef[] = [
+  { name: '那天雨太大，我没有听见', artKey: 'rain-letter', items: ['front-desk-letter', 'fathers-raincoat'], line: '信纸被浸湿，变慢、变重、穿透' },
+  { name: '被退回的信', artKey: 'returned-letter', items: ['red-workbook', 'front-desk-letter'], line: '未命中的信被红笔批改后折返，二次命中更疼' },
+  { name: '大人说这都是为你好', artKey: 'for-your-own-good', items: ['stone-schoolbag', 'slow-watch'], line: '冻结解除后，一口气一次性压穿敌群' },
+  { name: '被当成风格的求救', artKey: 'cry-for-help-as-style', items: ['eyebrow-razor', 'od-pill'], line: '受伤时涌出点赞与爱心，不提供任何治疗' },
+  { name: '我只在有用时被看见', artKey: 'seen-only-when-useful', items: ['first-salary', 'nameless-tie', 'revoked-badge'], line: '刚证明过有用的两秒里，他格外锋利' },
+  { name: '那年他觉得自己很酷', artKey: 'thought-he-was-cool', items: ['bleach-powder', 'fathers-raincoat'], line: '掉色的雨滴标记敌人，被标记者受伤更多' },
+  { name: '这一次有人接了', artKey: 'someone-answered', items: ['eyebrow-razor', 'od-pill', 'unsent-phone'], line: '攒下的假点赞在吐出时化为真实护盾' },
+  { name: '后来我也成了他', artKey: 'became-him', items: ['baby-tooth', 'fathers-raincoat'], line: '乳牙碎的那一刻，雨衣自动罩住孩子' },
+  { name: '等大家有空', artKey: 'when-everyone-is-free', items: ['missing-photo', 'empty-frame'], line: '空相框复制合照的弹道，每次复制更褪色' },
+  { name: '这点重量不算什么', artKey: 'this-weight-is-nothing', items: ['broken-spine', 'stone-schoolbag'], line: '弹道停留越久越重，压得越深' },
+  { name: '能屈能伸', artKey: 'bend-and-stretch', items: ['broken-spine', 'nameless-tie', 'revoked-badge'], line: '弯腰的程度化为暴击，暴击时他说「收到」' },
+  { name: '他当年也是这样站着的', artKey: 'stood-the-same-way', items: ['broken-spine', 'fathers-raincoat'], line: '身后浮现同样弯腰的轮廓，雨下得更密' },
+];
+
+// 延迟出膛的子弹（五连发的后几哈、AI 的复读回声）
+interface PendingShot {
+  delay: number;
+  angle: number;
+  damage: number;
+  speed: number;
+  radius: number;
+  range: number;
+  life: number;
+  pierce: number;
+  homing: number;
+  color: string;
+  style: ProjectileStyle;
+  critical: boolean;
+  knockback: number;
+  generation: number;
+  shrink?: boolean;
+}
 
 interface StageSpec {
   chapter: string;
@@ -115,39 +161,39 @@ const STAGES: StageSpec[] = [
     chapter: '童年 · 床底王国', title: '没人相信的怪物', subtitle: '恐惧第一次有了形状',
     duration: 60, pool: ['cry-moth', 'fear', 'hunger-shadow'], spawnEvery: 2.5, bossAt: 34, bossType: 'closet-dark', end: 'advance',
     enterLine: '出生证明上按了手印。没人问他同不同意。',
-    groundTop: '#241b28', groundBottom: '#151218', propColor: '#4a3f52',
+    groundTop: '#2d2433', groundBottom: '#1c1722', propColor: '#5b4d64',
   },
   {
     chapter: '少年 · 千眼教室', title: '统一答案', subtitle: '所有目光都在批改你',
     duration: 70, pool: ['red-mark', 'whisper'], spawnEvery: 2.3,
     bossAt: 44, bossType: 'uniform-answer', end: 'fate',
     enterLine: '他的理想写在作文里。得了 38 分。',
-    groundTop: '#20242b', groundBottom: '#131519', propColor: '#3e4a55',
+    groundTop: '#29323b', groundBottom: '#1a2027', propColor: '#536572',
   },
   {
     chapter: '青年 · 齿轮车站', title: '错过的那一班', subtitle: '每个人都像比你早一步',
     duration: 75, pool: ['clockwork', 'whisper', 'red-mark'], spawnEvery: 1.9, stallAt: 14, bossAt: 49, bossType: 'last-bus', end: 'advance',
     enterLine: '老师说，社会会教他做人。社会确实教了。',
-    groundTop: '#262219', groundBottom: '#141310', propColor: '#57503c',
+    groundTop: '#30291f', groundBottom: '#1d1914', propColor: '#746344',
   },
   {
     chapter: '成年 · 屋檐下的家', title: '沉默的父亲', subtitle: '盔甲里面也是一个害怕的男孩',
     duration: 80, pool: ['missed-call', 'whisper', 'silence', 'debt'], spawnEvery: 1.75,
     bossAt: 54, bossType: 'silent-father', doorAt: 24, end: 'fate',
     enterLine: '他管那间屋子叫家。房东管它叫房源。',
-    groundTop: '#1c2320', groundBottom: '#111514', propColor: '#3c4f45',
+    groundTop: '#29382f', groundBottom: '#17231d', propColor: '#536f60',
   },
   {
     chapter: '中年 · 没有关灯的办公室', title: '名字还在表格里', subtitle: '门已经打不开了',
     duration: 75, pool: ['debt', 'clockwork', 'badge-thief', 'whisper'], spawnEvery: 1.55, stallAt: 13, doorAt: 26, bossAt: 49, bossType: 'debt-collector', end: 'fate',
     enterLine: '体检单比工资单先到。',
-    groundTop: '#23272c', groundBottom: '#131417', propColor: '#4c545e',
+    groundTop: '#303740', groundBottom: '#1c2027', propColor: '#66727d',
   },
   {
     chapter: '暮年 · 白发荒原', title: '收灯人', subtitle: '它不凶，也不坏，它只是准时',
     duration: 95, pool: ['forgetter', 'whisper', 'debt', 'empty-chair'], spawnEvery: 1.8, end: 'final',
     enterLine: '工牌收走那天，他愣了一下，才想起来自己姓什么。',
-    groundTop: '#22242a', groundBottom: '#0f1013', propColor: '#494e58',
+    groundTop: '#2d313a', groundBottom: '#191c23', propColor: '#626a76',
   },
 ];
 
@@ -205,6 +251,7 @@ export class ZheYiShenGame {
   private ctx: CanvasRenderingContext2D;
   private pixelHero = new PixelHeroRenderer();
   private pixelEnemies = new PixelEnemyRenderer();
+  private worldProps = worldPropAtlas;
   private titleBackground = new Image();
   private state: ScreenState = 'title';
   private hero: HeroState = { hp: 80, maxHp: 80, block: 0, coins: 4 };
@@ -213,6 +260,7 @@ export class ZheYiShenGame {
   private requestedOriginKind: OriginKind = 'ordinary';
   private originModifiers: OriginModifiers = getOriginModifiers([]);
   private originElapsed = 0;
+  private originAttempt = 0;
   private aiOriginState: AIGenerationState = 'idle';
   private aiFateState: AIGenerationState = 'idle';
   private fateGenerationId = 0;
@@ -312,6 +360,22 @@ export class ZheYiShenGame {
   private rewardReturn: 'battle' | 'advance' = 'advance';
   private originBadgeExpanded = false;
   private comboSeen = new Set<string>();
+  private comboReveal?: { name: string; artKey: string; line: string; timer: number; total: number };
+  private comboRevealQueue: ComboDef[] = [];
+  private pendingShots: PendingShot[] = [];
+  private sinceVolley = 0;
+  private lastVolleyAngles: number[] = [];
+  private lastRhythmMark = -1;
+  private rhythmBrokenWindow = -1;
+  private lastStandoffMark = 0;
+  private deathSaves = 0;
+  private ktvTimer = 0;
+  private synergySeen = new Set<string>();
+  private watchReleaseTimer = 0;
+  private heartCount = 0;
+  private answeredUsedStage = false;
+  private usefulTimer = 0;
+  private lastSighMark = 0;
   private fateFreeWaiting = false;
   private fateAnim = 0;
   private fateExitTimer = 0;
@@ -338,7 +402,6 @@ export class ZheYiShenGame {
   private oneMoreBuff = false;
   private divorceUsedStage = false;
   private hairUsedStage = false;
-  private threeDayTimer = 0;
   private goodnightTick = 30;
   private sockTick = 45;
   private sockBoostTimer = 0;
@@ -575,6 +638,7 @@ export class ZheYiShenGame {
     this.requestedOriginKind = this.pickOriginKind();
     this.originModifiers = getOriginModifiers([]);
     this.originElapsed = 0;
+    this.originAttempt = 0;
     this.aiOriginState = 'requesting';
     this.aiFateState = 'idle';
     this.prefetchedFate = undefined;
@@ -665,7 +729,22 @@ export class ZheYiShenGame {
     this.oneMoreBuff = false;
     this.divorceUsedStage = false;
     this.hairUsedStage = false;
-    this.threeDayTimer = 0;
+    this.comboReveal = undefined;
+    this.comboRevealQueue = [];
+    this.pendingShots = [];
+    this.sinceVolley = 0;
+    this.lastVolleyAngles = [];
+    this.lastRhythmMark = -1;
+    this.rhythmBrokenWindow = -1;
+    this.lastStandoffMark = 0;
+    this.deathSaves = 0;
+    this.ktvTimer = 0;
+    this.synergySeen.clear();
+    this.watchReleaseTimer = 0;
+    this.heartCount = 0;
+    this.answeredUsedStage = false;
+    this.usefulTimer = 0;
+    this.lastSighMark = 0;
     this.goodnightTick = 30;
     this.sockTick = 45;
     this.sockBoostTimer = 0;
@@ -690,11 +769,15 @@ export class ZheYiShenGame {
   }
 
   private async hydrateOrigin(runSerial: number, kind: OriginKind): Promise<void> {
+    const wheels = rollOriginWheels(() => this.random());
     for (let attempt = 1; attempt <= 2; attempt += 1) {
+      if (this.runSerial !== runSerial || this.state !== 'origin') return;
+      this.originAttempt = attempt;
       const nonce = `${runSerial}-${attempt}-${Date.now().toString(36)}`;
-      const generated = await generateAIOrigin(this.runSeed, kind, nonce);
+      const generated = await generateAIOrigin(this.runSeed, kind, nonce, wheels);
       if (this.runSerial !== runSerial || this.state !== 'origin') return;
       if (generated) {
+        commitOriginWheels(wheels);
         this.applyGeneratedOrigin(generated);
         return;
       }
@@ -705,6 +788,7 @@ export class ZheYiShenGame {
 
   private applyGeneratedOrigin(generated: OriginProfile): void {
     this.origin = generated;
+    this.originAttempt = 0;
     this.originModifiers = getOriginModifiers(generated.traits);
     const startingHp = 80 + this.originModifiers.maxHpAdd;
     this.hero.hp = startingHp;
@@ -794,6 +878,7 @@ export class ZheYiShenGame {
     this.coinDrops = [];
     this.hairUsedStage = false;
     this.divorceUsedStage = false;
+    this.answeredUsedStage = false;
     this.takeoutTick = 2;
     this.billTimer = 0;
     this.borrowedStat = undefined;
@@ -809,9 +894,6 @@ export class ZheYiShenGame {
     if (stageFees > 0 && this.hero.coins > 0) {
       this.hero.coins = Math.max(0, this.hero.coins - stageFees);
       this.say(`自动扣费 · -${stageFees}零钱`);
-    }
-    if (this.hasItem('streak-1847') && this.hero.hp >= this.hero.maxHp * 0.8) {
-      this.hero.block = Math.min(24, this.hero.block + 6);
     }
     if (this.hasItem('drank-for-boss')) this.stunTimer = 1.2;
     if (this.hasItem('year-report')) this.loseHealth(2);
@@ -1251,6 +1333,77 @@ export class ZheYiShenGame {
     }
     if (this.state !== 'battle') return;
     if (this.captionTime > 0) this.captionTime -= dt;
+    if (this.comboReveal) {
+      this.comboReveal.timer -= dt;
+      if (this.comboReveal.timer <= 0) this.comboReveal = undefined;
+    }
+    if (!this.comboReveal && this.comboRevealQueue.length > 0) {
+      const def = this.comboRevealQueue.shift()!;
+      this.comboReveal = { name: def.name, artKey: def.artKey, line: def.line, timer: 3.4, total: 3.4 };
+    }
+    if (this.watchReleaseTimer > 0) this.watchReleaseTimer -= dt;
+    if (this.usefulTimer > 0) this.usefulTimer -= dt;
+    this.sinceVolley += dt;
+    // 延迟出膛：五连发的后几哈、AI 的复读回声
+    if (this.pendingShots.length > 0) {
+      const due: PendingShot[] = [];
+      this.pendingShots = this.pendingShots.filter((shot) => {
+        shot.delay -= dt;
+        if (shot.delay <= 0) { due.push(shot); return false; }
+        return true;
+      });
+      for (const shot of due) {
+        this.spawnProjectile({
+          x: this.heroX, y: this.heroY - 14, angle: shot.angle, damage: shot.damage,
+          speed: shot.speed, radius: shot.radius, range: shot.range, life: shot.life,
+          pierce: shot.pierce, returning: false, homing: shot.homing, splitChance: 0,
+          explosion: 0, generation: shot.generation, color: shot.color, style: shot.style,
+          critical: shot.critical, knockback: shot.knockback, shrink: shot.shrink,
+        });
+      }
+    }
+    // 《KTV里没人听的那首歌》：每6秒攒满一口，向四周吼出一圈声浪
+    if (this.hasItem('ktv-song')) {
+      this.ktvTimer += dt;
+      if (this.ktvTimer >= 6) {
+        this.ktvTimer = 0;
+        const roar = this.computeAttackVector();
+        for (let index = 0; index < 10; index += 1) {
+          const angle = (index / 10) * Math.PI * 2;
+          this.spawnProjectile({
+            x: this.heroX, y: this.heroY - 12, angle, damage: roar.damage * 0.9,
+            speed: roar.projectileSpeed * 0.8, radius: Math.max(3, roar.width * 0.9),
+            range: 150, life: 1.2, pierce: roar.pierce + 1, returning: false,
+            homing: 0, splitChance: 0, explosion: 0, generation: 0, style: 'sound',
+            critical: false, knockback: roar.knockback * 1.4, color: '#8fa8bd',
+          });
+        }
+        this.burst('ring', this.heroX, this.heroY - 16, 90, '#8fa8bd');
+        this.burst('word', this.heroX, this.heroY - 58, 30, '#8fa8bd', '吼');
+        this.sigh(2.2);
+      }
+    }
+    // 《相亲桌上没拆的矿泉水》：对峙满8秒，对面先绷不住
+    if (this.hasItem('mineral-water')) {
+      const standoffMark = Math.floor(this.noHitTime / 8);
+      if (standoffMark > this.lastStandoffMark) {
+        this.lastStandoffMark = standoffMark;
+        const rival = this.nearestEnemy(this.heroX, this.heroY);
+        if (rival) {
+          this.damageEnemy(rival, this.computeAttackVector().damage * 4, '#7e97a0');
+          rival.slowTimer = Math.max(rival.slowTimer ?? 0, 1.5);
+          this.burst('word', rival.x, rival.y - 26, 30, '#7e97a0', '先拧开的输了');
+        }
+      } else if (standoffMark === 0) {
+        this.lastStandoffMark = 0;
+      }
+    }
+    // 站立叹气：每静立满 6 秒，深深叹一口气
+    if (Math.floor(this.standStillTime / 6) > this.lastSighMark) {
+      this.lastSighMark = Math.floor(this.standStillTime / 6);
+      this.sigh(1.7);
+    }
+    if (this.standStillTime === 0) this.lastSighMark = 0;
     if (this.stallCooldown > 0) this.stallCooldown -= dt;
     if (this.hurtCooldown > 0) this.hurtCooldown -= dt;
     if (this.heroAttackTimer > 0) this.heroAttackTimer = Math.max(0, this.heroAttackTimer - dt);
@@ -1275,7 +1428,6 @@ export class ZheYiShenGame {
     if (this.graceTimer > 0) { this.graceTimer -= dt; this.hurtCooldown = Math.max(this.hurtCooldown, 0.1); }
     if (this.enemyHasteTimer > 0) this.enemyHasteTimer -= dt;
     if (this.heroSlowTimer > 0) this.heroSlowTimer -= dt;
-    if (this.threeDayTimer > 0) this.threeDayTimer -= dt;
     if (this.sockBoostTimer > 0) this.sockBoostTimer -= dt;
     this.noHitTime += dt;
     if (this.billTimer > 0) {
@@ -1375,6 +1527,8 @@ export class ZheYiShenGame {
             projectile.vy *= 1.45;
           });
           this.burst('ring', this.heroX, this.heroY - 40, 140, '#9dc2c8');
+          // 《大人说这都是为你好》：冻结解除后 1.5 秒，一口气压穿敌群
+          if (this.hasCombo('大人说这都是为你好')) this.watchReleaseTimer = 1.5;
         }
       }
     }
@@ -1520,18 +1674,10 @@ export class ZheYiShenGame {
     if (this.hasItem('typing-indicator')) vector.fireInterval *= 1.04;
     if (this.hasItem('shop-freezer')) vector.fireInterval *= 1.05;
     if (this.hasItem('retracted-voice')) vector.fireInterval *= 1 + this.voiceCharges * 0.02;
-    if (this.hasItem('read-3am')) vector.damage *= 1 + Math.min(0.2, Math.floor(this.noHitTime / 5) * 0.04);
-    if (this.hasItem('mineral-water') && this.noHitTime >= 8) vector.critChance += 0.2;
-    if (this.hasItem('three-day-visible') && this.threeDayTimer > 0) vector.damage *= 1.08;
     if (this.hasItem('auto-renew') && this.battleTime < 15) vector.damage *= 1.1;
     if (this.hasItem('bargain-link')) vector.damage *= 1 + this.items.filter((owned) => getItem(owned).quality <= 2).length * 0.03;
     if (this.hasItem('group-dad')) vector.damage *= 0.9;
     if (this.hasItem('loan-contract')) vector.damage *= 1.25;
-    if (this.hasItem('name-sold')) vector.damage *= 1 + this.items.length * 0.03;
-    if (this.hasItem('year-report')) {
-      const yearDuration = STAGES[this.encounterIndex]?.duration ?? 90;
-      vector.damage *= 1 + Math.min(0.25, (this.battleTime / yearDuration) * 0.25);
-    }
     if (this.hasItem('momo-avatar')) {
       const nearMomo = this.nearestEnemy(this.heroX, this.heroY);
       const momoDist = nearMomo ? Math.hypot(nearMomo.x - this.heroX, nearMomo.y - this.heroY) : 999;
@@ -1578,8 +1724,28 @@ export class ZheYiShenGame {
       vector.lifetime *= 1.45;
       vector.damage *= 1.12;
     }
+    if (this.watchReleaseTimer > 0 && this.hasCombo('大人说这都是为你好')) {
+      vector.pierce += 2;
+      vector.damage *= 1.25;
+    }
+    if (this.hasCombo('能屈能伸')) vector.critChance += this.negativeItemCount() * 0.03;
+    if (this.usefulTimer > 0 && this.hasCombo('我只在有用时被看见')) vector.damage *= 1.15;
 
+    // 《KTV里没人听的那首歌》：常规攻击让位给那一声吼
+    if (this.hasItem('ktv-song')) vector.damage *= 0.85;
+    // 《冬天呵在玻璃上的字》：一口气呵成宽雾锥
+    if (this.hasItem('breath-on-glass')) {
+      vector.width *= 2.2;
+      vector.pierce += 2;
+      vector.range *= 0.55;
+    }
     this.applyOdDistortion(vector);
+    // 《把名字卖掉的合同》：制式化——零散射、永不暴击、零波动，基础+30%
+    if (this.hasItem('name-sold')) {
+      vector.damage *= 1.3;
+      vector.critChance = 0;
+      vector.spread = 0.03;
+    }
     vector.damage = this.clamp(vector.damage, 1, 90);
     vector.fireInterval = this.clamp(vector.fireInterval, 0.12, 2.2);
     vector.range = this.clamp(vector.range, 65, 430);
@@ -1720,24 +1886,102 @@ export class ZheYiShenGame {
     this.stats.volleys += 1;
     let count = vector.projectileCount;
     if (this.hasItem('loose-button') && this.volleyCount % 3 === 0) count += 1;
-    if (this.hasItem('missing-photo') && this.volleyCount % 4 === 0) count += 2;
+    const photoVolley = this.hasItem('missing-photo') && this.volleyCount % 4 === 0;
+    if (photoVolley) count += 2;
     const baseAngle = Math.atan2(target.y - this.heroY, target.x - this.heroX) + angleNudge;
     this.heroAttackFacing = this.facingFromAngle(baseAngle);
     this.heroAttackTimer = HERO_ATTACK_ANIMATION_DURATION;
     const style = this.baseProjectileStyle();
+    const volleyAngles: number[] = [];
+    // 《连续签到1847天》：每个整10秒的第一发准时暴击；受伤打断当期作废
+    let rhythmCrit = false;
+    if (this.hasItem('streak-1847')) {
+      const rhythmWindow = Math.floor(this.battleTime / 10);
+      if (rhythmWindow > this.lastRhythmMark && rhythmWindow !== this.rhythmBrokenWindow) {
+        this.lastRhythmMark = rhythmWindow;
+        rhythmCrit = true;
+      }
+    }
+    // 《对方正在输入…》：停火够久，下一发是憋了很久的那句话
+    const charged = this.hasItem('typing-indicator') && this.sinceVolley >= vector.fireInterval + 1.2;
+    this.sinceVolley = 0;
+    const fiveHa = this.hasItem('five-ha');
     for (let index = 0; index < count; index += 1) {
       const offset = count === 1 ? 0 : (index - (count - 1) / 2) * vector.spread;
-      const critical = this.random() < vector.critChance;
+      const angle = baseAngle + offset;
+      volleyAngles.push(angle);
+      if (fiveHa) {
+        // 《五个哈》：一次笑出五连发，一发比一发轻——少一个都显得没礼貌
+        const shares = [0.3, 0.26, 0.22, 0.18, 0.14];
+        shares.forEach((share, ha) => {
+          this.pendingShots.push({
+            delay: ha * 0.07, angle: angle + (ha - 2) * 0.018,
+            damage: vector.damage * share * 1.1, speed: vector.projectileSpeed,
+            radius: Math.max(2, vector.width * 0.72), range: vector.range, life: vector.lifetime,
+            pierce: vector.pierce, homing: vector.homing,
+            color: this.projectileColor(style), style,
+            critical: this.random() < vector.critChance, knockback: vector.knockback * 0.5, generation: 0,
+          });
+        });
+        continue;
+      }
+      const isCharged = charged && index === 0;
+      const critical = (rhythmCrit && index === 0)
+        || this.random() < vector.critChance + (isCharged ? 0.35 : 0);
       const criticalMultiplier = this.hasItem('eyebrow-razor') ? 2.25 : 1.8;
       this.spawnProjectile({
-        x: this.heroX, y: this.heroY - 14, angle: baseAngle + offset,
-        damage: vector.damage * (critical ? criticalMultiplier : 1), speed: vector.projectileSpeed,
-        radius: vector.width, range: vector.range, life: vector.lifetime, pierce: vector.pierce,
+        x: this.heroX, y: this.heroY - 14, angle,
+        damage: vector.damage * (critical ? criticalMultiplier : 1) * (isCharged ? 2.2 : 1),
+        speed: vector.projectileSpeed * (isCharged ? 0.85 : 1),
+        radius: vector.width * (isCharged ? 2.2 : 1), range: vector.range, life: vector.lifetime,
+        pierce: vector.pierce + (isCharged ? 3 : 0),
         returning: vector.returning, homing: vector.homing, splitChance: vector.splitChance,
         explosion: vector.explosion, generation: 0, style, critical, knockback: vector.knockback,
         color: critical ? '#fff1a8' : this.projectileColor(style),
+        shrink: isCharged,
       });
+      if (isCharged) this.burst('word', this.heroX, this.heroY - 46, 26, '#9fb6c8', '嗯');
+      if (rhythmCrit && index === 0) this.burst('word', this.heroX, this.heroY - 40, 22, '#d9b768', '准时');
     }
+    // 《和AI聊到凌晨》：它复读你的每一口气
+    if (this.hasItem('ai-chat')) {
+      for (const angle of volleyAngles) {
+        this.pendingShots.push({
+          delay: 0.4, angle, damage: vector.damage * 0.35, speed: vector.projectileSpeed,
+          radius: Math.max(2, vector.width * 0.8), range: vector.range, life: vector.lifetime,
+          pierce: 0, homing: vector.homing, color: '#6f93a3', style,
+          critical: false, knockback: vector.knockback * 0.4, generation: 1,
+        });
+      }
+    }
+    // 《年度听歌报告》：每第4轮把上一轮弹道原样重放一遍
+    if (this.hasItem('year-report') && this.volleyCount % 4 === 0 && this.lastVolleyAngles.length > 0) {
+      for (const angle of this.lastVolleyAngles) {
+        this.spawnProjectile({
+          x: this.heroX, y: this.heroY - 14, angle, damage: vector.damage * 0.6,
+          speed: vector.projectileSpeed, radius: vector.width, range: vector.range,
+          life: vector.lifetime, pierce: vector.pierce, returning: vector.returning,
+          homing: vector.homing, splitChance: 0, explosion: 0, generation: 1, style,
+          critical: false, knockback: vector.knockback * 0.6, color: '#8c81a0',
+        });
+      }
+      this.burst('word', this.heroX, this.heroY - 52, 30, '#8c81a0', '循环播放');
+    }
+    this.lastVolleyAngles = volleyAngles;
+    // 《等大家有空》：空相框复制合照的弹道，复制越多越褪色
+    if (photoVolley && this.hasCombo('等大家有空')) {
+      for (let copy = 0; copy < 2; copy += 1) {
+        this.spawnProjectile({
+          x: this.heroX, y: this.heroY - 14, angle: baseAngle + (copy === 0 ? -0.4 : 0.4),
+          damage: vector.damage * (copy === 0 ? 0.8 : 0.65), speed: vector.projectileSpeed,
+          radius: vector.width, range: vector.range, life: vector.lifetime, pierce: vector.pierce,
+          returning: vector.returning, homing: vector.homing, splitChance: 0,
+          explosion: vector.explosion, generation: 1, style, critical: false, knockback: vector.knockback,
+          color: copy === 0 ? '#b6aa94' : '#8f887c',
+        });
+      }
+    }
+    this.sigh(1);
     if (this.hasItem('pregnancy-test') && this.volleyCount % 3 === 0) {
       this.spawnProjectile({
         x: this.heroX, y: this.heroY - 8, angle: baseAngle, damage: vector.damage * 0.8,
@@ -1761,6 +2005,7 @@ export class ZheYiShenGame {
     x: number; y: number; angle: number; damage: number; speed: number; radius: number; range: number; life: number;
     pierce: number; returning: boolean; homing: number; splitChance: number; explosion: number;
     generation: number; color: string; style: ProjectileStyle; critical: boolean; knockback?: number; visual?: ProjectileVisual;
+    shrink?: boolean; orbit?: { angle: number; total: number; elapsed: number };
   }): void {
     const material = options.style === 'rain' ? 'water' : options.style === 'sound' ? 'signal' : undefined;
     this.projectiles.push({
@@ -1772,18 +2017,36 @@ export class ZheYiShenGame {
       explosion: options.explosion, generation: options.generation, color: options.color,
       style: options.style, visual: options.visual ?? this.computeProjectileVisual(material),
       critical: options.critical, hitIds: [],
+      shrink: options.shrink, orbit: options.orbit,
     });
+  }
+
+  /** 《朋友圈仅三天可见》：三枚环绕弹绕身三圈然后消失 */
+  private spawnOrbitRing(): void {
+    const vector = this.computeAttackVector();
+    for (let index = 0; index < 3; index += 1) {
+      this.spawnProjectile({
+        x: this.heroX, y: this.heroY - 8, angle: (index / 3) * Math.PI * 2,
+        damage: Math.max(3, vector.damage * 0.8), speed: 0, radius: Math.max(3, vector.width * 0.9),
+        range: 99999, life: 2.6, pierce: 99, returning: false, homing: 0, splitChance: 0,
+        explosion: 0, generation: 1, style: 'plain', critical: false, knockback: 5,
+        color: '#9a94a6', orbit: { angle: (index / 3) * Math.PI * 2, total: 2.6, elapsed: 0 },
+      });
+    }
   }
 
   private releaseRain(): void {
     const vector = this.computeAttackVector();
-    for (let index = 0; index < 9; index += 1) {
-      const angle = (index / 9) * Math.PI * 2;
+    // 《他当年也是这样站着的》：两代人的雨下得更密；《那年他觉得自己很酷》：雨滴掉色
+    const drops = this.hasCombo('他当年也是这样站着的') ? 14 : 9;
+    const dropColor = this.hasCombo('那年他觉得自己很酷') ? '#cbb757' : '#7eb5bd';
+    for (let index = 0; index < drops; index += 1) {
+      const angle = (index / drops) * Math.PI * 2;
       this.spawnProjectile({
         x: this.heroX, y: this.heroY - 12, angle, damage: Math.max(3, vector.damage * 0.55),
         speed: 165, radius: 3.5, range: 230, life: 2.2, pierce: 1,
         returning: false, homing: 0.04, splitChance: 0, explosion: 0,
-        generation: 1, color: '#7eb5bd', style: 'rain', critical: false, knockback: 4,
+        generation: 1, color: dropColor, style: 'rain', critical: false, knockback: 4,
       });
     }
     if (this.hasItem('unsent-phone')) {
@@ -1796,6 +2059,26 @@ export class ZheYiShenGame {
     const spawned: Projectile[] = [];
     for (const projectile of this.projectiles) {
       if (projectile.life <= 0) continue;
+      if (projectile.orbit) {
+        // 环绕弹：绕身三圈，圈数走完即消散；命中判定内联
+        projectile.orbit.elapsed += dt;
+        const sweep = projectile.orbit.angle + (projectile.orbit.elapsed / projectile.orbit.total) * Math.PI * 6;
+        projectile.x = this.heroX + Math.cos(sweep) * 42;
+        projectile.y = this.heroY - 8 + Math.sin(sweep) * 42;
+        projectile.life -= dt;
+        for (const enemy of this.enemies) {
+          if (enemy.dead || projectile.hitIds.includes(enemy.id)) continue;
+          if (Math.hypot(enemy.x - projectile.x, enemy.y - projectile.y) < enemy.radius + projectile.radius + 2) {
+            projectile.hitIds.push(enemy.id);
+            this.damageEnemy(enemy, projectile.damage, projectile.color);
+          }
+        }
+        continue;
+      }
+      if (projectile.shrink) {
+        // 蓄力弹：飞行中不断缩小，命中时只剩"嗯"那么大
+        projectile.radius = Math.max(2.2, projectile.radius * (1 - dt * 1.1));
+      }
       if (projectile.homing > 0) {
         const target = this.nearestEnemy(projectile.x, projectile.y);
         if (target) {
@@ -1819,9 +2102,49 @@ export class ZheYiShenGame {
         if (enemy.dead || projectile.hitIds.includes(enemy.id)) continue;
         if (Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y) > projectile.radius + enemy.radius) continue;
         projectile.hitIds.push(enemy.id);
-        const hitDamage = projectile.damage * (projectile.reversals > 0 && this.hasItem('old-door-lock') ? 1.3 : 1);
-        this.damageEnemy(enemy, hitDamage, projectile.color);
-        if (this.hasItem('shop-freezer') && this.random() < 0.2) enemy.slowTimer = 1.2;
+        let hitDamage = projectile.damage * (projectile.reversals > 0 && this.hasItem('old-door-lock') ? 1.3 : 1);
+        // 《这点重量不算什么》：弹道停留越久越重
+        if (this.hasCombo('这点重量不算什么')) {
+          hitDamage *= 1 + Math.min(0.6, (projectile.maxLife - projectile.life) * 0.22);
+        }
+        // 《被退回的信》：折返后的信更疼
+        if (projectile.reversals > 0 && this.hasCombo('被退回的信')) hitDamage *= 1.25;
+        // 协同：锋利×骨节——旧伤口上再来一刀
+        if (this.hasItem('eyebrow-razor') && this.hasItem('broken-spine') && enemy.hp < enemy.maxHp) {
+          hitDamage *= 1.18;
+          this.noteSynergy('旧伤口上再来一刀');
+        }
+        // 协同：水×信号——声波过水会麻
+        if (projectile.style === 'sound'
+          && (this.hasItem('fathers-raincoat') || this.hasItem('always-crying'))
+          && this.random() < 0.12) {
+          enemy.slowTimer = Math.max(enemy.slowTimer ?? 0, 0.6);
+          this.noteSynergy('水是导电的');
+        }
+        if (this.hasItem('read-3am')) {
+          // 《凌晨三点的已读》：命中不立即结算，5秒后连本带利一次爆出
+          enemy.readDamage = (enemy.readDamage ?? 0) + hitDamage * 1.3;
+          if (enemy.readTimer === undefined || enemy.readTimer <= 0) {
+            enemy.readTimer = 5;
+            this.burst('word', enemy.x, enemy.y - 22, 18, '#9fb6c8', '已读');
+          }
+          enemy.flash = Math.max(enemy.flash, 0.08);
+        } else {
+          this.damageEnemy(enemy, hitDamage, projectile.color);
+        }
+        if (projectile.critical && this.hasCombo('能屈能伸')) {
+          this.burst('word', enemy.x, enemy.y - 24, 22, '#d9b768', '收到');
+        }
+        // 《那年他觉得自己很酷》：掉色雨滴标记敌人
+        if (projectile.style === 'rain' && this.hasCombo('那年他觉得自己很酷')) enemy.marked = 4;
+        if (this.hasItem('shop-freezer')) {
+          // 协同：湿×冰——湿了的更容易冻住
+          const wet = this.hasItem('fathers-raincoat') || this.hasItem('always-crying');
+          if (this.random() < (wet ? 0.35 : 0.2)) {
+            enemy.slowTimer = wet ? 1.8 : 1.2;
+            if (wet) this.noteSynergy('湿了的更容易冻住');
+          }
+        }
         const speedNow = Math.hypot(projectile.vx, projectile.vy) || 1;
         const kbFactor = enemy.type === 'forgetter' ? 0 : enemy.boss ? 0.25 : 1;
         enemy.x += (projectile.vx / speedNow) * projectile.knockback * kbFactor;
@@ -1859,6 +2182,13 @@ export class ZheYiShenGame {
             projectile.damage *= 1.4;
             projectile.radius *= 1.08;
             projectile.color = '#c94d55';
+            // 《被退回的信》：批改后的信认得回去的路
+            if (this.hasCombo('被退回的信')) projectile.homing = Math.max(projectile.homing, 0.22);
+          }
+          // 协同：追踪×折返——回家的路上还惦记着
+          if (this.hasItem('front-desk-letter') && this.hasItem('old-door-lock')) {
+            projectile.homing = Math.max(projectile.homing, 0.25);
+            this.noteSynergy('回家的路上还惦记着');
           }
         } else {
           if (this.hasItem('held-elevator') && projectile.generation === 0 && this.random() < 0.3) {
@@ -1896,7 +2226,10 @@ export class ZheYiShenGame {
 
   private explodeProjectile(projectile: Projectile): void {
     if (projectile.explosion <= 0) return;
-    const radius = 45 + projectile.explosion * 1.5;
+    // 协同：重×爆炸——压过的地方塌得更大
+    const heavyBlast = this.hasItem('stone-schoolbag') && (this.hasItem('only-key') || this.hasItem('empty-frame'));
+    if (heavyBlast) this.noteSynergy('压过的地方塌得更大');
+    const radius = (45 + projectile.explosion * 1.5) * (heavyBlast ? 1.4 : 1);
     const damage = projectile.explosion;
     projectile.explosion = 0;
     for (const enemy of this.enemies) {
@@ -1915,6 +2248,16 @@ export class ZheYiShenGame {
       const dy = this.heroY - enemy.y;
       const dist = Math.hypot(dx, dy) || 1;
       if (enemy.slowTimer !== undefined && enemy.slowTimer > 0) enemy.slowTimer -= dt;
+      if (enemy.marked !== undefined && enemy.marked > 0) enemy.marked -= dt;
+      if (enemy.readTimer !== undefined && enemy.readTimer > 0) {
+        enemy.readTimer -= dt;
+        if (enemy.readTimer <= 0 && (enemy.readDamage ?? 0) > 0) {
+          const settled = enemy.readDamage ?? 0;
+          enemy.readDamage = 0;
+          this.damageEnemy(enemy, settled, '#9fb6c8');
+          this.burst('word', enemy.x, enemy.y - 26, 24, '#9fb6c8', `迟到的 -${Math.ceil(settled)}`);
+        }
+      }
       if (enemy.dashTimer !== undefined && enemy.dashTimer > 0) enemy.dashTimer -= dt;
       enemy.mechTimer = (enemy.mechTimer ?? 0) + dt;
 
@@ -2099,6 +2442,7 @@ export class ZheYiShenGame {
 
   private damageEnemy(enemy: EnemyUnit, amount: number, color: string): void {
     if (enemy.dead || amount <= 0) return;
+    if ((enemy.marked ?? 0) > 0) amount *= 1.12;
     if (enemy.type === 'uniform-answer'
       && this.enemies.some((minion) => !minion.dead && minion.type === 'red-mark' && !minion.boss)) {
       amount *= 0.5;
@@ -2112,6 +2456,7 @@ export class ZheYiShenGame {
     this.burst('hit', enemy.x, enemy.y, 18 + Math.min(24, amount), color);
     if (enemy.hp > 0) return;
     enemy.dead = true;
+    if (this.hasCombo('我只在有用时被看见')) this.usefulTimer = 2.5;
     if (this.enemyDeaths.length >= 60) this.enemyDeaths.shift();
     this.enemyDeaths.push({
       asset: resolveEnemyPixelAsset(enemy),
@@ -2165,15 +2510,13 @@ export class ZheYiShenGame {
 
   private hurtHero(amount: number): boolean {
     if (amount <= 0 || this.hurtCooldown > 0) return false;
-    this.hurtCooldown = HURT_IFRAME + (this.hasItem('typing-indicator') ? 0.15 : 0);
+    this.hurtCooldown = HURT_IFRAME;
     if (this.hasItem('drank-for-boss') && this.random() < 0.25) {
       const reflectTarget = this.nearestEnemy(this.heroX, this.heroY);
       if (reflectTarget) this.damageEnemy(reflectTarget, amount, '#c98a5a');
     }
-    if (this.hasItem('five-ha') && this.random() < 0.22) {
-      this.burst('word', this.heroX, this.heroY - 46, 40, '#c9c2b5', '哈哈哈哈哈');
-      return true;
-    }
+    // 《连续签到1847天》：受伤打断当期打卡节律
+    if (this.hasItem('streak-1847')) this.rhythmBrokenWindow = Math.floor(this.battleTime / 10) + 1;
     if (this.hasItem('flash-escape') && this.flashCooldown <= 0) {
       this.flashCooldown = 9;
       const reversed = this.random() < 0.1;
@@ -2247,36 +2590,48 @@ export class ZheYiShenGame {
             radius: 18, life: 1.1, duration: 1.1, color: '#ef8fbd', text: index % 2 ? '♡' : '+1',
           });
         }
+        // 《这一次有人接了》：假点赞被人真的收着
+        if (this.hasCombo('这一次有人接了')) this.heartCount = Math.min(12, this.heartCount + 3);
       }
     }
-    if (this.hero.hp <= 0 && this.hasItem('server-shutdown') && !this.petGone) {
+    if (this.hero.hp <= 0 && this.hasItem('server-shutdown') && !this.petGone && this.deathSaves < 3) {
       this.petGone = true;
+      this.deathSaves += 1;
       this.hero.hp = 1;
       this.hurtCooldown = Math.max(this.hurtCooldown, 1.2);
       this.burst('word', this.heroX, this.heroY - 60, 60, '#9fd0b8', '它替你挡下了');
       this.say('关服那天 · 它没等到告别');
     }
-    if (this.hero.hp <= 0 && this.hasItem('funeral-photo') && !this.graceUsed) {
+    if (this.hero.hp <= 0 && this.hasItem('funeral-photo') && !this.graceUsed && this.deathSaves < 3) {
       this.graceUsed = true;
+      this.deathSaves += 1;
       this.graceTimer = 5;
       this.hero.hp = 1;
       this.hurtCooldown = 5;
       this.burst('ring', this.heroX, this.heroY - 20, 90, '#d8cfae');
       this.say('遗照上的笑 · 再撑五秒');
     }
-    if (this.hero.hp <= 0 && this.hasItem('snow-screen') && !this.snowUsed) {
+    if (this.hero.hp <= 0 && this.hasItem('snow-screen') && !this.snowUsed && this.deathSaves < 3) {
       this.snowUsed = true;
+      this.deathSaves += 1;
       this.hero.hp = 1;
       this.flash = 0.5;
       this.burst('word', this.heroX, this.heroY - 58, 70, '#c8d2d8', '雪花');
       this.say('雪花屏 · 这次伤害没有发生');
     }
-    if (this.hero.hp <= 0 && this.toothReady) {
+    if (this.hero.hp <= 0 && this.toothReady && this.deathSaves < 3) {
       this.toothReady = false;
+      this.deathSaves += 1;
       this.hero.hp = 1;
       this.areaDamage(24, '#efe5c8');
       this.burst('word', this.heroX, this.heroY - 58, 90, '#efe5c8', '爸爸');
       this.say('女儿的乳牙 · 再留下来一次');
+      // 《后来我也成了他》：乳牙碎的那一刻，雨衣自动罩住孩子
+      if (this.hasCombo('后来我也成了他')) {
+        this.releaseRain();
+        this.hurtCooldown = Math.max(this.hurtCooldown, 1.5);
+        this.burst('word', this.heroX, this.heroY - 76, 60, '#c4a23f', '这次换我来挡');
+      }
     }
   }
 
@@ -2429,6 +2784,17 @@ export class ZheYiShenGame {
       if (this.hasItem('unsent-phone') && this.phoneCharges > 0) {
         this.fateBuild.storedVolleys = Math.min(8, this.fateBuild.storedVolleys + this.phoneCharges);
         this.phoneCharges = 0;
+        // 《这一次有人接了》：攒下的假点赞化为真实护盾，并清一次药效失真
+        if (this.hasCombo('这一次有人接了') && this.heartCount > 0) {
+          this.hero.block = Math.min(24, this.hero.block + this.heartCount);
+          this.heartCount = 0;
+          if (!this.answeredUsedStage && this.odPenalty) {
+            this.answeredUsedStage = true;
+            this.odPenalty = undefined;
+            this.say('这一次有人接了 · 失真被清空');
+          }
+          this.burst('word', this.heroX, this.heroY - 64, 50, '#8fc4b0', '有人接了');
+        }
       }
       if (this.hasItem('retracted-voice') && this.voiceCharges > 0) {
         this.areaDamage(this.voiceCharges * 6, '#9a8fc0');
@@ -2548,13 +2914,20 @@ export class ZheYiShenGame {
     if (id === 'broken-spine') this.changeMaxHp(-12);
     if (['eyebrow-razor', 'od-pill', 'white-bottle', 'broken-spine', 'spent-decade', 'painless-night'].includes(id)) this.strainTendency += 2;
     if (['fathers-raincoat', 'baby-tooth', 'missing-photo'].includes(id)) this.lightTendency += 2;
-    if (this.hasItem('three-day-visible')) this.threeDayTimer = 20;
+    // 《朋友圈仅三天可见》：拾取任何道具后，3 枚环绕弹绕身三圈然后消失
+    if (this.hasItem('three-day-visible')) this.spawnOrbitRing();
     this.say(`穿戴 · ${getItem(id).name}`);
     for (const combo of this.activeComboNames()) {
       if (!this.comboSeen.has(combo)) {
         this.comboSeen.add(combo);
-        this.caption = `集齐了 ·《${combo}》`;
-        this.captionTime = 5.5;
+        const def = COMBO_DEFS.find((entry) => entry.name === combo);
+        if (def) {
+          // 奥义演出：插画浮现（战斗不暂停）；同时成多套则排队依次浮现
+          this.comboRevealQueue.push(def);
+        } else {
+          this.caption = `集齐了 ·《${combo}》`;
+          this.captionTime = 5.5;
+        }
         this.burst('ring', this.heroX, this.heroY - 30, 120, '#d9b768');
         this.burst('word', this.heroX, this.heroY - 66, 60, '#d9b768', '成套了');
       }
@@ -2624,8 +2997,8 @@ export class ZheYiShenGame {
     this.resetMovementInput();
     this.specialRoomKind = kind ?? this.pickSpecialKind();
     // Ⅳ 级遗物的两条获取线：留灯间=被爱过的证据；里屋=透支自己
-    const backPool: ItemId[] = ['broken-spine', 'spent-decade', 'painless-night', 'third-pill', 'loan-contract', 'name-sold'];
-    const lightPool: ItemId[] = ['fathers-raincoat', 'baby-tooth', 'missing-photo', 'moms-bowl', 'ruma-msg', 'held-elevator', 'old-door-lock'];
+    const backPool: ItemId[] = ['broken-spine', 'spent-decade', 'painless-night', 'third-pill', 'loan-contract', 'name-sold', 'ktv-song'];
+    const lightPool: ItemId[] = ['fathers-raincoat', 'baby-tooth', 'missing-photo', 'moms-bowl', 'ruma-msg', 'held-elevator', 'old-door-lock', 'breath-on-glass'];
     const roomPool = (this.specialRoomKind === 'back' ? backPool : lightPool).filter((id) => !this.items.includes(id));
     this.specialRoomOffers = this.shuffle(roomPool).slice(0, 3);
     this.specialRoomTaken.clear();
@@ -2705,13 +3078,36 @@ export class ZheYiShenGame {
   }
 
   private activeComboNames(): string[] {
-    const combos: string[] = [];
-    if (this.hasItem('front-desk-letter') && this.hasItem('fathers-raincoat')) combos.push('那天雨太大，我没有听见');
-    if (this.hasItem('red-workbook') && this.hasItem('front-desk-letter')) combos.push('被退回的信');
-    if (this.hasItem('stone-schoolbag') && this.hasItem('slow-watch')) combos.push('大人说这都是为你好');
-    if (this.hasItem('eyebrow-razor') && this.hasItem('od-pill')) combos.push('被当成风格的求救');
-    if (this.hasItem('first-salary') && this.hasItem('nameless-tie') && this.hasItem('revoked-badge')) combos.push('我只在有用时被看见');
-    return combos;
+    return COMBO_DEFS
+      .filter((combo) => combo.items.every((id) => this.hasItem(id)))
+      .map((combo) => combo.name);
+  }
+
+  private hasCombo(name: string): boolean {
+    const combo = COMBO_DEFS.find((entry) => entry.name === name);
+    return Boolean(combo && combo.items.every((id) => this.hasItem(id)));
+  }
+
+  /** 形变协同首次触发时的低声记账：同一局每句只说一次。 */
+  private noteSynergy(line: string): void {
+    if (this.synergySeen.has(line)) return;
+    this.synergySeen.add(line);
+    this.say(`成双 · ${line}`);
+  }
+
+  /** 叹气：从嘴边呼出一小团白气。攻击即吐气，静立久了会深叹。 */
+  private sigh(scale: number): void {
+    const facing = this.heroAttackFacing;
+    const mouthX = this.heroX + (facing === 'left' ? -5 : facing === 'right' ? 5 : 0);
+    const mouthY = this.heroY - 17;
+    const drift = facing === 'left' ? 'L' : facing === 'right' ? 'R' : facing === 'back' ? 'B' : 'F';
+    for (let index = 0; index < 2; index += 1) {
+      this.bursts.push({
+        id: this.entityId++, kind: 'sigh', x: mouthX, y: mouthY - index * 2,
+        radius: (2.4 + index * 1.6) * scale, life: 0.55 + index * 0.2, duration: 0.55 + index * 0.2,
+        color: '#dfe6e2', text: drift,
+      });
+    }
   }
 
   private burst(kind: BurstEffect['kind'], x: number, y: number, radius: number, color: string, text?: string): void {
@@ -2770,11 +3166,11 @@ export class ZheYiShenGame {
     const blend = next ? (this.transitionTimer > 0 ? 1 - this.transitionTimer / 3.4 : tailBlend) : 0;
     const top = next ? this.mixHex(stage.groundTop, next.groundTop, blend) : stage.groundTop;
     const bottom = next ? this.mixHex(stage.groundBottom, next.groundBottom, blend) : stage.groundBottom;
-    const gradient = ctx.createLinearGradient(0, 0, 0, H);
-    gradient.addColorStop(0, top);
-    gradient.addColorStop(1, bottom);
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, W, H);
+    // The battlefield is an archive scan, not a smooth digital gradient. Flat
+    // bands keep the scene readable at native pixel scale and make age changes
+    // feel like a page being replaced.
+    this.fillSteppedVertical(top, bottom, 12);
+    this.renderStageAtmosphere(stage, next, blend);
 
     const shakeAmount = this.screenShake > 0 ? Math.ceil(this.screenShake * 16) : 0;
     const shakeX = shakeAmount ? Math.round(Math.sin(this.battleTime * 113) * shakeAmount) : 0;
@@ -2804,6 +3200,148 @@ export class ZheYiShenGame {
     ctx.restore();
   }
 
+  private renderStageAtmosphere(stage: StageSpec, next: StageSpec | undefined, blend: number): void {
+    const ctx = this.ctx;
+    const t = this.battleTime;
+    const seed = this.runSeed >>> 0;
+    const stageIndex = this.encounterIndex;
+    const phase = (t * 0.7 + (seed % 97) / 97) % 1;
+    applyPixelDiscipline(ctx);
+    ctx.save();
+    ctx.globalAlpha = 1;
+
+    // A quiet registration grid gives the otherwise empty field a sense of
+    // depth while staying below sprites and projectiles.
+    ctx.fillStyle = 'rgba(216,208,193,.055)';
+    for (let y = 108; y < 560; y += 54) ctx.fillRect(16, y, W - 32, 1);
+    ctx.fillStyle = 'rgba(216,208,193,.035)';
+    for (let x = 34; x < W; x += 62) ctx.fillRect(x, 106, 1, 430);
+
+    if (stageIndex === 0) {
+      // Childhood: the room is too large. Dust drifts, and the floor under the
+      // bed occasionally remembers two eyes.
+      ctx.fillStyle = 'rgba(125,105,137,.18)';
+      ctx.fillRect(22, 438, 316, 2);
+      ctx.fillStyle = 'rgba(220,207,180,.42)';
+      for (let index = 0; index < 18; index += 1) {
+        const hash = this.cellHash(index - 4, stageIndex + 11);
+        const x = (hash % 344) + 8;
+        const y = 112 + ((hash >>> 9) % 360);
+        const drift = Math.floor((t * (3 + (hash % 4)) + index * 19) % 18);
+        if ((hash + Math.floor(t * 2)) % 5 < 3) ctx.fillRect(x, y + drift, 1 + (hash % 2), 1);
+      }
+    } else if (stageIndex === 1) {
+      // School: chalk lines and a red correction mark that never quite lands.
+      ctx.fillStyle = 'rgba(174,190,198,.13)';
+      for (let y = 126; y < 452; y += 34) ctx.fillRect(30, y, 300, 1);
+      ctx.fillStyle = 'rgba(159,53,72,.22)';
+      const markX = 48 + Math.floor(((t * 16) % 260) / 4) * 4;
+      const markY = 146 + ((Math.floor(t / 4) % 4) * 52);
+      ctx.fillRect(markX, markY, 14, 2);
+      ctx.fillRect(markX + 6, markY - 6, 2, 14);
+    } else if (stageIndex === 2) {
+      // Youth: station rails recede toward the hero. A passing timetable light
+      // is the first intentionally conspicuous motion in the run.
+      ctx.fillStyle = 'rgba(210,180,105,.2)';
+      ctx.fillRect(18, 456, 324, 2);
+      ctx.fillRect(18, 468, 324, 1);
+      ctx.fillStyle = 'rgba(185,166,125,.12)';
+      for (let x = -40; x < 420; x += 58) {
+        ctx.fillRect(Math.round(x + phase * 58), 455, 2, 82);
+      }
+      const sweep = ((t * 42 + (seed % 140)) % 420) - 40;
+      ctx.fillStyle = 'rgba(231,211,149,.22)';
+      ctx.fillRect(Math.round(sweep), 184, 2, 46);
+      ctx.fillRect(Math.round(sweep + 12), 184, 1, 24);
+    } else if (stageIndex === 3) {
+      // Adulthood: rain is a regular office clock. One warm window fades in and
+      // out, but never becomes a safe place to stand.
+      ctx.fillStyle = 'rgba(153,188,175,.18)';
+      for (let index = 0; index < 26; index += 1) {
+        const hash = this.cellHash(index + 7, stageIndex + 19);
+        const x = (hash % 360) - 8;
+        const y = 102 + ((hash >>> 8) % 410);
+        const fall = Math.floor((t * (18 + (hash % 11)) + index * 13) % 42);
+        ctx.fillRect(x, y + fall, 1, 5 + (hash % 4));
+      }
+      const windowPulse = 0.08 + Math.max(0, Math.sin(t * 0.9 + 1.4)) * 0.12;
+      ctx.fillStyle = `rgba(211,183,102,${windowPulse.toFixed(3)})`;
+      ctx.fillRect(282, 134, 34, 22);
+      ctx.fillStyle = 'rgba(20,24,23,.5)';
+      ctx.fillRect(297, 134, 2, 22);
+      ctx.fillRect(282, 144, 34, 2);
+    } else if (stageIndex === 4) {
+      // Middle age: the office becomes a spreadsheet. The fluorescent bar
+      // flickers only at the edge of the frame so it never hides a hit cue.
+      ctx.fillStyle = 'rgba(173,188,198,.09)';
+      for (let x = 22; x < 340; x += 28) ctx.fillRect(x, 118, 1, 338);
+      for (let y = 136; y < 456; y += 24) ctx.fillRect(22, y, 318, 1);
+      const flicker = 0.06 + Math.max(0, Math.sin(t * 7.5)) * 0.08;
+      ctx.fillStyle = `rgba(205,216,211,${flicker.toFixed(3)})`;
+      ctx.fillRect(40, 104, 280, 2);
+      ctx.fillStyle = 'rgba(187,72,88,.32)';
+      const notice = Math.floor(t / 5) % 3;
+      ctx.fillRect(292 + notice * 8, 120 + notice * 24, 3, 3);
+    } else {
+      // Old age: the archive loses ink. Ash/snow moves slowly and a distant
+      // lamp appears only during the short surprise pulse below.
+      ctx.fillStyle = 'rgba(201,204,196,.28)';
+      for (let index = 0; index < 22; index += 1) {
+        const hash = this.cellHash(index + 31, stageIndex + 29);
+        const x = (hash % 344) + 8;
+        const y = 108 + ((hash >>> 10) % 390);
+        const drift = Math.floor((t * (5 + (hash % 3)) + index * 23) % 30);
+        ctx.fillRect(x, y + drift, 1 + (hash % 2), 1 + (hash % 2));
+      }
+      ctx.fillStyle = 'rgba(220,214,192,.14)';
+      ctx.fillRect(18, 438, 324, 2);
+    }
+
+    this.renderAtmosphereSurprise(stageIndex, t, seed);
+    if (next && blend > 0.01) {
+      ctx.globalAlpha = Math.min(0.35, blend * 0.35);
+      ctx.fillStyle = next.propColor;
+      ctx.fillRect(14, 536, 332, 1);
+    }
+    ctx.restore();
+  }
+
+  private renderAtmosphereSurprise(stageIndex: number, time: number, seed: number): void {
+    const ctx = this.ctx;
+    const period = 17 + stageIndex * 2;
+    const phase = ((time + (seed % period)) % period + period) % period;
+    const center = 11.5 + (stageIndex % 2) * 1.5;
+    const distance = Math.abs(phase - center);
+    const pulse = distance < 0.85 ? 1 - distance / 0.85 : 0;
+    if (pulse <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = pulse * 0.85;
+    ctx.imageSmoothingEnabled = false;
+    if (stageIndex === 0) {
+      ctx.fillStyle = '#d8d0c1';
+      ctx.fillRect(78, 214, 3, 3); ctx.fillRect(86, 214, 3, 3);
+      ctx.fillRect(78, 226, 3, 2); ctx.fillRect(86, 226, 3, 2);
+    } else if (stageIndex === 1) {
+      ctx.fillStyle = '#b84d5b';
+      ctx.fillRect(252, 188, 22, 2); ctx.fillRect(262, 178, 2, 22);
+    } else if (stageIndex === 2) {
+      ctx.fillStyle = '#f0d68a';
+      ctx.fillRect(42, 258, 34, 3); ctx.fillRect(52, 254, 14, 2);
+    } else if (stageIndex === 3) {
+      ctx.fillStyle = '#d8b95f';
+      ctx.fillRect(288, 182, 22, 2); ctx.fillRect(298, 172, 2, 22);
+    } else if (stageIndex === 4) {
+      ctx.fillStyle = '#d26a73';
+      ctx.fillRect(302, 266, 4, 4); ctx.fillRect(312, 266, 4, 4);
+      ctx.fillStyle = '#d8d0c1'; ctx.fillRect(306, 258, 6, 2);
+    } else {
+      ctx.fillStyle = '#d8d0c1';
+      ctx.fillRect(64, 236, 2, 20); ctx.fillRect(60, 236, 10, 2);
+      ctx.fillStyle = '#d8b95f'; ctx.fillRect(61, 231, 8, 3);
+    }
+    ctx.restore();
+  }
+
   private renderProps(stage: StageSpec, next: StageSpec | undefined, blend: number): void {
     const ctx = this.ctx;
     const cell = 84;
@@ -2821,12 +3359,24 @@ export class ZheYiShenGame {
         if (h % 7 >= 3) continue;
         const px = cx * cell + ((h % 53) / 53) * (cell - 26) + 13;
         const py = cy * cell + (((h >> 6) % 53) / 53) * (cell - 26) + 13;
-        const variant = (h >> 3) % 3;
+        const variant = (h >> 3) % PROP_VARIANTS;
         const showNext = Boolean(next) && ((h >> 9) % 100) / 100 < blend;
         const idx = showNext ? this.encounterIndex + 1 : this.encounterIndex;
         const color = showNext && next ? next.propColor : stage.propColor;
-        ctx.globalAlpha = 0.6;
-        this.drawProp(idx, variant, px, py, color);
+        const sprite = this.worldProps.slice(idx, variant);
+        if (sprite) {
+          // A one-pixel ground shadow separates dark props from the archive
+          // bands without turning them into outlined stickers.
+          ctx.globalAlpha = 0.34;
+          ctx.fillStyle = 'rgba(5,5,8,.7)';
+          ctx.fillRect(Math.round(px - 12), Math.round(py - 2), 24, 3);
+          ctx.globalAlpha = 0.88;
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(sprite, Math.round(px - sprite.width / 2), Math.round(py - sprite.height));
+        } else {
+          ctx.globalAlpha = 0.6;
+          this.drawProp(idx, variant % 3, px, py, color);
+        }
         ctx.globalAlpha = 1;
       }
     }
@@ -2927,9 +3477,15 @@ export class ZheYiShenGame {
       const { x, y } = this.worldStall;
       ctx.fillStyle = 'rgba(213,180,95,.12)';
       ctx.beginPath(); ctx.arc(x, y, 46, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#2b2620'; ctx.fillRect(x - 20, y - 18, 40, 22);
-      ctx.fillStyle = '#8d6f3a'; ctx.fillRect(x - 24, y - 26, 48, 8);
-      ctx.fillStyle = '#d5b45f'; ctx.beginPath(); ctx.arc(x, y - 34, 4, 0, Math.PI * 2); ctx.fill();
+      const stallSprite = worldEntityAtlas.slice('stall');
+      if (stallSprite) {
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(stallSprite, Math.round(x - stallSprite.width / 2), Math.round(y + 8 - stallSprite.height));
+      } else {
+        ctx.fillStyle = '#2b2620'; ctx.fillRect(x - 20, y - 18, 40, 22);
+        ctx.fillStyle = '#8d6f3a'; ctx.fillRect(x - 24, y - 26, 48, 8);
+        ctx.fillStyle = '#d5b45f'; ctx.beginPath(); ctx.arc(x, y - 34, 4, 0, Math.PI * 2); ctx.fill();
+      }
       ctx.fillStyle = '#c9c3b8'; ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('摊位', x, y + 18);
     }
@@ -2938,15 +3494,21 @@ export class ZheYiShenGame {
       const warm = kind === 'light';
       ctx.fillStyle = warm ? 'rgba(216,185,95,.16)' : 'rgba(200,214,220,.12)';
       ctx.beginPath(); ctx.arc(x, y, 44 + Math.sin(ttl * 4) * 4, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = warm ? '#3a3222' : '#23262b';
-      ctx.fillRect(x - 14, y - 34, 28, 40);
-      ctx.strokeStyle = warm ? '#d8b95f' : '#aeb9bf';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(x - 14, y - 34, 28, 40);
-      if (warm) {
-        ctx.fillStyle = '#e8cd7e'; ctx.fillRect(x - 7, y - 24, 14, 12);
+      const doorSprite = worldEntityAtlas.slice(warm ? 'door-light' : 'door-dark');
+      if (doorSprite) {
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(doorSprite, Math.round(x - doorSprite.width / 2), Math.round(y + 8 - doorSprite.height));
       } else {
-        ctx.fillStyle = '#c8d4d8'; ctx.fillRect(x - 10, y - 30, 20, 4);
+        ctx.fillStyle = warm ? '#3a3222' : '#23262b';
+        ctx.fillRect(x - 14, y - 34, 28, 40);
+        ctx.strokeStyle = warm ? '#d8b95f' : '#aeb9bf';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x - 14, y - 34, 28, 40);
+        if (warm) {
+          ctx.fillStyle = '#e8cd7e'; ctx.fillRect(x - 7, y - 24, 14, 12);
+        } else {
+          ctx.fillStyle = '#c8d4d8'; ctx.fillRect(x - 10, y - 30, 20, 4);
+        }
       }
       ctx.fillStyle = warm ? '#e5c96f' : '#c3ccd1'; ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText(warm ? '留灯间' : '里屋', x, y + 20);
@@ -2961,11 +3523,24 @@ export class ZheYiShenGame {
     const ctx = this.ctx;
     const sx = HERO_SCREEN_X + (this.darkCX - this.heroX);
     const sy = HERO_SCREEN_Y + (this.darkCY - this.heroY);
-    const gradient = ctx.createRadialGradient(sx, sy, Math.max(10, this.darkR * 0.7), sx, sy, this.darkR);
-    gradient.addColorStop(0, 'rgba(5,5,8,0)');
-    gradient.addColorStop(1, 'rgba(5,5,8,.96)');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, W, H);
+    // Concentric stepped octagons make the final darkness feel like a pixel
+    // iris closing, rather than a soft radial filter.
+    const maxRadius = Math.max(24, Math.round(this.darkR));
+    for (let step = 0; step < 7; step += 1) {
+      const innerRadius = Math.round(maxRadius * (0.12 + step * 0.115));
+      const alpha = Math.min(0.17, 0.045 + step * 0.022);
+      ctx.fillStyle = `rgba(5,5,8,${alpha.toFixed(3)})`;
+      ctx.beginPath();
+      ctx.rect(0, 0, W, H);
+      this.addPixelOctagonPath(ctx, sx, sy, innerRadius);
+      ctx.fill('evenodd');
+    }
+    // 黑暗收拢的圆心是一盏路灯：收灯人正是在它底下出现
+    const lamp = worldEntityAtlas.slice('lamp');
+    if (lamp && this.darkR < 320) {
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(lamp, Math.round(sx - lamp.width / 2), Math.round(sy + 26 - lamp.height));
+    }
   }
 
   private renderCaption(): void {
@@ -2973,14 +3548,17 @@ export class ZheYiShenGame {
     const ctx = this.ctx;
     const alpha = this.clamp(this.captionTime > 6 ? (7 - this.captionTime) * 2 : this.captionTime / 1.2, 0, 1);
     const twoLines = this.caption.length > 17;
+    const panelY = 96;
+    const panelHeight = twoLines ? 35 : 25;
     ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = 'rgba(8,8,12,.68)';
-    ctx.fillRect(20, 126, W - 40, twoLines ? 50 : 34);
+    ctx.globalAlpha = alpha * 0.82;
+    drawCutCornerPanel(ctx, 38, panelY, W - 76, panelHeight, 'rgba(8,8,12,.68)', '#51494d', 2, 1);
+    ctx.fillStyle = UI_PALETTE.oldRed;
+    ctx.fillRect(44, panelY + 4, 18, 2);
     ctx.fillStyle = '#e8e1d3';
     ctx.textAlign = 'center';
-    ctx.font = 'bold 11px serif';
-    this.wrapText(this.caption, 180, 148, W - 72, 17, 2);
+    ctx.font = `bold 9px ${UI_ARCHIVE_FONT_STACK}`;
+    this.wrapText(this.caption, 180, panelY + 16, W - 96, 13, 2);
     ctx.restore();
   }
 
@@ -3021,6 +3599,20 @@ export class ZheYiShenGame {
       ctx.fillStyle = this.mixHex(top, bottom, index / Math.max(1, count - 1));
       ctx.fillRect(0, y0, W, y1 - y0);
     }
+  }
+
+  private addPixelOctagonPath(ctx: CanvasRenderingContext2D, cx: number, cy: number, radius: number): void {
+    const r = Math.max(4, Math.round(radius));
+    const cut = Math.max(2, Math.round(r * 0.42));
+    ctx.moveTo(Math.round(cx - r + cut), Math.round(cy - r));
+    ctx.lineTo(Math.round(cx + r - cut), Math.round(cy - r));
+    ctx.lineTo(Math.round(cx + r), Math.round(cy - r + cut));
+    ctx.lineTo(Math.round(cx + r), Math.round(cy + r - cut));
+    ctx.lineTo(Math.round(cx + r - cut), Math.round(cy + r));
+    ctx.lineTo(Math.round(cx - r + cut), Math.round(cy + r));
+    ctx.lineTo(Math.round(cx - r), Math.round(cy + r - cut));
+    ctx.lineTo(Math.round(cx - r), Math.round(cy - r + cut));
+    ctx.closePath();
   }
 
   private renderBackground(): void {
@@ -3199,7 +3791,7 @@ export class ZheYiShenGame {
     ctx.textAlign = 'right';
     ctx.fillStyle = UI_PALETTE.paperDim;
     ctx.font = `7px ${UI_FONT_STACK}`;
-    ctx.fillText('档案仍在路上', 330, 46);
+    ctx.fillText(this.originAttempt > 1 ? '重新登记中' : '档案仍在路上', 330, 46);
     drawLifeChapterTrack(ctx, 30, 69, 300, 8, 0, '降生|童年|少年|青年|成年|中年|老年|死亡', 0);
 
     fields.forEach(([label, value], index) => {
@@ -3236,7 +3828,7 @@ export class ZheYiShenGame {
     ctx.fillText('这一行出现时，等待已经成为他的童年。', 180, 550);
     ctx.fillStyle = UI_PALETTE.paperDim;
     ctx.font = `8px ${UI_FONT_STACK}`;
-    ctx.fillText('登记的人还没把这一页递回来', 180, 582);
+    ctx.fillText(this.originAttempt > 1 ? '上一页没赶上，登记处正在重写' : '登记的人还没把这一页递回来', 180, 582);
     drawRedStamp(ctx, 134, 598, 92, 28, '无法选择', 29, UI_PALETTE.oldRed);
   }
 
@@ -3615,6 +4207,7 @@ export class ZheYiShenGame {
     this.renderDarkness();
     this.renderVignette();
     this.renderBattleOverlay();
+    this.renderComboReveal();
     this.renderOriginBadge();
     this.renderHud();
     this.renderEdgeHint(this.worldDoor?.x, this.worldDoor?.y, this.worldDoor?.kind === 'light' ? '#e5c96f' : '#c3ccd1');
@@ -3626,12 +4219,17 @@ export class ZheYiShenGame {
     this.renderEliteAlert();
     this.renderJoystick();
     if (this.toastTime > 0 && this.toast) {
-      this.ctx.fillStyle = 'rgba(10,10,15,.88)';
-      this.ctx.fillRect(38, 60, 284, 26);
+      const toastAlpha = this.clamp(this.toastTime / 0.32, 0, 1);
+      this.ctx.save();
+      this.ctx.globalAlpha = toastAlpha;
+      drawCutCornerPanel(this.ctx, 68, 72, 224, 22, 'rgba(10,10,15,.74)', '#64545a', 2, 1);
+      this.ctx.fillStyle = UI_PALETTE.raincoatYellow;
+      this.ctx.fillRect(74, 76, 14, 2);
       this.ctx.fillStyle = '#e7e0d3';
       this.ctx.textAlign = 'center';
-      this.ctx.font = 'bold 10px sans-serif';
-      this.ctx.fillText(this.toast, 180, 77);
+      this.ctx.font = `bold 8px ${UI_FONT_STACK}`;
+      this.ctx.fillText(this.toast, 180, 87);
+      this.ctx.restore();
     }
   }
 
@@ -3729,11 +4327,17 @@ export class ZheYiShenGame {
   private renderVignette(): void {
     if (this.darkActive) return;
     const ctx = this.ctx;
-    const gradient = ctx.createRadialGradient(180, 300, 190, 180, 300, 430);
-    gradient.addColorStop(0, 'rgba(8,8,12,0)');
-    gradient.addColorStop(1, 'rgba(8,8,12,.42)');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, W, H);
+    // Keep the edge falloff stepped so the scene stays in the same pixel
+    // language as the sprites and archive UI.
+    for (let band = 0; band < 4; band += 1) {
+      const inset = band * 8;
+      const alpha = 0.045 + band * 0.035;
+      ctx.fillStyle = `rgba(8,8,12,${alpha.toFixed(3)})`;
+      ctx.fillRect(inset, inset, W - inset * 2, 2);
+      ctx.fillRect(inset, H - inset - 2, W - inset * 2, 2);
+      ctx.fillRect(inset, inset, 2, H - inset * 2);
+      ctx.fillRect(W - inset - 2, inset, 2, H - inset * 2);
+    }
   }
 
   private renderBattleOverlay(): void {
@@ -3859,6 +4463,22 @@ export class ZheYiShenGame {
     const attackProgress = attacking
       ? 1 - this.clamp(enemy.attackCooldown / warningWindow, 0, 1)
       : 0;
+    // Dark canonical sprites need a quiet landing mark on the floor. Four
+    // square corners read as a pixel halo and keep silhouettes legible without
+    // adding a smooth glow.
+    const haloColor = enemy.boss ? 'rgba(214,177,91,.20)' : enemy.elite ? 'rgba(194,86,99,.16)' : 'rgba(190,188,174,.09)';
+    ctx.save();
+    ctx.fillStyle = haloColor;
+    const hx = Math.round(enemy.x - r - 4);
+    const hy = Math.round(enemy.y - r - 4);
+    const hw = Math.round(r * 2 + 8);
+    ctx.fillRect(hx, hy, 3, 2);
+    ctx.fillRect(hx + hw - 3, hy, 3, 2);
+    ctx.fillRect(hx, hy + hw - 2, 3, 2);
+    ctx.fillRect(hx + hw - 3, hy + hw - 2, 3, 2);
+    ctx.fillStyle = 'rgba(5,5,8,.34)';
+    ctx.fillRect(Math.round(enemy.x - r - 3), Math.round(enemy.y + r - 1), Math.round(r * 2 + 6), 3);
+    ctx.restore();
     const pixelDrawn = this.pixelEnemies.draw(
       ctx,
       enemy,
@@ -3950,6 +4570,20 @@ export class ZheYiShenGame {
     const appearance = this.state === 'title' ? DEFAULT_APPEARANCE : (this.origin?.appearance ?? DEFAULT_APPEARANCE);
     const ageStep = Math.max(0, Math.min(5, this.state === 'result' ? 5 : this.encounterIndex)) as 0 | 1 | 2 | 3 | 4 | 5;
     const frame = actionFrame ?? (Math.floor(this.visualTime * 6) % 4) as 0 | 1 | 2 | 3;
+    // 《他当年也是这样站着的》：身后浮现同样弯腰的父亲轮廓
+    if (this.state === 'battle' && this.hasCombo('他当年也是这样站着的')) {
+      const ctx = this.ctx;
+      ctx.save();
+      ctx.globalAlpha = 0.18 + Math.sin(this.visualTime * 1.4) * 0.04;
+      ctx.fillStyle = '#1b1a20';
+      const fx = x - 8;
+      const fy = y - 2;
+      ctx.beginPath();
+      ctx.ellipse(fx, fy - 34 * scale, 8 * scale, 9 * scale, 0.35, 0, Math.PI * 2);
+      ctx.ellipse(fx - 2, fy - 16 * scale, 10 * scale, 18 * scale, 0.22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
     this.pixelHero.draw(this.ctx, x, y, scale, {
       appearance,
       ageStep,
@@ -4112,14 +4746,23 @@ export class ZheYiShenGame {
       ctx.save();
       ctx.translate(projectile.x, projectile.y);
       ctx.rotate(Math.atan2(projectile.vy, projectile.vx));
-      ctx.globalAlpha = Math.min(1, projectile.life * 2) * 0.35;
-      ctx.strokeStyle = projectile.color;
-      ctx.lineWidth = Math.max(1, projectile.radius * 0.8);
-      ctx.beginPath();
-      ctx.moveTo(-projectile.radius * 4.2, 0);
-      ctx.lineTo(-projectile.radius * 1.1, 0);
-      ctx.stroke();
-      ctx.globalAlpha = Math.min(1, projectile.life * 2);
+      // 凝实度：出生的一口气是虚弱的雾，人生把它揉硬
+      const firmness = this.clamp(
+        (projectile.damage / BASE_VECTOR.damage - 1) * 0.55
+        + projectile.visual.weight * 0.25 + projectile.visual.sharpness * 0.3,
+        0, 1,
+      );
+      const lifeFade = Math.min(1, projectile.life * 2);
+      if (projectile.style !== 'plain') {
+        ctx.globalAlpha = lifeFade * 0.35;
+        ctx.strokeStyle = projectile.color;
+        ctx.lineWidth = Math.max(1, projectile.radius * 0.8);
+        ctx.beginPath();
+        ctx.moveTo(-projectile.radius * 4.2, 0);
+        ctx.lineTo(-projectile.radius * 1.1, 0);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = lifeFade;
       ctx.fillStyle = projectile.color;
       ctx.strokeStyle = projectile.color;
       if (projectile.style === 'paper') {
@@ -4132,11 +4775,72 @@ export class ZheYiShenGame {
       } else if (projectile.style === 'key') {
         ctx.lineWidth = Math.max(1, projectile.radius * 0.35); ctx.beginPath(); ctx.arc(-projectile.radius, 0, projectile.radius * 0.7, 0, Math.PI * 2); ctx.moveTo(-projectile.radius * 0.3, 0); ctx.lineTo(projectile.radius * 1.8, 0); ctx.lineTo(projectile.radius * 1.8, projectile.radius); ctx.stroke();
       } else {
-        ctx.beginPath(); ctx.ellipse(0, 0, projectile.radius * 1.7, projectile.radius, 0, 0, Math.PI * 2); ctx.fill();
+        // 《一口气》：一小团月白色气息。虚弱时是散雾，被人生揉硬后才凝成弹
+        const wobble = Math.sin(projectile.life * 9 + projectile.id * 1.7) * (1 - firmness) * 0.22;
+        const puffR = projectile.radius * (1 + wobble);
+        const alpha = lifeFade * (0.42 + firmness * 0.55);
+        ctx.globalAlpha = alpha * 0.35;
+        ctx.beginPath(); ctx.ellipse(-puffR * 2.6, wobble * 4, puffR * (0.55 + 0.2 * firmness), puffR * 0.5, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = alpha * 0.6;
+        ctx.beginPath(); ctx.ellipse(-puffR * 1.3, -wobble * 4, puffR * (0.75 + 0.25 * firmness), puffR * 0.7, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = alpha;
+        ctx.beginPath(); ctx.ellipse(0, 0, puffR * (1.25 + firmness * 0.45), puffR * (0.85 + firmness * 0.15), 0, 0, Math.PI * 2); ctx.fill();
+        if (firmness > 0.45) {
+          ctx.globalAlpha = alpha * 0.9;
+          ctx.fillStyle = '#f4efe2';
+          ctx.beginPath(); ctx.ellipse(puffR * 0.3, 0, puffR * 0.55, puffR * 0.45, 0, 0, Math.PI * 2); ctx.fill();
+        }
       }
       if (projectile.critical) { ctx.globalAlpha = 0.7; ctx.strokeStyle = '#fff8c5'; ctx.lineWidth = 1.2; ctx.stroke(); }
       ctx.restore();
     }
+  }
+
+  /** 奥义演出：集齐组合时插画浮现。战斗不暂停；插画未加载则退回字幕。 */
+  private renderComboReveal(): void {
+    const reveal = this.comboReveal;
+    if (!reveal) return;
+    const art = comboArtAtlas.slice(reveal.artKey);
+    if (!art) {
+      this.caption = `集齐了 ·《${reveal.name}》`;
+      this.captionTime = Math.max(this.captionTime, 2.5);
+      this.comboReveal = undefined;
+      return;
+    }
+    const elapsed = reveal.total - reveal.timer;
+    const fadeIn = this.clamp(elapsed / 0.45, 0, 1);
+    const fadeOut = this.clamp(reveal.timer / 0.6, 0, 1);
+    const alpha = Math.min(fadeIn, fadeOut);
+    const rise = (1 - fadeIn) * 14;
+    const ctx = this.ctx;
+    const artW = 288;
+    const artH = 162;
+    const x = Math.round((W - artW) / 2);
+    const y = Math.round(150 + rise);
+    ctx.save();
+    applyPixelDiscipline(ctx);
+    ctx.globalAlpha = alpha * 0.62;
+    ctx.fillStyle = '#07080b';
+    ctx.fillRect(0, y - 46, W, artH + 118);
+    ctx.globalAlpha = alpha;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(art, x, y, artW, artH);
+    ctx.strokeStyle = UI_PALETTE.paperShadow;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - 1, y - 1, artW + 2, artH + 2);
+    ctx.strokeStyle = UI_PALETTE.oldRed;
+    ctx.strokeRect(x - 4, y - 4, artW + 8, artH + 8);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.fillText('这一身 · 成套了', W / 2, y - 12);
+    ctx.fillStyle = UI_PALETTE.paperLight;
+    ctx.font = `bold 15px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText(`《${reveal.name}》`, W / 2, y + artH + 26);
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    ctx.fillText(reveal.line, W / 2, y + artH + 44);
+    ctx.restore();
   }
 
   private renderBursts(): void {
@@ -4149,6 +4853,18 @@ export class ZheYiShenGame {
       ctx.fillStyle = burst.color;
       if (burst.kind === 'word') {
         ctx.textAlign = 'center'; ctx.font = 'bold 11px sans-serif'; ctx.fillText(burst.text || '', burst.x, burst.y - progress * 22);
+      } else if (burst.kind === 'sigh') {
+        const driftX = burst.text === 'L' ? -1 : burst.text === 'R' ? 1 : 0;
+        const driftY = burst.text === 'B' ? -0.6 : burst.text === 'F' ? 0.3 : -0.35;
+        ctx.globalAlpha = (1 - progress) * 0.5;
+        ctx.beginPath();
+        ctx.arc(
+          burst.x + driftX * progress * 9,
+          burst.y + driftY * progress * 9 - progress * 5,
+          Math.max(1, burst.radius * (0.6 + progress * 0.9)),
+          0, Math.PI * 2,
+        );
+        ctx.fill();
       } else if (burst.kind === 'door') {
         ctx.lineWidth = 3; ctx.strokeRect(burst.x - burst.radius * 0.26, burst.y - burst.radius * progress * 0.5, burst.radius * 0.52, burst.radius * progress);
       } else {
@@ -4472,6 +5188,17 @@ export class ZheYiShenGame {
   private drawItemSymbol(id: ItemId, x: number, y: number, size: number): void {
     const ctx = this.ctx;
     const item = getItem(id);
+    if (size >= 10) {
+      const sprite = itemIconAtlas.slice(id);
+      if (sprite) {
+        const box = size * 2;
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(sprite, Math.round(x - box / 2), Math.round(y - box / 2), box, box);
+        ctx.restore();
+        return;
+      }
+    }
     ctx.save(); ctx.translate(x, y); ctx.strokeStyle = item.color; ctx.fillStyle = item.color; ctx.lineWidth = Math.max(1.2, size * 0.09); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     if (id === 'loose-button') {
       ctx.beginPath(); ctx.arc(0, 0, size * 0.65, 0, Math.PI * 2); ctx.stroke();
@@ -4602,7 +5329,7 @@ export class ZheYiShenGame {
     const host = window as Window & {
       render_game_to_text?: () => string;
       advanceTime?: (ms: number) => void;
-      zhe_yi_shen_test?: (action: 'start' | 'reveal-origin' | 'clear' | 'choose-first' | 'swallow' | 'exhale' | 'special' | 'leave-special' | 'shop' | 'buy-first' | 'combo' | 'boss' | 'battle' | 'win' | 'equip', payload?: unknown) => void;
+      zhe_yi_shen_test?: (action: 'start' | 'reveal-origin' | 'clear' | 'choose-first' | 'swallow' | 'exhale' | 'special' | 'leave-special' | 'shop' | 'buy-first' | 'combo' | 'boss' | 'battle' | 'father' | 'father-phase2' | 'win' | 'equip', payload?: unknown) => void;
     };
     host.render_game_to_text = () => JSON.stringify({
       coordinateSystem: 'origin top-left; +x right; +y down; logical 360x640',
@@ -4622,7 +5349,7 @@ export class ZheYiShenGame {
       originProgress: this.aiOriginState === 'gpt'
         ? Number((this.originElapsed / this.originStoryDuration()).toFixed(2))
         : 0,
-      ai: { origin: this.aiOriginState, fate: this.aiFateState },
+      ai: { origin: this.aiOriginState, originAttempt: this.originAttempt, fate: this.aiFateState },
       poisons: this.poisons,
       memories: this.memories,
       currentFate: this.currentFate,
@@ -4676,12 +5403,14 @@ export class ZheYiShenGame {
         if (action === 'buy-first') this.buyShopOffer(0);
         if (action === 'combo') {
           this.startRun(0x20260718);
-          this.items = ['front-desk-letter', 'fathers-raincoat', 'eyebrow-razor', 'od-pill'];
-          this.hero.maxHp = 72;
-          this.hero.hp = 72;
           this.initialItemReward = false;
           this.encounterIndex = 4;
           this.startStage();
+          for (const comboId of ['front-desk-letter', 'fathers-raincoat', 'eyebrow-razor', 'od-pill'] as ItemId[]) {
+            this.acquireItem(comboId);
+          }
+          this.hero.maxHp = 500;
+          this.hero.hp = 500;
         }
         if (action === 'battle') {
           // 视觉审查用：跳进第 1 阶段战斗，血量拉满，不依赖 AI 出生
@@ -4691,6 +5420,23 @@ export class ZheYiShenGame {
           this.hero.hp = 999;
           this.encounterIndex = 0;
           this.startStage();
+        }
+        if (action === 'father') {
+          if (this.state === 'title') this.startRun(0x20260718);
+          this.initialItemReward = false;
+          this.hero.maxHp = 999;
+          this.hero.hp = 999;
+          this.encounterIndex = 3;
+          this.startStage();
+          this.battleTime = (STAGES[this.encounterIndex]?.bossAt ?? 0) - 0.1;
+          this.update(FIXED_STEP * 7);
+        }
+        if (action === 'father-phase2') {
+          const father = this.enemies.find((enemy) => !enemy.dead && enemy.type === 'silent-father');
+          if (father) {
+            father.hp = father.maxHp * 0.49;
+            father.phase = 2;
+          }
         }
         if (action === 'boss') {
           if (this.state === 'title') this.startRun(0x20260718);

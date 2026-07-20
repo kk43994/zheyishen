@@ -5,7 +5,9 @@ export const ENEMY_PIXEL_FRAME = 32;
 export type EnemyPixelMotion = 'idle' | 'move' | 'attack' | 'hurt' | 'death';
 export type EnemyPixelAssetKey =
   | 'fear' | 'red-mark' | 'whisper' | 'clockwork' | 'debt'
-  | 'silent-father' | 'silent-father-p2' | 'lamp-keeper' | 'uniform-answer';
+  | 'silent-father' | 'silent-father-p2' | 'lamp-keeper' | 'uniform-answer'
+  | 'cry-moth' | 'hunger-shadow' | 'closet-dark' | 'missed-call' | 'silence'
+  | 'badge-thief' | 'debt-collector' | 'forgetter' | 'empty-chair' | 'last-bus';
 
 const MOTION_FRAMES = {
   idle: 2,
@@ -24,6 +26,8 @@ const MOTION_ROWS = {
 } as const satisfies Record<EnemyPixelMotion, number>;
 
 const ATLAS_URLS = {
+  // The canonical fear pass is mechanically valid but too close to the
+  // childhood ground bands; keep the brighter source atlas for readability.
   fear: new URL('./assets/enemies/fear.png', import.meta.url).href,
   'red-mark': new URL('./assets/enemies/red-mark.png', import.meta.url).href,
   whisper: new URL('./assets/enemies/whisper.png', import.meta.url).href,
@@ -32,7 +36,19 @@ const ATLAS_URLS = {
   'silent-father': new URL('./assets/enemies/silent-father.png', import.meta.url).href,
   'silent-father-p2': new URL('./assets/enemies/silent-father-p2.png', import.meta.url).href,
   'lamp-keeper': new URL('./assets/enemies/lamp-keeper.png', import.meta.url).href,
-  'uniform-answer': new URL('./assets/enemies/uniform-answer.png', import.meta.url).href,
+  'uniform-answer': new URL('./assets/canonical-v1/enemies/uniform-answer.png', import.meta.url).href,
+  'cry-moth': new URL('./assets/enemies/cry-moth.png', import.meta.url).href,
+  'hunger-shadow': new URL('./assets/canonical-v1/enemies/hunger-shadow.png', import.meta.url).href,
+  'closet-dark': new URL('./assets/enemies/closet-dark.png', import.meta.url).href,
+  'missed-call': new URL('./assets/enemies/missed-call.png', import.meta.url).href,
+  silence: new URL('./assets/enemies/silence.png', import.meta.url).href,
+  'badge-thief': new URL('./assets/enemies/badge-thief.png', import.meta.url).href,
+  'debt-collector': new URL('./assets/enemies/debt-collector.png', import.meta.url).href,
+  forgetter: new URL('./assets/enemies/forgetter.png', import.meta.url).href,
+  'empty-chair': new URL('./assets/enemies/empty-chair.png', import.meta.url).href,
+  // The station boss keeps its source yellow signal lights until a brighter
+  // canonical pass is approved by visual QA.
+  'last-bus': new URL('./assets/enemies/last-bus.png', import.meta.url).href,
 } as const satisfies Record<EnemyPixelAssetKey, string>;
 
 const ASSET_KEYS = Object.keys(ATLAS_URLS) as EnemyPixelAssetKey[];
@@ -49,9 +65,9 @@ export interface EnemyDeathPixelState {
 const ASSET_FALLBACK: Record<EnemyUnit['type'], EnemyPixelAssetKey> = {
   fear: 'fear', 'red-mark': 'red-mark', whisper: 'whisper', clockwork: 'clockwork', debt: 'debt',
   'silent-father': 'silent-father', 'lamp-keeper': 'lamp-keeper',
-  'cry-moth': 'whisper', 'hunger-shadow': 'fear', 'missed-bus': 'clockwork', 'missed-call': 'whisper',
-  silence: 'fear', 'badge-thief': 'debt', forgetter: 'fear', 'empty-chair': 'debt',
-  'closet-dark': 'fear', 'uniform-answer': 'uniform-answer', 'last-bus': 'clockwork', 'debt-collector': 'debt',
+  'cry-moth': 'cry-moth', 'hunger-shadow': 'hunger-shadow', 'missed-bus': 'last-bus', 'missed-call': 'missed-call',
+  silence: 'silence', 'badge-thief': 'badge-thief', forgetter: 'forgetter', 'empty-chair': 'empty-chair',
+  'closet-dark': 'closet-dark', 'uniform-answer': 'uniform-answer', 'last-bus': 'last-bus', 'debt-collector': 'debt-collector',
 };
 
 export function resolveEnemyPixelAsset(enemy: EnemyUnit): EnemyPixelAssetKey {
@@ -63,11 +79,16 @@ export function resolveEnemyPixelAsset(enemy: EnemyUnit): EnemyPixelAssetKey {
 class EnemyPixelAtlas {
   private images = new Map<EnemyPixelAssetKey, HTMLImageElement>();
   private frames = new Map<string, HTMLCanvasElement>();
+  private failed = new Set<EnemyPixelAssetKey>();
   private loading: Promise<void> | null = null;
   private loaded = false;
 
   get ready(): boolean {
     return this.loaded;
+  }
+
+  get failedAssets(): readonly EnemyPixelAssetKey[] {
+    return [...this.failed];
   }
 
   whenReady(): Promise<void> {
@@ -107,15 +128,20 @@ class EnemyPixelAtlas {
   }
 
   private async load(): Promise<void> {
-    try {
-      const entries = await Promise.all(
-        ASSET_KEYS.map(async (asset) => [asset, await this.loadImage(asset)] as const),
-      );
-      this.images = new Map(entries);
-      this.loaded = true;
-    } finally {
-      this.loading = null;
-    }
+    const results = await Promise.allSettled(ASSET_KEYS.map((asset) => this.loadImage(asset)));
+    const entries: Array<[EnemyPixelAssetKey, HTMLImageElement]> = [];
+    results.forEach((result, index) => {
+      const asset = ASSET_KEYS[index]!;
+      if (result.status === 'fulfilled') {
+        entries.push([asset, result.value]);
+        return;
+      }
+      this.failed.add(asset);
+      console.warn(`跳过损坏的怪物像素图集 ${asset}，仅回退这一种怪物。`, result.reason);
+    });
+    this.images = new Map(entries);
+    this.loaded = entries.length > 0;
+    this.loading = null;
   }
 
   private loadImage(asset: EnemyPixelAssetKey): Promise<HTMLImageElement> {
@@ -209,13 +235,21 @@ export class PixelEnemyRenderer {
     target.imageSmoothingEnabled = false;
     target.translate(Math.round(x), Math.round(y));
     target.scale(faceLeft ? -1 : 1, 1);
+    const drawX = -Math.floor(ENEMY_PIXEL_FRAME / 2) * scale;
+    const drawY = -Math.floor(ENEMY_PIXEL_FRAME / 2) * scale;
+    const drawSize = ENEMY_PIXEL_FRAME * scale;
     target.drawImage(
       image,
-      -Math.floor(ENEMY_PIXEL_FRAME / 2) * scale,
-      -Math.floor(ENEMY_PIXEL_FRAME / 2) * scale,
-      ENEMY_PIXEL_FRAME * scale,
-      ENEMY_PIXEL_FRAME * scale,
+      drawX,
+      drawY,
+      drawSize,
+      drawSize,
     );
+    // A restrained screen pass lifts near-black canonical sprites while
+    // preserving their transparent pixel silhouette and shared palette.
+    target.globalCompositeOperation = 'screen';
+    target.globalAlpha = 0.12;
+    target.drawImage(image, drawX, drawY, drawSize, drawSize);
     target.restore();
     target.imageSmoothingEnabled = previousSmoothing;
     return true;

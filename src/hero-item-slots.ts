@@ -117,6 +117,8 @@ export const HERO_SLOT_POSES: Readonly<Record<HeroRigSlot, Readonly<Record<HeroF
 };
 
 export const HERO_ITEM_CLAIMS: Readonly<Record<ItemId, HeroItemClaim>> = {
+  'ktv-song': { kind: 'mutation' },
+  'breath-on-glass': { kind: 'mutation' },
   'server-shutdown': { kind: 'mutation' },
   'always-crying': { kind: 'mutation' },
   'three-day-visible': { kind: 'mutation' },

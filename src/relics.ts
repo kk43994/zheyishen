@@ -111,7 +111,7 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
   },
   'five-ha': {
     id: 'five-ha', name: '五个哈', quality: 2, qualityName: '旧物', slot: 'chest', glyph: '哈',
-    flavor: '他回了"哈哈哈哈哈"。少一个都显得没礼貌。', summary: '一笑而过', positive: '受击22%概率笑着躲过这次伤害', negative: '治疗-15%', price: 8, color: '#8a8274',
+    flavor: '他回了"哈哈哈哈哈"。少一个都显得没礼貌。', summary: '五连发', positive: '攻击变为五连发，一发比一发轻（总量微升）', negative: '治疗-15%', price: 8, color: '#8a8274',
   },
   'red-packet': {
     id: 'red-packet', name: '抢到的0.87元红包', quality: 1, qualityName: '杂物', slot: 'waist', glyph: '包',
@@ -131,11 +131,11 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
   },
   'three-day-visible': {
     id: 'three-day-visible', name: '朋友圈仅三天可见', quality: 2, qualityName: '旧物', slot: 'shadow', glyph: '圈',
-    flavor: '过去被折叠成三天。', summary: '新的总是更强', positive: '每获得新道具伤害+8%持续20秒', negative: '治疗-5%', price: 8, color: '#8a8274',
+    flavor: '过去被折叠成三天。', summary: '三圈可见', positive: '拾取任何道具后，3枚环绕弹绕身三圈然后消失', negative: '治疗-5%', price: 8, color: '#8a8274',
   },
   'read-3am': {
     id: 'read-3am', name: '凌晨三点的已读', quality: 2, qualityName: '旧物', slot: 'hand', glyph: '读',
-    flavor: '在线不等于回应。', summary: '无伤蓄力', positive: '每5秒未受伤伤害+4%（至+20%）', negative: '受伤全部清零', price: 8, color: '#6f7d88',
+    flavor: '在线不等于回应。', summary: '已读不回', positive: '命中不立即结算：5秒后连本带利×1.3一次爆出', negative: '目标提前倒下则挂账落空', price: 8, color: '#6f7d88',
   },
   'retracted-voice': {
     id: 'retracted-voice', name: '领导撤回的六十秒语音', quality: 3, qualityName: '心结', slot: 'neck', glyph: '音',
@@ -155,7 +155,7 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
   },
   'mineral-water': {
     id: 'mineral-water', name: '相亲桌上没拆的矿泉水', quality: 2, qualityName: '旧物', slot: 'hand', glyph: '水',
-    flavor: '谁先拧开谁输。', summary: '相安无事则锋利', positive: '8秒未受伤暴击+20%', negative: '受伤清零', price: 8, color: '#7e97a0',
+    flavor: '谁先拧开谁输。', summary: '对峙', positive: '每对峙满8秒无伤：最近的敌人先绷不住，重创+僵直', negative: '受伤重新计时', price: 8, color: '#7e97a0',
   },
   'group-dad': {
     id: 'group-dad', name: '家长群里的“孩子他爸”', quality: 3, qualityName: '心结', slot: 'chest', glyph: '爸',
@@ -183,7 +183,7 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
   },
   'name-sold': {
     id: 'name-sold', name: '把名字卖掉的合同', quality: 4, qualityName: '遗物', slot: 'chest', glyph: '名',
-    flavor: '编号比名字好记。', summary: '编号越多越强', positive: '每件穿戴物伤害+3%', negative: '无法再亲口回应命运', price: 13, color: '#6b6f7e',
+    flavor: '编号比名字好记。', summary: '制式化', positive: '零散射、零波动，基础伤害+30%', negative: '永不暴击 · 无法再亲口回应命运', price: 13, color: '#6b6f7e',
   },
   'moms-bowl': {
     id: 'moms-bowl', name: '母亲留在锅里的那碗饭', quality: 4, qualityName: '遗物', slot: 'chest', glyph: '饭',
@@ -231,11 +231,11 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
   },
   'typing-indicator': {
     id: 'typing-indicator', name: '对方正在输入…', quality: 3, qualityName: '心结', slot: 'hand', glyph: '输',
-    flavor: '输入了很久。最后收到的是“嗯”。', summary: '预警的空隙', positive: '受击无敌帧+0.15秒', negative: '射速-4%', price: 10, color: '#6f7d88',
+    flavor: '输入了很久。最后收到的是“嗯”。', summary: '憋了很久的那句', positive: '停火后蓄力：下一发巨大出膛、命中时缩成「嗯」，深穿高暴击', negative: '射速-4%', price: 10, color: '#6f7d88',
   },
   'year-report': {
     id: 'year-report', name: '年度听歌报告', quality: 3, qualityName: '心结', slot: 'shadow', glyph: '歌',
-    flavor: '你最爱的那首歌，循环在凌晨。', summary: '越深夜越锋利', positive: '阶段越靠后伤害越高（至+25%）', negative: '每阶段开场生命-2', price: 10, color: '#7a6f85',
+    flavor: '你最爱的那首歌，循环在凌晨。', summary: '单曲循环', positive: '每第4轮把上一轮弹道原样重放一遍（×0.6）', negative: '每阶段开场生命-2', price: 10, color: '#7a6f85',
   },
   'momo-avatar': {
     id: 'momo-avatar', name: 'momo的头像', quality: 3, qualityName: '心结', slot: 'face', glyph: '粉',
@@ -243,11 +243,11 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
   },
   'ai-chat': {
     id: 'ai-chat', name: '和AI聊到凌晨', quality: 4, qualityName: '遗物', slot: 'hand', glyph: '聊',
-    flavor: '它记得他说过的每一句话。', summary: '电子布洛芬', positive: '每张命运牌结算后回4血', negative: '亲口回应的属性变化减半', price: 13, color: '#5f7581',
+    flavor: '它记得他说过的每一句话。', summary: '它复读你', positive: '每轮攻击后0.4秒复读一轮回声弹（×0.35）；命运牌结算后回4血', negative: '亲口回应的属性变化减半', price: 13, color: '#5f7581',
   },
   'streak-1847': {
     id: 'streak-1847', name: '连续签到1847天', quality: 2, qualityName: '旧物', slot: 'hand', glyph: '签',
-    flavor: '断在住院那一周。', summary: '仪式感护盾', positive: '阶段开场生命≥80%则+6护盾', negative: '不满80%则什么都没有', price: 8, color: '#7f8a6e',
+    flavor: '断在住院那一周。', summary: '打卡节律', positive: '每个整10秒的第一发必定暴击（准时）', negative: '受伤打断当期打卡', price: 8, color: '#7f8a6e',
   },
   'goodnight-2h': {
     id: 'goodnight-2h', name: '晚安之后的两小时', quality: 2, qualityName: '旧物', slot: 'shadow', glyph: '安',
@@ -289,6 +289,14 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
   'painless-night': {
     id: 'painless-night', name: '没有痛觉的夜晚', quality: 4, qualityName: '遗物', slot: 'shadow', glyph: '麻',
     flavor: '他把麻木误认成了坚强。', summary: '把伤害延迟成重量', positive: '未结算伤害持续提高攻击', negative: '8秒后全额结算 · 普通治疗失效', price: 12, color: '#7f8591',
+  },
+  'ktv-song': {
+    id: 'ktv-song', name: 'KTV里没人听的那首歌', quality: 4, qualityName: '遗物', slot: 'neck', glyph: '吼',
+    flavor: '轮到他唱时，包厢里都在点下一首。', summary: '攒一口气吼出去', positive: '每6秒攒满一口，向四周吼出一圈声浪（继承全部形变）', negative: '常规攻击伤害-15%', price: 14, color: '#7a8fa5',
+  },
+  'breath-on-glass': {
+    id: 'breath-on-glass', name: '冬天呵在玻璃上的字', quality: 4, qualityName: '遗物', slot: 'face', glyph: '呵',
+    flavor: '他呵出一团雾，写了个名字，又擦掉了。', summary: '一口气呵成雾', positive: '弹体呵成宽雾锥：弹宽×2.2 · 穿透+2', negative: '射程×0.55', price: 14, color: '#a9c2c6',
   },
 };
 

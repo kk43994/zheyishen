@@ -60,6 +60,7 @@ export class HeroStyle1Atlas {
   private raincoatImages = new Map<HeroMotion, HTMLImageElement>();
   private hairMaskImages = new Map<HeroMotion, HTMLImageElement>();
   private frameCache = new Map<string, HTMLCanvasElement>();
+  private failed = new Set<string>();
   private loading: Promise<void> | null = null;
   private loadGeneration = 0;
   private loaded = false;
@@ -151,31 +152,45 @@ export class HeroStyle1Atlas {
     this.raincoatImages.clear();
     this.hairMaskImages.clear();
     this.frameCache.clear();
+    this.failed.clear();
     this.loading = null;
     this.loaded = false;
   }
 
   private async load(generation: number): Promise<void> {
-    try {
-      const [entries, raincoatEntries, hairMaskEntries] = await Promise.all([
-        Promise.all(MOTIONS.map(async (motion) => (
-          [motion, await this.loadImage(motion, ATLAS_URLS[motion], 'hero')] as const
-        ))),
-        Promise.all(MOTIONS.map(async (motion) => (
-          [motion, await this.loadImage(motion, RAINCOAT_URLS[motion], 'raincoat')] as const
-        ))),
-        Promise.all(MOTIONS.map(async (motion) => (
-          [motion, await this.loadImage(motion, HAIR_MASK_URLS[motion], 'hair-mask')] as const
-        ))),
-      ]);
-      if (generation !== this.loadGeneration) return;
-      this.images = new Map(entries);
-      this.raincoatImages = new Map(raincoatEntries);
-      this.hairMaskImages = new Map(hairMaskEntries);
-      this.loaded = true;
-    } finally {
-      if (generation === this.loadGeneration) this.loading = null;
-    }
+    const [entries, raincoatEntries, hairMaskEntries] = await Promise.all([
+      this.loadFamily(ATLAS_URLS, 'hero'),
+      this.loadFamily(RAINCOAT_URLS, 'raincoat'),
+      this.loadFamily(HAIR_MASK_URLS, 'hair-mask'),
+    ]);
+    if (generation !== this.loadGeneration) return;
+    this.images = new Map(entries);
+    this.raincoatImages = new Map(raincoatEntries);
+    this.hairMaskImages = new Map(hairMaskEntries);
+    this.loaded = this.images.size > 0;
+    if (!this.loaded) console.warn('主角像素图集全部不可用，继续使用程序化人物。');
+    this.loading = null;
+  }
+
+  private async loadFamily(
+    urls: Record<HeroMotion, string>,
+    family: string,
+  ): Promise<Array<[HeroMotion, HTMLImageElement]>> {
+    const results = await Promise.allSettled(
+      MOTIONS.map((motion) => this.loadImage(motion, urls[motion], family)),
+    );
+    const entries: Array<[HeroMotion, HTMLImageElement]> = [];
+    results.forEach((result, index) => {
+      const motion = MOTIONS[index]!;
+      if (result.status === 'fulfilled') {
+        entries.push([motion, result.value]);
+        return;
+      }
+      const key = `${family}:${motion}`;
+      this.failed.add(key);
+      console.warn(`跳过损坏的主角 ${family}/${motion} 图集，仅回退这一动作。`, result.reason);
+    });
+    return entries;
   }
 
   private loadImage(motion: HeroMotion, url: string, family: string): Promise<HTMLImageElement> {

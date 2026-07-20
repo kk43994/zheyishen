@@ -6,6 +6,8 @@
  * into a low-resolution canvas and scale it with nearest-neighbour filtering.
  */
 
+import { overlayPanelTexture, uiTextures } from './ui-textures';
+
 export const UI_PALETTE = {
   night: '#111116',
   nightRaised: '#1B1A20',
@@ -178,6 +180,13 @@ export function drawCutCornerPanel(
   const innerHeight = atLeast(height, 1) - line * 2;
   if (innerWidth > 0 && innerHeight > 0) {
     fillPixelShape(ctx, x + line, y + line, innerWidth, innerHeight, Math.max(0, corner - line), fill);
+    overlayPanelTexture(
+      ctx, fill,
+      snap(x) + line + corner, snap(y) + line + corner,
+      innerWidth - corner * 2, innerHeight - corner * 2,
+      [UI_PALETTE.paper, UI_PALETTE.paperLight],
+      [UI_PALETTE.night, UI_PALETTE.nightRaised],
+    );
   }
 }
 
@@ -203,6 +212,27 @@ export function drawArchiveFrame(
   ctx.fillRect(sx + 1, sy + 9, 2, 10);
   ctx.fillRect(sx + sw - 19, sy + sh - 3, 10, 2);
   ctx.fillRect(sx + sw - 3, sy + sh - 19, 2, 10);
+  const ornament = uiTextures.corner;
+  if (ornament && sw >= 120 && sh >= 120) {
+    const size = 16;
+    ctx.save();
+    ctx.globalAlpha = 0.75;
+    ctx.imageSmoothingEnabled = false;
+    const positions: Array<[number, number, number]> = [
+      [sx + 8 + size / 2, sy + 8 + size / 2, 0],
+      [sx + sw - 8 - size / 2, sy + 8 + size / 2, Math.PI / 2],
+      [sx + sw - 8 - size / 2, sy + sh - 8 - size / 2, Math.PI],
+      [sx + 8 + size / 2, sy + sh - 8 - size / 2, -Math.PI / 2],
+    ];
+    for (const [px, py, angle] of positions) {
+      ctx.save();
+      ctx.translate(px, py);
+      ctx.rotate(angle);
+      ctx.drawImage(ornament, -size / 2, -size / 2, size, size);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
 }
 
 /** Old red ink stamp. Wear is deterministic for a stable frame-to-frame silhouette. */
@@ -220,8 +250,20 @@ export function drawRedStamp(
   const sy = snap(y);
   const sw = atLeast(width, 22);
   const sh = atLeast(height, 18);
+  const sealBase = uiTextures.seal;
+  const sealAspect = sw / Math.max(1, sh);
+  // Always establish a complete pixel frame first. The generated seal is a
+  // worn corner mark (not a symmetric border), so it is only overprinted at a
+  // low alpha on near-square stamps and never stretched into horizontal ones.
   drawPixelFrameOnly(ctx, sx, sy, sw, sh, 2, 2, color);
   drawPixelFrameOnly(ctx, sx + 4, sy + 4, sw - 8, sh - 8, 0, 1, color);
+  if (sealBase && sw >= 56 && sealAspect >= 0.78 && sealAspect <= 1.28) {
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalAlpha = 0.28;
+    ctx.drawImage(sealBase, sx, sy, sw, sh);
+    ctx.restore();
+  }
   ctx.fillStyle = color;
   ctx.font = UI_FONT.stamp;
   ctx.textAlign = 'center';

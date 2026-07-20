@@ -234,7 +234,9 @@ export type ItemId =
   | 'card-binder'
   | 'abstract-lv10'
   | 'shop-freezer'
-  | 'server-shutdown';
+  | 'server-shutdown'
+  | 'ktv-song'
+  | 'breath-on-glass';
 
 export type ItemSlot = 'head' | 'face' | 'neck' | 'chest' | 'back' | 'hand' | 'waist' | 'shadow';
 
@@ -296,6 +298,11 @@ export interface EnemyUnit {
   angle?: number;
   slowTimer?: number;
   dashTimer?: number;
+  /** 掉色雨滴标记（《那年他觉得自己很酷》）：剩余秒数，被标记的敌人受伤加成 */
+  marked?: number;
+  /** 《凌晨三点的已读》：挂账伤害与结算倒计时——迟到的回应一次性爆出 */
+  readDamage?: number;
+  readTimer?: number;
   auraCooldown?: number;
   phase?: number;
   mechTimer?: number;
@@ -343,6 +350,10 @@ export interface Projectile {
   generation: number;
   color: string;
   style: ProjectileStyle;
+  /** 《对方正在输入…》蓄力弹：飞行中不断缩小，命中时只剩"嗯"那么大 */
+  shrink?: boolean;
+  /** 《朋友圈仅三天可见》环绕弹：绕身三圈后消失 */
+  orbit?: { angle: number; total: number; elapsed: number };
   visual: ProjectileVisual;
   critical: boolean;
   hitIds: number[];
@@ -350,7 +361,7 @@ export interface Projectile {
 
 export interface BurstEffect {
   id: number;
-  kind: 'ring' | 'hit' | 'word' | 'door';
+  kind: 'ring' | 'hit' | 'word' | 'door' | 'sigh';
   x: number;
   y: number;
   radius: number;

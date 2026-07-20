@@ -236,6 +236,75 @@ const ORIGIN_STYLE_EXAMPLES: OriginProfile[] = [
 const ORIGIN_KINDS: OriginKind[] = ['ordinary', 'mixed', 'favored', 'harsh'];
 const TRAIT_IDS = Object.keys(ORIGIN_TRAITS) as OriginTraitId[];
 
+// 出生轮盘在代码里掷：模型每次请求无状态，让它"自己随机挑"必然塌缩到高频组合。
+// 这里只产出约束（家庭底色×地域×基调×外号构词），人物内容仍然全部由 AI 生成，不违反"无兜底"红线。
+export interface OriginWheels {
+  family: string;
+  region: string;
+  tone: string;
+  nicknameStyle: string;
+}
+
+const FAMILY_WHEEL = ['大富', '小康', '普通', '拮据', '贫困', '古怪营生'] as const;
+const REGION_WHEEL = [
+  '城市高层', '老小区', '县城', '镇上', '村里', '海边', '矿区', '牧区',
+  '部队大院', '城中村', '国道边', '林场', '口岸边境', '景区旁', '厂区家属院',
+] as const;
+const TONE_WHEEL = ['灰色幽默', '狗血抓马', '青春伤感', '平淡白描', '荒诞'] as const;
+const NICKNAME_STYLE_WHEEL = [
+  '叠词', '动宾短语', '物件名', '谐音梗', '网络ID式', '出名的小事故', '口头禅', '爱吃的东西',
+] as const;
+
+const WHEEL_HISTORY_KEY = 'zys-origin-wheels-v1';
+
+interface WheelHistory {
+  family: string[];
+  tone: string[];
+  nicknameStyle: string[];
+}
+
+function readWheelHistory(): WheelHistory {
+  try {
+    const raw = window.localStorage.getItem(WHEEL_HISTORY_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (isRecord(parsed)) {
+        const readList = (value: unknown): string[] => (
+          Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === 'string') : []
+        );
+        return { family: readList(parsed.family), tone: readList(parsed.tone), nicknameStyle: readList(parsed.nicknameStyle) };
+      }
+    }
+  } catch { /* 抖音容器可能禁 localStorage，退化为无历史 */ }
+  return { family: [], tone: [], nicknameStyle: [] };
+}
+
+function pickAvoiding(pool: readonly string[], avoid: string[], random: () => number): string {
+  const candidates = pool.filter((entry) => !avoid.includes(entry));
+  const source = candidates.length > 0 ? candidates : pool;
+  return source[Math.floor(random() * source.length) % source.length] ?? source[0] ?? '';
+}
+
+export function rollOriginWheels(random: () => number): OriginWheels {
+  const history = readWheelHistory();
+  return {
+    family: pickAvoiding(FAMILY_WHEEL, history.family.slice(-2), random),
+    region: pickAvoiding(REGION_WHEEL, [], random),
+    tone: pickAvoiding(TONE_WHEEL, history.tone.slice(-1), random),
+    nicknameStyle: pickAvoiding(NICKNAME_STYLE_WHEEL, history.nicknameStyle.slice(-1), random),
+  };
+}
+
+export function commitOriginWheels(wheels: OriginWheels): void {
+  try {
+    const history = readWheelHistory();
+    history.family = [...history.family, wheels.family].slice(-3);
+    history.tone = [...history.tone, wheels.tone].slice(-2);
+    history.nicknameStyle = [...history.nicknameStyle, wheels.nicknameStyle].slice(-2);
+    window.localStorage.setItem(WHEEL_HISTORY_KEY, JSON.stringify(history));
+  } catch { /* 写不进就算了，防重复退化为纯随机 */ }
+}
+
 export function getOriginTrait(id: OriginTraitId): OriginTraitDefinition {
   return ORIGIN_TRAITS[id];
 }
@@ -256,7 +325,7 @@ export function getOriginModifiers(traits: OriginTraitId[]): OriginModifiers {
   return result;
 }
 
-export function validateOriginProfile(value: unknown): OriginProfile | null {
+export function validateOriginProfile(value: unknown, expectedKind?: OriginKind): OriginProfile | null {
   if (!isRecord(value)) return null;
   const title = readText(value.title, 2, 16);
   const nickname = readText(value.nickname, 2, 10);
@@ -279,7 +348,7 @@ export function validateOriginProfile(value: unknown): OriginProfile | null {
       .slice(0, traits.length)
     : undefined;
   const storyLength = story.join('').length;
-  if (!title || !nickname || !nicknameReason || !kind || story.length < 3 || story.length > 4 || storyLength < 120 || storyLength > 260 || traits.length > 2 || !appearance) return null;
+  if (!title || !nickname || !nicknameReason || !kind || (expectedKind && kind !== expectedKind) || story.length < 3 || story.length > 4 || storyLength < 120 || storyLength > 260 || traits.length > 2 || !appearance) return null;
   if (kind === 'ordinary' && traits.length !== 0) return null;
   if (kind === 'favored' && traits.some((id) => ORIGIN_TRAITS[id].tone === 'negative')) return null;
   if (kind === 'harsh' && traits.some((id) => ORIGIN_TRAITS[id].tone === 'positive')) return null;

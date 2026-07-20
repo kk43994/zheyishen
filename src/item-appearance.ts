@@ -451,6 +451,20 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
     ],
     animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
   }),
+  'ktv-song': appearance('ktv-song', {
+    layer: 'effect', anchor: 'face', priority: 18,
+    mutations: [
+      { kind: 'expression', value: 'guarded', intensity: 1 },
+    ],
+    animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
+  }),
+  'breath-on-glass': appearance('breath-on-glass', {
+    layer: 'effect', anchor: 'face', priority: 18,
+    mutations: [
+      { kind: 'palette', target: 'eyes', color: '#a9c2c6', coverage: 'accent' },
+    ],
+    animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
+  }),
   'momo-avatar': appearance('momo-avatar', {
     layer: 'attachment', anchor: 'head', priority: 20,
     mutations: [

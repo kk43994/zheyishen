@@ -1,5 +1,5 @@
 import { validateFateEvent, validateFreeFateResponse } from './fate';
-import { validateOriginProfile } from './origins';
+import { validateOriginProfile, type OriginWheels } from './origins';
 import type { FateDirection, FateEvent, FateResponse, LifeSnapshot, OriginKind, OriginProfile } from './types';
 
 export type AIGenerationState = 'idle' | 'requesting' | 'gpt' | 'fallback' | 'error';
@@ -11,31 +11,104 @@ interface AIEnvelope {
   error?: string;
 }
 
-async function requestAI(path: 'origin' | 'fate' | 'fate-result' | 'fate-free', payload: unknown, timeoutMs: number): Promise<unknown> {
-  const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const response = await fetch(`/api/ai/${path}`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-    const envelope = await response.json().catch(() => ({})) as AIEnvelope;
-    if (!response.ok || envelope.ok === false) throw new Error(envelope.error || `AI HTTP ${response.status}`);
-    return envelope.data ?? envelope;
-  } finally {
-    window.clearTimeout(timeout);
+/** 抖音互动空间平台模型（火山方舟 doubao）——tt 路径与开发代理共用同款模型 */
+const PLATFORM_AI_MODEL = 'doubao-seed-evolving';
+
+/** 与 vite.config.ts 中的系统提示词保持一致；生产环境（tt 路径）在客户端拼装。 */
+import { AI_SYSTEM_PROMPTS } from './ai-prompts';
+
+interface TicAIChatOptions {
+  type: 'text';
+  model: string;
+  stream: boolean;
+  messages: Array<{ role: 'system' | 'user'; content: string }>;
+  temperature?: number;
+  maxTokens?: number;
+  success: (res: { errMsg: string; data: string }) => void;
+  fail: (err: { errMsg: string; errorCode?: number }) => void;
+}
+
+declare global {
+  interface Window {
+    tt?: { callAIChatCompletion?: (options: TicAIChatOptions) => void };
   }
 }
 
-export async function generateAIOrigin(runSeed: number, kind: OriginKind, requestNonce: string): Promise<OriginProfile | null> {
+function callPlatformAI(kind: keyof typeof AI_SYSTEM_PROMPTS, payload: unknown, timeoutMs: number): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    const api = window.tt?.callAIChatCompletion;
+    if (!api) {
+      reject(new Error('tt.callAIChatCompletion unavailable'));
+      return;
+    }
+    let settled = false;
+    const timer = window.setTimeout(() => {
+      if (!settled) { settled = true; reject(new Error('platform_ai_timeout')); }
+    }, timeoutMs);
+    api({
+      type: 'text',
+      model: PLATFORM_AI_MODEL,
+      stream: false,
+      messages: [
+        { role: 'system', content: AI_SYSTEM_PROMPTS[kind] },
+        { role: 'user', content: `输入JSON：${JSON.stringify(payload)}` },
+      ],
+      temperature: 0.9,
+      maxTokens: 900,
+      success: (res) => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        try {
+          const text = res.data.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+          resolve(JSON.parse(text));
+        } catch {
+          reject(new Error('platform_ai_invalid_json'));
+        }
+      },
+      fail: (err) => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        reject(new Error(err.errMsg || 'platform_ai_failed'));
+      },
+    });
+  });
+}
+
+async function requestAI(path: 'origin' | 'fate' | 'fate-result' | 'fate-free', payload: unknown, timeoutMs: number): Promise<unknown> {
+  // 生产（抖音互动空间）：平台 AI 服务，零网络请求；开发：vite 代理直连方舟。
+  // DEV 分支在生产构建中被整体剔除，产物内不含 fetch 调用（平台审核红线）。
+  if (window.tt?.callAIChatCompletion) {
+    return callPlatformAI(path, payload, timeoutMs);
+  }
+  if (import.meta.env.DEV) {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await window.fetch(`/api/ai/${path}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+      const envelope = await response.json().catch(() => ({})) as AIEnvelope;
+      if (!response.ok || envelope.ok === false) throw new Error(envelope.error || `AI HTTP ${response.status}`);
+      return envelope.data ?? envelope;
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  }
+  throw new Error('ai_unavailable');
+}
+
+export async function generateAIOrigin(runSeed: number, kind: OriginKind, requestNonce: string, wheels: OriginWheels): Promise<OriginProfile | null> {
   try {
-    const raw = await requestAI('origin', { runSeed, kind, requestNonce }, 48000);
+    const raw = await requestAI('origin', { runSeed, kind, requestNonce, wheels }, 48000);
     const normalized = isRecord(raw) && typeof raw.story === 'string'
       ? { ...raw, story: raw.story.split(/\n\s*\n/).map((entry) => entry.trim()).filter(Boolean) }
       : raw;
-    return validateOriginProfile(normalized);
+    return validateOriginProfile(normalized, kind);
   } catch (error) {
     console.info('[AI] 出生档案生成失败', error instanceof Error ? error.message : error);
     return null;
