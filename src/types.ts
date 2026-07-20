@@ -362,6 +362,8 @@ export interface Projectile {
 export interface BurstEffect {
   id: number;
   kind: 'ring' | 'hit' | 'word' | 'door' | 'sigh';
+  /** 命中材质：mist/water/crit/paper，选择 hits.png 图集行；缺省走程序圆圈 */
+  material?: string;
   x: number;
   y: number;
   radius: number;

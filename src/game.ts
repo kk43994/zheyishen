@@ -11,6 +11,7 @@ import { DEFAULT_APPEARANCE, commitOriginWheels, getOriginModifiers, getOriginTr
 import { FATE_ITEM_IDS, getItem, ITEM_IDS } from './relics';
 import { comboArtAtlas } from './combo-art';
 import { itemIconAtlas } from './item-icons';
+import { projectileAtlas, hitFrame, type HitMaterial } from './vfx-sprites';
 import { POISON_LABELS } from './types';
 import { PROP_VARIANTS, worldEntityAtlas, worldPropAtlas } from './world-props';
 import {
@@ -2070,7 +2071,7 @@ export class ZheYiShenGame {
           if (enemy.dead || projectile.hitIds.includes(enemy.id)) continue;
           if (Math.hypot(enemy.x - projectile.x, enemy.y - projectile.y) < enemy.radius + projectile.radius + 2) {
             projectile.hitIds.push(enemy.id);
-            this.damageEnemy(enemy, projectile.damage, projectile.color);
+            this.damageEnemy(enemy, projectile.damage, projectile.color, this.hitMaterialOf(projectile));
           }
         }
         continue;
@@ -2130,7 +2131,7 @@ export class ZheYiShenGame {
           }
           enemy.flash = Math.max(enemy.flash, 0.08);
         } else {
-          this.damageEnemy(enemy, hitDamage, projectile.color);
+          this.damageEnemy(enemy, hitDamage, projectile.color, this.hitMaterialOf(projectile));
         }
         if (projectile.critical && this.hasCombo('能屈能伸')) {
           this.burst('word', enemy.x, enemy.y - 24, 22, '#d9b768', '收到');
@@ -2440,7 +2441,7 @@ export class ZheYiShenGame {
     };
   }
 
-  private damageEnemy(enemy: EnemyUnit, amount: number, color: string): void {
+  private damageEnemy(enemy: EnemyUnit, amount: number, color: string, material?: string): void {
     if (enemy.dead || amount <= 0) return;
     if ((enemy.marked ?? 0) > 0) amount *= 1.12;
     if (enemy.type === 'uniform-answer'
@@ -2453,7 +2454,7 @@ export class ZheYiShenGame {
     enemy.hp -= amount;
     enemy.flash = 0.12;
     this.stats.damage += amount;
-    this.burst('hit', enemy.x, enemy.y, 18 + Math.min(24, amount), color);
+    this.burst('hit', enemy.x, enemy.y, 18 + Math.min(24, amount), color, undefined, material);
     if (enemy.hp > 0) return;
     enemy.dead = true;
     if (this.hasCombo('我只在有用时被看见')) this.usefulTimer = 2.5;
@@ -3069,6 +3070,13 @@ export class ZheYiShenGame {
     return 'plain';
   }
 
+  private hitMaterialOf(projectile: Projectile): HitMaterial {
+    if (projectile.critical) return 'crit';
+    if (projectile.style === 'rain') return 'water';
+    if (projectile.style === 'paper') return 'paper';
+    return 'mist';
+  }
+
   private projectileColor(style: ProjectileStyle): string {
     if (style === 'paper') return this.hasItem('fathers-raincoat') ? '#8eb3b5' : '#e7ddc8';
     if (style === 'rain') return '#78b0ba';
@@ -3110,8 +3118,8 @@ export class ZheYiShenGame {
     }
   }
 
-  private burst(kind: BurstEffect['kind'], x: number, y: number, radius: number, color: string, text?: string): void {
-    this.bursts.push({ id: this.entityId++, kind, x, y, radius, life: 0.36, duration: 0.36, color, text });
+  private burst(kind: BurstEffect['kind'], x: number, y: number, radius: number, color: string, text?: string, material?: string): void {
+    this.bursts.push({ id: this.entityId++, kind, x, y, radius, life: 0.36, duration: 0.36, color, text, material });
   }
 
   private say(message: string): void {
@@ -4765,6 +4773,28 @@ export class ZheYiShenGame {
       ctx.globalAlpha = lifeFade;
       ctx.fillStyle = projectile.color;
       ctx.strokeStyle = projectile.color;
+      // 贴图路径：生图基底弹体。雾团按凝实度取档，其余按样式取形；图集未就绪走程序兜底
+      if (projectileAtlas.ready) {
+        const spriteName = projectile.style === 'plain'
+          ? `breath${Math.min(3, Math.floor(firmness * 4))}`
+          : projectile.style;
+        const sprite = projectileAtlas.tintedNamed(spriteName, projectile.color, projectile.style === 'plain' ? 0.28 : 0.4);
+        if (sprite) {
+          const drawSize = projectile.radius * (projectile.style === 'plain' ? 3.4 : 3.0);
+          if (projectile.style === 'plain') {
+            const wobble = Math.sin(projectile.life * 9 + projectile.id * 1.7) * (1 - firmness) * 0.16;
+            ctx.globalAlpha = lifeFade * (0.5 + firmness * 0.5);
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2 + wobble * 6, drawSize * (1 + wobble), drawSize);
+          } else {
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+          }
+          if (projectile.critical) { ctx.globalAlpha = 0.7; ctx.strokeStyle = '#fff8c5'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(0, 0, drawSize * 0.5, 0, Math.PI * 2); ctx.stroke(); }
+          ctx.restore();
+          continue;
+        }
+      }
       if (projectile.style === 'paper') {
         ctx.fillRect(-projectile.radius * 1.5, -projectile.radius * 0.72, projectile.radius * 3, projectile.radius * 1.44);
         ctx.strokeStyle = '#7f7770'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(-projectile.radius * 1.4, -projectile.radius * 0.65); ctx.lineTo(0, 0); ctx.lineTo(projectile.radius * 1.4, -projectile.radius * 0.65); ctx.stroke();
@@ -4867,6 +4897,18 @@ export class ZheYiShenGame {
         ctx.fill();
       } else if (burst.kind === 'door') {
         ctx.lineWidth = 3; ctx.strokeRect(burst.x - burst.radius * 0.26, burst.y - burst.radius * progress * 0.5, burst.radius * 0.52, burst.radius * progress);
+      } else if (burst.kind === 'hit' && burst.material) {
+        // 贴图命中：材质 4 帧序列，随进度放大淡出；帧未加载走程序圆圈
+        const frame = hitFrame(burst.material as HitMaterial, progress);
+        if (frame) {
+          const size = Math.max(12, burst.radius * (0.8 + progress * 0.6));
+          ctx.globalAlpha = 1 - progress * progress;
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(frame, burst.x - size / 2, burst.y - size / 2, size, size);
+        } else {
+          ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(burst.x, burst.y, Math.max(2, burst.radius * progress), 0, Math.PI * 2); ctx.stroke();
+        }
       } else {
         ctx.lineWidth = burst.kind === 'hit' ? 2 : 3;
         ctx.beginPath(); ctx.arc(burst.x, burst.y, Math.max(2, burst.radius * progress), 0, Math.PI * 2); ctx.stroke();
