@@ -77,12 +77,13 @@ function callPlatformAI(kind: keyof typeof AI_SYSTEM_PROMPTS, payload: unknown, 
 }
 
 async function requestAI(path: 'origin' | 'fate' | 'fate-result' | 'fate-free', payload: unknown, timeoutMs: number): Promise<unknown> {
-  // 生产（抖音互动空间）：平台 AI 服务，零网络请求；开发：vite 代理直连方舟。
-  // DEV 分支在生产构建中被整体剔除，产物内不含 fetch 调用（平台审核红线）。
+  // 生产（抖音互动空间）：平台 AI 服务，零网络请求；开发/线上 demo：vite 代理直连方舟。
+  // 此分支在 production 构建中被常量折叠整体剔除，平台上传包内不含 fetch 调用（平台审核红线）；
+  // 线上演示站用 `vite build --mode demo` 构建以保留代理路径。
   if (window.tt?.callAIChatCompletion) {
     return callPlatformAI(path, payload, timeoutMs);
   }
-  if (import.meta.env.DEV) {
+  if (import.meta.env.DEV || import.meta.env.MODE === 'demo') {
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
     try {
