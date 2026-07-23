@@ -45,7 +45,7 @@ function callPlatformAI(kind: keyof typeof AI_SYSTEM_PROMPTS, payload: unknown, 
     const timer = window.setTimeout(() => {
       if (!settled) { settled = true; reject(new Error('platform_ai_timeout')); }
     }, timeoutMs);
-    api({
+	api({
       type: 'text',
       model: PLATFORM_AI_MODEL,
       stream: false,
@@ -53,8 +53,8 @@ function callPlatformAI(kind: keyof typeof AI_SYSTEM_PROMPTS, payload: unknown, 
         { role: 'system', content: AI_SYSTEM_PROMPTS[kind] },
         { role: 'user', content: `输入JSON：${JSON.stringify(payload)}` },
       ],
-      temperature: 0.9,
-      maxTokens: 900,
+		temperature: kind === 'fate-review' ? 0.1 : 0.9,
+		maxTokens: kind === 'fate' ? 1400 : kind === 'fate-review' ? 180 : 900,
       success: (res) => {
         if (settled) return;
         settled = true;
@@ -76,7 +76,7 @@ function callPlatformAI(kind: keyof typeof AI_SYSTEM_PROMPTS, payload: unknown, 
   });
 }
 
-async function requestAI(path: 'origin' | 'fate' | 'fate-result' | 'fate-free', payload: unknown, timeoutMs: number): Promise<unknown> {
+async function requestAI(path: 'origin' | 'fate' | 'fate-review' | 'fate-result' | 'fate-free', payload: unknown, timeoutMs: number): Promise<unknown> {
   // 生产（抖音互动空间）：平台 AI 服务，零网络请求；开发/线上 demo：vite 代理直连方舟。
   // 此分支在 production 构建中被常量折叠整体剔除，平台上传包内不含 fetch 调用（平台审核红线）；
   // 线上演示站用 `vite build --mode demo` 构建以保留代理路径。
@@ -191,34 +191,66 @@ function normalizeAIFate(value: unknown, snapshot: LifeSnapshot): unknown {
 }
 
 function isGroundedFateNarrative(event: FateEvent): boolean {
-  const fact = event.fact;
-  const clauseCount = (fact.match(/[，。！？；]/g) ?? []).length;
-  const impossible = /(魔法|灵异|鬼魂|幽灵|诅咒|穿越|异世界|超能力|情书.{0,6}(说话|开口|呼吸|响|叫)|信封?.{0,6}(说话|开口|呼吸)|衣服.{0,6}(说话|开口|呼吸)|照片.{0,6}(说话|开口|呼吸|自己动))/;
-  return fact.includes(event.scene.time)
-    && fact.includes(event.scene.place)
-    && fact.includes('他')
-    && clauseCount >= 3
-    && !impossible.test(fact);
+	const fact = event.fact;
+	const fullText = [fact, event.swallow.label, event.swallow.hint, event.swallow.result,
+		event.exhale.label, event.exhale.hint, event.exhale.result].join('；');
+	const clauseCount = (fact.match(/[，。！？；]/g) ?? []).length;
+	const impossible = /(魔法|灵异|鬼魂|幽灵|诅咒|穿越|异世界|超能力)/;
+	const inanimateActor = /(情书|信封|衣服|雨衣|照片|相框|橡皮|纽扣|钥匙|药丸|工牌|书包|课桌|纸条|道具).{0,8}(说话|开口|呼吸|叫人|哭|笑|盯着|决定|答应|拒绝|知道|记得|认出|害怕|生气|自己动)/;
+	const forcedCoincidence = /(严丝合缝|恰好补上|正好补上|突然认出.{0,10}(花纹|气味|划痕|缺口)|原来竟是.{0,12}(那张|那封|那件))/;
+	const concreteTime = /(周[一二三四五六日天]|星期|早上|上午|中午|下午|傍晚|晚上|夜里|凌晨|清晨|放学|下班|开学|午休|课间|饭前|饭后|复诊|当天|那天|月底|发薪|工作日|周末|今天|第二天|\d{1,2}[点时])/;
+	const concretePlace = /(教室|学校|家里|家中|客厅|卧室|厨房|公司|办公室|医院|车站|地铁|站台|公交|宿舍|出租屋|小区|社区|街口|街边|路上|楼下|楼道|楼梯|食堂|餐馆|饭店|商场|商店|店里|便利店|快递柜|银行|派出所|网吧|工地|诊室|病房|会议室|门口|走廊|饭桌)/;
+	return concreteTime.test(fact)
+		&& concretePlace.test(fact)
+		&& fact.includes('他')
+		&& clauseCount >= 3
+		&& !impossible.test(fullText)
+		&& !inanimateActor.test(fullText)
+		&& !forcedCoincidence.test(fullText);
+}
+
+interface FateRealityReview {
+	valid: boolean;
+	reason: string;
+}
+
+async function reviewFateReality(snapshot: LifeSnapshot, event: FateEvent): Promise<FateRealityReview | null> {
+	try {
+		const raw = await requestAI('fate-review', { snapshot, event }, 22000);
+		if (!isRecord(raw) || typeof raw.valid !== 'boolean') return null;
+		const reason = typeof raw.reason === 'string' ? raw.reason.trim().slice(0, 120) : '未说明原因';
+		if (!raw.valid) console.info('[AI] 命运事件未通过现实审稿', reason);
+		return { valid: raw.valid, reason };
+	} catch (error) {
+		console.info('[AI] 现实审稿暂不可用', error instanceof Error ? error.message : error);
+		return null;
+	}
 }
 
 export async function generateAIFate(snapshot: LifeSnapshot): Promise<FateEvent | null> {
-  // Fate is prefetched while the chapter is still running, so spend that
-  // otherwise-idle time on one retry. A transient upstream error or one
-  // schema-invalid completion should not silently turn an AI run local.
-  for (let attempt = 1; attempt <= 3; attempt += 1) {
-    try {
-      const raw = await requestAI('fate', { snapshot }, 29000);
-      const event = validateFateEvent(normalizeAIFate(raw, snapshot), snapshot);
-      if (event && isGroundedFateNarrative(event)) return event;
-      console.info(`[AI] 命运事件格式或现实逻辑未通过，正在重写 ${attempt}/3`);
-    } catch (error) {
-      console.info(
-        `[AI] 命运事件请求失败 ${attempt}/3`,
-        error instanceof Error ? error.message : error,
-      );
-    }
-  }
-  console.info('[AI] 命运事件三次生成均未通过，回退到写实本地事件');
+	// Fate is prefetched while the chapter is still running, so use that idle
+	// time to rewrite rejected drafts instead of showing a logically weak event.
+	const previousRejections: string[] = [];
+	for (let attempt = 1; attempt <= 4; attempt += 1) {
+		try {
+			const raw = await requestAI('fate', { snapshot, previousRejections }, 29000);
+			const event = validateFateEvent(normalizeAIFate(raw, snapshot), snapshot);
+			if (event && isGroundedFateNarrative(event)) {
+				const review = await reviewFateReality(snapshot, event);
+				if (review?.valid) return event;
+				previousRejections.push(review?.reason ?? '现实审稿没有返回明确通过结果');
+			} else {
+				previousRejections.push('场景、正文或两个回应没有通过基础写实与格式规则');
+			}
+			console.info(`[AI] 命运事件格式或现实逻辑未通过，正在重写 ${attempt}/4`);
+		} catch (error) {
+			console.info(
+				`[AI] 命运事件请求失败 ${attempt}/4`,
+				error instanceof Error ? error.message : error,
+			);
+		}
+	}
+	console.info('[AI] 命运事件四次生成均未通过，回退到写实本地事件');
   return null;
 }
 

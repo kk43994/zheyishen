@@ -34,10 +34,11 @@ function aiProxyPlugin(mode: string): Plugin {
   };
 
   const middleware = (req: any, res: any, next: () => void) => {
-    const kind = req.url === '/api/ai/origin' ? 'origin'
-      : req.url === '/api/ai/fate' ? 'fate'
-        : req.url === '/api/ai/fate-result' ? 'fate-result'
-          : req.url === '/api/ai/fate-free' ? 'fate-free' : null;
+		const kind = req.url === '/api/ai/origin' ? 'origin'
+			: req.url === '/api/ai/fate' ? 'fate'
+				: req.url === '/api/ai/fate-review' ? 'fate-review'
+					: req.url === '/api/ai/fate-result' ? 'fate-result'
+						: req.url === '/api/ai/fate-free' ? 'fate-free' : null;
     if (!kind) return next();
     if (req.method !== 'POST') return sendJson(res, 405, { ok: false, error: 'method_not_allowed' });
     const { baseUrl, apiKey, model } = loadActiveProfile(fallback);
@@ -51,11 +52,19 @@ function aiProxyPlugin(mode: string): Plugin {
       const started = Date.now();
       try {
         const body = await readJsonBody(req, 64 * 1024);
-        const payload = kind === 'fate' ? body?.snapshot : body;
+				const payload = body;
         if (!payload || typeof payload !== 'object') return sendJson(res, 400, { ok: false, error: 'invalid_payload' });
         const system = AI_SYSTEM_PROMPTS[kind];
         console.info(`[AI] ${requestId} ${kind} -> ${model}`);
-        const upstream = await callChatCompletion(baseUrl, apiKey, model, system, payload);
+				const upstream = await callChatCompletion(
+					baseUrl,
+					apiKey,
+					model,
+					system,
+					payload,
+					kind === 'fate-review' ? 0.1 : undefined,
+					kind === 'fate' ? 1400 : kind === 'fate-review' ? 180 : 900,
+				);
         console.info(`[AI] ${requestId} ${kind} <- ${model} ${Date.now() - started}ms`);
         return sendJson(res, 200, { ok: true, data: upstream, model });
       } catch (error) {
@@ -73,7 +82,15 @@ function aiProxyPlugin(mode: string): Plugin {
   };
 }
 
-async function callChatCompletion(baseUrl: string, apiKey: string, model: string, system: string, payload: unknown): Promise<unknown> {
+async function callChatCompletion(
+	baseUrl: string,
+	apiKey: string,
+	model: string,
+	system: string,
+	payload: unknown,
+	temperature = 0.9,
+	maxTokens = 900,
+): Promise<unknown> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 42000);
   try {
@@ -87,7 +104,8 @@ async function callChatCompletion(baseUrl: string, apiKey: string, model: string
           { role: 'user', content: `输入JSON：${JSON.stringify(payload)}` },
         ],
         response_format: { type: 'json_object' },
-        max_tokens: 900,
+				max_tokens: maxTokens,
+				temperature,
         // doubao 深度思考默认开启，origin 大提示词下推理超 42s 必超时；关闭后实测 ~12s 且 JSON 合规
         ...(model.includes('doubao') ? { thinking: { type: 'disabled' } } : {}),
       }),

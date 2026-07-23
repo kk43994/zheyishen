@@ -7266,7 +7266,7 @@ export class ZheYiShenGame {
           if (RESULT_TABS.includes(resultTab as ResultTab)) this.resultTab = resultTab as ResultTab;
         } else {
           const auditScreen = auditParams.get('audit-screen');
-          if (auditScreen === 'reward' || auditScreen === 'shop' || auditScreen === 'boss' || auditScreen === 'fate') {
+          if (auditScreen === 'reward' || auditScreen === 'shop' || auditScreen === 'boss' || auditScreen === 'fate' || auditScreen === 'ai-fate') {
             this.runSeed = 0x20260722;
             this.rngState = this.runSeed;
             this.encounterIndex = 2;
@@ -7300,13 +7300,17 @@ export class ZheYiShenGame {
               this.enemies.push(boss);
               this.eliteAlertName = '';
               this.eliteAlertTime = 0;
-            } else {
+            } else if (auditScreen === 'fate') {
               this.currentFate = generateLocalFateEvent(this.buildLifeSnapshot(), () => this.random());
               this.aiFateState = 'fallback';
               this.fateDestination = 'advance';
               this.fateAnim = 1;
               this.fateResultDirection = undefined;
               this.state = 'fateEvent';
+            } else {
+              this.enemies = [];
+              this.state = 'battle';
+              this.openFate('advance');
             }
           }
         }
