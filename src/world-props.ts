@@ -105,3 +105,55 @@ class WorldEntityAtlas {
 
 export const worldEntityAtlas = new WorldEntityAtlas();
 worldEntityAtlas.load();
+
+// 道具台：奖励 / 当铺 / 留灯间 / 里屋。48x32 单行四格，底部居中锚定。
+const PLINTHS_URL = new URL('./assets/world/plinths.png', import.meta.url).href;
+const PLINTH_CELL_W = 48;
+const PLINTH_CELL_H = 32;
+const PLINTH_COUNT = 4;
+
+export type WorldPlinthKind = 'reward' | 'shop' | 'light' | 'inner';
+const PLINTH_INDEX: Record<WorldPlinthKind, number> = {
+  reward: 0, shop: 1, light: 2, inner: 3,
+};
+
+class WorldPlinthAtlas {
+  private image: HTMLImageElement | null = null;
+  private frames = new Map<number, HTMLCanvasElement>();
+  private loaded = false;
+
+  load(): void {
+    if (this.image) return;
+    const image = new Image();
+    image.decoding = 'async';
+    image.onload = () => {
+      if (image.naturalWidth !== PLINTH_CELL_W * PLINTH_COUNT || image.naturalHeight !== PLINTH_CELL_H) {
+        console.warn(`道具台图集尺寸错误: ${image.naturalWidth}x${image.naturalHeight}`);
+        return;
+      }
+      this.loaded = true;
+    };
+    image.onerror = () => console.warn('道具台图集加载失败，继续使用程序化道具台回退。');
+    image.src = PLINTHS_URL;
+    this.image = image;
+  }
+
+  slice(kind: WorldPlinthKind): HTMLCanvasElement | null {
+    if (!this.loaded || !this.image) return null;
+    const index = PLINTH_INDEX[kind];
+    const cached = this.frames.get(index);
+    if (cached) return cached;
+    const canvas = document.createElement('canvas');
+    canvas.width = PLINTH_CELL_W;
+    canvas.height = PLINTH_CELL_H;
+    const context = canvas.getContext('2d', { alpha: true });
+    if (!context) return null;
+    context.imageSmoothingEnabled = false;
+    context.drawImage(this.image, index * PLINTH_CELL_W, 0, PLINTH_CELL_W, PLINTH_CELL_H, 0, 0, PLINTH_CELL_W, PLINTH_CELL_H);
+    this.frames.set(index, canvas);
+    return canvas;
+  }
+}
+
+export const worldPlinthAtlas = new WorldPlinthAtlas();
+worldPlinthAtlas.load();

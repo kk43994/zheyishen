@@ -319,8 +319,14 @@ export interface EnemyUnit {
 }
 
 export type ProjectileStyle = 'plain' | 'paper' | 'rain' | 'sound' | 'key';
+export type ProjectileForm = 'breath' | 'paper' | 'rain' | 'sound' | 'key' | 'bone' | 'tear' | 'cone';
+export type ProjectileTrail = 'mist' | 'streak' | 'drip' | 'signal' | 'echo';
+export type ProjectileMechanicFlag = 'pierce' | 'returning' | 'homing' | 'split' | 'area' | 'orbit' | 'shrink' | 'echo';
 
 export interface ProjectileVisual {
+  form: ProjectileForm;
+  trail: ProjectileTrail;
+  echoed: boolean;
   coreColor: string;
   materialTint: string;
   edgeColor: string;

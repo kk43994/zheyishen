@@ -16,7 +16,7 @@ import { projectileAtlas, hitFrame, saveFrame, synergyAtlas, statusAtlas, poison
 import { sceneArt } from './scene-art';
 import { overlayPanelTexture, uiTextures } from './ui-textures';
 import { POISON_LABELS } from './types';
-import { PROP_VARIANTS, worldEntityAtlas, worldPropAtlas } from './world-props';
+import { PROP_VARIANTS, worldEntityAtlas, worldPlinthAtlas, worldPropAtlas, type WorldPlinthKind } from './world-props';
 import {
   applyPixelDiscipline,
   drawArchiveFrame,
@@ -51,6 +51,7 @@ import type {
   OriginProfile,
   PoisonVector,
   Projectile,
+  ProjectileMechanicFlag,
   ProjectileStyle,
   ProjectileVisual,
   RunStats,
@@ -155,6 +156,29 @@ const BASE_VECTOR: AttackVector = {
   bloodOnHit: 0,
 };
 
+function attackVectorFlags(vector: AttackVector): ProjectileMechanicFlag[] {
+  const flags: ProjectileMechanicFlag[] = [];
+  if (vector.pierce > 0) flags.push('pierce');
+  if (vector.returning) flags.push('returning');
+  if (vector.homing > 0) flags.push('homing');
+  if (vector.splitChance > 0) flags.push('split');
+  if (vector.explosion > 0) flags.push('area');
+  return flags;
+}
+
+function projectileFlags(projectile: Projectile): ProjectileMechanicFlag[] {
+  const flags: ProjectileMechanicFlag[] = [];
+  if (projectile.pierceMax > 0) flags.push('pierce');
+  if (projectile.returning) flags.push('returning');
+  if (projectile.homing > 0) flags.push('homing');
+  if (projectile.splitChance > 0) flags.push('split');
+  if (projectile.explosion > 0) flags.push('area');
+  if (projectile.orbit) flags.push('orbit');
+  if (projectile.shrink) flags.push('shrink');
+  if (projectile.generation > 0) flags.push('echo');
+  return flags;
+}
+
 // 组合彩蛋正典（与百科组合名鉴一致）；artKey 对应 combo-art 图集
 interface ComboDef {
   name: string;
@@ -189,6 +213,9 @@ interface PendingShot {
   life: number;
   pierce: number;
   homing: number;
+  returning: boolean;
+  splitChance: number;
+  explosion: number;
   color: string;
   style: ProjectileStyle;
   critical: boolean;
@@ -210,6 +237,7 @@ interface StageSpec {
   bossType?: EnemyType;
   stallAt?: number;
   doorAt?: number;
+  rewardAt?: number;
   end: 'advance' | 'fate' | 'final';
   enterLine: string;
   groundTop: string;
@@ -231,14 +259,14 @@ const STAGES: StageSpec[] = [
   {
     chapter: '童年 · 床底王国', title: '没人相信的怪物', subtitle: '恐惧第一次有了形状',
     situation: ['熄灯以后，他听见床底也在呼吸。', '大人说，那里什么都没有。'],
-    duration: 60, pool: ['cry-moth', 'fear', 'hunger-shadow'], spawnEvery: 2.5, bossAt: 34, bossType: 'closet-dark', end: 'advance',
+    duration: 60, pool: ['cry-moth', 'fear', 'hunger-shadow'], spawnEvery: 2.5, rewardAt: 15, bossAt: 34, bossType: 'closet-dark', end: 'advance',
     enterLine: '他只好先学会害怕，再学会一个人睡。',
     groundTop: '#695d6f', groundBottom: '#403a48', propColor: '#8d7d98',
   },
   {
     chapter: '少年 · 千眼教室', title: '统一答案', subtitle: '所有目光都在批改你',
     situation: ['考试、排名、同学议论。', '每张卷子都像在替所有人决定他是谁。'],
-    duration: 70, pool: ['red-mark', 'whisper'], spawnEvery: 2.3,
+    duration: 70, pool: ['red-mark', 'whisper'], spawnEvery: 2.3, rewardAt: 18,
     bossAt: 44, bossType: 'uniform-answer', end: 'fate',
     enterLine: '他把理想写进作文。老师用红笔写：偏题，38 分。',
     groundTop: '#71818a', groundBottom: '#46545d', propColor: '#92a4ac',
@@ -246,7 +274,7 @@ const STAGES: StageSpec[] = [
   {
     chapter: '青年 · 齿轮车站', title: '错过的那一班', subtitle: '每个人都像比你早一步',
     situation: ['毕业、求职、租房。', '别人陆续上车，他还在原地证明自己够格。'],
-    duration: 75, pool: ['clockwork', 'whisper', 'red-mark'], spawnEvery: 1.9, stallAt: 14, bossAt: 49, bossType: 'last-bus', end: 'advance',
+    duration: 75, pool: ['clockwork', 'whisper', 'red-mark'], spawnEvery: 1.9, stallAt: 14, rewardAt: 30, bossAt: 49, bossType: 'last-bus', end: 'advance',
     enterLine: '毕业证卷在行李箱底。他先学会了说「随时到岗」。',
     groundTop: '#8a7658', groundBottom: '#574936', propColor: '#9e865f',
   },
@@ -466,6 +494,8 @@ export class ZheYiShenGame {
   private stallSpawnedAt = -1;
   private worldStall?: { x: number; y: number };
   private stallCooldown = 0;
+  private rewardSpawnedAt = -1;
+  private worldReward?: { x: number; y: number; ttl: number; choices: ItemId[] };
   private doorTriedThisStage = false;
   private doorUsed = false;
   private worldDoor?: { kind: SpecialRoomKind; x: number; y: number; ttl: number };
@@ -1091,6 +1121,8 @@ export class ZheYiShenGame {
     this.stallSpawnedAt = -1;
     this.worldStall = undefined;
     this.stallCooldown = 0;
+    this.rewardSpawnedAt = -1;
+    this.worldReward = undefined;
     this.doorTriedThisStage = false;
     this.doorUsed = false;
     this.worldDoor = undefined;
@@ -1250,6 +1282,7 @@ export class ZheYiShenGame {
     this.transitionTimer = 0;
     this.worldStall = undefined;
     this.stallCooldown = 0;
+    this.worldReward = undefined;
     this.doorTriedThisStage = false;
     this.worldDoor = undefined;
     this.shotTimer = 0.35;
@@ -1609,14 +1642,36 @@ export class ZheYiShenGame {
       this.say('前面有个亮着灯的摊位');
     }
 
+    if (stage.rewardAt !== undefined && this.rewardSpawnedAt !== this.encounterIndex && this.battleTime >= stage.rewardAt) {
+      this.rewardSpawnedAt = this.encounterIndex;
+      const choices = this.pickItemChoices(false);
+      if (choices.length > 0) {
+        const angle = this.random() * Math.PI * 2;
+        this.worldReward = {
+          x: this.heroX + Math.cos(angle) * 175,
+          y: this.heroY + Math.sin(angle) * 175,
+          ttl: 34,
+          choices,
+        };
+        this.say('路边亮起一座人生物证台');
+      }
+    }
+
     if (stage.doorAt !== undefined && !this.doorTriedThisStage && !this.doorUsed && this.battleTime >= stage.doorAt) {
       this.doorTriedThisStage = true;
-      const guaranteed = this.encounterIndex >= 4;
-      if (guaranteed || this.random() < 0.45) {
-        const kind = this.pickSpecialKind();
-        const angle = this.random() * Math.PI * 2;
-        this.worldDoor = { kind, x: this.heroX + Math.cos(angle) * 240, y: this.heroY + Math.sin(angle) * 240, ttl: 22 };
-        this.say(kind === 'light' ? '远处亮起一盏暖黄的窗灯' : '一道帘子后面闪着冷白的灯');
+      const kind = this.pickSpecialKind();
+      const angle = this.random() * Math.PI * 2;
+      this.worldDoor = { kind, x: this.heroX + Math.cos(angle) * 190, y: this.heroY + Math.sin(angle) * 190, ttl: 36 };
+      this.say(kind === 'light' ? '远处亮起一盏暖黄的窗灯' : '一道帘子后面闪着冷白的灯');
+    }
+    if (this.worldReward) {
+      this.worldReward.ttl -= dt;
+      if (this.worldReward.ttl <= 0) {
+        this.worldReward = undefined;
+        this.say('物证台慢慢沉回了地面');
+      } else if (Math.hypot(this.heroX - this.worldReward.x, this.heroY - this.worldReward.y) < 36) {
+        this.openWorldReward();
+        return;
       }
     }
     if (this.worldDoor) {
@@ -1624,7 +1679,7 @@ export class ZheYiShenGame {
       if (this.worldDoor.ttl <= 0) {
         this.worldDoor = undefined;
         this.say('门沉回了黑暗里');
-      } else if (Math.hypot(this.heroX - this.worldDoor.x, this.heroY - this.worldDoor.y) < 34) {
+      } else if (Math.hypot(this.heroX - this.worldDoor.x, this.heroY - this.worldDoor.y) < 38) {
         this.openSpecialRoom(this.worldDoor.kind);
         return;
       }
@@ -1818,8 +1873,8 @@ export class ZheYiShenGame {
         this.spawnProjectile({
           x: this.heroX, y: this.heroY - 14, angle: shot.angle, damage: shot.damage,
           speed: shot.speed, radius: shot.radius, range: shot.range, life: shot.life,
-          pierce: shot.pierce, returning: false, homing: shot.homing, splitChance: 0,
-          explosion: 0, generation: shot.generation, color: shot.color, style: shot.style,
+          pierce: shot.pierce, returning: shot.returning, homing: shot.homing, splitChance: shot.splitChance,
+          explosion: shot.explosion, generation: shot.generation, color: shot.color, style: shot.style,
           critical: shot.critical, knockback: shot.knockback, shrink: shot.shrink,
         });
       }
@@ -2219,6 +2274,8 @@ export class ZheYiShenGame {
     vector.lifetime = this.clamp(vector.lifetime, 0.7, 9);
     vector.critChance = this.clamp(vector.critChance, 0, 0.85);
     vector.homing = this.clamp(vector.homing, 0, 0.5);
+    vector.splitChance = this.clamp(vector.splitChance, 0, 1);
+    vector.explosion = this.clamp(vector.explosion, 0, 90);
     return vector;
   }
 
@@ -2226,8 +2283,12 @@ export class ZheYiShenGame {
     return this.items.filter((id) => !getItem(id).negative.includes('没有负面')).length;
   }
 
-  private computeProjectileVisual(extraMaterial?: ProjectileVisual['materials'][number]): ProjectileVisual {
+  private computeProjectileVisual(
+    extraMaterial?: ProjectileVisual['materials'][number],
+    generation = 0,
+  ): ProjectileVisual {
     const visual: ProjectileVisual = {
+      form: 'breath', trail: generation > 0 ? 'echo' : 'mist', echoed: generation > 0,
       coreColor: '#E8E1D3', materialTint: '#E8E1D3', edgeColor: '#AAA196',
       trailColor: '#8f887f', impactColor: '#e8e1d3', opacity: 1,
       length: 1.55, softness: 1, sharpness: 0, weight: 0, wetness: 0,
@@ -2278,6 +2339,7 @@ export class ZheYiShenGame {
     }
     // ―― 第三批道具的弹道表现：现实影射到子弹的材质与颜色 ――
     if (this.hasItem('always-crying')) {
+      if (!visual.materials.includes('water')) visual.materials.push('water');
       visual.wetness += 0.4;
       visual.trailColor = '#9fc2d8';
     }
@@ -2312,6 +2374,20 @@ export class ZheYiShenGame {
     if (extraMaterial === 'signal') {
       visual.materialTint = '#82c5bc';
       visual.trailColor = '#5e9f98';
+    }
+    // 和《以撒》的 TearVariant 一样，最终只选择一个主形态；其余道具留在参数与 flags 中。
+    if (extraMaterial === 'water') visual.form = 'rain';
+    else if (extraMaterial === 'signal') visual.form = 'sound';
+    else if (this.hasItem('breath-on-glass')) visual.form = 'cone';
+    else if (this.hasItem('broken-spine')) visual.form = 'bone';
+    else if (this.hasItem('front-desk-letter')) visual.form = 'paper';
+    else if (this.hasItem('only-key')) visual.form = 'key';
+    else if (this.hasItem('always-crying')) visual.form = 'tear';
+
+    if (!visual.echoed) {
+      if (visual.materials.includes('signal')) visual.trail = 'signal';
+      else if (visual.wetness >= 0.35) visual.trail = 'drip';
+      else if (visual.sharpness >= 0.7) visual.trail = 'streak';
     }
     return visual;
   }
@@ -2382,6 +2458,7 @@ export class ZheYiShenGame {
             damage: vector.damage * share * 1.1, speed: vector.projectileSpeed,
             radius: Math.max(2, vector.width * 0.72), range: vector.range, life: vector.lifetime,
             pierce: vector.pierce, homing: vector.homing,
+            returning: vector.returning, splitChance: vector.splitChance, explosion: vector.explosion,
             color: this.projectileColor(style), style,
             critical: this.random() < vector.critChance, knockback: vector.knockback * 0.5, generation: 0,
           });
@@ -2412,7 +2489,9 @@ export class ZheYiShenGame {
         this.pushPendingShot({
           delay: 0.4, angle, damage: vector.damage * 0.35, speed: vector.projectileSpeed,
           radius: Math.max(2, vector.width * 0.8), range: vector.range, life: vector.lifetime,
-          pierce: 0, homing: vector.homing, color: '#6f93a3', style,
+          pierce: 0, homing: vector.homing, returning: vector.returning,
+          splitChance: vector.splitChance * 0.5, explosion: vector.explosion * 0.35,
+          color: '#6f93a3', style,
           critical: false, knockback: vector.knockback * 0.4, generation: 1,
         });
       }
@@ -2479,7 +2558,7 @@ export class ZheYiShenGame {
       returning: options.returning, reversals: 0, homing: options.homing, splitChance: options.splitChance,
       explosion: options.explosion, generation: options.generation, color: options.color,
       poolPriority: options.priority ?? (options.generation === 0 ? 'core' : 'secondary'),
-      style: options.style, visual: options.visual ?? this.computeProjectileVisual(material),
+      style: options.style, visual: options.visual ?? this.computeProjectileVisual(material, options.generation),
       critical: options.critical, hitIds: [],
       shrink: options.shrink, orbit: options.orbit,
     });
@@ -2712,14 +2791,26 @@ export class ZheYiShenGame {
   private makeChildProjectile(parent: Projectile, angle: number): Projectile {
     const speed = Math.hypot(parent.vx, parent.vy) * 0.82;
     const dadBoost = this.hasItem('group-dad') ? 1.4 : 1;
+    const inheritedPierce = Math.max(0, Math.floor(parent.pierceMax * 0.5));
     return {
       ...parent,
       id: this.entityId++, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
       radius: Math.max(2, parent.radius * 0.65), damage: parent.damage * 0.45 * dadBoost,
       life: parent.maxLife * 0.65, maxLife: parent.maxLife * 0.65,
-      distance: 0, maxDistance: parent.maxDistance * 0.65, pierce: 0, pierceMax: 0,
-      returning: false, reversals: 0, splitChance: 0, explosion: 0, generation: 1, hitIds: [],
+      distance: 0, maxDistance: parent.maxDistance * 0.65,
+      pierce: inheritedPierce, pierceMax: inheritedPierce,
+      returning: parent.returning, reversals: 0,
+      // 子弹继承其他 flags 与削弱后的范围爆炸，只关闭递归分裂，避免指数级弹幕。
+      splitChance: 0, explosion: parent.explosion * 0.55,
+      generation: parent.generation + 1, hitIds: [], orbit: undefined,
       poolPriority: 'secondary',
+      visual: {
+        ...parent.visual,
+        trail: 'echo',
+        echoed: true,
+        opacity: parent.visual.opacity * 0.84,
+        materials: [...parent.visual.materials],
+      },
     };
   }
 
@@ -3414,6 +3505,20 @@ export class ZheYiShenGame {
     } else this.advanceStage();
   }
 
+  private openWorldReward(): void {
+    const reward = this.worldReward;
+    if (!reward || this.state !== 'battle') return;
+    this.worldReward = undefined;
+    this.resetMovementInput();
+    this.initialItemReward = false;
+    this.rewardReturn = 'battle';
+    this.rewardTitle = '路边留下的东西，也会穿进这一身';
+    this.itemRewardChoices = reward.choices;
+    this.itemRewardFocus = 0;
+    this.state = 'itemReward';
+    this.feedback.play('page', 0.92);
+  }
+
   private pickItemChoices(initial: boolean): ItemId[] {
     const available = ITEM_IDS.filter((id) => {
       if (this.items.includes(id)) return false;
@@ -3778,12 +3883,8 @@ export class ZheYiShenGame {
     // bands keep the scene readable at native pixel scale and make age changes
     // feel like a page being replaced.
     this.fillSteppedVertical(top, bottom, 12);
-    const cameraX = HERO_SCREEN_X - this.heroX;
-    const cameraY = HERO_SCREEN_Y - this.heroY;
-    // Ground texture is anchored to the world. Artificial drift made its tile
-    // boundaries slide under a stationary hero and read as a moving grid.
-    sceneArt.drawGround(ctx, this.encounterIndex, cameraX, cameraY, 0.28 * (1 - blend));
-    if (next) sceneArt.drawGround(ctx, this.encounterIndex + 1, cameraX, cameraY, 0.28 * blend);
+    // 循环地面贴图的接缝会随世界坐标移动，读成半透明网格。
+    // 地表细节改由稀疏章节印记与实体摆设承担，底色保持稳定。
     this.renderStageAtmosphere(stage, next, blend);
 
     const shakeAmount = !this.reducedMotion && this.screenShake > 0 ? Math.ceil(this.screenShake * 16) : 0;
@@ -4025,10 +4126,14 @@ export class ZheYiShenGame {
         ctx.fillRect(x + 3 * flip, y - 1, 14, 2);
       }
     } else if (stageIndex === 2) {
-      ctx.fillRect(x - 20, y - 4, 40, 2);
-      ctx.fillRect(x - 20, y + 6, 40, 1);
-      for (let offset = -14; offset <= 14; offset += 9) ctx.fillRect(x + offset, y - 6, 2, 15);
-      if (variant === 3) ctx.fillRect(x - 3, y - 11, 6, 3);
+      // 站台只留磨损与短划痕。纵横刻线会随镜头移动，被误读成调试网格。
+      ctx.fillRect(x - 15, y, 30, 2);
+      ctx.fillRect(x - 8, y + 5, 17, 1);
+      ctx.fillRect(x + 11 * flip, y - 4, 6, 2);
+      if (variant === 3) {
+        ctx.fillRect(x - 3, y - 7, 5, 2);
+        ctx.fillRect(x + 5, y + 8, 2, 2);
+      }
     } else if (stageIndex === 3) {
       ctx.globalAlpha *= 0.8;
       ctx.fillRect(x - 17, y, 34, 2);
@@ -4268,6 +4373,31 @@ export class ZheYiShenGame {
 
   private renderWorldEntities(): void {
     const ctx = this.ctx;
+    if (this.worldReward) {
+      const { x, y, ttl, choices } = this.worldReward;
+      const pulse = this.reducedMotion ? 0 : Math.floor(this.visualTime * 4) % 4;
+      ctx.fillStyle = 'rgba(216,185,95,.14)';
+      ctx.beginPath(); ctx.arc(x, y - 7, 42 + pulse, 0, Math.PI * 2); ctx.fill();
+      const plinth = worldPlinthAtlas.slice('reward');
+      if (plinth) {
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(plinth, Math.round(x - 24), Math.round(y - 16));
+      } else {
+        ctx.fillStyle = '#4b4032'; ctx.fillRect(x - 24, y - 4, 48, 9);
+        ctx.fillStyle = '#2c2929'; ctx.fillRect(x - 19, y + 5, 38, 10);
+      }
+      const preview = choices[0];
+      if (preview) this.drawItemSymbol(preview, x, y - 34 - pulse, 18);
+      ctx.globalAlpha = 0.25 + pulse * 0.06;
+      ctx.fillStyle = '#e0c46f';
+      ctx.fillRect(Math.round(x - 1), Math.round(y - 68), 2, 26);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#e5c96f'; ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('人生物证', x, y + 25);
+      const ratio = this.clamp(ttl / 34, 0, 1);
+      ctx.strokeStyle = '#d8b95f';
+      ctx.beginPath(); ctx.arc(x, y - 9, 31, -Math.PI / 2, -Math.PI / 2 + ratio * Math.PI * 2); ctx.stroke();
+    }
     if (this.worldStall) {
       const { x, y } = this.worldStall;
       ctx.fillStyle = 'rgba(213,180,95,.12)';
@@ -4307,7 +4437,7 @@ export class ZheYiShenGame {
       }
       ctx.fillStyle = warm ? '#e5c96f' : '#c3ccd1'; ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText(warm ? '留灯间' : '里屋', x, y + 20);
-      const ratio = this.clamp(ttl / 22, 0, 1);
+      const ratio = this.clamp(ttl / 36, 0, 1);
       ctx.strokeStyle = warm ? '#d8b95f' : '#9fb3ba';
       ctx.beginPath(); ctx.arc(x, y - 12, 30, -Math.PI / 2, -Math.PI / 2 + ratio * Math.PI * 2); ctx.stroke();
     }
@@ -4987,6 +5117,7 @@ export class ZheYiShenGame {
     this.renderHud();
     this.renderEdgeHint(this.worldDoor?.x, this.worldDoor?.y, this.worldDoor?.kind === 'light' ? '#e5c96f' : '#c3ccd1');
     this.renderEdgeHint(this.worldStall?.x, this.worldStall?.y, '#d5b45f');
+    this.renderEdgeHint(this.worldReward?.x, this.worldReward?.y, '#e5c96f');
     for (const enemy of this.enemies) {
       if (!enemy.dead && (enemy.elite || enemy.boss)) this.renderEdgeHint(enemy.x, enemy.y, '#df5a69');
     }
@@ -5197,6 +5328,8 @@ export class ZheYiShenGame {
       vector.pierce ? `穿${vector.pierce}` : '',
       vector.returning ? '回返' : '',
       vector.homing > 0.05 ? '追踪' : '',
+      vector.splitChance > 0 ? `分裂${Math.round(vector.splitChance * 100)}%` : '',
+      vector.explosion > 0 ? `范围${Math.round(vector.explosion)}` : '',
     ].filter(Boolean).join(' · ');
     ctx.fillText(traits || '月白核心仍在里面', 64, 627);
 
@@ -6055,52 +6188,78 @@ export class ZheYiShenGame {
         0, 1,
       );
       const lifeFade = Math.min(1, projectile.life * 2);
-      if (projectile.style !== 'plain') {
-        ctx.globalAlpha = lifeFade * 0.35;
-        ctx.strokeStyle = projectile.color;
-        ctx.lineWidth = Math.max(1, projectile.radius * 0.8);
+      const visual = projectile.visual;
+      const distortion = this.reducedMotion ? 0 : Math.sin(projectile.id * 2.17 + projectile.life * 17) * visual.distortion;
+      ctx.translate(0, Math.round(distortion * 2));
+
+      // 一颗弹只允许一种尾迹；flags 叠加机制，不叠加完整弹体贴图。
+      ctx.fillStyle = visual.trailColor;
+      ctx.strokeStyle = visual.trailColor;
+      if (visual.trail === 'drip') {
+        ctx.globalAlpha = lifeFade * 0.42;
+        ctx.fillRect(Math.round(-projectile.radius * 3.8), -1, Math.max(2, Math.round(projectile.radius)), 2);
+        ctx.fillRect(Math.round(-projectile.radius * 2.2), 2, 2, 2);
+      } else if (visual.trail === 'signal') {
+        ctx.globalAlpha = lifeFade * 0.38;
+        for (let step = 1; step <= 3; step += 1) ctx.fillRect(Math.round(-projectile.radius * (step + 1.2)), step % 2 ? -2 : 1, 2, 2);
+      } else if (visual.trail === 'streak') {
+        ctx.globalAlpha = lifeFade * 0.46;
+        ctx.fillRect(Math.round(-projectile.radius * 4.6), 0, Math.max(3, Math.round(projectile.radius * 3.1)), 1);
+      } else if (visual.trail === 'echo') {
+        ctx.globalAlpha = lifeFade * 0.3;
+        ctx.fillRect(Math.round(-projectile.radius * 4), -1, 3, 3);
+        ctx.fillRect(Math.round(-projectile.radius * 2.7), 0, 2, 2);
+      } else {
+        ctx.globalAlpha = lifeFade * 0.24;
         ctx.beginPath();
-        ctx.moveTo(-projectile.radius * 4.2, 0);
-        ctx.lineTo(-projectile.radius * 1.1, 0);
-        ctx.stroke();
+        ctx.ellipse(-projectile.radius * 2.8, 0, projectile.radius * 1.2, Math.max(1, projectile.radius * 0.45), 0, 0, Math.PI * 2);
+        ctx.fill();
       }
-      ctx.globalAlpha = lifeFade;
-      ctx.fillStyle = projectile.color;
-      ctx.strokeStyle = projectile.color;
-      // 贴图路径：生图基底弹体。雾团按凝实度取档，其余按样式取形；图集未就绪走程序兜底
+      ctx.globalAlpha = lifeFade * visual.opacity;
+      ctx.fillStyle = visual.materialTint;
+      ctx.strokeStyle = visual.edgeColor;
+      // TearVariant 等价层：每颗弹只从图集中选择一个最终 form。
       if (projectileAtlas.ready) {
-        // 机制即隐喻的形替换：呵在玻璃上的字=雾锥；断掉的脊梁骨=骨节弹
-        const spriteName = projectile.style === 'plain'
-          ? (this.hasItem('breath-on-glass') ? 'cone'
-            : this.hasItem('broken-spine') ? 'bone'
-              : `breath${Math.min(3, Math.floor(firmness * 4))}`)
-          : projectile.style;
-        const sprite = projectileAtlas.tintedNamed(spriteName, projectile.color, projectile.style === 'plain' ? 0.28 : 0.4);
+        const spriteName = visual.form === 'breath'
+          ? `breath${Math.min(3, Math.floor(firmness * 4))}`
+          : visual.form;
+        const tint = projectile.critical ? '#fff1a8' : visual.materialTint;
+        const sprite = projectileAtlas.tintedNamed(spriteName, tint, visual.form === 'breath' ? 0.28 : 0.42);
         if (sprite) {
-          const drawSize = projectile.radius * (projectile.style === 'plain' ? 3.4 : 3.0);
-          if (projectile.style === 'plain') {
-            const wobble = Math.sin(projectile.life * 9 + projectile.id * 1.7) * (1 - firmness) * 0.16;
-            ctx.globalAlpha = lifeFade * (0.5 + firmness * 0.5);
-            ctx.imageSmoothingEnabled = false;
-            ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2 + wobble * 6, drawSize * (1 + wobble), drawSize);
-          } else {
-            ctx.imageSmoothingEnabled = false;
-            ctx.drawImage(sprite, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+          const baseSize = projectile.radius * (visual.form === 'breath' ? 3.4 : 3.1);
+          const widthScale = this.clamp(0.78 + visual.length * 0.2 + visual.sharpness * 0.12, 0.85, 1.9);
+          const heightScale = this.clamp(1 + visual.weight * 0.12 - visual.sharpness * 0.1, 0.72, 1.45);
+          const wobble = visual.form === 'breath'
+            ? Math.sin(projectile.life * 9 + projectile.id * 1.7) * (1 - firmness) * 0.16
+            : 0;
+          const drawWidth = baseSize * widthScale * (1 + wobble);
+          const drawHeight = baseSize * heightScale;
+          ctx.globalAlpha = lifeFade * visual.opacity * (visual.form === 'breath' ? 0.5 + firmness * 0.5 : 1);
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(sprite, -drawWidth / 2, -drawHeight / 2 + wobble * 5, drawWidth, drawHeight);
+          if (projectile.critical) {
+            ctx.globalAlpha = 0.68;
+            ctx.strokeStyle = '#fff8c5';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(0, 0, baseSize * 0.5, 0, Math.PI * 2); ctx.stroke();
           }
-          if (projectile.critical) { ctx.globalAlpha = 0.7; ctx.strokeStyle = '#fff8c5'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(0, 0, drawSize * 0.5, 0, Math.PI * 2); ctx.stroke(); }
           ctx.restore();
           continue;
         }
       }
-      if (projectile.style === 'paper') {
+      if (visual.form === 'paper') {
         ctx.fillRect(-projectile.radius * 1.5, -projectile.radius * 0.72, projectile.radius * 3, projectile.radius * 1.44);
         ctx.strokeStyle = '#7f7770'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(-projectile.radius * 1.4, -projectile.radius * 0.65); ctx.lineTo(0, 0); ctx.lineTo(projectile.radius * 1.4, -projectile.radius * 0.65); ctx.stroke();
-      } else if (projectile.style === 'rain') {
+      } else if (visual.form === 'rain' || visual.form === 'tear') {
         ctx.beginPath(); ctx.ellipse(0, 0, projectile.radius * 0.65, projectile.radius * 2.1, 0, 0, Math.PI * 2); ctx.fill();
-      } else if (projectile.style === 'sound') {
+      } else if (visual.form === 'sound') {
         ctx.beginPath(); ctx.arc(0, 0, projectile.radius * 1.5, 0, Math.PI * 2); ctx.stroke();
-      } else if (projectile.style === 'key') {
+      } else if (visual.form === 'key') {
         ctx.lineWidth = Math.max(1, projectile.radius * 0.35); ctx.beginPath(); ctx.arc(-projectile.radius, 0, projectile.radius * 0.7, 0, Math.PI * 2); ctx.moveTo(-projectile.radius * 0.3, 0); ctx.lineTo(projectile.radius * 1.8, 0); ctx.lineTo(projectile.radius * 1.8, projectile.radius); ctx.stroke();
+      } else if (visual.form === 'bone') {
+        ctx.lineWidth = Math.max(2, projectile.radius * 0.8); ctx.beginPath(); ctx.moveTo(-projectile.radius * 1.7, 0); ctx.lineTo(projectile.radius * 1.7, 0); ctx.stroke();
+      } else if (visual.form === 'cone') {
+        ctx.beginPath(); ctx.moveTo(-projectile.radius * 1.4, -projectile.radius); ctx.lineTo(projectile.radius * 2.1, 0); ctx.lineTo(-projectile.radius * 1.4, projectile.radius); ctx.closePath(); ctx.fill();
       } else {
         // 《一口气》：一小团月白色气息。虚弱时是散雾，被人生揉硬后才凝成弹
         const wobble = Math.sin(projectile.life * 9 + projectile.id * 1.7) * (1 - firmness) * 0.22;
@@ -6307,11 +6466,18 @@ export class ZheYiShenGame {
   private renderShop(): void {
     const ctx = this.ctx;
     applyPixelDiscipline(ctx);
-    if (!sceneArt.drawRoom(ctx, 'pawn')) {
+    const pawnDrawn = sceneArt.drawRoom(ctx, 'pawn');
+    if (!pawnDrawn) {
       ctx.fillStyle = '#111013';
       ctx.fillRect(0, 0, W, H);
+    } else {
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+      ctx.fillStyle = 'rgba(190,158,112,.24)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.restore();
     }
-    ctx.fillStyle = 'rgba(8,7,10,.76)';
+    ctx.fillStyle = 'rgba(8,7,10,.42)';
     ctx.fillRect(0, 0, W, H);
     ctx.textAlign = 'left';
     ctx.fillStyle = UI_PALETTE.paperLight;
@@ -6547,7 +6713,14 @@ export class ZheYiShenGame {
     applyPixelDiscipline(ctx);
     const roomDrawn = sceneArt.drawRoom(ctx, this.specialRoomKind === 'light' ? 'lamp' : 'inner');
     if (roomDrawn) {
-      ctx.fillStyle = this.specialRoomKind === 'light' ? 'rgba(20,15,9,.3)' : 'rgba(6,7,10,.44)';
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+      ctx.fillStyle = this.specialRoomKind === 'light'
+        ? 'rgba(225,197,132,.38)'
+        : 'rgba(164,181,190,.30)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.restore();
+      ctx.fillStyle = this.specialRoomKind === 'light' ? 'rgba(56,38,14,.03)' : 'rgba(12,16,21,.06)';
       ctx.fillRect(0, 0, W, H);
     } else if (this.specialRoomKind === 'light') {
       ctx.fillStyle = 'rgba(55,45,26,.74)';
@@ -6744,19 +6917,26 @@ export class ZheYiShenGame {
     const ctx = this.ctx;
     const backRoom = this.state === 'specialRoom' && this.specialRoomKind === 'back';
     const lightRoom = this.state === 'specialRoom' && this.specialRoomKind === 'light';
+    const plinthKind: WorldPlinthKind = lightRoom ? 'light' : backRoom ? 'inner' : shop ? 'shop' : 'reward';
+    const plinth = worldPlinthAtlas.slice(plinthKind);
     const top = sold ? '#4a494d' : lightRoom ? '#9d8244' : backRoom ? '#68747a' : shop ? '#654a37' : '#5a5552';
     const front = sold ? '#313237' : lightRoom ? '#695b37' : backRoom ? '#3c464c' : shop ? '#403126' : '#393537';
     const accent = sold ? '#626167' : quality >= 4 ? '#c7aa58' : quality >= 3 ? '#9f5262' : '#777779';
     ctx.save();
     ctx.imageSmoothingEnabled = false;
-    ctx.fillStyle = 'rgba(5,5,8,.58)';
-    ctx.fillRect(Math.round(x - 28), Math.round(y + 8), 56, 4);
-    ctx.fillStyle = front;
-    ctx.fillRect(Math.round(x - 20), Math.round(y), 40, 12);
-    ctx.fillRect(Math.round(x - 16), Math.round(y + 12), 32, 4);
-    ctx.fillStyle = top;
-    ctx.fillRect(Math.round(x - 24), Math.round(y - 4), 48, 7);
-    ctx.fillRect(Math.round(x - 18), Math.round(y - 7), 36, 3);
+    ctx.globalAlpha = sold ? 0.32 : 1;
+    if (plinth) ctx.drawImage(plinth, Math.round(x - 24), Math.round(y - 16));
+    else {
+      ctx.fillStyle = 'rgba(5,5,8,.58)';
+      ctx.fillRect(Math.round(x - 28), Math.round(y + 8), 56, 4);
+      ctx.fillStyle = front;
+      ctx.fillRect(Math.round(x - 20), Math.round(y), 40, 12);
+      ctx.fillRect(Math.round(x - 16), Math.round(y + 12), 32, 4);
+      ctx.fillStyle = top;
+      ctx.fillRect(Math.round(x - 24), Math.round(y - 4), 48, 7);
+      ctx.fillRect(Math.round(x - 18), Math.round(y - 7), 36, 3);
+    }
+    ctx.globalAlpha = 1;
     ctx.fillStyle = accent;
     ctx.fillRect(Math.round(x - 12), Math.round(y - 4), 24, 2);
     if (!sold) {
@@ -7213,11 +7393,43 @@ export class ZheYiShenGame {
     )).join('')}`;
   }
 
+  private setupProjectileAudit(): void {
+    if (this.state === 'title') this.startRun(0x20260718);
+    this.initialItemReward = false;
+    this.hero.maxHp = 999;
+    this.hero.hp = 999;
+    this.encounterIndex = 2;
+    this.startStage();
+    this.items = ['front-desk-letter', 'red-workbook', 'stone-schoolbag', 'only-key', 'broken-spine'];
+    this.shotTimer = 999;
+    this.spawnPause = 999;
+    this.enemies = [];
+    const target = this.createSeekingEnemy('debt', this.heroX + 160, this.heroY - 14);
+    target.speed = 0;
+    target.attackCooldown = 99;
+    target.maxHp = 9999;
+    target.hp = 9999;
+    this.enemies.push(target);
+    this.projectiles = [];
+    this.spawnProjectile({
+      x: this.heroX, y: this.heroY - 14, angle: 0,
+      damage: 24, speed: 8, radius: 9, range: 300, life: 40,
+      pierce: 2, returning: true, homing: 0.28, splitChance: 1,
+      explosion: 22, generation: 0, color: '#d8d0bb', style: 'paper',
+      critical: false, knockback: 8,
+    });
+    const parent = this.projectiles[0];
+    if (parent) {
+      this.pushProjectile(this.makeChildProjectile(parent, -0.42));
+      this.pushProjectile(this.makeChildProjectile(parent, 0.42));
+    }
+  }
+
   private installTestHooks(): void {
     const host = window as Window & {
       render_game_to_text?: () => string;
       advanceTime?: (ms: number) => void;
-      zhe_yi_shen_test?: (action: 'start' | 'reveal-origin' | 'clear' | 'choose-first' | 'swallow' | 'exhale' | 'open-fate' | 'special' | 'leave-special' | 'shop' | 'buy-first' | 'reroll-shop' | 'combo' | 'boss' | 'battle' | 'father' | 'father-phase2' | 'telegraph' | 'win' | 'equip' | 'pause', payload?: unknown) => void;
+      zhe_yi_shen_test?: (action: 'start' | 'reveal-origin' | 'clear' | 'choose-first' | 'swallow' | 'exhale' | 'open-fate' | 'special' | 'leave-special' | 'shop' | 'buy-first' | 'reroll-shop' | 'combo' | 'boss' | 'battle' | 'projectile-audit' | 'father' | 'father-phase2' | 'telegraph' | 'win' | 'equip' | 'pause', payload?: unknown) => void;
     };
     const renderGameState = () => JSON.stringify({
       coordinateSystem: 'origin top-left; +x right; +y down; logical 360x640',
@@ -7233,9 +7445,14 @@ export class ZheYiShenGame {
       transitionTimer: Number(this.transitionTimer.toFixed(2)),
       worldDoor: this.worldDoor ? { kind: this.worldDoor.kind, x: Math.round(this.worldDoor.x), y: Math.round(this.worldDoor.y), ttl: Number(this.worldDoor.ttl.toFixed(1)) } : null,
       worldStall: this.worldStall ? { x: Math.round(this.worldStall.x), y: Math.round(this.worldStall.y) } : null,
+      worldReward: this.worldReward ? {
+        x: Math.round(this.worldReward.x), y: Math.round(this.worldReward.y),
+        ttl: Number(this.worldReward.ttl.toFixed(1)), choices: this.worldReward.choices,
+      } : null,
       darkness: this.darkActive ? Math.round(this.darkR) : null,
       hero: { hp: Math.round(this.hero.hp), maxHp: this.hero.maxHp, block: this.hero.block, coins: this.hero.coins },
       vector: this.computeAttackVector(),
+      vectorFlags: attackVectorFlags(this.computeAttackVector()),
       origin: this.aiOriginState === 'gpt' ? this.origin : null,
       originProgress: this.aiOriginState === 'gpt'
         ? Number((this.originElapsed / this.originStoryDuration()).toFixed(2))
@@ -7281,6 +7498,17 @@ export class ZheYiShenGame {
         knobTravel: JOYSTICK_KNOB_TRAVEL,
       },
       projectiles: this.projectiles.length,
+      projectileSamples: this.projectiles.slice(0, 8).map((projectile) => ({
+        form: projectile.visual.form,
+        trail: projectile.visual.trail,
+        flags: projectileFlags(projectile),
+        damage: Number(projectile.damage.toFixed(1)),
+        radius: Number(projectile.radius.toFixed(1)),
+        homing: Number(projectile.homing.toFixed(2)),
+        splitChance: Number(projectile.splitChance.toFixed(2)),
+        areaDamage: Number(projectile.explosion.toFixed(1)),
+        generation: projectile.generation,
+      })),
       itemChoices: this.itemRewardChoices,
       shop: this.shopOffers,
       shopFeedback: this.shopFeedback
@@ -7349,7 +7577,7 @@ export class ZheYiShenGame {
           if (RESULT_TABS.includes(resultTab as ResultTab)) this.resultTab = resultTab as ResultTab;
         } else {
           const auditScreen = auditParams.get('audit-screen');
-          if (auditScreen === 'reward' || auditScreen === 'shop' || auditScreen === 'boss' || auditScreen === 'fate' || auditScreen === 'ai-fate') {
+          if (auditScreen === 'reward' || auditScreen === 'shop' || auditScreen === 'boss' || auditScreen === 'fate' || auditScreen === 'ai-fate' || auditScreen === 'projectile') {
             this.runSeed = 0x20260722;
             this.rngState = this.runSeed;
             this.encounterIndex = 2;
@@ -7363,7 +7591,9 @@ export class ZheYiShenGame {
             const auditCoins = Number.parseInt(auditParams.get('coins') ?? '', 10);
             if (Number.isFinite(auditCoins)) this.hero.coins = Math.max(0, Math.min(99, auditCoins));
             this.items = ['front-desk-letter', 'eyebrow-razor'];
-            if (auditScreen === 'reward') {
+            if (auditScreen === 'projectile') {
+              this.setupProjectileAudit();
+            } else if (auditScreen === 'reward') {
               this.rewardTitle = '这一段路，缩成了三件东西';
               this.initialItemReward = false;
               this.itemRewardChoices = ['fathers-raincoat', 'broken-spine', 'moms-bowl'];
@@ -7472,6 +7702,9 @@ export class ZheYiShenGame {
           this.hero.hp = 999;
           this.encounterIndex = 0;
           this.startStage();
+        }
+        if (action === 'projectile-audit') {
+          this.setupProjectileAudit();
         }
         if (action === 'father') {
           if (this.state === 'title') this.startRun(0x20260718);
