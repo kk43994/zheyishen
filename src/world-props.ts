@@ -1,6 +1,6 @@
 // 场景摆设贴图：image2 基底 + scripts/process_image2_props.py 规整产物。
 // 图集 6 行（章节）x 4 列（变体），单元格 40x44，精灵底部居中锚定。
-const PROPS_URL = new URL('./assets/canonical-v1/world/props.png', import.meta.url).href;
+const PROPS_URL = new URL('./assets/world/props.png', import.meta.url).href;
 
 export const PROP_VARIANTS = 4;
 const CELL_W = 40;
@@ -55,7 +55,7 @@ export const worldPropAtlas = new WorldPropAtlas();
 worldPropAtlas.load();
 
 // 世界实体：0=留灯间门 1=里屋门 2=当铺摊 3=终局路灯（单行 4 格，64x72，底部居中锚定）
-const ENTITIES_URL = new URL('./assets/canonical-v1/world/entities.png', import.meta.url).href;
+const ENTITIES_URL = new URL('./assets/world/entities.png', import.meta.url).href;
 const ENTITY_CELL_W = 64;
 const ENTITY_CELL_H = 72;
 const ENTITY_COUNT = 4;

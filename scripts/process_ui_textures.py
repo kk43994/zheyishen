@@ -21,6 +21,17 @@ UI_DIR = Path("src/assets/ui")
 TEXTURE_SIZE = 192
 
 
+def mirror_tile(image: Image.Image) -> Image.Image:
+    half = TEXTURE_SIZE // 2
+    base = image.convert("RGB").resize((half, half), Image.Resampling.NEAREST)
+    tiled = Image.new("RGB", (TEXTURE_SIZE, TEXTURE_SIZE))
+    tiled.paste(base, (0, 0))
+    tiled.paste(base.transpose(Image.Transpose.FLIP_LEFT_RIGHT), (half, 0))
+    tiled.paste(base.transpose(Image.Transpose.FLIP_TOP_BOTTOM), (0, half))
+    tiled.paste(base.transpose(Image.Transpose.ROTATE_180), (half, half))
+    return tiled
+
+
 def quadrant(sheet: Image.Image, index: int, inset: int = 24) -> Image.Image:
     half_w, half_h = sheet.width // 2, sheet.height // 2
     col, row = index % 2, index // 2
@@ -31,7 +42,7 @@ def quadrant(sheet: Image.Image, index: int, inset: int = 24) -> Image.Image:
 
 
 def normalize_texture(cell: Image.Image, target_median: int) -> Image.Image:
-    logical = cell.convert("RGB").resize((TEXTURE_SIZE, TEXTURE_SIZE), Image.Resampling.NEAREST)
+    logical = mirror_tile(cell)
     values = sorted(sum(pixel) // 3 for pixel in logical.getdata())
     median = max(1, values[len(values) // 2])
     scale = target_median / median

@@ -3,7 +3,18 @@ import { ZheYiShenGame } from './game';
 
 function showFallback(message: string): void {
   const loading = document.getElementById('loading');
-  if (loading) loading.textContent = message;
+  if (!loading) return;
+  loading.hidden = false;
+  loading.setAttribute('role', 'alert');
+  loading.dataset.error = 'true';
+  const copy = document.createElement('p');
+  copy.textContent = message;
+  const retry = document.createElement('button');
+  retry.type = 'button';
+  retry.textContent = '重新翻开档案';
+  retry.addEventListener('click', () => window.location.reload());
+  loading.replaceChildren(copy, retry);
+  retry.focus();
 }
 
 window.addEventListener('error', () => showFallback('这一生出了点意外，请重新开始。'));

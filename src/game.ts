@@ -1,4 +1,5 @@
 import { generateAIFate, generateAIFateResult, generateAIFreeFate, generateAIOrigin, type AIGenerationState } from './ai';
+import { LifeFeedback } from './audio';
 import {
   PixelEnemyRenderer,
   resolveEnemyPixelAsset,
@@ -11,7 +12,9 @@ import { DEFAULT_APPEARANCE, commitOriginWheels, getOriginModifiers, getOriginTr
 import { FATE_ITEM_IDS, getItem, ITEM_IDS } from './relics';
 import { comboArtAtlas } from './combo-art';
 import { itemIconAtlas } from './item-icons';
-import { projectileAtlas, hitFrame, type HitMaterial } from './vfx-sprites';
+import { projectileAtlas, hitFrame, saveFrame, synergyAtlas, statusAtlas, poisonAtlas, joystickAtlas, type HitMaterial, type SaveKind } from './vfx-sprites';
+import { sceneArt } from './scene-art';
+import { overlayPanelTexture, uiTextures } from './ui-textures';
 import { POISON_LABELS } from './types';
 import { PROP_VARIANTS, worldEntityAtlas, worldPropAtlas } from './world-props';
 import {
@@ -63,9 +66,73 @@ const HERO_SCREEN_X = 180;
 const HERO_SCREEN_Y = 310;
 const HERO_BASE_SPEED = 132;
 const MAX_ALIVE_ENEMIES = 18;
+const MAX_PROJECTILES = 280;
+const MAX_PENDING_SHOTS = 140;
+const MAX_BURSTS = 140;
+const MAX_COIN_DROPS = 70;
+const MAX_ENEMY_DEATHS = 60;
 const HURT_IFRAME = 0.75;
 const HERO_ATTACK_ANIMATION_DURATION = 0.22;
+const JOYSTICK_INPUT_RADIUS = 46;
+const JOYSTICK_KNOB_TRAVEL = 24;
+const JOYSTICK_SAFE_X = 42;
+const JOYSTICK_SAFE_TOP = 104;
+const JOYSTICK_SAFE_BOTTOM = 548;
 const TITLE_BACKGROUND_URL = new URL('./assets/ui/title-life-night.png', import.meta.url).href;
+const TITLE_START_RECT = { x: 72, y: 470, width: 216, height: 58 } as const;
+const RESULT_RESTART_RECT = { x: 70, y: 505, width: 220, height: 58 } as const;
+const RESULT_TAB_RECT = { x: 20, y: 98, width: 320, height: 28 } as const;
+const PAUSE_BUTTON_RECT = { x: 326, y: 6, width: 28, height: 39 } as const;
+const PAUSE_BUTTON_HIT_RECT = { x: 310, y: 0, width: 50, height: 52 } as const;
+const PAUSE_CONTINUE_RECT = { x: 130, y: 530, width: 204, height: 44 } as const;
+const PAUSE_END_RECT = { x: 152, y: 584, width: 160, height: 26 } as const;
+const PAUSE_TAB_RECT = { x: 130, y: 86, width: 204, height: 30 } as const;
+const PAUSE_SETTING_VOLUME_RECT = { x: 142, y: 160, width: 180, height: 38 } as const;
+const PAUSE_SETTING_HAPTICS_RECT = { x: 142, y: 212, width: 180, height: 38 } as const;
+const PAUSE_SETTING_MOTION_RECT = { x: 142, y: 264, width: 180, height: 38 } as const;
+const PAUSE_SETTING_CONTRAST_RECT = { x: 142, y: 316, width: 180, height: 38 } as const;
+const FATE_FREE_CANCEL_RECT = { x: 105, y: 568, width: 150, height: 30 } as const;
+const FATE_FREE_CANCEL_DELAY = 4;
+const SPECIAL_OFFER_RECTS = [
+  { x: 14, y: 126, width: 104, height: 214 },
+  { x: 128, y: 126, width: 104, height: 214 },
+  { x: 242, y: 126, width: 104, height: 214 },
+] as const;
+const SPECIAL_LEAVE_RECT = { x: 104, y: 554, width: 152, height: 48 } as const;
+const SPECIAL_HOLD_MS = 600;
+type PauseTab = 'body' | 'origin' | 'fates' | 'settings';
+const PAUSE_TABS: readonly PauseTab[] = ['body', 'origin', 'fates', 'settings'];
+type ResultTab = 'seal' | 'items' | 'fates' | 'stats';
+const RESULT_TABS: readonly ResultTab[] = ['seal', 'items', 'fates', 'stats'];
+type RewardDestination = 'start' | 'advance' | 'battle';
+type ShopFeedbackKind = 'purchase' | 'deny' | 'reroll';
+
+interface ShopFeedbackState {
+  kind: ShopFeedbackKind;
+  index: number;
+  timer: number;
+  total: number;
+  price?: number;
+}
+
+function pointInRect(point: { x: number; y: number }, rect: { x: number; y: number; width: number; height: number }): boolean {
+  return point.x >= rect.x && point.x <= rect.x + rect.width
+    && point.y >= rect.y && point.y <= rect.y + rect.height;
+}
+
+function pointInPaddedRect(
+  point: { x: number; y: number },
+  rect: { x: number; y: number; width: number; height: number },
+  paddingX: number,
+  paddingY: number,
+): boolean {
+  return pointInRect(point, {
+    x: rect.x - paddingX,
+    y: rect.y - paddingY,
+    width: rect.width + paddingX * 2,
+    height: rect.height + paddingY * 2,
+  });
+}
 
 // 出生的一口气必须是虚弱的：低伤、短程、细弱——所有强度都由这一生揉出来
 const BASE_VECTOR: AttackVector = {
@@ -126,6 +193,7 @@ interface PendingShot {
   critical: boolean;
   knockback: number;
   generation: number;
+  priority?: 'core' | 'secondary';
   shrink?: boolean;
 }
 
@@ -133,6 +201,7 @@ interface StageSpec {
   chapter: string;
   title: string;
   subtitle: string;
+  situation: readonly [string, string];
   duration: number;
   pool: EnemyType[];
   spawnEvery: number;
@@ -160,43 +229,75 @@ interface EnemyDeathVisual {
 const STAGES: StageSpec[] = [
   {
     chapter: '童年 · 床底王国', title: '没人相信的怪物', subtitle: '恐惧第一次有了形状',
+    situation: ['熄灯以后，他听见床底也在呼吸。', '大人说，那里什么都没有。'],
     duration: 60, pool: ['cry-moth', 'fear', 'hunger-shadow'], spawnEvery: 2.5, bossAt: 34, bossType: 'closet-dark', end: 'advance',
-    enterLine: '出生证明上按了手印。没人问他同不同意。',
-    groundTop: '#2d2433', groundBottom: '#1c1722', propColor: '#5b4d64',
+    enterLine: '他只好先学会害怕，再学会一个人睡。',
+    groundTop: '#695d6f', groundBottom: '#403a48', propColor: '#8d7d98',
   },
   {
     chapter: '少年 · 千眼教室', title: '统一答案', subtitle: '所有目光都在批改你',
+    situation: ['考试、排名、同学议论。', '每张卷子都像在替所有人决定他是谁。'],
     duration: 70, pool: ['red-mark', 'whisper'], spawnEvery: 2.3,
     bossAt: 44, bossType: 'uniform-answer', end: 'fate',
-    enterLine: '他的理想写在作文里。得了 38 分。',
-    groundTop: '#29323b', groundBottom: '#1a2027', propColor: '#536572',
+    enterLine: '他把理想写进作文。老师用红笔写：偏题，38 分。',
+    groundTop: '#71818a', groundBottom: '#46545d', propColor: '#92a4ac',
   },
   {
     chapter: '青年 · 齿轮车站', title: '错过的那一班', subtitle: '每个人都像比你早一步',
+    situation: ['毕业、求职、租房。', '别人陆续上车，他还在原地证明自己够格。'],
     duration: 75, pool: ['clockwork', 'whisper', 'red-mark'], spawnEvery: 1.9, stallAt: 14, bossAt: 49, bossType: 'last-bus', end: 'advance',
-    enterLine: '老师说，社会会教他做人。社会确实教了。',
-    groundTop: '#30291f', groundBottom: '#1d1914', propColor: '#746344',
+    enterLine: '毕业证卷在行李箱底。他先学会了说「随时到岗」。',
+    groundTop: '#8a7658', groundBottom: '#574936', propColor: '#9e865f',
   },
   {
     chapter: '成年 · 屋檐下的家', title: '沉默的父亲', subtitle: '盔甲里面也是一个害怕的男孩',
+    situation: ['一间租来的房，一张总也坐不齐的饭桌。', '他开始替别人扛住生活。'],
     duration: 80, pool: ['missed-call', 'whisper', 'silence', 'debt'], spawnEvery: 1.75,
     bossAt: 54, bossType: 'silent-father', doorAt: 24, end: 'fate',
     enterLine: '他管那间屋子叫家。房东管它叫房源。',
-    groundTop: '#29382f', groundBottom: '#17231d', propColor: '#536f60',
+    groundTop: '#718475', groundBottom: '#46594b', propColor: '#88a08f',
   },
   {
     chapter: '中年 · 没有关灯的办公室', title: '名字还在表格里', subtitle: '门已经打不开了',
+    situation: ['工资、体检和账单同时到期。', '工位比家更熟悉他的名字。'],
     duration: 75, pool: ['debt', 'clockwork', 'badge-thief', 'whisper'], spawnEvery: 1.55, stallAt: 13, doorAt: 26, bossAt: 49, bossType: 'debt-collector', end: 'fate',
     enterLine: '体检单比工资单先到。',
-    groundTop: '#303740', groundBottom: '#1c2027', propColor: '#66727d',
+    groundTop: '#7c8993', groundBottom: '#4d5962', propColor: '#98a5ad',
   },
   {
     chapter: '暮年 · 白发荒原', title: '收灯人', subtitle: '它不凶，也不坏，它只是准时',
+    situation: ['病房走廊越来越长。', '忘记的人和被忘记的人，一起等着最后一盏灯。'],
     duration: 95, pool: ['forgetter', 'whisper', 'debt', 'empty-chair'], spawnEvery: 1.8, end: 'final',
     enterLine: '工牌收走那天，他愣了一下，才想起来自己姓什么。',
-    groundTop: '#2d313a', groundBottom: '#191c23', propColor: '#626a76',
+    groundTop: '#85888b', groundBottom: '#555b61', propColor: '#9da3a5',
   },
 ];
+
+const STAGE_TRANSITION_DURATION = 4.2;
+const CHAPTER_BRIDGES = [
+  '床边灯亮过头，成了教室的日光灯',
+  '红叉卷成车票，落进站台的风里',
+  '车票塞进口袋，钥匙打开一扇家门',
+  '饭桌上的账单，滑进了工位表格',
+  '日光灯逐盏熄灭，只剩路口一盏灯',
+] as const;
+
+// Props share one 40x44 atlas contract, but their rendered footprint reflects
+// the object: a bed rail or bench should not read like a paper scrap.
+const PROP_STAGE_SCALES = [
+  [1.35, 1.0, 0.74, 0.76],
+  [1.3, 0.9, 0.78, 0.9],
+  [1.45, 0.86, 1.18, 1.0],
+  [1.4, 1.15, 0.9, 1.08],
+  [1.35, 1.08, 0.9, 0.96],
+  [1.45, 1.18, 1.12, 1.0],
+] as const;
+const PROP_CLUSTER_OFFSETS = [
+  [-42, -28],
+  [40, -22],
+  [-28, 44],
+  [44, 38],
+] as const;
 
 const DARKNESS_START = 62;
 const DARKNESS_SHRINK = 22;
@@ -252,6 +353,7 @@ export class ZheYiShenGame {
   private ctx: CanvasRenderingContext2D;
   private pixelHero = new PixelHeroRenderer();
   private pixelEnemies = new PixelEnemyRenderer();
+  private feedback = new LifeFeedback();
   private worldProps = worldPropAtlas;
   private titleBackground = new Image();
   private state: ScreenState = 'title';
@@ -285,14 +387,23 @@ export class ZheYiShenGame {
   private projectiles: Projectile[] = [];
   private bursts: BurstEffect[] = [];
   private itemRewardChoices: ItemId[] = [];
+  private itemRewardFocus = 0;
   private shopOffers: ShopOffer[] = [];
+  private shopFocus = 0;
+  private shopFeedback?: ShopFeedbackState;
   private specialRoomKind: SpecialRoomKind = 'light';
   private specialRoomOffers: ItemId[] = [];
   private specialRoomTaken = new Set<ItemId>();
+  private specialRoomFocus = 0;
+  private specialRoomLeaveFocused = false;
+  private specialRoomPointerId = -1;
+  private specialRoomHoldIndex = -1;
+  private specialRoomHoldStarted = 0;
   private strainTendency = 0;
   private lightTendency = 0;
   private initialItemReward = false;
   private rewardTitle = '';
+  private rewardAcquire?: { id: ItemId; index: number; timer: number; total: number; destination: RewardDestination };
   private encounterIndex = 0;
   private battleTime = 0;
   private shotTimer = 0;
@@ -314,6 +425,8 @@ export class ZheYiShenGame {
   private toastTime = 0;
   private flash = 0;
   private resultWon = false;
+  private resultTab: ResultTab = 'seal';
+  private resultStartedAt = 0;
   private entityId = 1;
   private runSeed = 0;
   private rngState = 0x20260718;
@@ -323,6 +436,12 @@ export class ZheYiShenGame {
   private lastTime = 0;
   private accumulator = 0;
   private visualTime = 0;
+  private devSnapshotAt = 0;
+  private renderGameState?: () => string;
+  private auditTimeScale = 1;
+  private auditEndurance = false;
+  private auditAutoMove = false;
+  private auditDamageTaken = 0;
   private heroX = 0;
   private heroY = 0;
   private heroMoving = false;
@@ -333,6 +452,8 @@ export class ZheYiShenGame {
   private joyPointerId = -1;
   private joyBaseX = 0;
   private joyBaseY = 0;
+  private joyStartX = 0;
+  private joyStartY = 0;
   private joyDX = 0;
   private joyDY = 0;
   private spawnTimer = 1;
@@ -358,6 +479,12 @@ export class ZheYiShenGame {
   private finalFateTriggered = false;
   private hurtCooldown = 0;
   private screenShake = 0;
+  private reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  private highContrastHud = false;
+  private paused = false;
+  private pauseTab: PauseTab = 'body';
+  private pausePointerId = -1;
+  private pauseEndHoldStarted = 0;
   private rewardReturn: 'battle' | 'advance' = 'advance';
   private originBadgeExpanded = false;
   private comboSeen = new Set<string>();
@@ -370,6 +497,8 @@ export class ZheYiShenGame {
   private rhythmBrokenWindow = -1;
   private lastStandoffMark = 0;
   private deathSaves = 0;
+  /** 免死演出：乳牙碎/遗照闪/雪花屏/关服，触发时播放专属帧序列 */
+  private saveEffect: { kind: 'tooth' | 'photo' | 'static' | 'shutdown'; timer: number; duration: number } | null = null;
   private ktvTimer = 0;
   private synergySeen = new Set<string>();
   private watchReleaseTimer = 0;
@@ -378,6 +507,8 @@ export class ZheYiShenGame {
   private usefulTimer = 0;
   private lastSighMark = 0;
   private fateFreeWaiting = false;
+  private fateFreeWaitElapsed = 0;
+  private fateFreeRequestId = 0;
   private fateAnim = 0;
   private fateExitTimer = 0;
   private fateResultMinTimer = 0;
@@ -438,9 +569,25 @@ export class ZheYiShenGame {
 
     this.canvas.addEventListener('pointerdown', (event) => {
       event.preventDefault();
+      this.feedback.unlock();
       const p = point(event);
-      if (this.state === 'title' || this.state === 'result') {
-        if (p.y > 430 && p.y < 550) this.startRun();
+      if (this.paused) {
+        this.handlePausePointerDown(p, event.pointerId);
+        return;
+      }
+      if ((this.state === 'battle' || this.state === 'fateEvent') && pointInRect(p, PAUSE_BUTTON_HIT_RECT)) {
+        this.setPaused(true);
+        return;
+      }
+      if (this.state === 'title') {
+        if (pointInRect(p, TITLE_START_RECT)) this.startRun();
+        return;
+      }
+      if (this.state === 'result') {
+        if (pointInPaddedRect(p, RESULT_TAB_RECT, 0, 8)) {
+          const index = this.clamp(Math.floor((p.x - RESULT_TAB_RECT.x) / (RESULT_TAB_RECT.width / 4)), 0, 3);
+          this.resultTab = RESULT_TABS[index]!;
+        } else if (pointInRect(p, RESULT_RESTART_RECT)) this.startRun();
         return;
       }
       if (this.state === 'origin') {
@@ -457,10 +604,13 @@ export class ZheYiShenGame {
           return;
         }
         this.originBadgeExpanded = false;
+        if (event.pointerType === 'mouse') return;
         if (this.joyPointerId !== -1) return;
         this.joyPointerId = event.pointerId;
-        this.joyBaseX = p.x;
-        this.joyBaseY = p.y;
+        this.joyStartX = p.x;
+        this.joyStartY = p.y;
+        this.joyBaseX = this.clamp(p.x, JOYSTICK_SAFE_X, W - JOYSTICK_SAFE_X);
+        this.joyBaseY = this.clamp(p.y, JOYSTICK_SAFE_TOP, JOYSTICK_SAFE_BOTTOM);
         this.joyDX = 0;
         this.joyDY = 0;
         this.canvas.setPointerCapture?.(event.pointerId);
@@ -471,7 +621,13 @@ export class ZheYiShenGame {
           if (this.fateExitTimer <= 0 && this.fateResultMinTimer <= 0) this.completeFateDestination();
           return;
         }
-        if (!this.currentFate || this.fateAnim < 0.75 || this.fatePointerId !== -1 || this.fateFreeWaiting) return;
+        if (this.fateFreeWaiting) {
+          if (this.fateFreeWaitElapsed >= FATE_FREE_CANCEL_DELAY && pointInRect(p, FATE_FREE_CANCEL_RECT)) {
+            this.cancelFreeResponseWait();
+          }
+          return;
+        }
+        if (!this.currentFate || this.fateAnim < 0.75 || this.fatePointerId !== -1) return;
         if (p.y > 560 && p.y < 602 && p.x > 96 && p.x < 264) {
           this.openFreeInput();
           return;
@@ -484,26 +640,64 @@ export class ZheYiShenGame {
         return;
       }
       if (this.state === 'itemReward' && p.y >= 88 && p.y < 544) {
-        this.chooseItemReward(Math.floor((p.y - 88) / 152));
+        this.itemRewardFocus = this.clamp(Math.floor((p.y - 88) / 152), 0, 2);
+        this.chooseItemReward(this.itemRewardFocus);
         return;
       }
       if (this.state === 'shop') {
-        if (p.y >= 88 && p.y < 544) this.buyShopOffer(Math.floor((p.y - 88) / 152));
-        else if (p.y >= 550 && p.x < 175) this.rerollShop();
-        else if (p.y >= 550) this.leaveShop();
+        if (p.y >= 88 && p.y < 544) {
+          this.shopFocus = this.clamp(Math.floor((p.y - 88) / 152), 0, 2);
+          this.buyShopOffer(this.shopFocus);
+        } else if (p.y >= 550 && p.x < 175) {
+          this.shopFocus = 3;
+          this.rerollShop();
+        } else if (p.y >= 550) {
+          this.shopFocus = 4;
+          this.leaveShop();
+        }
         return;
       }
       if (this.state === 'specialRoom') {
-        if (p.y >= 135 && p.y <= 505) this.takeSpecialOffer(Math.floor(p.x / 120));
-        else if (p.y >= 550) this.leaveSpecialRoom();
+        const offerIndex = this.specialOfferIndexAt(p);
+        if (offerIndex >= 0) {
+          this.specialRoomFocus = offerIndex;
+          this.specialRoomLeaveFocused = false;
+          const id = this.specialRoomOffers[offerIndex];
+          if (id && !this.specialRoomTaken.has(id)) {
+            this.specialRoomPointerId = event.pointerId;
+            this.specialRoomHoldIndex = offerIndex;
+            this.specialRoomHoldStarted = performance.now();
+            this.canvas.setPointerCapture?.(event.pointerId);
+          }
+        } else if (pointInRect(p, SPECIAL_LEAVE_RECT)) {
+          this.specialRoomLeaveFocused = true;
+          this.leaveSpecialRoom();
+        }
       }
     });
 
     this.canvas.addEventListener('pointermove', (event) => {
       const p = point(event);
+      if (this.state === 'itemReward' && p.y >= 88 && p.y < 544) {
+        this.itemRewardFocus = this.clamp(Math.floor((p.y - 88) / 152), 0, 2);
+      }
+      if (this.state === 'shop') {
+        if (p.y >= 88 && p.y < 544) this.shopFocus = this.clamp(Math.floor((p.y - 88) / 152), 0, 2);
+        else if (p.y >= 550 && p.y <= 608) this.shopFocus = p.x < 180 ? 3 : 4;
+      }
+      if (this.state === 'specialRoom' && this.specialRoomPointerId === -1) {
+        const offerIndex = this.specialOfferIndexAt(p);
+        if (offerIndex >= 0) {
+          this.specialRoomFocus = offerIndex;
+          this.specialRoomLeaveFocused = false;
+        } else if (pointInRect(p, SPECIAL_LEAVE_RECT)) this.specialRoomLeaveFocused = true;
+      }
+      if (this.state === 'specialRoom' && event.pointerId === this.specialRoomPointerId) {
+        if (this.specialOfferIndexAt(p) !== this.specialRoomHoldIndex) this.resetSpecialRoomHold();
+        return;
+      }
       if (this.state === 'battle' && event.pointerId === this.joyPointerId) {
-        this.joyDX = this.clamp(p.x - this.joyBaseX, -46, 46);
-        this.joyDY = this.clamp(p.y - this.joyBaseY, -46, 46);
+        this.updateJoystickInput(p.x, p.y);
         return;
       }
       if (this.state !== 'fateEvent' || !this.fateDragging || this.fateResultDirection
@@ -512,8 +706,18 @@ export class ZheYiShenGame {
     });
 
     const finishFateDrag = (event: PointerEvent) => {
+      if (event.pointerId === this.specialRoomPointerId) {
+        this.finishSpecialRoomHold(point(event));
+        return;
+      }
+      if (this.paused && event.pointerId === this.pausePointerId) {
+        this.finishPauseEndHold(point(event));
+        return;
+      }
       if (event.pointerId === this.joyPointerId) {
         this.joyPointerId = -1;
+        this.joyStartX = 0;
+        this.joyStartY = 0;
         this.joyDX = 0;
         this.joyDY = 0;
         if (this.canvas.hasPointerCapture?.(event.pointerId)) this.canvas.releasePointerCapture?.(event.pointerId);
@@ -530,6 +734,14 @@ export class ZheYiShenGame {
     };
     this.canvas.addEventListener('pointerup', finishFateDrag);
     this.canvas.addEventListener('pointercancel', (event) => {
+      if (event.pointerId === this.specialRoomPointerId) {
+        this.resetSpecialRoomHold();
+        return;
+      }
+      if (event.pointerId === this.pausePointerId) {
+        this.resetPauseHold();
+        return;
+      }
       if (event.pointerId === this.joyPointerId) {
         this.resetMovementInput();
         return;
@@ -537,8 +749,12 @@ export class ZheYiShenGame {
       if (event.pointerId === this.fatePointerId) this.resetFateInput();
     });
     this.canvas.addEventListener('lostpointercapture', (event) => {
+      if (event.pointerId === this.specialRoomPointerId) this.resetSpecialRoomHold();
+      if (event.pointerId === this.pausePointerId) this.resetPauseHold();
       if (event.pointerId === this.joyPointerId) {
         this.joyPointerId = -1;
+        this.joyStartX = 0;
+        this.joyStartY = 0;
         this.joyDX = 0;
         this.joyDY = 0;
       }
@@ -550,13 +766,34 @@ export class ZheYiShenGame {
     });
 
     window.addEventListener('keydown', (event) => {
+      this.feedback.unlock();
       const lower = event.key.toLowerCase();
+      if (event.key === 'Escape' && (this.state === 'battle' || this.state === 'fateEvent')) {
+        if (this.fateFreeWaiting) {
+          if (this.fateFreeWaitElapsed >= FATE_FREE_CANCEL_DELAY) this.cancelFreeResponseWait();
+        } else this.setPaused(!this.paused);
+        event.preventDefault();
+        return;
+      }
+      if (this.paused) {
+        const pauseIndex = Number(event.key) - 1;
+        if (pauseIndex >= 0 && pauseIndex < PAUSE_TABS.length) this.pauseTab = PAUSE_TABS[pauseIndex]!;
+        if (event.key === 'Enter' || event.key === ' ') this.setPaused(false);
+        event.preventDefault();
+        return;
+      }
       const movementKey = ['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(lower);
       if (this.state === 'battle' && movementKey) {
         this.moveKeys.add(lower);
         event.preventDefault();
       }
-      if ((this.state === 'title' || this.state === 'result') && (event.key === 'Enter' || event.key === ' ')) {
+      if (this.state === 'result') {
+        const resultIndex = Number(event.key) - 1;
+        if (resultIndex >= 0 && resultIndex < RESULT_TABS.length) this.resultTab = RESULT_TABS[resultIndex]!;
+        else if (event.key === 'Enter' || event.key === ' ') this.startRun();
+        return;
+      }
+      if (this.state === 'title' && (event.key === 'Enter' || event.key === ' ')) {
         this.startRun();
         return;
       }
@@ -579,12 +816,48 @@ export class ZheYiShenGame {
         return;
       }
       const digit = Number(event.key);
-      if (this.state === 'itemReward' && digit >= 1 && digit <= 3) this.chooseItemReward(digit - 1);
-      if (this.state === 'shop' && digit >= 1 && digit <= 3) this.buyShopOffer(digit - 1);
-      if (this.state === 'shop' && (event.key === 'r' || event.key === 'R')) this.rerollShop();
-      if (this.state === 'shop' && event.key === 'Enter') this.leaveShop();
-      if (this.state === 'specialRoom' && digit >= 1 && digit <= 3) this.takeSpecialOffer(digit - 1);
-      if (this.state === 'specialRoom' && event.key === 'Enter') this.leaveSpecialRoom();
+      if (this.state === 'itemReward') {
+        if (digit >= 1 && digit <= 3) this.itemRewardFocus = digit - 1;
+        else if (event.key === 'ArrowUp') this.itemRewardFocus = (this.itemRewardFocus + 2) % 3;
+        else if (event.key === 'ArrowDown') this.itemRewardFocus = (this.itemRewardFocus + 1) % 3;
+        if ((digit >= 1 && digit <= 3) || event.key === 'Enter' || event.key === ' ') {
+          this.chooseItemReward(this.itemRewardFocus);
+        }
+        event.preventDefault();
+        return;
+      }
+      if (this.state === 'shop') {
+        if (digit >= 1 && digit <= 3) this.shopFocus = digit - 1;
+        else if (event.key === 'ArrowUp') this.shopFocus = (this.shopFocus + 4) % 5;
+        else if (event.key === 'ArrowDown') this.shopFocus = (this.shopFocus + 1) % 5;
+        else if (event.key === 'r' || event.key === 'R') this.shopFocus = 3;
+        if (digit >= 1 && digit <= 3) this.buyShopOffer(this.shopFocus);
+        else if (event.key === 'r' || event.key === 'R') this.rerollShop();
+        else if (event.key === 'Enter' || event.key === ' ') {
+          if (this.shopFocus <= 2) this.buyShopOffer(this.shopFocus);
+          else if (this.shopFocus === 3) this.rerollShop();
+          else this.leaveShop();
+        }
+        event.preventDefault();
+        return;
+      }
+      if (this.state === 'specialRoom') {
+        if (digit >= 1 && digit <= 3) {
+          this.specialRoomFocus = digit - 1;
+          this.specialRoomLeaveFocused = false;
+          this.takeSpecialOffer(this.specialRoomFocus);
+        } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+          const delta = event.key === 'ArrowLeft' ? 2 : 1;
+          this.specialRoomFocus = (this.specialRoomFocus + delta) % 3;
+          this.specialRoomLeaveFocused = false;
+        } else if (event.key === 'ArrowDown') this.specialRoomLeaveFocused = true;
+        else if (event.key === 'ArrowUp') this.specialRoomLeaveFocused = false;
+        else if (event.key === 'Enter' || event.key === ' ') {
+          if (this.specialRoomLeaveFocused) this.leaveSpecialRoom();
+          else this.takeSpecialOffer(this.specialRoomFocus);
+        }
+        event.preventDefault();
+      }
     });
 
     window.addEventListener('keyup', (event) => {
@@ -594,6 +867,7 @@ export class ZheYiShenGame {
     window.addEventListener('blur', () => {
       this.resetMovementInput();
       this.resetFateInput();
+      this.resetSpecialRoomHold();
     });
 
     document.addEventListener('visibilitychange', () => {
@@ -601,8 +875,104 @@ export class ZheYiShenGame {
       if (document.hidden) {
         this.resetMovementInput();
         this.resetFateInput();
+        this.resetSpecialRoomHold();
+        if (this.state === 'battle' || this.state === 'fateEvent') this.setPaused(true);
       }
     });
+  }
+
+  private setPaused(value: boolean): void {
+    if (value && this.state !== 'battle' && this.state !== 'fateEvent') return;
+    this.paused = value;
+    this.accumulator = 0;
+    this.lastTime = 0;
+    this.resetPauseHold();
+    if (value) {
+      this.resetMovementInput();
+      this.resetFateInput();
+    }
+  }
+
+  private handlePausePointerDown(point: { x: number; y: number }, pointerId: number): void {
+    if (pointInRect(point, PAUSE_CONTINUE_RECT)) {
+      this.setPaused(false);
+      return;
+    }
+    if (pointInPaddedRect(point, PAUSE_TAB_RECT, 0, 7)) {
+      const index = this.clamp(Math.floor((point.x - PAUSE_TAB_RECT.x) / (PAUSE_TAB_RECT.width / 4)), 0, 3);
+      this.pauseTab = PAUSE_TABS[index]!;
+      return;
+    }
+    if (this.pauseTab === 'settings') {
+      if (pointInPaddedRect(point, PAUSE_SETTING_VOLUME_RECT, 0, 3)) {
+        const trackStart = PAUSE_SETTING_VOLUME_RECT.x + 78;
+        const trackWidth = PAUSE_SETTING_VOLUME_RECT.width - 92;
+        if (point.x < trackStart - 12) {
+          this.feedback.setVolume(this.feedback.getVolume() > 0 ? 0 : 0.42);
+        } else {
+          this.feedback.setVolume(this.clamp((point.x - trackStart) / trackWidth, 0, 1));
+        }
+        this.feedback.play('page');
+        return;
+      }
+      if (pointInPaddedRect(point, PAUSE_SETTING_HAPTICS_RECT, 0, 3)) {
+        this.feedback.setHaptics(!this.feedback.hapticsEnabled());
+        return;
+      }
+      if (pointInPaddedRect(point, PAUSE_SETTING_MOTION_RECT, 0, 3)) {
+        this.reducedMotion = !this.reducedMotion;
+        return;
+      }
+      if (pointInPaddedRect(point, PAUSE_SETTING_CONTRAST_RECT, 0, 3)) {
+        this.highContrastHud = !this.highContrastHud;
+        return;
+      }
+    }
+    if (pointInPaddedRect(point, PAUSE_END_RECT, 0, 9)) {
+      this.pausePointerId = pointerId;
+      this.pauseEndHoldStarted = performance.now();
+      this.canvas.setPointerCapture?.(pointerId);
+    }
+  }
+
+  private finishPauseEndHold(point: { x: number; y: number }): void {
+    const pointerId = this.pausePointerId;
+    const completed = pointInPaddedRect(point, PAUSE_END_RECT, 0, 9)
+      && this.pauseEndHoldStarted > 0
+      && performance.now() - this.pauseEndHoldStarted >= 1000;
+    this.resetPauseHold();
+    if (pointerId !== -1 && this.canvas.hasPointerCapture?.(pointerId)) this.canvas.releasePointerCapture?.(pointerId);
+    if (completed) {
+      this.paused = false;
+      this.endRun(false);
+    }
+  }
+
+  private resetPauseHold(): void {
+    this.pausePointerId = -1;
+    this.pauseEndHoldStarted = 0;
+  }
+
+  private specialOfferIndexAt(point: { x: number; y: number }): number {
+    return SPECIAL_OFFER_RECTS.findIndex((rect) => pointInRect(point, rect));
+  }
+
+  private finishSpecialRoomHold(point: { x: number; y: number }): void {
+    const pointerId = this.specialRoomPointerId;
+    const index = this.specialRoomHoldIndex;
+    const completed = index >= 0
+      && this.specialOfferIndexAt(point) === index
+      && this.specialRoomHoldStarted > 0
+      && performance.now() - this.specialRoomHoldStarted >= SPECIAL_HOLD_MS;
+    this.resetSpecialRoomHold();
+    if (pointerId !== -1 && this.canvas.hasPointerCapture?.(pointerId)) this.canvas.releasePointerCapture?.(pointerId);
+    if (completed) this.takeSpecialOffer(index);
+  }
+
+  private resetSpecialRoomHold(): void {
+    this.specialRoomPointerId = -1;
+    this.specialRoomHoldIndex = -1;
+    this.specialRoomHoldStarted = 0;
   }
 
   private resetMovementInput(): void {
@@ -610,11 +980,22 @@ export class ZheYiShenGame {
     this.heroMoving = false;
     const pointerId = this.joyPointerId;
     this.joyPointerId = -1;
+    this.joyStartX = 0;
+    this.joyStartY = 0;
     this.joyDX = 0;
     this.joyDY = 0;
     if (pointerId !== -1 && this.canvas.hasPointerCapture?.(pointerId)) {
       this.canvas.releasePointerCapture?.(pointerId);
     }
+  }
+
+  private updateJoystickInput(pointerX: number, pointerY: number): void {
+    const rawX = pointerX - this.joyStartX;
+    const rawY = pointerY - this.joyStartY;
+    const distance = Math.hypot(rawX, rawY);
+    const scale = distance > JOYSTICK_INPUT_RADIUS ? JOYSTICK_INPUT_RADIUS / distance : 1;
+    this.joyDX = rawX * scale;
+    this.joyDY = rawY * scale;
   }
 
   private resetFateInput(): void {
@@ -629,9 +1010,15 @@ export class ZheYiShenGame {
   }
 
   private startRun(fixedSeed?: number): void {
+    this.feedback.play('page');
     this.resetMovementInput();
     this.resetFateInput();
     this.runSerial += 1;
+    this.paused = false;
+    this.pauseTab = 'body';
+    this.resultTab = 'seal';
+    this.resetPauseHold();
+    this.resetSpecialRoomHold();
     this.pixelHero.clear();
     this.runSeed = fixedSeed ?? ((Date.now() ^ Math.imul(this.runSerial, 0x9e3779b1)) >>> 0);
     this.rngState = this.runSeed;
@@ -657,8 +1044,10 @@ export class ZheYiShenGame {
     this.projectiles = [];
     this.bursts = [];
     this.shopOffers = [];
+    this.shopFeedback = undefined;
     this.specialRoomOffers = [];
     this.specialRoomTaken.clear();
+    this.specialRoomFocus = 0;
     this.poisons = { ...EMPTY_POISONS };
     this.memories = [];
     this.fateReceipts = [];
@@ -680,9 +1069,11 @@ export class ZheYiShenGame {
     this.painlessTimer = 0;
     this.initialItemReward = false;
     this.rewardTitle = '';
+    this.rewardAcquire = undefined;
     this.itemRewardChoices = [];
     this.coinKillProgress = 0;
     this.stats = { fateChoices: 0, swallowed: 0, exhaled: 0, volleys: 0, kills: 0, damage: 0, itemsTaken: 0, coinsSpent: 0 };
+    this.auditDamageTaken = 0;
     this.toast = '';
     this.toastTime = 0;
     this.heroX = 0;
@@ -795,6 +1186,11 @@ export class ZheYiShenGame {
     this.hero.hp = startingHp;
     this.hero.maxHp = startingHp;
     this.hero.coins = this.clamp(4 + this.originModifiers.coinsAdd, 0, 6);
+    if (import.meta.env.DEV && this.auditEndurance) {
+      this.hero.hp = 999;
+      this.hero.maxHp = 999;
+      this.hero.coins = 30;
+    }
     this.firstFateDamageReduction = this.originModifiers.firstFateDamageReduction;
     this.memories = [`出生底色：${generated.title}${generated.nickname ? ` · 外号《${generated.nickname}》` : ''}`];
     this.originElapsed = 0;
@@ -815,6 +1211,7 @@ export class ZheYiShenGame {
     this.initialItemReward = true;
     this.rewardTitle = '离开家门时，他只带走了一件东西';
     this.itemRewardChoices = this.pickItemChoices(true);
+    this.itemRewardFocus = 0;
     this.state = 'itemReward';
   }
 
@@ -918,7 +1315,8 @@ export class ZheYiShenGame {
       this.say('网贷扣款日');
     }
     if (this.livingStageElite()) return;
-    this.transitionTimer = 3.4;
+    this.transitionTimer = STAGE_TRANSITION_DURATION;
+    this.feedback.play('page', 1.1);
     this.projectiles = [];
     for (const enemy of this.enemies) {
       if (!enemy.dead) {
@@ -926,11 +1324,11 @@ export class ZheYiShenGame {
         this.burst('ring', enemy.x, enemy.y, enemy.radius * 2, '#5a5750');
       }
     }
-    const next = STAGES[this.encounterIndex + 1];
-    if (next) {
-      this.caption = next.enterLine;
-      this.captionTime = 4.5;
-    }
+    // The transition card carries the concrete situation. The next stage's
+    // inner monologue appears only after the card clears, so mobile players
+    // never have to read two narrative layers at once.
+    this.caption = '';
+    this.captionTime = 0;
   }
 
   private stageEndReward(): void {
@@ -966,6 +1364,11 @@ export class ZheYiShenGame {
       if (this.moveKeys.has('d') || this.moveKeys.has('arrowright')) dx += 1;
       if (this.moveKeys.has('w') || this.moveKeys.has('arrowup')) dy -= 1;
       if (this.moveKeys.has('s') || this.moveKeys.has('arrowdown')) dy += 1;
+    }
+    if (import.meta.env.DEV && this.auditAutoMove && dx === 0 && dy === 0) {
+      const orbit = this.battleTime * 0.72 + Math.sin(this.battleTime * 0.13) * 0.8;
+      dx = Math.cos(orbit);
+      dy = Math.sin(orbit);
     }
     const length = Math.hypot(dx, dy);
     this.heroMoving = length > 0;
@@ -1013,6 +1416,17 @@ export class ZheYiShenGame {
     this.freeInputWrap?.remove();
     this.freeInputWrap = undefined;
     this.fateFreeWaiting = false;
+    this.fateFreeWaitElapsed = 0;
+    this.fateFreeRequestId += 1;
+  }
+
+  private cancelFreeResponseWait(): void {
+    if (!this.fateFreeWaiting || this.fateFreeWaitElapsed < FATE_FREE_CANCEL_DELAY) return;
+    this.fateFreeWaiting = false;
+    this.fateFreeWaitElapsed = 0;
+    this.fateFreeRequestId += 1;
+    this.fatePlayerText = '';
+    this.say('那句话没等到回声 · 仍可咽下或吐出');
   }
 
   private openFreeInput(): void {
@@ -1064,14 +1478,18 @@ export class ZheYiShenGame {
     const event = this.currentFate;
     if (!event || this.fateResultDirection) return;
     this.fateFreeWaiting = true;
+    this.fateFreeWaitElapsed = 0;
+    const requestId = ++this.fateFreeRequestId;
     const serial = this.runSerial;
     void generateAIFreeFate({
       event: { id: event.id, title: event.title, fact: event.fact },
       playerText: text,
       snapshot: this.buildLifeSnapshot(),
     }).then((outcome) => {
-      if (this.runSerial !== serial || this.state !== 'fateEvent' || this.fateResultDirection || this.currentFate !== event) return;
+      if (requestId !== this.fateFreeRequestId || this.runSerial !== serial || this.state !== 'fateEvent'
+        || this.fateResultDirection || this.currentFate !== event || !this.fateFreeWaiting) return;
       this.fateFreeWaiting = false;
+      this.fateFreeWaitElapsed = 0;
       if (!outcome) {
         this.say('话在喉咙里转了一圈，没说出口');
         return;
@@ -1109,6 +1527,24 @@ export class ZheYiShenGame {
     return (Object.entries(stats) as Array<[FateStatKey, number]>)
       .map(([key, delta]) => `${labels[key]}${delta > 0 ? '+' : ''}${delta}%`)
       .join(' · ');
+  }
+
+  private fateResponseMechanics(response: FateResponse): string {
+    const effects: Record<FateResponse['effect'], string> = {
+      store_volleys: '下一战储存攻击',
+      returning_breath: '弹体折返',
+      guard: '下一战开局护盾',
+      focus: '弹体追踪',
+      scatter: '弹体+1 · 单发稍弱',
+      haste: '射速提高',
+      heavy_breath: '伤害提高 · 弹速降低',
+      delay_pain: '下次受伤延后',
+      release_pain: '血越少伤害越高',
+      gain_coins: '获得零钱',
+      heal: '恢复生命',
+      trade_max_hp: '最大生命-5 · 伤害提高',
+    };
+    return [effects[response.effect], this.fateStatsLine(response.stats)].filter(Boolean).join(' · ');
   }
 
   private fateFactLine(event: FateEvent): string {
@@ -1150,8 +1586,8 @@ export class ZheYiShenGame {
       this.spawnPause = 3;
       const bossLines: Partial<Record<EnemyType, string>> = {
         'closet-dark': '衣柜背后的黑，终于自己走了出来',
-        'uniform-answer': '所有目光都在批改你',
-        'last-bus': '末班车不等人。它撞人',
+        'uniform-answer': '排名贴上墙，所有人的目光一起转了过来。',
+        'last-bus': '录用短信晚了十分钟。末班车已经关门。',
         'silent-father': '雨声先到，父亲后到',
         'debt-collector': '门被敲响了。它有你的地址',
       };
@@ -1159,6 +1595,8 @@ export class ZheYiShenGame {
       this.enemies.push(bossSpawn);
       this.eliteAlertName = bossSpawn.name;
       this.eliteAlertTime = 2.4;
+      this.feedback.play('boss');
+      this.feedback.vibrate([18, 42, 24]);
       this.caption = bossLines[stage.bossType] ?? stage.title;
       this.captionTime = 4.5;
     }
@@ -1219,6 +1657,8 @@ export class ZheYiShenGame {
           this.lampSpawned = true;
           this.eliteAlertName = '收灯人';
           this.eliteAlertTime = 2.8;
+          this.feedback.play('boss', 1.2);
+          this.feedback.vibrate([22, 48, 30]);
           this.enemies.push(this.createSeekingEnemy('lamp-keeper', this.darkCX, this.darkCY - 130));
           this.caption = '「到点了。」';
           this.captionTime = 4.5;
@@ -1239,7 +1679,7 @@ export class ZheYiShenGame {
 
   private spawnCoinDrop(x: number, y: number, value: number): void {
     if (value <= 0) return;
-    if (this.coinDrops.length > 70) this.coinDrops.shift();
+    if (this.coinDrops.length >= MAX_COIN_DROPS) this.coinDrops.shift();
     const jitterAngle = this.random() * Math.PI * 2;
     const jitterDist = this.random() * 10;
     this.coinDrops.push({
@@ -1267,6 +1707,7 @@ export class ZheYiShenGame {
       if (dist < 16) {
         drop.life = 0;
         this.hero.coins += drop.value;
+        this.feedback.play('coin', drop.value > 1 ? 1.15 : 0.8);
         this.burst('word', this.heroX, this.heroY - 34, 20, '#d5b45d', `+${drop.value}`);
       }
     }
@@ -1291,7 +1732,7 @@ export class ZheYiShenGame {
 
   private frame(time: number): void {
     if (!this.lastTime) this.lastTime = time;
-    const delta = Math.min(0.05, (time - this.lastTime) / 1000);
+    const delta = Math.min(0.05, (time - this.lastTime) / 1000) * this.auditTimeScale;
     this.lastTime = time;
     this.accumulator += delta;
     while (this.accumulator >= FIXED_STEP) {
@@ -1303,6 +1744,7 @@ export class ZheYiShenGame {
   }
 
   private update(dt: number): void {
+    if (this.paused) return;
     this.visualTime += dt;
     if (this.toastTime > 0) this.toastTime -= dt;
     if (this.flash > 0) this.flash -= dt;
@@ -1310,8 +1752,15 @@ export class ZheYiShenGame {
     if (this.eliteAlertTime > 0) this.eliteAlertTime = Math.max(0, this.eliteAlertTime - dt);
     this.bursts.forEach((burst) => (burst.life -= dt));
     this.bursts = this.bursts.filter((burst) => burst.life > 0);
+    if (this.saveEffect) {
+      this.saveEffect.timer -= dt;
+      if (this.saveEffect.timer <= 0) this.saveEffect = null;
+    }
     this.enemyDeaths.forEach((death) => (death.life -= dt));
     this.enemyDeaths = this.enemyDeaths.filter((death) => death.life > 0);
+    if (this.enemies.some((enemy) => enemy.dead)) {
+      this.enemies = this.enemies.filter((enemy) => !enemy.dead);
+    }
     this.enemies.forEach((enemy) => {
       enemy.flash = Math.max(0, enemy.flash - dt);
       enemy.age += dt;
@@ -1326,21 +1775,32 @@ export class ZheYiShenGame {
     }
     if (this.state === 'fateEvent') {
       if (this.currentFate && !this.fateResultDirection && !this.fateFreeWaiting) this.fateAnim += dt;
+      if (this.fateFreeWaiting) this.fateFreeWaitElapsed += dt;
       if (this.fateResultDirection) {
         if (this.fateExitTimer > 0) this.fateExitTimer -= dt;
         else if (this.fateResultMinTimer > 0) this.fateResultMinTimer -= dt;
         return;
       }
     }
+    if (this.state === 'itemReward' && this.rewardAcquire) {
+      this.rewardAcquire.timer = Math.max(0, this.rewardAcquire.timer - dt);
+      if (this.rewardAcquire.timer <= 0) this.completeRewardAcquire();
+      return;
+    }
+    if (this.state === 'shop' && this.shopFeedback) {
+      this.shopFeedback.timer = Math.max(0, this.shopFeedback.timer - dt);
+      if (this.shopFeedback.timer <= 0) this.shopFeedback = undefined;
+    }
     if (this.state !== 'battle') return;
     if (this.captionTime > 0) this.captionTime -= dt;
     if (this.comboReveal) {
       this.comboReveal.timer -= dt;
       if (this.comboReveal.timer <= 0) this.comboReveal = undefined;
+      else if (this.comboReveal.total - this.comboReveal.timer < 0.4) return;
     }
     if (!this.comboReveal && this.comboRevealQueue.length > 0) {
       const def = this.comboRevealQueue.shift()!;
-      this.comboReveal = { name: def.name, artKey: def.artKey, line: def.line, timer: 3.4, total: 3.4 };
+      this.comboReveal = { name: def.name, artKey: def.artKey, line: def.line, timer: 2.25, total: 2.25 };
     }
     if (this.watchReleaseTimer > 0) this.watchReleaseTimer -= dt;
     if (this.usefulTimer > 0) this.usefulTimer -= dt;
@@ -1892,6 +2352,7 @@ export class ZheYiShenGame {
     const baseAngle = Math.atan2(target.y - this.heroY, target.x - this.heroX) + angleNudge;
     this.heroAttackFacing = this.facingFromAngle(baseAngle);
     this.heroAttackTimer = HERO_ATTACK_ANIMATION_DURATION;
+    this.feedback.play('breath', this.clamp(vector.width / BASE_VECTOR.width, 0.55, 1.35));
     const style = this.baseProjectileStyle();
     const volleyAngles: number[] = [];
     // 《连续签到1847天》：每个整10秒的第一发准时暴击；受伤打断当期作废
@@ -1915,7 +2376,7 @@ export class ZheYiShenGame {
         // 《五个哈》：一次笑出五连发，一发比一发轻——少一个都显得没礼貌
         const shares = [0.3, 0.26, 0.22, 0.18, 0.14];
         shares.forEach((share, ha) => {
-          this.pendingShots.push({
+          this.pushPendingShot({
             delay: ha * 0.07, angle: angle + (ha - 2) * 0.018,
             damage: vector.damage * share * 1.1, speed: vector.projectileSpeed,
             radius: Math.max(2, vector.width * 0.72), range: vector.range, life: vector.lifetime,
@@ -1947,7 +2408,7 @@ export class ZheYiShenGame {
     // 《和AI聊到凌晨》：它复读你的每一口气
     if (this.hasItem('ai-chat')) {
       for (const angle of volleyAngles) {
-        this.pendingShots.push({
+        this.pushPendingShot({
           delay: 0.4, angle, damage: vector.damage * 0.35, speed: vector.projectileSpeed,
           radius: Math.max(2, vector.width * 0.8), range: vector.range, life: vector.lifetime,
           pierce: 0, homing: vector.homing, color: '#6f93a3', style,
@@ -2006,20 +2467,45 @@ export class ZheYiShenGame {
     x: number; y: number; angle: number; damage: number; speed: number; radius: number; range: number; life: number;
     pierce: number; returning: boolean; homing: number; splitChance: number; explosion: number;
     generation: number; color: string; style: ProjectileStyle; critical: boolean; knockback?: number; visual?: ProjectileVisual;
-    shrink?: boolean; orbit?: { angle: number; total: number; elapsed: number };
+    shrink?: boolean; orbit?: { angle: number; total: number; elapsed: number }; priority?: 'core' | 'secondary';
   }): void {
     const material = options.style === 'rain' ? 'water' : options.style === 'sound' ? 'signal' : undefined;
-    this.projectiles.push({
+    this.pushProjectile({
       id: this.entityId++, x: options.x, y: options.y,
       vx: Math.cos(options.angle) * options.speed, vy: Math.sin(options.angle) * options.speed,
       radius: options.radius, damage: options.damage, knockback: options.knockback ?? 0, life: options.life, maxLife: options.life,
       distance: 0, maxDistance: options.range, pierce: options.pierce, pierceMax: options.pierce,
       returning: options.returning, reversals: 0, homing: options.homing, splitChance: options.splitChance,
       explosion: options.explosion, generation: options.generation, color: options.color,
+      poolPriority: options.priority ?? (options.generation === 0 ? 'core' : 'secondary'),
       style: options.style, visual: options.visual ?? this.computeProjectileVisual(material),
       critical: options.critical, hitIds: [],
       shrink: options.shrink, orbit: options.orbit,
     });
+  }
+
+  private pushPendingShot(shot: PendingShot): void {
+    const priority = shot.priority ?? (shot.generation === 0 ? 'core' : 'secondary');
+    const queued = { ...shot, priority };
+    if (this.pendingShots.length < MAX_PENDING_SHOTS) {
+      this.pendingShots.push(queued);
+      return;
+    }
+    const secondaryIndex = this.pendingShots.findIndex((pending) => pending.priority === 'secondary');
+    if (priority === 'secondary' && secondaryIndex < 0) return;
+    this.pendingShots.splice(secondaryIndex >= 0 ? secondaryIndex : 0, 1);
+    this.pendingShots.push(queued);
+  }
+
+  private pushProjectile(projectile: Projectile): void {
+    if (this.projectiles.length < MAX_PROJECTILES) {
+      this.projectiles.push(projectile);
+      return;
+    }
+    const secondaryIndex = this.projectiles.findIndex((active) => active.poolPriority === 'secondary');
+    if (projectile.poolPriority === 'secondary' && secondaryIndex < 0) return;
+    this.projectiles.splice(secondaryIndex >= 0 ? secondaryIndex : 0, 1);
+    this.projectiles.push(projectile);
   }
 
   /** 《朋友圈仅三天可见》：三枚环绕弹绕身三圈然后消失 */
@@ -2114,13 +2600,20 @@ export class ZheYiShenGame {
         if (this.hasItem('eyebrow-razor') && this.hasItem('broken-spine') && enemy.hp < enemy.maxHp) {
           hitDamage *= 1.18;
           this.noteSynergy('旧伤口上再来一刀');
+          this.burst('syn', enemy.x, enemy.y, 22, '#8a7f78', undefined, 'crack');
         }
         // 协同：水×信号——声波过水会麻
         if (projectile.style === 'sound'
           && (this.hasItem('fathers-raincoat') || this.hasItem('always-crying'))
           && this.random() < 0.12) {
           enemy.slowTimer = Math.max(enemy.slowTimer ?? 0, 0.6);
+          enemy.paralyzeTimer = Math.max(enemy.paralyzeTimer ?? 0, 0.6);
           this.noteSynergy('水是导电的');
+          this.burst('syn', enemy.x, enemy.y - 8, 24, '#a9ccd8', undefined, 'arc');
+        }
+        if ((this.hasItem('ktv-song') && projectile.style === 'sound')
+          || (this.hasItem('year-report') && projectile.generation > 0)) {
+          enemy.loopTimer = Math.max(enemy.loopTimer ?? 0, 0.9);
         }
         if (this.hasItem('read-3am')) {
           // 《凌晨三点的已读》：命中不立即结算，5秒后连本带利一次爆出
@@ -2143,7 +2636,10 @@ export class ZheYiShenGame {
           const wet = this.hasItem('fathers-raincoat') || this.hasItem('always-crying');
           if (this.random() < (wet ? 0.35 : 0.2)) {
             enemy.slowTimer = wet ? 1.8 : 1.2;
-            if (wet) this.noteSynergy('湿了的更容易冻住');
+            if (wet) {
+              this.noteSynergy('湿了的更容易冻住');
+              this.burst('syn', enemy.x, enemy.y + enemy.radius * 0.4, 26, '#bcd8e8', undefined, 'ice');
+            }
           }
         }
         const speedNow = Math.hypot(projectile.vx, projectile.vy) || 1;
@@ -2204,12 +2700,12 @@ export class ZheYiShenGame {
         }
       } else if (projectile.life <= 0) this.explodeProjectile(projectile);
     }
-    this.projectiles.push(...spawned);
     this.projectiles = this.projectiles.filter((projectile) => (
       projectile.life > 0
       && Math.abs(projectile.x - this.heroX) < 340
       && Math.abs(projectile.y - this.heroY) < 430
     ));
+    for (const projectile of spawned) this.pushProjectile(projectile);
   }
 
   private makeChildProjectile(parent: Projectile, angle: number): Projectile {
@@ -2222,6 +2718,7 @@ export class ZheYiShenGame {
       life: parent.maxLife * 0.65, maxLife: parent.maxLife * 0.65,
       distance: 0, maxDistance: parent.maxDistance * 0.65, pierce: 0, pierceMax: 0,
       returning: false, reversals: 0, splitChance: 0, explosion: 0, generation: 1, hitIds: [],
+      poolPriority: 'secondary',
     };
   }
 
@@ -2229,7 +2726,10 @@ export class ZheYiShenGame {
     if (projectile.explosion <= 0) return;
     // 协同：重×爆炸——压过的地方塌得更大
     const heavyBlast = this.hasItem('stone-schoolbag') && (this.hasItem('only-key') || this.hasItem('empty-frame'));
-    if (heavyBlast) this.noteSynergy('压过的地方塌得更大');
+    if (heavyBlast) {
+      this.noteSynergy('压过的地方塌得更大');
+      this.burst('syn', projectile.x, projectile.y, 34, '#9a8a70', undefined, 'collapse');
+    }
     const radius = (45 + projectile.explosion * 1.5) * (heavyBlast ? 1.4 : 1);
     const damage = projectile.explosion;
     projectile.explosion = 0;
@@ -2249,6 +2749,8 @@ export class ZheYiShenGame {
       const dy = this.heroY - enemy.y;
       const dist = Math.hypot(dx, dy) || 1;
       if (enemy.slowTimer !== undefined && enemy.slowTimer > 0) enemy.slowTimer -= dt;
+      if (enemy.paralyzeTimer !== undefined && enemy.paralyzeTimer > 0) enemy.paralyzeTimer -= dt;
+      if (enemy.loopTimer !== undefined && enemy.loopTimer > 0) enemy.loopTimer -= dt;
       if (enemy.marked !== undefined && enemy.marked > 0) enemy.marked -= dt;
       if (enemy.readTimer !== undefined && enemy.readTimer > 0) {
         enemy.readTimer -= dt;
@@ -2260,6 +2762,7 @@ export class ZheYiShenGame {
         }
       }
       if (enemy.dashTimer !== undefined && enemy.dashTimer > 0) enemy.dashTimer -= dt;
+      if (enemy.phaseFlashTimer !== undefined && enemy.phaseFlashTimer > 0) enemy.phaseFlashTimer -= dt;
       enemy.mechTimer = (enemy.mechTimer ?? 0) + dt;
 
       // —— 小怪特性 ——
@@ -2283,6 +2786,7 @@ export class ZheYiShenGame {
       // —— Boss 机制 ——
       if (enemy.type === 'closet-dark' && enemy.hp <= enemy.maxHp * 0.5 && (enemy.phase ?? 0) !== 2) {
         enemy.phase = 2;
+        enemy.phaseFlashTimer = 1.1;
         for (let splitIndex = 0; splitIndex < 2; splitIndex += 1) {
           const splitAngle = this.random() * Math.PI * 2;
           const child = this.createSeekingEnemy('fear', enemy.x + Math.cos(splitAngle) * 40, enemy.y + Math.sin(splitAngle) * 40);
@@ -2304,6 +2808,7 @@ export class ZheYiShenGame {
       }
       if (enemy.type === 'silent-father' && enemy.hp <= enemy.maxHp * 0.5 && (enemy.phase ?? 1) !== 2) {
         enemy.phase = 2;
+        enemy.phaseFlashTimer = 1.2;
         this.burst('ring', enemy.x, enemy.y, 110, '#bda34f');
         this.caption = '盔甲裂开了。里面也是一个害怕的小孩。';
         this.captionTime = 3.5;
@@ -2455,10 +2960,11 @@ export class ZheYiShenGame {
     enemy.flash = 0.12;
     this.stats.damage += amount;
     this.burst('hit', enemy.x, enemy.y, 18 + Math.min(24, amount), color, undefined, material);
+    this.feedback.play('hit', enemy.boss ? 1.2 : enemy.elite ? 1 : 0.7);
     if (enemy.hp > 0) return;
     enemy.dead = true;
     if (this.hasCombo('我只在有用时被看见')) this.usefulTimer = 2.5;
-    if (this.enemyDeaths.length >= 60) this.enemyDeaths.shift();
+    if (this.enemyDeaths.length >= MAX_ENEMY_DEATHS) this.enemyDeaths.shift();
     this.enemyDeaths.push({
       asset: resolveEnemyPixelAsset(enemy),
       x: enemy.x,
@@ -2501,6 +3007,7 @@ export class ZheYiShenGame {
       this.itemRewardChoices = enemy.type === 'silent-father' && !this.hasItem('fathers-raincoat')
         ? (['fathers-raincoat', ...choices.filter((id) => id !== 'fathers-raincoat')] as ItemId[]).slice(0, 3)
         : choices;
+      this.itemRewardFocus = 0;
       this.state = 'itemReward';
     }
   }
@@ -2580,13 +3087,18 @@ export class ZheYiShenGame {
         this.burst('word', this.heroX, this.heroY - 46, 34, '#858b96', '晚点再疼');
         return;
       }
-      this.hero.hp -= remaining;
+      this.feedback.play('hurt', this.clamp(remaining / 8, 0.6, 1.35));
+      this.feedback.vibrate([14, 26, 18]);
+      if (import.meta.env.DEV && this.auditEndurance) {
+        this.auditDamageTaken += remaining;
+        this.hero.hp = this.hero.maxHp;
+      } else this.hero.hp -= remaining;
       this.flash = 0.24;
       this.screenShake = 0.22;
       this.burst('word', this.heroX, this.heroY - 58, 28, '#ef7181', `-${Math.ceil(remaining)}`);
       if (this.hasItem('eyebrow-razor') && this.hasItem('od-pill')) {
         for (let index = 0; index < 6; index += 1) {
-          this.bursts.push({
+          this.pushBurst({
             id: this.entityId++, kind: 'word', x: this.heroX - 55 + this.random() * 110, y: this.heroY - 60 + this.random() * 90,
             radius: 18, life: 1.1, duration: 1.1, color: '#ef8fbd', text: index % 2 ? '♡' : '+1',
           });
@@ -2602,6 +3114,7 @@ export class ZheYiShenGame {
       this.hurtCooldown = Math.max(this.hurtCooldown, 1.2);
       this.burst('word', this.heroX, this.heroY - 60, 60, '#9fd0b8', '它替你挡下了');
       this.say('关服那天 · 它没等到告别');
+      this.saveEffect = { kind: 'shutdown', timer: 0.8, duration: 0.8 };
     }
     if (this.hero.hp <= 0 && this.hasItem('funeral-photo') && !this.graceUsed && this.deathSaves < 3) {
       this.graceUsed = true;
@@ -2611,6 +3124,7 @@ export class ZheYiShenGame {
       this.hurtCooldown = 5;
       this.burst('ring', this.heroX, this.heroY - 20, 90, '#d8cfae');
       this.say('遗照上的笑 · 再撑五秒');
+      this.saveEffect = { kind: 'photo', timer: 0.7, duration: 0.7 };
     }
     if (this.hero.hp <= 0 && this.hasItem('snow-screen') && !this.snowUsed && this.deathSaves < 3) {
       this.snowUsed = true;
@@ -2619,6 +3133,7 @@ export class ZheYiShenGame {
       this.flash = 0.5;
       this.burst('word', this.heroX, this.heroY - 58, 70, '#c8d2d8', '雪花');
       this.say('雪花屏 · 这次伤害没有发生');
+      this.saveEffect = { kind: 'static', timer: 0.6, duration: 0.6 };
     }
     if (this.hero.hp <= 0 && this.toothReady && this.deathSaves < 3) {
       this.toothReady = false;
@@ -2627,6 +3142,7 @@ export class ZheYiShenGame {
       this.areaDamage(24, '#efe5c8');
       this.burst('word', this.heroX, this.heroY - 58, 90, '#efe5c8', '爸爸');
       this.say('女儿的乳牙 · 再留下来一次');
+      this.saveEffect = { kind: 'tooth', timer: 0.7, duration: 0.7 };
       // 《后来我也成了他》：乳牙碎的那一刻，雨衣自动罩住孩子
       if (this.hasCombo('后来我也成了他')) {
         this.releaseRain();
@@ -2637,6 +3153,14 @@ export class ZheYiShenGame {
   }
 
   private loseHealth(amount: number): void {
+    this.feedback.play('hurt', this.clamp(amount / 8, 0.55, 1.2));
+    this.feedback.vibrate(16);
+    if (import.meta.env.DEV && this.auditEndurance) {
+      this.auditDamageTaken += amount;
+      this.hero.hp = this.hero.maxHp;
+      this.flash = 0.1;
+      return;
+    }
     this.hero.hp = Math.max(1, this.hero.hp - amount);
     this.flash = 0.1;
   }
@@ -2700,6 +3224,7 @@ export class ZheYiShenGame {
   }
 
   private openFate(destination: FateDestination): void {
+    this.feedback.play('page', 0.9);
     this.resetMovementInput();
     this.resetFateInput();
     this.fateDestination = destination;
@@ -2766,6 +3291,8 @@ export class ZheYiShenGame {
     if (this.fateFreeWaiting && !custom) return;
     if (!custom && this.fateAnim < 0.75) return;
     const response = custom ?? event[direction];
+    this.feedback.play(direction === 'swallow' ? 'swallow' : 'exhale', 1.1);
+    this.feedback.vibrate(direction === 'swallow' ? 24 : [10, 24, 10]);
     const power = direction === 'swallow' ? this.originModifiers.swallowPowerMul * (this.hasItem('abstract-lv10') ? 0.9 : 1) : 1;
     this.applyFateResponseEffect(response.effect, power);
     this.adjustPoisons(response.poison);
@@ -2812,16 +3339,21 @@ export class ZheYiShenGame {
     this.burst('word', this.heroX, this.heroY - 58, 72, direction === 'swallow' ? '#7d91a5' : '#b65d67', direction === 'swallow' ? '咽下' : '吐出');
     if (event.source === 'gpt') {
       const serial = this.runSerial;
+      const receiptIndex = this.fateReceipts.length - 1;
       void generateAIFateResult({
         event: { id: event.id, title: event.title, fact: event.fact },
         direction,
         response: { label: response.label, effect: response.effect, result: response.result },
         snapshot: this.buildLifeSnapshot(),
       }).then((text) => {
-        if (!text || this.runSerial !== serial || this.state === 'result' || this.state === 'title') return;
-        this.caption = text;
-        this.captionTime = 7;
+        const receipt = this.fateReceipts[receiptIndex];
+        if (!text || this.runSerial !== serial || !receipt || receipt.event.id !== event.id || receipt.direction !== direction) return;
+        if (this.fateReceipts.length - 1 === receiptIndex && this.state === 'battle') {
+          this.caption = text;
+          this.captionTime = 7;
+        }
         this.memories.push(text);
+        if (this.memories.length > 14) this.memories = this.memories.slice(-14);
       });
     }
   }
@@ -2892,12 +3424,21 @@ export class ZheYiShenGame {
 
   private chooseItemReward(index: number): void {
     const id = this.itemRewardChoices[index];
-    if (!id || this.state !== 'itemReward') return;
+    if (!id || this.state !== 'itemReward' || this.rewardAcquire) return;
+    const destination: RewardDestination = this.initialItemReward ? 'start' : this.rewardReturn;
     this.acquireItem(id);
-    if (this.initialItemReward) {
+    const total = this.reducedMotion ? 0.34 : 0.85;
+    this.rewardAcquire = { id, index, timer: total, total, destination };
+  }
+
+  private completeRewardAcquire(): void {
+    const acquisition = this.rewardAcquire;
+    if (!acquisition || this.state !== 'itemReward') return;
+    this.rewardAcquire = undefined;
+    if (acquisition.destination === 'start') {
       this.initialItemReward = false;
       this.startStage();
-    } else if (this.rewardReturn === 'advance') {
+    } else if (acquisition.destination === 'advance') {
       this.advanceStage();
     } else {
       this.resetMovementInput();
@@ -2908,6 +3449,8 @@ export class ZheYiShenGame {
   private acquireItem(id: ItemId): void {
     if (this.items.includes(id)) return;
     this.items.push(id);
+    this.feedback.play('wear', getItem(id).quality >= 4 ? 1.25 : 0.9);
+    this.feedback.vibrate(12);
     this.stats.itemsTaken += 1;
     if (id === 'small-uniform') this.changeMaxHp(-6);
     if (id === 'nameless-tie') this.changeMaxHp(-10);
@@ -2940,10 +3483,12 @@ export class ZheYiShenGame {
     this.hero.hp = Math.min(this.hero.hp, this.hero.maxHp);
   }
 
-  private setupShop(): void {
-    this.boughtThisShop = false;
+  private setupShop(resetPurchase = true): void {
+    if (resetPurchase) this.boughtThisShop = false;
+    this.shopFeedback = undefined;
     const candidates = this.shuffle(ITEM_IDS.filter((id) => !this.items.includes(id) && getItem(id).quality < 4));
     this.shopOffers = candidates.slice(0, 3).map((item) => ({ item, price: this.itemPrice(item), sold: false }));
+    this.shopFocus = 0;
   }
 
   private itemPrice(id: ItemId): number {
@@ -2955,31 +3500,44 @@ export class ZheYiShenGame {
 
   private buyShopOffer(index: number): void {
     const offer = this.shopOffers[index];
-    if (!offer || offer.sold || this.state !== 'shop') return;
+    if (!offer || offer.sold || this.state !== 'shop' || this.shopFeedback?.kind === 'purchase' || this.shopFeedback?.kind === 'reroll') return;
     if (this.hero.coins < offer.price) {
       this.say('零钱不够');
+      this.feedback.play('deny');
+      this.feedback.vibrate(8);
+      const total = this.reducedMotion ? 0.18 : 0.42;
+      this.shopFeedback = { kind: 'deny', index, timer: total, total, price: offer.price };
       return;
     }
     this.hero.coins -= offer.price;
+    this.feedback.play('coin', 1.1);
     this.stats.coinsSpent += offer.price;
     offer.sold = true;
     this.boughtThisShop = true;
     this.acquireItem(offer.item);
+    const total = this.reducedMotion ? 0.28 : 0.72;
+    this.shopFeedback = { kind: 'purchase', index, timer: total, total, price: offer.price };
   }
 
   private rerollShop(): void {
-    if (this.state !== 'shop') return;
+    if (this.state !== 'shop' || this.shopFeedback?.kind === 'purchase' || this.shopFeedback?.kind === 'reroll') return;
     if (this.hero.coins < 2) {
       this.say('刷新需要2枚零钱');
+      this.feedback.play('deny');
+      const total = this.reducedMotion ? 0.18 : 0.42;
+      this.shopFeedback = { kind: 'deny', index: -1, timer: total, total, price: 2 };
       return;
     }
     this.hero.coins -= 2;
+    this.feedback.play('page');
     this.stats.coinsSpent += 2;
-    this.setupShop();
+    this.setupShop(false);
+    const total = this.reducedMotion ? 0.2 : 0.46;
+    this.shopFeedback = { kind: 'reroll', index: -1, timer: total, total, price: 2 };
   }
 
   private leaveShop(): void {
-    if (this.state !== 'shop') return;
+    if (this.state !== 'shop' || this.shopFeedback?.kind === 'purchase' || this.shopFeedback?.kind === 'reroll') return;
     if (this.hasItem('friend-verify') && !this.boughtThisShop) {
       this.noBuyStacks += 1;
       this.say(`一个人也行 · 伤害+${this.noBuyStacks * 6}%`);
@@ -2996,6 +3554,7 @@ export class ZheYiShenGame {
 
   private openSpecialRoom(kind?: SpecialRoomKind): void {
     this.resetMovementInput();
+    this.resetSpecialRoomHold();
     this.specialRoomKind = kind ?? this.pickSpecialKind();
     // Ⅳ 级遗物的两条获取线：留灯间=被爱过的证据；里屋=透支自己
     const backPool: ItemId[] = ['broken-spine', 'spent-decade', 'painless-night', 'third-pill', 'loan-contract', 'name-sold', 'ktv-song'];
@@ -3003,6 +3562,8 @@ export class ZheYiShenGame {
     const roomPool = (this.specialRoomKind === 'back' ? backPool : lightPool).filter((id) => !this.items.includes(id));
     this.specialRoomOffers = this.shuffle(roomPool).slice(0, 3);
     this.specialRoomTaken.clear();
+    this.specialRoomFocus = 0;
+    this.specialRoomLeaveFocused = false;
     this.state = 'specialRoom';
   }
 
@@ -3018,12 +3579,15 @@ export class ZheYiShenGame {
     }
     if (this.hero.maxHp - 12 < 20) {
       this.say('已经没有足够的一口气');
+      this.feedback.play('deny');
       return;
     }
     if (id !== 'broken-spine') this.changeMaxHp(-12);
     this.strainTendency += 3;
     this.acquireItem(id);
     this.specialRoomTaken.add(id);
+    const nextAvailable = this.specialRoomOffers.findIndex((offer) => !this.specialRoomTaken.has(offer));
+    if (nextAvailable >= 0) this.specialRoomFocus = nextAvailable;
   }
 
   private leaveSpecialRoom(): void {
@@ -3034,6 +3598,7 @@ export class ZheYiShenGame {
 
   private finishSpecialRoom(): void {
     this.resetMovementInput();
+    this.resetSpecialRoomHold();
     this.worldDoor = undefined;
     this.doorUsed = true;
     this.state = 'battle';
@@ -3043,7 +3608,13 @@ export class ZheYiShenGame {
     this.resetMovementInput();
     this.resetFateInput();
     this.closeFreeInput();
+    this.paused = false;
+    this.resetPauseHold();
     this.resultWon = won;
+    this.resultTab = 'seal';
+    this.resultStartedAt = performance.now();
+    this.feedback.play(won ? 'page' : 'swallow', won ? 1.2 : 0.9);
+    if (!won) this.feedback.vibrate([26, 54, 26]);
     this.state = 'result';
     this.projectiles = [];
     this.toast = '';
@@ -3051,9 +3622,19 @@ export class ZheYiShenGame {
   }
 
   private nearestEnemy(x: number, y: number): EnemyUnit | undefined {
-    return this.enemies
-      .filter((enemy) => !enemy.dead)
-      .sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0];
+    let nearest: EnemyUnit | undefined;
+    let nearestDistanceSq = Infinity;
+    for (const enemy of this.enemies) {
+      if (enemy.dead) continue;
+      const dx = enemy.x - x;
+      const dy = enemy.y - y;
+      const distanceSq = dx * dx + dy * dy;
+      if (distanceSq < nearestDistanceSq) {
+        nearest = enemy;
+        nearestDistanceSq = distanceSq;
+      }
+    }
+    return nearest;
   }
 
   private hasLivingEnemies(): boolean {
@@ -3110,7 +3691,7 @@ export class ZheYiShenGame {
     const mouthY = this.heroY - 17;
     const drift = facing === 'left' ? 'L' : facing === 'right' ? 'R' : facing === 'back' ? 'B' : 'F';
     for (let index = 0; index < 2; index += 1) {
-      this.bursts.push({
+      this.pushBurst({
         id: this.entityId++, kind: 'sigh', x: mouthX, y: mouthY - index * 2,
         radius: (2.4 + index * 1.6) * scale, life: 0.55 + index * 0.2, duration: 0.55 + index * 0.2,
         color: '#dfe6e2', text: drift,
@@ -3119,20 +3700,24 @@ export class ZheYiShenGame {
   }
 
   private burst(kind: BurstEffect['kind'], x: number, y: number, radius: number, color: string, text?: string, material?: string): void {
-    this.bursts.push({ id: this.entityId++, kind, x, y, radius, life: 0.36, duration: 0.36, color, text, material });
+    this.pushBurst({ id: this.entityId++, kind, x, y, radius, life: 0.36, duration: 0.36, color, text, material });
+  }
+
+  private pushBurst(effect: BurstEffect): void {
+    if (this.bursts.length < MAX_BURSTS) {
+      this.bursts.push(effect);
+      return;
+    }
+    const important = effect.kind === 'word' || effect.kind === 'syn';
+    const disposableIndex = this.bursts.findIndex((burst) => burst.kind !== 'word' && burst.kind !== 'syn');
+    if (!important && disposableIndex < 0) return;
+    this.bursts.splice(disposableIndex >= 0 ? disposableIndex : 0, 1);
+    this.bursts.push(effect);
   }
 
   private say(message: string): void {
     this.toast = message;
     this.toastTime = 1.45;
-  }
-
-  private aiStateLabel(state: AIGenerationState): string {
-    if (state === 'requesting') return 'AI生成中';
-    if (state === 'gpt') return 'AI实时生成';
-    if (state === 'fallback') return '本地保底';
-    if (state === 'error') return '生成未完成';
-    return '规则引擎';
   }
 
   private render(): void {
@@ -3152,7 +3737,16 @@ export class ZheYiShenGame {
       ctx.fillStyle = `rgba(174,35,55,${Math.min(0.32, this.flash * 1.25)})`;
       ctx.fillRect(0, 0, W, H);
     }
-    if (this.state === 'battle') this.renderLowHealthWarning();
+    if (this.state === 'battle' && !this.paused) this.renderLowHealthWarning();
+    if (!this.paused && (this.state === 'battle' || this.state === 'fateEvent')) this.renderPauseButton();
+    if (this.paused) this.renderPauseOverlay();
+    if (import.meta.env.DEV) {
+      const now = performance.now();
+      if (now - this.devSnapshotAt >= 200 && this.renderGameState) {
+        this.canvas.dataset.gameState = this.renderGameState();
+        this.devSnapshotAt = now;
+      }
+    }
   }
 
   private renderLowHealthWarning(): void {
@@ -3171,23 +3765,36 @@ export class ZheYiShenGame {
     const stage = STAGES[this.encounterIndex] ?? STAGES[STAGES.length - 1]!;
     const next = STAGES[this.encounterIndex + 1];
     const tailBlend = this.clamp((this.battleTime - (stage.duration - 15)) / 15, 0, 1);
-    const blend = next ? (this.transitionTimer > 0 ? 1 - this.transitionTimer / 3.4 : tailBlend) : 0;
+    const tailEase = tailBlend * tailBlend * (3 - 2 * tailBlend);
+    const transitionProgress = this.clamp(1 - this.transitionTimer / STAGE_TRANSITION_DURATION, 0, 1);
+    const transitionEase = transitionProgress * transitionProgress * (3 - 2 * transitionProgress);
+    // The formal chapter card must continue the environmental fade instead of
+    // resetting it and briefly flashing the old floor back into view.
+    const blend = next ? Math.max(tailEase, this.transitionTimer > 0 ? transitionEase : 0) : 0;
     const top = next ? this.mixHex(stage.groundTop, next.groundTop, blend) : stage.groundTop;
     const bottom = next ? this.mixHex(stage.groundBottom, next.groundBottom, blend) : stage.groundBottom;
     // The battlefield is an archive scan, not a smooth digital gradient. Flat
     // bands keep the scene readable at native pixel scale and make age changes
     // feel like a page being replaced.
     this.fillSteppedVertical(top, bottom, 12);
+    const cameraX = HERO_SCREEN_X - this.heroX;
+    const cameraY = HERO_SCREEN_Y - this.heroY;
+    // Ground texture is anchored to the world. Artificial drift made its tile
+    // boundaries slide under a stationary hero and read as a moving grid.
+    sceneArt.drawGround(ctx, this.encounterIndex, cameraX, cameraY, 0.28 * (1 - blend));
+    if (next) sceneArt.drawGround(ctx, this.encounterIndex + 1, cameraX, cameraY, 0.28 * blend);
     this.renderStageAtmosphere(stage, next, blend);
 
-    const shakeAmount = this.screenShake > 0 ? Math.ceil(this.screenShake * 16) : 0;
+    const shakeAmount = !this.reducedMotion && this.screenShake > 0 ? Math.ceil(this.screenShake * 16) : 0;
     const shakeX = shakeAmount ? Math.round(Math.sin(this.battleTime * 113) * shakeAmount) : 0;
     const shakeY = shakeAmount ? Math.round(Math.cos(this.battleTime * 97) * shakeAmount) : 0;
     ctx.save();
     ctx.translate(HERO_SCREEN_X - this.heroX + shakeX, HERO_SCREEN_Y - this.heroY + shakeY);
+    this.renderGroundDecals(stage, next, blend);
     this.renderProps(stage, next, blend);
     this.renderCoinDrops();
     this.renderWorldEntities();
+    this.renderHeroGrounding();
     this.renderEnemies();
     this.renderProjectiles();
     const heroMotion = this.hurtCooldown > 0
@@ -3210,20 +3817,23 @@ export class ZheYiShenGame {
 
   private renderStageAtmosphere(stage: StageSpec, next: StageSpec | undefined, blend: number): void {
     const ctx = this.ctx;
-    const t = this.battleTime;
+    const t = this.reducedMotion ? 0 : this.battleTime;
     const seed = this.runSeed >>> 0;
     const stageIndex = this.encounterIndex;
-    const phase = (t * 0.7 + (seed % 97) / 97) % 1;
     applyPixelDiscipline(ctx);
     ctx.save();
     ctx.globalAlpha = 1;
 
-    // A quiet registration grid gives the otherwise empty field a sense of
-    // depth while staying below sprites and projectiles.
-    ctx.fillStyle = 'rgba(216,208,193,.055)';
-    for (let y = 108; y < 560; y += 54) ctx.fillRect(16, y, W - 32, 1);
-    ctx.fillStyle = 'rgba(216,208,193,.035)';
-    for (let x = 34; x < W; x += 62) ctx.fillRect(x, 106, 1, 430);
+    const shadowSway = Math.round(Math.sin(t * 0.22 + stageIndex * 0.9) * 18);
+    ctx.globalAlpha = 0.055;
+    ctx.fillStyle = '#08080c';
+    ctx.fillRect(-78 + shadowSway, 96, 92, 456);
+    ctx.fillRect(344 - shadowSway, 96, 74, 456);
+    ctx.globalAlpha = 0.025;
+    ctx.fillStyle = stage.propColor;
+    ctx.fillRect(64 + Math.round(Math.sin(t * 0.13) * 22), 104, 18, 432);
+    ctx.fillRect(286 + Math.round(Math.cos(t * 0.11) * 17), 104, 10, 432);
+    ctx.globalAlpha = 1;
 
     if (stageIndex === 0) {
       // Childhood: the room is too large. Dust drifts, and the floor under the
@@ -3239,23 +3849,29 @@ export class ZheYiShenGame {
         if ((hash + Math.floor(t * 2)) % 5 < 3) ctx.fillRect(x, y + drift, 1 + (hash % 2), 1);
       }
     } else if (stageIndex === 1) {
-      // School: chalk lines and a red correction mark that never quite lands.
+      // School: sparse notebook rules and a red correction mark that never
+      // quite lands. Broken strokes avoid turning the whole floor into a grid.
       ctx.fillStyle = 'rgba(174,190,198,.13)';
-      for (let y = 126; y < 452; y += 34) ctx.fillRect(30, y, 300, 1);
+      for (let y = 132; y < 448; y += 52) {
+        ctx.fillRect(34, y, 72, 1);
+        ctx.fillRect(126, y, 92, 1);
+        ctx.fillRect(246, y, 76, 1);
+      }
       ctx.fillStyle = 'rgba(159,53,72,.22)';
       const markX = 48 + Math.floor(((t * 16) % 260) / 4) * 4;
       const markY = 146 + ((Math.floor(t / 4) % 4) * 52);
       ctx.fillRect(markX, markY, 14, 2);
       ctx.fillRect(markX + 6, markY - 6, 2, 14);
     } else if (stageIndex === 2) {
-      // Youth: station rails recede toward the hero. A passing timetable light
-      // is the first intentionally conspicuous motion in the run.
+      // Youth: a static platform edge grounds the station. Only the timetable
+      // light moves; rail sleepers previously looked like a scrolling grid.
       ctx.fillStyle = 'rgba(210,180,105,.2)';
       ctx.fillRect(18, 456, 324, 2);
       ctx.fillRect(18, 468, 324, 1);
       ctx.fillStyle = 'rgba(185,166,125,.12)';
-      for (let x = -40; x < 420; x += 58) {
-        ctx.fillRect(Math.round(x + phase * 58), 455, 2, 82);
+      for (let x = 30; x < 330; x += 58) {
+        ctx.fillRect(x, 462, 22, 1);
+        ctx.fillRect(x + 9, 466, 4, 1);
       }
       const sweep = ((t * 42 + (seed % 140)) % 420) - 40;
       ctx.fillStyle = 'rgba(231,211,149,.22)';
@@ -3279,11 +3895,14 @@ export class ZheYiShenGame {
       ctx.fillRect(297, 134, 2, 22);
       ctx.fillRect(282, 144, 34, 2);
     } else if (stageIndex === 4) {
-      // Middle age: the office becomes a spreadsheet. The fluorescent bar
-      // flickers only at the edge of the frame so it never hides a hit cue.
+      // Middle age: scattered form rows imply paperwork without covering the
+      // battlefield in a literal spreadsheet grid.
       ctx.fillStyle = 'rgba(173,188,198,.09)';
-      for (let x = 22; x < 340; x += 28) ctx.fillRect(x, 118, 1, 338);
-      for (let y = 136; y < 456; y += 24) ctx.fillRect(22, y, 318, 1);
+      for (let y = 142; y < 438; y += 64) {
+        ctx.fillRect(28, y, 76, 1);
+        ctx.fillRect(122, y + 12, 58, 1);
+        ctx.fillRect(238, y + 4, 86, 1);
+      }
       const flicker = 0.06 + Math.max(0, Math.sin(t * 7.5)) * 0.08;
       ctx.fillStyle = `rgba(205,216,211,${flicker.toFixed(3)})`;
       ctx.fillRect(40, 104, 280, 2);
@@ -3305,7 +3924,7 @@ export class ZheYiShenGame {
       ctx.fillRect(18, 438, 324, 2);
     }
 
-    this.renderAtmosphereSurprise(stageIndex, t, seed);
+    if (!this.reducedMotion) this.renderAtmosphereSurprise(stageIndex, t, seed);
     if (next && blend > 0.01) {
       ctx.globalAlpha = Math.min(0.35, blend * 0.35);
       ctx.fillStyle = next.propColor;
@@ -3350,6 +3969,115 @@ export class ZheYiShenGame {
     ctx.restore();
   }
 
+  private renderGroundDecals(stage: StageSpec, next: StageSpec | undefined, blend: number): void {
+    const ctx = this.ctx;
+    const cell = 136;
+    const minX = Math.floor((this.heroX - 260) / cell);
+    const maxX = Math.floor((this.heroX + 260) / cell);
+    const minY = Math.floor((this.heroY - 340) / cell);
+    const maxY = Math.floor((this.heroY + 360) / cell);
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    for (let cy = minY; cy <= maxY; cy += 1) {
+      for (let cx = minX; cx <= maxX; cx += 1) {
+        const hash = this.cellHash(cx + 47, cy - 31);
+        if (hash % 5 > 2) continue;
+        const x = cx * cell + 18 + ((hash >>> 3) % (cell - 36));
+        const y = cy * cell + 20 + ((hash >>> 11) % (cell - 40));
+        const showNext = Boolean(next) && ((hash >>> 19) % 100) / 100 < blend;
+        const stageIndex = showNext ? this.encounterIndex + 1 : this.encounterIndex;
+        const color = showNext && next ? next.propColor : stage.propColor;
+        this.drawGroundDecal(stageIndex, hash % 4, x, y, color, hash);
+      }
+    }
+    ctx.restore();
+  }
+
+  private drawGroundDecal(
+    stageIndex: number,
+    variant: number,
+    x: number,
+    y: number,
+    color: string,
+    hash: number,
+  ): void {
+    const ctx = this.ctx;
+    const flip = hash % 2 === 0 ? 1 : -1;
+    ctx.globalAlpha = 0.16 + ((hash >>> 7) % 8) / 100;
+    ctx.fillStyle = color;
+    if (stageIndex === 0) {
+      if (variant < 2) {
+        ctx.fillRect(x - 12, y, 24, 1);
+        ctx.fillRect(x - 7, y + 4, 13, 1);
+        ctx.fillRect(x + 9 * flip, y - 3, 1, 3);
+      } else {
+        ctx.fillRect(x - 5, y - 2, 3, 2);
+        ctx.fillRect(x + 3, y + 3, 2, 2);
+        ctx.fillRect(x + 10 * flip, y - 5, 1, 1);
+      }
+    } else if (stageIndex === 1) {
+      ctx.fillRect(x - 13, y, 21, 1);
+      ctx.fillRect(x - 7, y + 4, 15, 1);
+      if (variant >= 2) {
+        ctx.fillStyle = '#a13d4c';
+        ctx.fillRect(x + 9 * flip, y - 7, 2, 15);
+        ctx.fillRect(x + 3 * flip, y - 1, 14, 2);
+      }
+    } else if (stageIndex === 2) {
+      ctx.fillRect(x - 20, y - 4, 40, 2);
+      ctx.fillRect(x - 20, y + 6, 40, 1);
+      for (let offset = -14; offset <= 14; offset += 9) ctx.fillRect(x + offset, y - 6, 2, 15);
+      if (variant === 3) ctx.fillRect(x - 3, y - 11, 6, 3);
+    } else if (stageIndex === 3) {
+      ctx.globalAlpha *= 0.8;
+      ctx.fillRect(x - 17, y, 34, 2);
+      ctx.fillRect(x - 11, y + 3, 22, 1);
+      ctx.fillRect(x - 4, y - 3, 8, 1);
+      if (variant >= 2) {
+        ctx.fillRect(x + 13 * flip, y - 12, 1, 8);
+        ctx.fillRect(x + 16 * flip, y - 8, 1, 5);
+      }
+    } else if (stageIndex === 4) {
+      ctx.fillRect(x - 14, y - 9, 24, 16);
+      ctx.globalAlpha *= 0.75;
+      ctx.fillStyle = '#17171c';
+      ctx.fillRect(x - 10, y - 5, 16, 1);
+      ctx.fillRect(x - 10, y - 1, 12, 1);
+      ctx.fillRect(x - 10, y + 3, 15, 1);
+      if (variant === 3) ctx.fillRect(x + 14 * flip, y - 4, 12, 2);
+    } else {
+      ctx.fillRect(x - 18, y, 13, 1);
+      ctx.fillRect(x - 5, y, 1, 8);
+      ctx.fillRect(x - 5, y + 7, 11, 1);
+      ctx.fillRect(x + 6, y + 7, 1, 7);
+      ctx.fillRect(x + 6, y + 13, 10, 1);
+      if (variant >= 2) {
+        ctx.fillRect(x - 12, y - 8, 2, 2);
+        ctx.fillRect(x + 13, y - 4, 1, 1);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  private renderHeroGrounding(): void {
+    const ctx = this.ctx;
+    const compression = this.heroMoving ? 2 : 0;
+    const hurtShift = this.hurtCooldown > 0 ? 3 : 0;
+    const shadowY = Math.round(this.heroY + 3 + hurtShift);
+    ctx.save();
+    ctx.globalAlpha = this.hurtCooldown > 0 ? 0.28 : 0.42;
+    ctx.fillStyle = '#09090c';
+    ctx.fillRect(Math.round(this.heroX - 13 + compression), shadowY, 26 - compression * 2, 3);
+    ctx.fillRect(Math.round(this.heroX - 8), shadowY + 3, 16, 2);
+    if (this.heroMoving) {
+      ctx.globalAlpha = 0.12;
+      ctx.fillStyle = STAGES[this.encounterIndex]?.propColor ?? '#d0b264';
+      ctx.fillRect(Math.round(this.heroX - 18 - compression), shadowY + 1, 4, 1);
+      ctx.fillRect(Math.round(this.heroX + 14 + compression), shadowY + 1, 4, 1);
+    }
+    ctx.restore();
+  }
+
   private renderProps(stage: StageSpec, next: StageSpec | undefined, blend: number): void {
     const ctx = this.ctx;
     const cell = 84;
@@ -3364,30 +4092,86 @@ export class ZheYiShenGame {
         this.ctx.fillStyle = stage.propColor;
         this.ctx.fillRect(cx * cell + ((h % 71) / 71) * cell, cy * cell + (((h >> 4) % 71) / 71) * cell, 2, 2);
         this.ctx.globalAlpha = 1;
-        if (h % 7 >= 3) continue;
-        const px = cx * cell + ((h % 53) / 53) * (cell - 26) + 13;
-        const py = cy * cell + (((h >> 6) % 53) / 53) * (cell - 26) + 13;
-        const variant = (h >> 3) % PROP_VARIANTS;
-        const showNext = Boolean(next) && ((h >> 9) % 100) / 100 < blend;
-        const idx = showNext ? this.encounterIndex + 1 : this.encounterIndex;
-        const color = showNext && next ? next.propColor : stage.propColor;
-        const sprite = this.worldProps.slice(idx, variant);
-        if (sprite) {
-          // A one-pixel ground shadow separates dark props from the archive
-          // bands without turning them into outlined stickers.
-          ctx.globalAlpha = 0.34;
-          ctx.fillStyle = 'rgba(5,5,8,.7)';
-          ctx.fillRect(Math.round(px - 12), Math.round(py - 2), 24, 3);
-          ctx.globalAlpha = 0.88;
-          ctx.imageSmoothingEnabled = false;
-          ctx.drawImage(sprite, Math.round(px - sprite.width / 2), Math.round(py - sprite.height));
-        } else {
-          ctx.globalAlpha = 0.6;
-          this.drawProp(idx, variant % 3, px, py, color);
+        const clusterX = Math.floor(cx / 2);
+        const clusterY = Math.floor(cy / 2);
+        const slotX = cx - clusterX * 2;
+        const slotY = cy - clusterY * 2;
+        const slot = slotY * 2 + slotX;
+        const clusterHash = this.cellHash(clusterX + 911, clusterY - 733);
+        const clusterCount = 2 + (clusterHash % 2);
+        if (slot >= clusterCount) continue;
+        const [offsetX, offsetY] = PROP_CLUSTER_OFFSETS[slot]!;
+        const jitterX = ((clusterHash >>> (slot * 4 + 3)) % 15) - 7;
+        const jitterY = ((clusterHash >>> (slot * 4 + 9)) % 13) - 6;
+        const px = clusterX * cell * 2 + cell + offsetX + jitterX;
+        const py = clusterY * cell * 2 + cell + offsetY + jitterY;
+        const variant = (slot + ((clusterHash >>> 5) % PROP_VARIANTS)) % PROP_VARIANTS;
+        const currentIndex = this.encounterIndex;
+        const nextIndex = Math.min(STAGES.length - 1, currentIndex + 1);
+        const currentScale = PROP_STAGE_SCALES[currentIndex]?.[variant] ?? 1;
+        const nextScale = PROP_STAGE_SCALES[nextIndex]?.[variant] ?? 1;
+        const sizeClass = Math.max(currentScale, nextScale);
+        const transitionWindow = sizeClass >= 1.25 ? 0.16 : sizeClass >= 1 ? 0.12 : 0.08;
+        const switchAt = 0.12 + (((h >>> 9) % 100) / 100) * 0.76;
+        const localBlend = next
+          ? this.clamp((blend - (switchAt - transitionWindow / 2)) / transitionWindow, 0, 1)
+          : 0;
+        const emergence = localBlend * localBlend * (3 - 2 * localBlend);
+        const currentSprite = this.worldProps.slice(currentIndex, variant);
+        const nextSprite = next ? this.worldProps.slice(nextIndex, variant) : null;
+
+        // A small floor trace arrives before the object and remains while the
+        // old object dissolves, so the new prop feels rooted rather than pasted.
+        ctx.globalAlpha = 0.18 + emergence * 0.16;
+        ctx.fillStyle = 'rgba(5,5,8,.72)';
+        const shadowWidth = Math.round(20 + sizeClass * 10);
+        ctx.fillRect(Math.round(px - shadowWidth / 2), Math.round(py - 2), shadowWidth, 3);
+
+        if (currentSprite) {
+          this.drawEmergingWorldProp(currentSprite, px, py, currentScale, 0.88 * (1 - emergence), 1);
+        } else if (emergence < 1) {
+          ctx.globalAlpha = 0.6 * (1 - emergence);
+          this.drawProp(currentIndex, variant % 3, px, py, stage.propColor);
+        }
+        if (next && nextSprite && emergence > 0) {
+          this.drawEmergingWorldProp(nextSprite, px, py, nextScale, 0.88 * emergence, emergence);
+          if (emergence < 0.88) {
+            ctx.globalAlpha = 0.22 * (1 - emergence);
+            ctx.fillStyle = next.propColor;
+            const row = Math.max(1, Math.round(sizeClass * 2));
+            ctx.fillRect(Math.round(px - 6 - row), Math.round(py - 3 - row), row, 1);
+            ctx.fillRect(Math.round(px + 4), Math.round(py - 1 - row * 2), row + 1, 1);
+          }
         }
         ctx.globalAlpha = 1;
       }
     }
+  }
+
+  private drawEmergingWorldProp(
+    sprite: HTMLCanvasElement,
+    x: number,
+    groundY: number,
+    scale: number,
+    alpha: number,
+    reveal: number,
+  ): void {
+    if (alpha <= 0 || reveal <= 0) return;
+    const ctx = this.ctx;
+    const width = Math.max(1, Math.round(sprite.width * scale));
+    const height = Math.max(1, Math.round(sprite.height * scale));
+    const revealSteps = Math.max(1, Math.round(this.clamp(reveal, 0, 1) * 8));
+    const visibleHeight = Math.max(1, Math.round((height * revealSteps) / 8));
+    const left = Math.round(x - width / 2);
+    const top = Math.round(groundY - height + (1 - revealSteps / 8) * 3);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.imageSmoothingEnabled = false;
+    ctx.beginPath();
+    ctx.rect(left, top + height - visibleHeight, width, visibleHeight);
+    ctx.clip();
+    ctx.drawImage(sprite, left, top, width, height);
+    ctx.restore();
   }
 
   private cellHash(cx: number, cy: number): number {
@@ -3570,16 +4354,73 @@ export class ZheYiShenGame {
     ctx.restore();
   }
 
+  /** 免死演出：乳牙/遗照在主角头顶播帧；雪花屏全屏噪点闪；关服全屏收拢 */
+  private renderSaveEffect(): void {
+    const effect = this.saveEffect;
+    if (!effect) return;
+    const ctx = this.ctx;
+    const progress = this.clamp(1 - effect.timer / effect.duration, 0, 0.999);
+    ctx.save();
+    if (effect.kind === 'static') {
+      const pattern = uiTextures.pattern(ctx, 'static');
+      const flicker = this.reducedMotion ? 0.62 : 0.58 + Math.sin(this.visualTime * 18) * 0.12;
+      ctx.globalAlpha = (1 - progress) * flicker;
+      if (pattern) {
+        ctx.fillStyle = pattern;
+        ctx.fillRect(0, 0, W, H);
+      } else {
+        ctx.fillStyle = '#c8c8c8';
+        for (let index = 0; index < 260; index += 1) {
+          ctx.fillRect((index * 97 + Math.floor(this.visualTime * 900)) % W, (index * 53) % H, 2, 2);
+        }
+      }
+    } else if (effect.kind === 'shutdown') {
+      const frame = saveFrame('shutdown', progress);
+      ctx.globalAlpha = 1 - progress * 0.4;
+      ctx.fillStyle = '#040406';
+      ctx.fillRect(0, 0, W, H);
+      if (frame) {
+        ctx.imageSmoothingEnabled = false;
+        ctx.globalAlpha = 1;
+        ctx.drawImage(frame, 40, 180, 280, 280);
+      }
+    } else {
+      const frame = saveFrame(effect.kind as SaveKind, progress);
+      if (frame) {
+        const size = 76;
+        ctx.imageSmoothingEnabled = false;
+        ctx.globalAlpha = 1 - progress * progress;
+        ctx.drawImage(frame, HERO_SCREEN_X - size / 2, HERO_SCREEN_Y - 66 - size / 2, size, size);
+      }
+    }
+    ctx.restore();
+  }
+
   private renderJoystick(): void {
     if (this.joyPointerId === -1) return;
     const ctx = this.ctx;
+    const inputDistance = Math.hypot(this.joyDX, this.joyDY);
+    const knobScale = inputDistance > JOYSTICK_KNOB_TRAVEL ? JOYSTICK_KNOB_TRAVEL / inputDistance : 1;
+    const knobX = this.joyBaseX + this.joyDX * knobScale;
+    const knobY = this.joyBaseY + this.joyDY * knobScale;
     ctx.save();
-    ctx.globalAlpha = 0.4;
-    ctx.strokeStyle = '#c9c3b6';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(this.joyBaseX, this.joyBaseY, 34, 0, Math.PI * 2); ctx.stroke();
-    ctx.fillStyle = '#e8e1d3';
-    ctx.beginPath(); ctx.arc(this.joyBaseX + this.joyDX, this.joyBaseY + this.joyDY, 12, 0, Math.PI * 2); ctx.fill();
+    // 摇杆皮肤：磨旧的石环与石钮；贴图未就绪走程序圆圈
+    const base = joystickAtlas.slice(0);
+    const cap = joystickAtlas.slice(1);
+    if (base && cap) {
+      ctx.globalAlpha = 0.5;
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(base, this.joyBaseX - 38, this.joyBaseY - 38, 76, 76);
+      ctx.globalAlpha = 0.75;
+      ctx.drawImage(cap, knobX - 14, knobY - 14, 28, 28);
+    } else {
+      ctx.globalAlpha = 0.4;
+      ctx.strokeStyle = '#c9c3b6';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(this.joyBaseX, this.joyBaseY, 34, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = '#e8e1d3';
+      ctx.beginPath(); ctx.arc(knobX, knobY, 12, 0, Math.PI * 2); ctx.fill();
+    }
     ctx.restore();
   }
 
@@ -3596,6 +4437,27 @@ export class ZheYiShenGame {
     ctx.fillStyle = color;
     ctx.beginPath(); ctx.arc(cx, cy, 5 + Math.sin(this.battleTime * 5) * 1.5, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
+  }
+
+  private renderNearestThreatHint(): void {
+    let nearest: EnemyUnit | undefined;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+    let hasVisibleThreat = false;
+    for (const enemy of this.enemies) {
+      if (enemy.dead || enemy.elite || enemy.boss) continue;
+      const sx = HERO_SCREEN_X + (enemy.x - this.heroX);
+      const sy = HERO_SCREEN_Y + (enemy.y - this.heroY);
+      if (sx > 10 && sx < W - 10 && sy > 60 && sy < 566) {
+        hasVisibleThreat = true;
+        break;
+      }
+      const distance = Math.hypot(enemy.x - this.heroX, enemy.y - this.heroY);
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearest = enemy;
+      }
+    }
+    if (!hasVisibleThreat && nearest) this.renderEdgeHint(nearest.x, nearest.y, UI_PALETTE.oldRed);
   }
 
   private fillSteppedVertical(top: string, bottom: string, steps = 12): void {
@@ -3648,7 +4510,7 @@ export class ZheYiShenGame {
 
     ctx.textAlign = 'center';
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.font = `9px ${UI_FONT_STACK}`;
     ctx.fillText('第 0001 号人生档案 · 尚未填写', 180, 30);
 
     ctx.save();
@@ -3670,12 +4532,15 @@ export class ZheYiShenGame {
     drawStatusIcon(ctx, 213, 305, 'breath-power', 1, UI_PALETTE.breath);
     drawLifeChapterTrack(ctx, 62, 420, 236, 8, 0, '降生|童年|少年|青年|成年|中年|老年|死亡', 0);
 
-    drawCutCornerPanel(ctx, 72, 470, 216, 58, 'rgba(12,12,17,.92)', UI_PALETTE.raincoatYellow, 3, 2);
+    drawCutCornerPanel(
+      ctx, TITLE_START_RECT.x, TITLE_START_RECT.y, TITLE_START_RECT.width, TITLE_START_RECT.height,
+      'rgba(12,12,17,.92)', UI_PALETTE.raincoatYellow, 3, 2,
+    );
     ctx.fillStyle = UI_PALETTE.paperLight;
     ctx.font = `bold 18px ${UI_ARCHIVE_FONT_STACK}`;
     ctx.fillText('开始这一生', 180, 505);
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.font = `9px ${UI_FONT_STACK}`;
     ctx.fillText('封皮尚未翻开', 180, 567);
   }
 
@@ -3709,20 +4574,26 @@ export class ZheYiShenGame {
     ctx.fillText('出生档案', 30, 47);
     ctx.textAlign = 'right';
     ctx.fillStyle = '#5e574d';
-    ctx.font = `7px ${UI_FONT_STACK}`;
+    ctx.font = `9px ${UI_FONT_STACK}`;
     ctx.fillText(`第 ${this.runSeed.toString(16).toUpperCase().padStart(8, '0')} 号`, 323, 46);
     drawStitchDivider(ctx, 29, 59, 302, 'horizontal', '#877d6e', 5, 3);
 
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#6d655a';
-    ctx.font = `7px ${UI_FONT_STACK}`;
+    ctx.fillStyle = '#514b43';
+    ctx.font = `9px ${UI_FONT_STACK}`;
     ctx.fillText('外号', 30, 82);
     ctx.fillStyle = UI_PALETTE.ink;
-    ctx.font = `bold 23px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillText(origin.nickname ? `《${origin.nickname}》` : origin.title, 30, 113);
+    const identity = origin.nickname ? `《${origin.nickname}》` : origin.title;
+    let identitySize = 23;
+    do {
+      ctx.font = `bold ${identitySize}px ${UI_ARCHIVE_FONT_STACK}`;
+      if (ctx.measureText(identity).width <= 190) break;
+      identitySize -= 1;
+    } while (identitySize > 16);
+    ctx.fillText(this.fitText(identity, 190), 30, 113);
     ctx.fillStyle = '#4d473f';
-    ctx.font = `8px ${UI_FONT_STACK}`;
-    this.wrapText(origin.nicknameReason || '正式名字还没留下，别人先替他叫出了声。', 30, 136, 190, 13, 3);
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    this.wrapText(origin.nicknameReason || '正式名字还没留下，别人先替他叫出了声。', 30, 136, 190, 14, 3);
 
     ctx.save();
     ctx.globalAlpha = this.clamp((progress - 0.06) / 0.34, 0.08, 1);
@@ -3732,22 +4603,24 @@ export class ZheYiShenGame {
 
     drawStitchDivider(ctx, 29, 237, 302, 'horizontal', '#877d6e', 5, 3);
     ctx.fillStyle = UI_PALETTE.oldRed;
-    ctx.font = `bold 8px ${UI_FONT_STACK}`;
+    ctx.font = `bold 9px ${UI_FONT_STACK}`;
     ctx.textAlign = 'left';
     ctx.fillText('外号的来处', 30, 258);
     ctx.fillStyle = UI_PALETTE.ink;
-    ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.font = `11px ${UI_ARCHIVE_FONT_STACK}`;
+    const paragraphCount = storyText.split('\n').filter(Boolean).length;
+    const paragraphLines = paragraphCount >= 4 ? 2 : 3;
+    const paragraphStep = paragraphLines * 13 + 5;
     let lineY = 279;
-    for (const paragraph of visible.split('\n')) {
+    for (const paragraph of visible.split('\n').slice(0, 4)) {
       if (!paragraph) continue;
-      this.wrapText(paragraph, 30, lineY, 296, 15, 3);
-      lineY += 47;
-      if (lineY > 414) break;
+      this.wrapText(paragraph, 30, lineY, 296, 13, paragraphLines);
+      lineY += paragraphStep;
     }
 
     drawStitchDivider(ctx, 29, 435, 302, 'horizontal', '#877d6e', 5, 3);
-    ctx.fillStyle = '#6d655a';
-    ctx.font = `7px ${UI_FONT_STACK}`;
+    ctx.fillStyle = '#514b43';
+    ctx.font = `9px ${UI_FONT_STACK}`;
     ctx.fillText('故事留下的底色', 30, 456);
     const revealTraits = progress > 0.7;
     ctx.globalAlpha = revealTraits ? 1 : 0.22;
@@ -3763,8 +4636,8 @@ export class ZheYiShenGame {
         ctx.font = `bold 9px ${UI_FONT_STACK}`;
         ctx.fillText(`${trait.name} · ${trait.description}`, 30, y);
         ctx.fillStyle = '#5d574e';
-        ctx.font = `7px ${UI_FONT_STACK}`;
-        this.wrapText(reason, 30, y + 16, 294, 11, 2);
+      ctx.font = `9px ${UI_FONT_STACK}`;
+      this.wrapText(reason, 30, y + 16, 294, 12, 2);
       });
     }
     ctx.globalAlpha = 1;
@@ -3798,7 +4671,7 @@ export class ZheYiShenGame {
     ctx.fillText('出生登记处', 30, 47);
     ctx.textAlign = 'right';
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `7px ${UI_FONT_STACK}`;
+    ctx.font = `9px ${UI_FONT_STACK}`;
     ctx.fillText(this.originAttempt > 1 ? '重新登记中' : '档案仍在路上', 330, 46);
     drawLifeChapterTrack(ctx, 30, 69, 300, 8, 0, '降生|童年|少年|青年|成年|中年|老年|死亡', 0);
 
@@ -3807,7 +4680,7 @@ export class ZheYiShenGame {
       const revealed = index <= activeLine;
       ctx.textAlign = 'left';
       ctx.fillStyle = revealed ? '#817a70' : '#444148';
-      ctx.font = `7px ${UI_FONT_STACK}`;
+      ctx.font = `8px ${UI_FONT_STACK}`;
       ctx.fillText(label, 30, y);
       ctx.fillStyle = revealed ? (index === activeLine ? UI_PALETTE.paperLight : UI_PALETTE.paperDim) : '#343238';
       ctx.font = index === activeLine ? `bold 10px ${UI_ARCHIVE_FONT_STACK}` : `9px ${UI_ARCHIVE_FONT_STACK}`;
@@ -3835,9 +4708,12 @@ export class ZheYiShenGame {
     ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
     ctx.fillText('这一行出现时，等待已经成为他的童年。', 180, 550);
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.font = `9px ${UI_FONT_STACK}`;
     ctx.fillText(this.originAttempt > 1 ? '上一页没赶上，登记处正在重写' : '登记的人还没把这一页递回来', 180, 582);
-    drawRedStamp(ctx, 134, 598, 92, 28, '无法选择', 29, UI_PALETTE.oldRed);
+    drawRedStamp(
+      ctx, 134, 598, 92, 28, '无法选择', 29,
+      UI_PALETTE.oldRed, UI_PALETTE.paperLight, UI_PALETTE.night,
+    );
   }
 
   private renderOriginError(): void {
@@ -3853,7 +4729,7 @@ export class ZheYiShenGame {
     ctx.fillStyle = '#8f8a83'; ctx.font = '10px sans-serif'; ctx.fillText('没有使用兜底人物，也不会带着假故事开局。', 180, 336);
     this.panel(73, 395, 214, 70, '#a94559');
     ctx.fillStyle = '#f4eee2'; ctx.font = 'bold 15px sans-serif'; ctx.fillText('点击重新生成', 180, 437);
-    ctx.fillStyle = '#6f6c71'; ctx.font = '8px sans-serif'; ctx.fillText('Enter / 空格也可重试', 180, 501);
+    ctx.fillStyle = '#6f6c71'; ctx.font = '9px sans-serif'; ctx.fillText('Enter / 空格也可重试', 180, 501);
   }
 
   private renderFateEvent(): void {
@@ -3920,15 +4796,18 @@ export class ZheYiShenGame {
       ? (dragRatio > 0 ? UI_PALETTE.oldRed : UI_PALETTE.hospitalBlueGray)
       : UI_PALETTE.oldRed;
     drawArchiveFrame(ctx, -144, -210, 288, 406, UI_PALETTE.paper, UI_PALETTE.ink, cardAccent);
+    uiTextures.drawPanelFrame(ctx, -144, -210, 288, 406, 0.3);
     drawPaperFold(ctx, 118, -207, 22, UI_PALETTE.paper, '#b8ad99', UI_PALETTE.ink);
     ctx.globalAlpha = cardAlpha * 0.16;
     drawDeterministicWear(ctx, -137, -203, 274, 392, 301 + this.encounterIndex, 7, '#897f71', 1);
     ctx.globalAlpha = cardAlpha;
-    ctx.textAlign = 'center';
+    ctx.textAlign = 'left';
     ctx.fillStyle = '#6b6358';
-    ctx.font = `7px ${UI_FONT_STACK}`;
-    ctx.fillText(`${AGE_LABELS[this.encounterIndex] ?? '这一生'} · 第 ${this.stats.fateChoices + 1} 次命运`, 0, -184);
-    drawRedStamp(ctx, 46, -173, 82, 28, '事实已落账', 19 + this.encounterIndex, UI_PALETTE.oldRed);
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.fillText(`${AGE_LABELS[this.encounterIndex] ?? '这一生'} · 第 ${this.stats.fateChoices + 1} 次命运`, -96, -184);
+    sceneArt.drawFateProfile(ctx, event.profile, -132, -200, 28, 0.9);
+    drawRedStamp(ctx, 46, -198, 82, 24, '事实已落账', 19 + this.encounterIndex, UI_PALETTE.oldRed);
+    ctx.textAlign = 'center';
     ctx.fillStyle = UI_PALETTE.ink;
     ctx.font = `bold 18px ${UI_ARCHIVE_FONT_STACK}`;
     this.wrapText(event.title, 0, -137, 226, 22, 2);
@@ -3945,11 +4824,11 @@ export class ZheYiShenGame {
       ctx.font = `bold 11px ${UI_ARCHIVE_FONT_STACK}`;
       ctx.fillText('这句话已经说出口。', 0, 122);
       ctx.fillStyle = '#6b6358';
-      ctx.font = `8px ${UI_FONT_STACK}`;
+      ctx.font = `9px ${UI_FONT_STACK}`;
       ctx.fillText('现实正在决定它留下什么', 0, 143);
     } else {
       ctx.fillStyle = '#5e574e';
-      ctx.font = `8px ${UI_ARCHIVE_FONT_STACK}`;
+      ctx.font = `9px ${UI_ARCHIVE_FONT_STACK}`;
       ctx.fillText('无论怎么回应，这一行都不会被擦掉。', 0, 126);
       if (committed) {
         ctx.fillStyle = dragRatio > 0 ? UI_PALETTE.oldRed : UI_PALETTE.hospitalBlueGray;
@@ -3964,19 +4843,46 @@ export class ZheYiShenGame {
       ctx.globalAlpha = optionAlpha;
       drawResponseMarker(
         ctx, 8, 510, 168, 'swallow', `咽下 · ${event.swallow.label}`,
-        this.fateStatsLine(event.swallow.stats) || '让它进入身体',
+        this.fateResponseMechanics(event.swallow),
       );
       drawResponseMarker(
         ctx, 184, 510, 168, 'exhale', `吐出 · ${event.exhale.label}`,
-        this.fateStatsLine(event.exhale.stats) || '把回应送回世界',
+        this.fateResponseMechanics(event.exhale),
       );
       ctx.restore();
+    }
+
+    if (this.fateFreeWaiting && this.fateFreeWaitElapsed >= FATE_FREE_CANCEL_DELAY) {
+      drawCutCornerPanel(
+        ctx,
+        FATE_FREE_CANCEL_RECT.x,
+        FATE_FREE_CANCEL_RECT.y,
+        FATE_FREE_CANCEL_RECT.width,
+        FATE_FREE_CANCEL_RECT.height,
+        UI_PALETTE.nightRaised,
+        UI_PALETTE.paperDim,
+        2,
+        1,
+      );
+      uiTextures.drawButtonFrame(
+        ctx,
+        FATE_FREE_CANCEL_RECT.x,
+        FATE_FREE_CANCEL_RECT.y,
+        FATE_FREE_CANCEL_RECT.width,
+        FATE_FREE_CANCEL_RECT.height,
+        0.5,
+      );
+      ctx.textAlign = 'center';
+      ctx.fillStyle = UI_PALETTE.paperLight;
+      ctx.font = `bold 9px ${UI_FONT_STACK}`;
+      ctx.fillText('不等回声了', 180, FATE_FREE_CANCEL_RECT.y + 19);
     }
 
     if (!this.fateResultDirection && !this.fateFreeWaiting && armed) {
       ctx.save();
       ctx.globalAlpha = optionAlpha;
       drawCutCornerPanel(ctx, 105, 568, 150, 30, UI_PALETTE.nightRaised, UI_PALETTE.raincoatYellow, 2, 1);
+      uiTextures.drawButtonFrame(ctx, 105, 568, 150, 30, 0.66);
       ctx.textAlign = 'center';
       ctx.fillStyle = UI_PALETTE.raincoatYellow;
       ctx.font = `bold 9px ${UI_FONT_STACK}`;
@@ -3986,7 +4892,7 @@ export class ZheYiShenGame {
 
     ctx.textAlign = 'center';
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `7px ${UI_FONT_STACK}`;
+    ctx.font = `9px ${UI_FONT_STACK}`;
     ctx.fillText('事情不可重抽', 180, 625);
   }
 
@@ -3995,6 +4901,7 @@ export class ZheYiShenGame {
     const direction = this.fateResultDirection;
     if (!direction) return;
     const response = event[direction];
+    const accent = direction === 'swallow' ? UI_PALETTE.hospitalBlueGray : UI_PALETTE.oldRed;
     const fadeIn = this.clamp((1.1 - this.fateResultMinTimer) / 0.3, 0, 1);
     applyPixelDiscipline(ctx);
     ctx.fillStyle = UI_PALETTE.night;
@@ -4002,218 +4909,75 @@ export class ZheYiShenGame {
     drawLifeChapterTrack(ctx, 30, 72, 300, 8, this.encounterIndex + 1, '降生|童年|少年|青年|成年|中年|老年|死亡', 0);
     ctx.save();
     ctx.globalAlpha = fadeIn;
-    ctx.translate(180, 310);
-    drawArchiveFrame(
-      ctx, -154, -180, 308, 342, UI_PALETTE.paper, UI_PALETTE.ink,
-      direction === 'swallow' ? UI_PALETTE.hospitalBlueGray : UI_PALETTE.oldRed,
-    );
+    drawArchiveFrame(ctx, 20, 184, 320, 258, UI_PALETTE.paper, UI_PALETTE.ink, accent);
+    uiTextures.drawPanelFrame(ctx, 20, 184, 320, 258, 0.28);
+    uiTextures.drawPaperEdge(ctx, 'receipt', 30, 425, 300, 17, 0.62);
     ctx.globalAlpha = fadeIn * 0.15;
-    drawDeterministicWear(ctx, -147, -173, 294, 328, 930 + this.stats.fateChoices, 7, '#897f71', 1);
+    drawDeterministicWear(ctx, 27, 191, 306, 240, 930 + this.stats.fateChoices, 7, '#897f71', 1);
     ctx.globalAlpha = fadeIn;
-    ctx.textAlign = 'center';
+    ctx.textAlign = 'left';
     ctx.fillStyle = '#6b6358';
-    ctx.font = `7px ${UI_FONT_STACK}`;
-    ctx.fillText(`${AGE_LABELS[this.encounterIndex] ?? '这一生'} · 命运回执`, 0, -151);
-    drawRedStamp(
-      ctx, 53, -137, 80, 28,
-      direction === 'swallow' ? '已经咽下' : '已经吐出',
-      74, direction === 'swallow' ? UI_PALETTE.hospitalBlueGray : UI_PALETTE.oldRed,
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    sceneArt.drawFateProfile(ctx, event.profile, 31, 198, 28, 0.88);
+    ctx.fillText(
+      this.fitText(`${AGE_LABELS[this.encounterIndex] ?? '这一生'} · ${event.title}`, 164),
+      66,
+      214,
     );
+    drawRedStamp(
+      ctx, 246, 198, 80, 24,
+      direction === 'swallow' ? '已经咽下' : '已经吐出',
+      74, accent,
+    );
+    drawStitchDivider(ctx, 36, 233, 288, 'horizontal', '#81786b', 5, 4);
+    ctx.textAlign = 'center';
     ctx.fillStyle = UI_PALETTE.ink;
     ctx.font = `bold 16px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText(`「${response.label}」`, 0, -96, 240, 19, 2);
-    let cursorY = -48;
+    this.wrapText(`「${response.label}」`, 180, 265, 266, 19, 2);
+    let cursorY = this.fatePlayerText ? 296 : 318;
     if (this.fatePlayerText) {
       ctx.fillStyle = '#715c35';
       ctx.font = `9px ${UI_ARCHIVE_FONT_STACK}`;
-      this.wrapText(`你说：「${this.fatePlayerText}」`, 0, cursorY, 236, 14, 2);
-      cursorY += 36;
+      this.wrapText(`你说：「${this.fatePlayerText}」`, 180, cursorY, 270, 14, 2);
+      cursorY += 30;
     }
     ctx.fillStyle = '#3f3a34';
     ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText(response.result, 0, cursorY, 250, 17, 6);
-    const resultStats = this.fateStatsLine(response.stats);
-    if (resultStats) {
-      drawStitchDivider(ctx, -116, 102, 232, 'horizontal', '#81786b', 5, 4);
-      ctx.fillStyle = '#725e3e';
-      ctx.font = `bold 9px ${UI_FONT_STACK}`;
-      ctx.fillText(resultStats, 0, 128);
-    }
-    if (this.fateResultMinTimer <= 0) {
-      ctx.fillStyle = UI_PALETTE.ink;
-      ctx.font = `bold 10px ${UI_ARCHIVE_FONT_STACK}`;
-      ctx.fillText('收好回执，继续走', 0, 151);
-    }
+    this.wrapText(response.result, 180, cursorY, 276, 16, 4);
+    drawStitchDivider(ctx, 56, 393, 248, 'horizontal', '#81786b', 5, 4);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#725e3e';
+    ctx.font = `bold 9px ${UI_FONT_STACK}`;
+    ctx.fillText('留下', 48, 416);
+    ctx.fillStyle = '#514b43';
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    ctx.fillText(this.fitText(this.fateResponseMechanics(response), 230), 88, 416);
     ctx.restore();
+
+    if (this.fateResultMinTimer <= 0) {
+      drawCutCornerPanel(ctx, 90, 470, 180, 44, UI_PALETTE.nightRaised, accent, 2, 1);
+      uiTextures.drawButtonFrame(ctx, 90, 470, 180, 44, 0.68);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = UI_PALETTE.paperLight;
+      ctx.font = `bold 12px ${UI_ARCHIVE_FONT_STACK}`;
+      ctx.fillText('收好回执，继续走', 180, 497);
+    } else {
+      ctx.textAlign = 'center';
+      ctx.fillStyle = UI_PALETTE.paperDim;
+      ctx.font = `9px ${UI_ARCHIVE_FONT_STACK}`;
+      ctx.fillText('回执正在落字', 180, 496);
+    }
     ctx.textAlign = 'center';
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `8px ${UI_FONT_STACK}`;
-    ctx.fillText('回应会留进身体，也会改变下一口气', 180, 624);
-  }
-
-  private renderFateEventLegacy(): void {
-    const event = this.currentFate;
-    const ctx = this.ctx;
-    if (!event) {
-      ctx.fillStyle = 'rgba(7,8,11,.82)'; ctx.fillRect(0, 0, W, H);
-      ctx.textAlign = 'center'; ctx.fillStyle = '#d7cfc2'; ctx.font = 'bold 18px sans-serif'; ctx.fillText('有件事正在发生', 180, 270);
-      ctx.fillStyle = '#c2a85f'; ctx.font = '9px sans-serif'; ctx.fillText('AI正在根据这一身经历编排命运…', 180, 302);
-      ctx.fillStyle = '#77747a'; ctx.font = '8px sans-serif'; ctx.fillText('超时会自动使用本地保底，不会卡住游戏', 180, 330);
-      return;
-    }
-    const dealT = this.clamp(this.fateAnim / 0.55, 0, 1);
-    const dealEase = 1 - Math.pow(1 - dealT, 3);
-    const optionAlpha = this.clamp((this.fateAnim - 0.62) / 0.35, 0, 1);
-    const armed = this.fateAnim >= 0.75;
-    const dragRatio = this.clamp(this.fateDragX / 150, -1, 1);
-    const committed = Math.abs(this.fateDragX) >= 96;
-    const exiting = Boolean(this.fateResultDirection) && this.fateExitTimer > 0;
-    const exitT = exiting ? 1 - this.fateExitTimer / 0.35 : 0;
-    const inResult = Boolean(this.fateResultDirection) && this.fateExitTimer <= 0;
-
-    ctx.fillStyle = 'rgba(7,8,11,.6)';
-    ctx.fillRect(0, 0, W, H);
-
-    if (!this.fateResultDirection) {
-      const leftAlpha = Math.max(0.1, -dragRatio) * optionAlpha;
-      const rightAlpha = Math.max(0.1, dragRatio) * optionAlpha;
-      ctx.fillStyle = `rgba(78,103,124,${leftAlpha * 0.55})`; ctx.fillRect(0, 0, W / 2, H);
-      ctx.fillStyle = `rgba(142,58,72,${rightAlpha * 0.55})`; ctx.fillRect(W / 2, 0, W / 2, H);
-      ctx.textAlign = 'center';
-      ctx.font = committed && dragRatio < 0 ? 'bold 22px sans-serif' : 'bold 14px sans-serif';
-      ctx.fillStyle = `rgba(205,222,228,${leftAlpha})`; ctx.fillText('咽下', 57, 320);
-      ctx.font = committed && dragRatio > 0 ? 'bold 22px sans-serif' : 'bold 14px sans-serif';
-      ctx.fillStyle = `rgba(244,202,196,${rightAlpha})`; ctx.fillText('吐出', 303, 320);
-    }
-
-    if (inResult) {
-      this.renderFateResultCard(event);
-      return;
-    }
-
-    const exitSign = this.fateResultDirection === 'swallow' ? -1 : 1;
-    const cardX = 180 + this.fateDragX + (exiting ? exitSign * exitT * 430 : 0);
-    const cardY = 302 - (1 - dealEase) * 320;
-    const rotation = dragRatio * 0.075 + (1 - dealEase) * -0.14 + (exiting ? exitSign * exitT * 0.5 : 0);
-
-    ctx.save();
-    ctx.globalAlpha = exiting ? 1 - exitT : 1;
-    ctx.translate(cardX, cardY);
-    ctx.rotate(rotation);
-    ctx.fillStyle = 'rgba(16,16,21,.98)'; ctx.fillRect(-142, -215, 284, 430);
-    ctx.strokeStyle = committed
-      ? (dragRatio > 0 ? '#c46672' : '#7d9db5')
-      : event.profile === '微光' ? '#b7a45e' : event.profile === '反噬' ? '#a33f51' : '#77727b';
-    ctx.lineWidth = committed ? 3 : 2;
-    ctx.strokeRect(-140, -213, 280, 426);
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#77727a'; ctx.font = '8px sans-serif'; ctx.fillText(`${AGE_LABELS[this.encounterIndex] ?? '这一生'} · ${event.profile} · ${this.aiStateLabel(this.aiFateState)}`, 0, -185);
-    ctx.fillStyle = '#ede5d8'; ctx.font = 'bold 19px sans-serif'; this.wrapText(event.title, 0, -150, 230, 24, 2);
-    ctx.fillStyle = '#bbb4aa'; ctx.font = '10px sans-serif'; this.wrapText(event.fact, 0, -90, 230, 17, 6);
-
-    ctx.strokeStyle = '#3e3e46'; ctx.beginPath(); ctx.moveTo(-112, 30); ctx.lineTo(112, 30); ctx.stroke();
-    if (this.fateFreeWaiting) {
-      ctx.textAlign = 'center'; ctx.fillStyle = '#c9c2b5'; ctx.font = 'bold 12px sans-serif';
-      ctx.fillText('他在想怎么把这句话说出口…', 0, 100);
-      ctx.fillStyle = '#8a8589'; ctx.font = '8px sans-serif';
-      ctx.fillText('命运正在把它圆进现实里', 0, 124);
-    } else {
-      ctx.save();
-      ctx.globalAlpha *= optionAlpha;
-      ctx.textAlign = 'left'; ctx.fillStyle = '#9eb4c4'; ctx.font = 'bold 12px sans-serif'; ctx.fillText(`← 咽下 · ${event.swallow.label}`, -116, 66);
-      ctx.fillStyle = '#898f98'; ctx.font = '8px sans-serif'; this.wrapText(event.swallow.hint, -116, 85, 215, 13, 2);
-      const swallowStats = this.fateStatsLine(event.swallow.stats);
-      if (swallowStats) {
-        ctx.fillStyle = '#9db8a4'; ctx.font = 'bold 8px sans-serif'; ctx.fillText(swallowStats, -116, 114);
-      }
-      ctx.textAlign = 'right'; ctx.fillStyle = '#d8878f'; ctx.font = 'bold 12px sans-serif'; ctx.fillText(`${event.exhale.label} · 吐出 →`, 116, 132);
-      ctx.fillStyle = '#9b898c'; ctx.font = '8px sans-serif'; this.wrapText(event.exhale.hint, 116, 151, 215, 13, 2);
-      const exhaleStats = this.fateStatsLine(event.exhale.stats);
-      if (exhaleStats) {
-        ctx.fillStyle = '#cf9d9d'; ctx.font = 'bold 8px sans-serif'; ctx.fillText(exhaleStats, 116, 180);
-      }
-      ctx.restore();
-      if (committed) {
-        ctx.textAlign = 'center';
-        ctx.fillStyle = dragRatio > 0 ? '#e8b8be' : '#bcd2e2';
-        ctx.font = 'bold 12px sans-serif';
-        ctx.fillText(dragRatio > 0 ? '松手 · 吐出' : '松手 · 咽下', 0, 200);
-      }
-    }
-    ctx.restore();
-
-    if (!this.fateResultDirection && !this.fateFreeWaiting && armed) {
-      ctx.save();
-      ctx.globalAlpha = optionAlpha;
-      ctx.fillStyle = 'rgba(20,20,26,.92)';
-      ctx.fillRect(96, 521, 168, 24);
-      ctx.strokeStyle = '#8d6f3a'; ctx.lineWidth = 1; ctx.strokeRect(96.5, 521.5, 167, 23);
-      ctx.textAlign = 'center'; ctx.fillStyle = '#c9ad68'; ctx.font = 'bold 10px sans-serif';
-      ctx.fillText('✎ 亲口回应命运', 180, 537);
-      ctx.restore();
-    }
-
-    this.renderPoisonStrip(544);
-    ctx.textAlign = 'center'; ctx.fillStyle = '#8a8688'; ctx.font = '8px sans-serif';
-    ctx.fillText('事情不可重抽 · 把牌拖到底才作数', 180, 624);
-  }
-
-  private renderFateResultCardLegacy(event: FateEvent): void {
-    const ctx = this.ctx;
-    const direction = this.fateResultDirection;
-    if (!direction) return;
-    const response = event[direction];
-    const fadeIn = this.clamp((1.1 - this.fateResultMinTimer) / 0.3, 0, 1);
-    ctx.save();
-    ctx.globalAlpha = fadeIn;
-    ctx.translate(180, 302);
-    ctx.fillStyle = 'rgba(16,16,21,.98)'; ctx.fillRect(-142, -215, 284, 430);
-    ctx.strokeStyle = direction === 'swallow' ? '#7d9db5' : '#c46672';
-    ctx.lineWidth = 2; ctx.strokeRect(-140, -213, 280, 426);
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#77727a'; ctx.font = '8px sans-serif'; ctx.fillText(`${AGE_LABELS[this.encounterIndex] ?? '这一生'} · 命运已落账`, 0, -185);
-    ctx.fillStyle = direction === 'swallow' ? '#9bb1c1' : '#d68b91';
-    ctx.font = 'bold 17px sans-serif';
-    ctx.fillText(direction === 'swallow' ? '你咽下了它' : '你把它吐了出来', 0, -152);
-    ctx.fillStyle = '#c4b98a'; ctx.font = 'bold 11px sans-serif';
-    this.wrapText(`「${response.label}」`, 0, -124, 240, 15, 1);
-    let cursorY = -92;
-    if (this.fatePlayerText) {
-      ctx.fillStyle = '#c9ad68'; ctx.font = '9px sans-serif';
-      this.wrapText(`你说：「${this.fatePlayerText}」`, 0, cursorY, 236, 14, 2);
-      cursorY += 36;
-    }
-    ctx.fillStyle = '#d6cfc3'; ctx.font = '11px sans-serif';
-    this.wrapText(response.result, 0, cursorY, 236, 19, 7);
-    const resultStats = this.fateStatsLine(response.stats);
-    const poisonBits = (Object.entries(response.poison) as Array<[PoisonKey, number]>)
-      .filter(([, amount]) => amount !== 0)
-      .map(([key, amount]) => `${POISON_LABELS[key]}${amount > 0 ? '+' : ''}${amount}`)
-      .join(' · ');
-    let footY = 150;
-    if (resultStats) {
-      ctx.fillStyle = '#c4b98a'; ctx.font = 'bold 11px sans-serif';
-      ctx.fillText(resultStats, 0, footY);
-      footY += 22;
-    }
-    if (poisonBits) {
-      ctx.fillStyle = '#be6974'; ctx.font = 'bold 10px sans-serif';
-      ctx.fillText(poisonBits, 0, footY);
-    }
-    if (this.fateResultMinTimer <= 0) {
-      ctx.fillStyle = 'rgba(232,225,211,.85)';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.fillText('点击继续', 0, 200);
-    }
-    ctx.restore();
-    ctx.textAlign = 'center'; ctx.fillStyle = '#8a8688'; ctx.font = '8px sans-serif';
-    ctx.fillText('回应会留进身体，也会改变下一口气', 180, 624);
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    ctx.fillText('回应会留进身体，也会改变下一口气', 180, 602);
   }
 
   private renderBattle(): void {
     this.renderWorld();
     this.renderDarkness();
     this.renderVignette();
+    this.renderJoystick();
     this.renderBattleOverlay();
     this.renderComboReveal();
     this.renderOriginBadge();
@@ -4223,9 +4987,11 @@ export class ZheYiShenGame {
     for (const enemy of this.enemies) {
       if (!enemy.dead && (enemy.elite || enemy.boss)) this.renderEdgeHint(enemy.x, enemy.y, '#df5a69');
     }
+    this.renderNearestThreatHint();
     this.renderCaption();
     this.renderEliteAlert();
-    this.renderJoystick();
+    this.renderSaveEffect();
+    this.renderChapterTransition();
     if (this.toastTime > 0 && this.toast) {
       const toastAlpha = this.clamp(this.toastTime / 0.32, 0, 1);
       this.ctx.save();
@@ -4235,7 +5001,7 @@ export class ZheYiShenGame {
       this.ctx.fillRect(74, 76, 14, 2);
       this.ctx.fillStyle = '#e7e0d3';
       this.ctx.textAlign = 'center';
-      this.ctx.font = `bold 8px ${UI_FONT_STACK}`;
+      this.ctx.font = `bold 9px ${UI_FONT_STACK}`;
       this.ctx.fillText(this.toast, 180, 87);
       this.ctx.restore();
     }
@@ -4255,6 +5021,62 @@ export class ZheYiShenGame {
     ctx.textAlign = 'center';
     ctx.font = 'bold 11px sans-serif';
     ctx.fillText(`精英逼近 · ${this.eliteAlertName}`, 180, 115);
+    ctx.restore();
+  }
+
+  private renderChapterTransition(): void {
+    if (this.transitionTimer <= 0) return;
+    const nextIndex = this.encounterIndex + 1;
+    const next = STAGES[nextIndex];
+    if (!next) return;
+    const ctx = this.ctx;
+    const progress = this.clamp(1 - this.transitionTimer / STAGE_TRANSITION_DURATION, 0, 1);
+    const alpha = Math.min(1, progress / 0.16, (1 - progress) / 0.16);
+    const wipe = this.clamp(progress / 0.72, 0, 1);
+    const bridge = CHAPTER_BRIDGES[this.encounterIndex] ?? '旧的一页还没翻完，新的一页已经落下';
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, alpha);
+    // Keep the world and the player visible. The next chapter grows through
+    // the current one; this is a change of age, not a cut to a horror card.
+    ctx.fillStyle = 'rgba(232,225,211,.055)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(17,17,22,.66)';
+    ctx.fillRect(0, 216, W, 210);
+    ctx.fillStyle = 'rgba(216,208,193,.08)';
+    ctx.fillRect(0, 216, Math.round(W * wipe), 210);
+    sceneArt.drawChapterStrip(ctx, nextIndex, 64, 228, 232, 174, 0.34);
+    ctx.fillStyle = 'rgba(17,17,22,.22)';
+    ctx.fillRect(64, 228, 232, 174);
+    ctx.fillStyle = UI_PALETTE.oldRed;
+    ctx.fillRect(0, 215, Math.round(W * wipe), 1);
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.fillRect(W - Math.round(W * wipe), 426, Math.round(W * wipe), 1);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.fillText(`第 ${nextIndex + 1} 章 · 发生在他身上的事`, 180, 247);
+    ctx.fillStyle = UI_PALETTE.paperLight;
+    ctx.font = `bold 19px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText(next.chapter, 180, 279);
+    ctx.fillStyle = UI_PALETTE.oldRed;
+    ctx.fillRect(118, 291, 124, 2);
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `bold 10px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText(next.title, 180, 311);
+    ctx.fillStyle = UI_PALETTE.paperLight;
+    ctx.font = `10px ${UI_FONT_STACK}`;
+    next.situation.forEach((line, lineIndex) => {
+      ctx.fillText(this.fitText(line, 286), 180, 331 + lineIndex * 15);
+    });
+    ctx.fillStyle = 'rgba(201,183,124,.42)';
+    ctx.fillRect(128, 366, 104, 1);
+    ctx.fillStyle = '#c9b77c';
+    ctx.font = `9px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText(`这一章 · ${next.subtitle}`, 180, 385);
+    ctx.fillStyle = '#c9b77c';
+    ctx.globalAlpha *= 0.72;
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.fillText(bridge, 180, 416);
     ctx.restore();
   }
 
@@ -4288,7 +5110,7 @@ export class ZheYiShenGame {
     if (this.odBoost && this.odPenalty) {
       ctx.textAlign = 'left';
       ctx.fillStyle = '#d89cc2';
-      ctx.font = '7px sans-serif';
+      ctx.font = '8px sans-serif';
       ctx.fillText(`失真 ${this.odBoost}↑ ${this.odPenalty}↓`, 8, y - 6);
     }
     if (this.originBadgeExpanded) {
@@ -4356,18 +5178,18 @@ export class ZheYiShenGame {
     drawCutCornerPanel(ctx, 54, 594, 246, 40, 'rgba(18,18,24,.9)', '#4d494d', 2, 1);
     ctx.textAlign = 'left';
     ctx.fillStyle = UI_PALETTE.paperLight;
-    ctx.font = `bold 8px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.font = `bold 9px ${UI_ARCHIVE_FONT_STACK}`;
     ctx.fillText('《一口气》', 64, 608);
     drawStatusIcon(ctx, 113, 600, 'breath-power', 1, UI_PALETTE.breath);
     ctx.fillStyle = UI_PALETTE.oldRed;
-    ctx.font = `bold 9px ${UI_FONT_STACK}`;
+    ctx.font = `bold 10px ${UI_FONT_STACK}`;
     ctx.fillText(`劲 ${norm(vector.damage, BASE_VECTOR.damage)}`, 127, 608);
     ctx.fillStyle = UI_PALETTE.hospitalBlueGray;
     ctx.fillText(`速 ${norm(1 / vector.fireInterval, 1 / BASE_VECTOR.fireInterval)}`, 187, 608);
     ctx.fillStyle = UI_PALETTE.raincoatYellow;
     ctx.fillText(`程 ${norm(vector.range, BASE_VECTOR.range)}`, 247, 608);
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `7px ${UI_FONT_STACK}`;
+    ctx.font = `8px ${UI_FONT_STACK}`;
     const traits = [
       vector.pierce ? `穿${vector.pierce}` : '',
       vector.returning ? '回返' : '',
@@ -4377,7 +5199,7 @@ export class ZheYiShenGame {
 
     ctx.textAlign = 'right';
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `7px ${UI_FONT_STACK}`;
+    ctx.font = `8px ${UI_FONT_STACK}`;
     ctx.fillText(this.items.length ? `物证 ${this.items.length}` : '尚无物证', 350, 573);
     const visibleItems = this.items.slice(-6);
     visibleItems.forEach((id, index) => {
@@ -4392,62 +5214,338 @@ export class ZheYiShenGame {
     const stage = STAGES[this.encounterIndex];
     const remain = stage ? Math.max(0, stage.duration - this.battleTime) : 0;
     applyPixelDiscipline(ctx);
-    drawCutCornerPanel(ctx, 6, 6, 126, 39, 'rgba(16,16,21,.88)', '#4a4649', 2, 1);
+    const hudFill = this.highContrastHud ? 'rgba(8,8,11,.98)' : 'rgba(16,16,21,.88)';
+    const hudStroke = this.highContrastHud ? '#aaa297' : '#4a4649';
+    drawCutCornerPanel(ctx, 6, 6, 126, 39, hudFill, hudStroke, 2, 1);
     drawStatusIcon(ctx, 12, 12, 'life', 1, UI_PALETTE.oldRed);
     this.bar(26, 11, 96, 7, this.hero.hp / this.hero.maxHp, UI_PALETTE.oldRed);
     this.bar(26, 22, 96, 3, this.hero.block / 24, UI_PALETTE.raincoatYellow);
     ctx.textAlign = 'left';
     ctx.fillStyle = UI_PALETTE.paperLight;
-    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.font = `9px ${UI_FONT_STACK}`;
     ctx.fillText(`${Math.ceil(this.hero.hp)}/${this.hero.maxHp}`, 26, 38);
 
-    drawCutCornerPanel(ctx, 136, 6, 108, 39, 'rgba(16,16,21,.88)', '#4a4649', 2, 1);
+    drawCutCornerPanel(ctx, 136, 6, 108, 39, hudFill, hudStroke, 2, 1);
     ctx.textAlign = 'center';
-    ctx.font = `bold 9px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillStyle = UI_PALETTE.paperLight;
-    ctx.fillText(AGE_LABELS[this.encounterIndex] || '', 190, 20);
-    ctx.font = `7px ${UI_FONT_STACK}`;
-    ctx.fillStyle = UI_PALETTE.paperDim;
-    const combo = this.activeComboNames()[0];
-    const mid = stage?.end === 'final' && this.darkActive
-      ? '「到点了。」'
-      : combo
-        ? `《${combo}》`
-        : `${stage?.title || ''} · ${Math.ceil(remain)}`;
-    ctx.fillText(mid, 190, 36);
+    const activeBoss = this.enemies.find((enemy) => !enemy.dead && enemy.boss);
+    if (activeBoss) {
+      ctx.font = `bold 9px ${UI_ARCHIVE_FONT_STACK}`;
+      ctx.fillStyle = UI_PALETTE.paperLight;
+      ctx.fillText(this.fitText(activeBoss.name, 92), 190, 17);
+      this.bar(147, 23, 86, 5, activeBoss.hp / activeBoss.maxHp, UI_PALETTE.oldRed);
+      ctx.font = `8px ${UI_FONT_STACK}`;
+      ctx.fillStyle = UI_PALETTE.paperDim;
+      ctx.fillText(`${Math.ceil(activeBoss.hp)}/${activeBoss.maxHp}`, 190, 39);
+    } else {
+      ctx.font = `bold 10px ${UI_ARCHIVE_FONT_STACK}`;
+      ctx.fillStyle = UI_PALETTE.paperLight;
+      ctx.fillText(AGE_LABELS[this.encounterIndex] || '', 190, 20);
+      ctx.font = `8px ${UI_FONT_STACK}`;
+      ctx.fillStyle = UI_PALETTE.paperDim;
+      const combo = this.activeComboNames()[0];
+      const mid = stage?.end === 'final' && this.darkActive
+        ? '「到点了。」'
+        : combo
+          ? `《${combo}》`
+          : `${stage?.title || ''} · ${Math.ceil(remain)}`;
+      ctx.fillText(this.fitText(mid, 92), 190, 36);
+    }
 
-    drawCutCornerPanel(ctx, 248, 6, 106, 39, 'rgba(16,16,21,.88)', '#4a4649', 2, 1);
+    drawCutCornerPanel(ctx, 248, 6, 106, 39, hudFill, hudStroke, 2, 1);
     drawStatusIcon(ctx, 257, 13, 'coins', 1, UI_PALETTE.raincoatYellow);
     ctx.textAlign = 'left';
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `7px ${UI_FONT_STACK}`;
+    ctx.font = `8px ${UI_FONT_STACK}`;
     ctx.fillText('零钱', 274, 18);
     ctx.fillStyle = UI_PALETTE.raincoatYellow;
     ctx.font = `bold 10px ${UI_FONT_STACK}`;
     ctx.fillText(String(this.hero.coins), 274, 36);
     ctx.textAlign = 'right';
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `7px ${UI_FONT_STACK}`;
-    ctx.fillText('档案', 344, 20);
-    ctx.fillText(String(this.items.length).padStart(2, '0'), 344, 36);
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.fillText('物证', 320, 20);
+    ctx.fillText(String(this.items.length).padStart(2, '0'), 320, 36);
 
     drawLifeChapterTrack(ctx, 18, 52, 324, STAGES.length, this.encounterIndex, AGE_LABELS.join('|'), 0);
+  }
+
+  private renderPauseButton(): void {
+    const ctx = this.ctx;
+    applyPixelDiscipline(ctx);
+    ctx.save();
+    ctx.fillStyle = 'rgba(10,10,14,.72)';
+    ctx.fillRect(PAUSE_BUTTON_RECT.x + 1, PAUSE_BUTTON_RECT.y + 1, PAUSE_BUTTON_RECT.width - 2, PAUSE_BUTTON_RECT.height - 2);
+    ctx.strokeStyle = this.highContrastHud ? UI_PALETTE.paperDim : '#5b565b';
+    ctx.strokeRect(PAUSE_BUTTON_RECT.x + 1.5, PAUSE_BUTTON_RECT.y + 1.5, PAUSE_BUTTON_RECT.width - 3, PAUSE_BUTTON_RECT.height - 3);
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.fillRect(PAUSE_BUTTON_RECT.x + 9, PAUSE_BUTTON_RECT.y + 12, 3, 14);
+    ctx.fillRect(PAUSE_BUTTON_RECT.x + 16, PAUSE_BUTTON_RECT.y + 12, 3, 14);
+    ctx.restore();
+  }
+
+  private renderPauseOverlay(): void {
+    const ctx = this.ctx;
+    applyPixelDiscipline(ctx);
+    ctx.save();
+    ctx.fillStyle = 'rgba(5,5,8,.68)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(13,13,18,.97)';
+    ctx.fillRect(118, 18, 242, 604);
+    ctx.fillStyle = '#252229';
+    ctx.fillRect(118, 18, 2, 604);
+    ctx.fillStyle = UI_PALETTE.oldRed;
+    ctx.fillRect(123, 18, 1, 604);
+    uiTextures.drawArchiveDecoration(ctx, 'clip', 324, 24, 25, 0.52, 0.08);
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = UI_PALETTE.paperLight;
+    ctx.font = `bold 17px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText('档案暂存', 136, 47);
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.fillText('世界夹在这一页，时间没有往前走。', 136, 67);
+    drawStitchDivider(ctx, 132, 76, 204, 'horizontal', '#4d494d', 4, 3);
+
+    const tabLabels = ['这一身', '出生', '命运', '设置'];
+    tabLabels.forEach((label, index) => {
+      const x = PAUSE_TAB_RECT.x + index * 51;
+      const active = this.pauseTab === PAUSE_TABS[index];
+      ctx.fillStyle = active ? '#2e2930' : '#18171c';
+      ctx.fillRect(x, PAUSE_TAB_RECT.y, 49, PAUSE_TAB_RECT.height);
+      ctx.fillStyle = active ? UI_PALETTE.oldRed : '#454147';
+      ctx.fillRect(x, PAUSE_TAB_RECT.y + PAUSE_TAB_RECT.height - 2, 49, 2);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = active ? UI_PALETTE.paperLight : UI_PALETTE.paperDim;
+      ctx.font = `bold 9px ${UI_FONT_STACK}`;
+      ctx.fillText(label, x + 24, PAUSE_TAB_RECT.y + 19);
+    });
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(132, 126, 204, 390);
+    ctx.clip();
+    if (this.pauseTab === 'body') this.renderPauseBody();
+    else if (this.pauseTab === 'origin') this.renderPauseOrigin();
+    else if (this.pauseTab === 'fates') this.renderPauseFates();
+    else this.renderPauseSettings();
+    ctx.restore();
+
+    drawCutCornerPanel(
+      ctx, PAUSE_CONTINUE_RECT.x, PAUSE_CONTINUE_RECT.y, PAUSE_CONTINUE_RECT.width, PAUSE_CONTINUE_RECT.height,
+      UI_PALETTE.nightRaised, UI_PALETTE.hospitalBlueGray, 2, 1,
+    );
+    uiTextures.drawButtonFrame(
+      ctx, PAUSE_CONTINUE_RECT.x, PAUSE_CONTINUE_RECT.y, PAUSE_CONTINUE_RECT.width, PAUSE_CONTINUE_RECT.height, 0.68,
+    );
+    ctx.textAlign = 'center';
+    ctx.fillStyle = UI_PALETTE.paperLight;
+    ctx.font = `bold 12px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText('继续往前走', 232, 557);
+
+    const holdProgress = this.pauseEndHoldStarted > 0
+      ? this.clamp((performance.now() - this.pauseEndHoldStarted) / 1000, 0, 1)
+      : 0;
+    ctx.fillStyle = '#17151a';
+    ctx.fillRect(PAUSE_END_RECT.x, PAUSE_END_RECT.y, PAUSE_END_RECT.width, PAUSE_END_RECT.height);
+    ctx.fillStyle = 'rgba(159,53,72,.42)';
+    ctx.fillRect(PAUSE_END_RECT.x, PAUSE_END_RECT.y, Math.round(PAUSE_END_RECT.width * holdProgress), PAUSE_END_RECT.height);
+    ctx.strokeStyle = '#5f3039';
+    ctx.strokeRect(PAUSE_END_RECT.x + 0.5, PAUSE_END_RECT.y + 0.5, PAUSE_END_RECT.width - 1, PAUSE_END_RECT.height - 1);
+    ctx.fillStyle = '#b6aca4';
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.fillText('按住封存为未完', 232, 601);
+    ctx.restore();
+  }
+
+  private renderPauseBody(): void {
+    const ctx = this.ctx;
+    const vector = this.computeAttackVector();
+    const norm = (value: number, base: number) => (value / base).toFixed(2);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.fillText(`身上物证 · ${this.items.length}`, 138, 142);
+    ctx.fillStyle = UI_PALETTE.paperLight;
+    ctx.font = `bold 9px ${UI_FONT_STACK}`;
+    ctx.fillText(`劲 ${norm(vector.damage, BASE_VECTOR.damage)}`, 138, 164);
+    ctx.fillText(`速 ${norm(1 / vector.fireInterval, 1 / BASE_VECTOR.fireInterval)}`, 205, 164);
+    ctx.fillText(`程 ${norm(vector.range, BASE_VECTOR.range)}`, 270, 164);
+    drawStitchDivider(ctx, 138, 178, 188, 'horizontal', '#4d494d', 4, 3);
+    const visible = this.items.slice(-8).reverse();
+    if (!visible.length) {
+      ctx.fillStyle = '#77727a';
+      ctx.font = `8px ${UI_ARCHIVE_FONT_STACK}`;
+      this.wrapText('还没有什么穿在身上。', 138, 205, 188, 12, 2);
+      return;
+    }
+    visible.forEach((id, index) => {
+      const item = getItem(id);
+      const y = 204 + index * 37;
+      this.drawItemSymbol(id, 150, y + 8, 7);
+      ctx.fillStyle = UI_PALETTE.paper;
+      ctx.font = `bold 8px ${UI_ARCHIVE_FONT_STACK}`;
+      ctx.fillText(item.name, 166, y + 7);
+      ctx.fillStyle = UI_PALETTE.paperDim;
+      ctx.font = `8px ${UI_FONT_STACK}`;
+      this.wrapText(item.positive, 166, y + 18, 160, 10, 2);
+    });
+  }
+
+  private renderPauseOrigin(): void {
+    const ctx = this.ctx;
+    ctx.textAlign = 'left';
+    if (!this.origin) {
+      ctx.fillStyle = UI_PALETTE.paperDim;
+      ctx.font = `8px ${UI_ARCHIVE_FONT_STACK}`;
+      ctx.fillText('出生档案还没有递回来。', 138, 148);
+      return;
+    }
+    ctx.fillStyle = UI_PALETTE.paperLight;
+    ctx.font = `bold 12px ${UI_ARCHIVE_FONT_STACK}`;
+    this.wrapText(this.origin.nickname ? `《${this.origin.nickname}》` : this.origin.title, 138, 148, 188, 15, 2);
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    this.wrapText(this.origin.nicknameReason || this.origin.title, 138, 181, 188, 11, 3);
+    drawStitchDivider(ctx, 138, 222, 188, 'horizontal', '#4d494d', 4, 3);
+    let y = 244;
+    for (const paragraph of this.origin.story) {
+      ctx.fillStyle = '#c7c0b4';
+      ctx.font = `8px ${UI_ARCHIVE_FONT_STACK}`;
+      this.wrapText(paragraph, 138, y, 188, 12, 4);
+      y += 58;
+    }
+    const traits = this.origin.traits.map((id) => getOriginTrait(id));
+    drawStitchDivider(ctx, 138, y, 188, 'horizontal', '#4d494d', 4, 3);
+    y += 21;
+    if (!traits.length) {
+      ctx.fillStyle = UI_PALETTE.paperDim;
+      ctx.fillText('出生那天，一切都是 1。', 138, y);
+    } else {
+      traits.forEach((trait, index) => {
+        ctx.fillStyle = trait.tone === 'positive' ? UI_PALETTE.raincoatYellow : trait.tone === 'negative' ? UI_PALETTE.oldRed : UI_PALETTE.paperDim;
+        ctx.font = `bold 8px ${UI_FONT_STACK}`;
+        ctx.fillText(`${trait.name} · ${trait.description}`, 138, y + index * 20);
+      });
+    }
+  }
+
+  private renderPauseFates(): void {
+    const ctx = this.ctx;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.fillText(`命运回执 · ${this.fateReceipts.length}`, 138, 142);
+    const receipts = this.fateReceipts.slice(-4).reverse();
+    if (!receipts.length) {
+      ctx.fillStyle = '#77727a';
+      ctx.font = `8px ${UI_ARCHIVE_FONT_STACK}`;
+      this.wrapText('还没有哪件事盖进这一页。', 138, 174, 188, 12, 2);
+      return;
+    }
+    receipts.forEach((receipt, index) => {
+      const y = 168 + index * 78;
+      ctx.fillStyle = receipt.direction === 'swallow' ? UI_PALETTE.hospitalBlueGray : UI_PALETTE.oldRed;
+      ctx.fillRect(138, y - 11, 3, 58);
+      ctx.fillStyle = UI_PALETTE.paperLight;
+      ctx.font = `bold 9px ${UI_ARCHIVE_FONT_STACK}`;
+      this.wrapText(receipt.event.title, 150, y, 176, 12, 2);
+      ctx.fillStyle = UI_PALETTE.paperDim;
+      ctx.font = `8px ${UI_FONT_STACK}`;
+      this.wrapText(receipt.result, 150, y + 27, 176, 10, 3);
+    });
+  }
+
+  private renderPauseSettings(): void {
+    const ctx = this.ctx;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.fillText('声音与显示', 142, 144);
+    this.renderPauseVolume();
+    this.renderPauseToggle(PAUSE_SETTING_HAPTICS_RECT, '振动', this.feedback.hapticsEnabled());
+    this.renderPauseToggle(PAUSE_SETTING_MOTION_RECT, '减少动态', this.reducedMotion);
+    this.renderPauseToggle(PAUSE_SETTING_CONTRAST_RECT, '高对比 HUD', this.highContrastHud);
+    drawStitchDivider(ctx, 142, 376, 180, 'horizontal', '#4d494d', 4, 3);
+    ctx.fillStyle = '#8d8783';
+    ctx.font = `9px ${UI_ARCHIVE_FONT_STACK}`;
+    this.wrapText('声音像纸页和呼吸，不替他解释这一生。', 142, 402, 180, 12, 3);
+  }
+
+  private renderPauseVolume(): void {
+    const ctx = this.ctx;
+    const rect = PAUSE_SETTING_VOLUME_RECT;
+    const volume = this.feedback.getVolume();
+    const trackX = rect.x + 78;
+    const trackY = rect.y + 18;
+    const trackWidth = rect.width - 92;
+    ctx.fillStyle = '#19181d';
+    ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+    ctx.strokeStyle = volume > 0 ? UI_PALETTE.raincoatYellow : '#48444a';
+    ctx.strokeRect(rect.x + 0.5, rect.y + 0.5, rect.width - 1, rect.height - 1);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = UI_PALETTE.paperLight;
+    ctx.font = `bold 9px ${UI_FONT_STACK}`;
+    ctx.fillText(volume > 0 ? '声音' : '静音', rect.x + 12, rect.y + 24);
+    ctx.fillStyle = '#4a4649';
+    ctx.fillRect(trackX, trackY, trackWidth, 3);
+    ctx.fillStyle = volume > 0 ? UI_PALETTE.raincoatYellow : '#555159';
+    ctx.fillRect(trackX, trackY, Math.max(volume > 0 ? 2 : 0, Math.round(trackWidth * volume)), 3);
+    ctx.fillStyle = volume > 0 ? UI_PALETTE.paperLight : '#858087';
+    ctx.fillRect(Math.round(trackX + trackWidth * volume) - 3, trackY - 4, 6, 11);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.fillText(`${Math.round(volume * 100)}%`, rect.x + rect.width - 10, rect.y + 34);
+  }
+
+  private renderPauseToggle(rect: { x: number; y: number; width: number; height: number }, label: string, active: boolean): void {
+    const ctx = this.ctx;
+    ctx.fillStyle = '#19181d';
+    ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+    ctx.strokeStyle = active ? UI_PALETTE.hospitalBlueGray : '#48444a';
+    ctx.strokeRect(rect.x + 0.5, rect.y + 0.5, rect.width - 1, rect.height - 1);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = UI_PALETTE.paperLight;
+    ctx.font = `bold 9px ${UI_FONT_STACK}`;
+    ctx.fillText(label, rect.x + 12, rect.y + 24);
+    ctx.fillStyle = active ? UI_PALETTE.hospitalBlueGray : '#555159';
+    ctx.fillRect(rect.x + rect.width - 42, rect.y + 12, 28, 14);
+    ctx.fillStyle = active ? UI_PALETTE.paperLight : '#858087';
+    ctx.fillRect(rect.x + rect.width - (active ? 26 : 39), rect.y + 14, 10, 10);
   }
 
   private renderEnemies(): void {
     for (const enemy of this.enemies) {
       if (enemy.dead) continue;
+      this.renderBossTelegraph(enemy);
       this.drawEnemy(enemy);
       const marked = enemy.elite || enemy.boss;
       if (marked || enemy.hp < enemy.maxHp) {
         const barWidth = marked ? 50 : 26;
         this.bar(enemy.x - barWidth / 2, enemy.y + enemy.radius + 7, barWidth, marked ? 5 : 3, enemy.hp / enemy.maxHp, marked ? '#d64e5e' : '#9d3d4b');
       }
-      if (marked) {
+      if (enemy.elite && !enemy.boss) {
         this.ctx.fillStyle = '#c9c3b9';
         this.ctx.font = 'bold 8px sans-serif';
         this.ctx.textAlign = 'center';
         this.ctx.fillText(enemy.name, enemy.x, enemy.y + enemy.radius + 22);
+      }
+      // 状态标记：冻结/挂账（已读）小图标浮在头顶
+      if (statusAtlas.ready) {
+        const marks: string[] = [];
+        if ((enemy.slowTimer ?? 0) > 0) marks.push('freeze');
+        if ((enemy.paralyzeTimer ?? 0) > 0) marks.push('paralyze');
+        if ((enemy.readTimer ?? 0) > 0) marks.push('read');
+        if ((enemy.loopTimer ?? 0) > 0) marks.push('loop');
+        marks.forEach((mark, order) => {
+          const icon = statusAtlas.named(mark);
+          if (!icon) return;
+          this.ctx.save();
+          this.ctx.globalAlpha = 0.9;
+          this.ctx.imageSmoothingEnabled = false;
+          this.ctx.drawImage(icon, enemy.x - 6 + (order - (marks.length - 1) / 2) * 14, enemy.y - enemy.radius - 20, 12, 12);
+          this.ctx.restore();
+        });
       }
     }
     for (const death of this.enemyDeaths) {
@@ -4460,6 +5558,118 @@ export class ZheYiShenGame {
         faceLeft: death.faceLeft,
       });
     }
+  }
+
+  private renderBossTelegraph(enemy: EnemyUnit): void {
+    if (!enemy.boss) return;
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+
+    if ((enemy.phaseFlashTimer ?? 0) > 0) {
+      const duration = enemy.type === 'silent-father' ? 1.2 : 1.1;
+      const progress = 1 - this.clamp((enemy.phaseFlashTimer ?? 0) / duration, 0, 1);
+      const radius = enemy.radius + 14 + progress * 72;
+      ctx.globalAlpha = 1 - progress;
+      ctx.strokeStyle = enemy.type === 'silent-father' ? '#d2b35f' : '#74647e';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(enemy.x, enemy.y, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      for (let index = 0; index < 7; index += 1) {
+        const angle = (index / 7) * Math.PI * 2 + progress * 0.35;
+        const inner = enemy.radius + 6;
+        ctx.beginPath();
+        ctx.moveTo(enemy.x + Math.cos(angle) * inner, enemy.y + Math.sin(angle) * inner);
+        ctx.lineTo(enemy.x + Math.cos(angle + 0.18) * radius, enemy.y + Math.sin(angle + 0.18) * radius);
+        ctx.stroke();
+      }
+    }
+
+    if (enemy.type === 'uniform-answer' && (enemy.mechTimer ?? 0) > 6.4) {
+      const progress = this.clamp(((enemy.mechTimer ?? 0) - 6.4) / 1.6, 0, 1);
+      ctx.globalAlpha = 0.35 + progress * 0.55;
+      ctx.strokeStyle = '#d05063';
+      ctx.fillStyle = 'rgba(159,42,59,.13)';
+      ctx.lineWidth = 2;
+      for (let index = 0; index < 3; index += 1) {
+        const x = enemy.x - 40 + index * 40;
+        const y = enemy.y + 34;
+        const size = 18 + progress * 8;
+        ctx.fillRect(Math.round(x - size), Math.round(y - size), Math.round(size * 2), Math.round(size * 2));
+        ctx.strokeRect(Math.round(x - size), Math.round(y - size), Math.round(size * 2), Math.round(size * 2));
+        ctx.beginPath();
+        ctx.moveTo(x - 8, y - 8); ctx.lineTo(x + 8, y + 8);
+        ctx.moveTo(x + 8, y - 8); ctx.lineTo(x - 8, y + 8);
+        ctx.stroke();
+      }
+    }
+
+    if (enemy.type === 'last-bus' && (enemy.phase ?? 0) === 1) {
+      const progress = this.clamp((enemy.mechTimer ?? 0) / 0.8, 0, 1);
+      const angle = Math.atan2(this.heroY - enemy.y, this.heroX - enemy.x);
+      ctx.translate(enemy.x, enemy.y);
+      ctx.rotate(angle);
+      ctx.globalAlpha = 0.2 + progress * 0.58;
+      ctx.fillStyle = '#b74958';
+      ctx.fillRect(12, -28, 390, 3);
+      ctx.fillRect(12, 25, 390, 3);
+      for (let distance = 42; distance < 390; distance += 46) {
+        ctx.fillRect(distance, -5, 18, 10);
+      }
+      ctx.fillStyle = 'rgba(202,75,91,.12)';
+      ctx.fillRect(12, -25, 390, 50);
+      ctx.restore();
+      return;
+    }
+
+    if (enemy.type === 'debt-collector' && (enemy.mechTimer ?? 0) > 5.5) {
+      const progress = this.clamp(((enemy.mechTimer ?? 0) - 5.5) / 1.5, 0, 1);
+      ctx.globalAlpha = 0.3 + progress * 0.55;
+      ctx.strokeStyle = '#d4865e';
+      ctx.fillStyle = 'rgba(146,70,49,.14)';
+      ctx.lineWidth = 2;
+      const width = 74 + progress * 12;
+      const height = 42 + progress * 8;
+      ctx.fillRect(this.heroX - width / 2, this.heroY - height / 2, width, height);
+      ctx.strokeRect(this.heroX - width / 2, this.heroY - height / 2, width, height);
+      ctx.fillRect(this.heroX - width / 2 + 8, this.heroY - 3, width - 16, 2);
+      ctx.fillRect(this.heroX - width / 2 + 8, this.heroY + 7, width * 0.56, 2);
+      const segments = 10;
+      for (let index = 1; index < segments; index += 2) {
+        const ratio = index / segments;
+        ctx.fillRect(
+          enemy.x + (this.heroX - enemy.x) * ratio - 2,
+          enemy.y + (this.heroY - enemy.y) * ratio - 1,
+          4,
+          2,
+        );
+      }
+    }
+
+    if (enemy.type === 'lamp-keeper' && (enemy.mechTimer ?? 0) > 8.2) {
+      const progress = this.clamp(((enemy.mechTimer ?? 0) - 8.2) / 1.8, 0, 1);
+      const radius = Math.max(70, this.darkR - progress * 10);
+      ctx.globalAlpha = 0.24 + progress * 0.52;
+      ctx.strokeStyle = '#d5bd73';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(this.darkCX, this.darkCY, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = '#d5bd73';
+      for (let index = 0; index < 12; index += 1) {
+        const angle = (index / 12) * Math.PI * 2;
+        const tickRadius = radius - 4 - (index % 2) * 4;
+        ctx.fillRect(
+          Math.round(this.darkCX + Math.cos(angle) * tickRadius - 2),
+          Math.round(this.darkCY + Math.sin(angle) * tickRadius - 2),
+          4,
+          4,
+        );
+      }
+    }
+
+    ctx.restore();
   }
 
   private drawEnemy(enemy: EnemyUnit): void {
@@ -4576,13 +5786,14 @@ export class ZheYiShenGame {
     actionFrame?: 0 | 1,
   ): void {
     const appearance = this.state === 'title' ? DEFAULT_APPEARANCE : (this.origin?.appearance ?? DEFAULT_APPEARANCE);
-    const ageStep = Math.max(0, Math.min(5, this.state === 'result' ? 5 : this.encounterIndex)) as 0 | 1 | 2 | 3 | 4 | 5;
-    const frame = actionFrame ?? (Math.floor(this.visualTime * 6) % 4) as 0 | 1 | 2 | 3;
+    const resultAge = this.resultWon ? 5 : this.encounterIndex;
+    const ageStep = Math.max(0, Math.min(5, this.state === 'result' ? resultAge : this.encounterIndex)) as 0 | 1 | 2 | 3 | 4 | 5;
+    const frame = actionFrame ?? (this.reducedMotion ? 0 : Math.floor(this.visualTime * 6) % 4) as 0 | 1 | 2 | 3;
     // 《他当年也是这样站着的》：身后浮现同样弯腰的父亲轮廓
     if (this.state === 'battle' && this.hasCombo('他当年也是这样站着的')) {
       const ctx = this.ctx;
       ctx.save();
-      ctx.globalAlpha = 0.18 + Math.sin(this.visualTime * 1.4) * 0.04;
+      ctx.globalAlpha = this.reducedMotion ? 0.2 : 0.18 + Math.sin(this.visualTime * 1.4) * 0.04;
       ctx.fillStyle = '#1b1a20';
       const fx = x - 8;
       const fy = y - 2;
@@ -4775,8 +5986,11 @@ export class ZheYiShenGame {
       ctx.strokeStyle = projectile.color;
       // 贴图路径：生图基底弹体。雾团按凝实度取档，其余按样式取形；图集未就绪走程序兜底
       if (projectileAtlas.ready) {
+        // 机制即隐喻的形替换：呵在玻璃上的字=雾锥；断掉的脊梁骨=骨节弹
         const spriteName = projectile.style === 'plain'
-          ? `breath${Math.min(3, Math.floor(firmness * 4))}`
+          ? (this.hasItem('breath-on-glass') ? 'cone'
+            : this.hasItem('broken-spine') ? 'bone'
+              : `breath${Math.min(3, Math.floor(firmness * 4))}`)
           : projectile.style;
         const sprite = projectileAtlas.tintedNamed(spriteName, projectile.color, projectile.style === 'plain' ? 0.28 : 0.4);
         if (sprite) {
@@ -4826,7 +6040,7 @@ export class ZheYiShenGame {
     }
   }
 
-  /** 奥义演出：集齐组合时插画浮现。战斗不暂停；插画未加载则退回字幕。 */
+  /** 奥义演出：先短暂停顿确认组合，再把记忆闪回压在战场上沿。 */
   private renderComboReveal(): void {
     const reveal = this.comboReveal;
     if (!reveal) return;
@@ -4838,20 +6052,20 @@ export class ZheYiShenGame {
       return;
     }
     const elapsed = reveal.total - reveal.timer;
-    const fadeIn = this.clamp(elapsed / 0.45, 0, 1);
-    const fadeOut = this.clamp(reveal.timer / 0.6, 0, 1);
+    const fadeIn = this.clamp(elapsed / 0.28, 0, 1);
+    const fadeOut = this.clamp(reveal.timer / 0.45, 0, 1);
     const alpha = Math.min(fadeIn, fadeOut);
     const rise = (1 - fadeIn) * 14;
     const ctx = this.ctx;
-    const artW = 288;
-    const artH = 162;
+    const artW = 240;
+    const artH = 135;
     const x = Math.round((W - artW) / 2);
-    const y = Math.round(150 + rise);
+    const y = Math.round(112 + rise);
     ctx.save();
     applyPixelDiscipline(ctx);
     ctx.globalAlpha = alpha * 0.62;
     ctx.fillStyle = '#07080b';
-    ctx.fillRect(0, y - 46, W, artH + 118);
+    ctx.fillRect(0, y - 32, W, artH + 86);
     ctx.globalAlpha = alpha;
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(art, x, y, artW, artH);
@@ -4897,6 +6111,15 @@ export class ZheYiShenGame {
         ctx.fill();
       } else if (burst.kind === 'door') {
         ctx.lineWidth = 3; ctx.strokeRect(burst.x - burst.radius * 0.26, burst.y - burst.radius * progress * 0.5, burst.radius * 0.52, burst.radius * progress);
+      } else if (burst.kind === 'syn' && burst.material) {
+        // 成双协同：覆盖贴图冒出再散去
+        const sprite = synergyAtlas.named(burst.material);
+        if (sprite) {
+          const size = burst.radius * (0.9 + progress * 0.7);
+          ctx.globalAlpha = progress < 0.25 ? progress / 0.25 : 1 - (progress - 0.25) / 0.75;
+          ctx.imageSmoothingEnabled = false;
+          ctx.drawImage(sprite, burst.x - size / 2, burst.y - size / 2, size, size);
+        }
       } else if (burst.kind === 'hit' && burst.material) {
         // 贴图命中：材质 4 帧序列，随进度放大淡出；帧未加载走程序圆圈
         const frame = hitFrame(burst.material as HitMaterial, progress);
@@ -4925,46 +6148,94 @@ export class ZheYiShenGame {
       const value = this.poisons[key];
       ctx.fillStyle = '#24242b'; ctx.fillRect(x, y, 52, 24);
       ctx.fillStyle = value > 0 ? '#be6974' : '#66656b'; ctx.fillRect(x, y + 21, 52 * (value / 12), 3);
+      // 五毒图腾：贪=攥紧的硬币 嗔=火柴 痴=扑灯蛾 慢=歪纸冠 疑=打结的绳
+      const totem = poisonAtlas.named(key);
+      if (totem) {
+        ctx.save();
+        ctx.globalAlpha = value > 0 ? 0.95 : 0.4;
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(totem, x + 2, y + 3, 16, 16);
+        ctx.restore();
+      }
       ctx.textAlign = 'center'; ctx.fillStyle = value > 0 ? '#d8c8c5' : '#77757a'; ctx.font = 'bold 9px sans-serif';
-      ctx.fillText(`${POISON_LABELS[key]} ${value}`, x + 26, y + 15);
+      ctx.fillText(`${POISON_LABELS[key]} ${value}`, x + (totem ? 33 : 26), y + 15);
     }
   }
 
   private renderItemReward(): void {
     const ctx = this.ctx;
     applyPixelDiscipline(ctx);
-    ctx.fillStyle = UI_PALETTE.night;
+    const deskPattern = uiTextures.pattern(ctx, 'desk');
+    ctx.fillStyle = deskPattern ?? UI_PALETTE.night;
     ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(8,8,12,.76)';
+    ctx.fillRect(0, 0, W, H);
+    uiTextures.drawArchiveDecoration(ctx, 'tape', 4, 8, 64, 0.72, -0.08);
+    uiTextures.drawArchiveDecoration(ctx, 'clip', 320, 12, 28, 0.78, 0.12);
     ctx.textAlign = 'left';
     ctx.fillStyle = UI_PALETTE.paperLight;
     ctx.font = `bold 15px ${UI_ARCHIVE_FONT_STACK}`;
     this.wrapText(this.rewardTitle, 20, 35, 320, 18, 2);
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.font = `9px ${UI_FONT_STACK}`;
     ctx.fillText(this.initialItemReward ? '出门物证 · 只能带走一件' : '困难缩成物件，留在了这一身上', 20, 72);
     drawStitchDivider(ctx, 20, 82, 320, 'horizontal', '#4d494d', 5, 4);
     for (let index = 0; index < 3; index += 1) {
       const id = this.itemRewardChoices[index];
       if (!id) continue;
+      ctx.save();
+      if (this.rewardAcquire && this.rewardAcquire.index !== index) ctx.globalAlpha = 0.18;
       this.drawItemRecord(id, index, 'reward');
+      ctx.restore();
     }
+    this.renderRewardAcquireEffect();
     ctx.textAlign = 'center';
-    ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `8px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillText('每一件道具，都是他活过的证据。', 180, 620);
+    ctx.fillStyle = this.rewardAcquire ? UI_PALETTE.raincoatYellow : UI_PALETTE.paperDim;
+    ctx.font = `${this.rewardAcquire ? 'bold ' : ''}9px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText(this.rewardAcquire ? '物证已订进这一身。' : '每一件道具，都是他活过的证据。', 180, 620);
+  }
+
+  private renderRewardAcquireEffect(): void {
+    const acquisition = this.rewardAcquire;
+    if (!acquisition) return;
+    const ctx = this.ctx;
+    const y = 88 + acquisition.index * 152;
+    const progress = this.clamp(1 - acquisition.timer / acquisition.total, 0, 1);
+    const stepped = this.reducedMotion ? 1 : Math.min(1, Math.floor(progress * 5) / 5);
+    const iconY = y + 31 + (y + 101 - (y + 31)) * stepped;
+    const iconScale = 15 - stepped * 7;
+    ctx.save();
+    ctx.strokeStyle = this.mixHex(getItem(acquisition.id).color, UI_PALETTE.oldRed, 0.35);
+    ctx.lineWidth = 2;
+    ctx.strokeRect(18, y + 6, 324, 132);
+    ctx.globalAlpha = 0.45 + progress * 0.55;
+    drawStitchDivider(ctx, 58, y + 44, 32, 'vertical', '#766e67', 4, 3);
+    this.drawItemSymbol(acquisition.id, 58, iconY, iconScale);
+    if (progress >= 0.52) {
+      ctx.globalAlpha = this.clamp((progress - 0.52) / 0.18, 0, 1);
+      drawRedStamp(
+        ctx, 263, y + 105, 66, 22, '已归档', 403 + acquisition.index,
+        UI_PALETTE.oldRed, UI_PALETTE.paperLight, UI_PALETTE.nightRaised,
+      );
+    }
+    ctx.restore();
   }
 
   private renderShop(): void {
     const ctx = this.ctx;
     applyPixelDiscipline(ctx);
-    ctx.fillStyle = '#111013';
+    if (!sceneArt.drawRoom(ctx, 'pawn')) {
+      ctx.fillStyle = '#111013';
+      ctx.fillRect(0, 0, W, H);
+    }
+    ctx.fillStyle = 'rgba(8,7,10,.76)';
     ctx.fillRect(0, 0, W, H);
     ctx.textAlign = 'left';
     ctx.fillStyle = UI_PALETTE.paperLight;
     ctx.font = `bold 18px ${UI_ARCHIVE_FONT_STACK}`;
     ctx.fillText('没有招牌的当铺', 20, 38);
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.font = `9px ${UI_FONT_STACK}`;
     ctx.fillText('有些东西，要拿另一些东西来换。', 20, 62);
     drawStatusIcon(ctx, 282, 25, 'coins', 1, UI_PALETTE.raincoatYellow);
     ctx.textAlign = 'right';
@@ -4972,7 +6243,7 @@ export class ZheYiShenGame {
     ctx.font = `bold 12px ${UI_FONT_STACK}`;
     ctx.fillText(String(this.hero.coins), 340, 37);
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `7px ${UI_FONT_STACK}`;
+    ctx.font = `8px ${UI_FONT_STACK}`;
     ctx.fillText('零钱', 340, 53);
     drawStitchDivider(ctx, 20, 78, 320, 'horizontal', '#4d494d', 5, 4);
     for (let index = 0; index < 3; index += 1) {
@@ -4980,17 +6251,32 @@ export class ZheYiShenGame {
       if (!offer) continue;
       this.drawItemRecord(offer.item, index, 'shop', offer);
     }
+    this.renderShopCashBox();
+    this.renderShopFeedback();
+    const rerollShake = this.shopDenyOffset(-1);
+    const rerollFocused = this.shopFocus === 3;
+    ctx.save();
+    ctx.translate(rerollShake, 0);
     drawCutCornerPanel(
       ctx, 18, 558, 150, 42, UI_PALETTE.nightRaised,
-      this.hero.coins >= 2 ? UI_PALETTE.hospitalBlueGray : '#454249', 2, 1,
+      rerollFocused ? UI_PALETTE.raincoatYellow : this.hero.coins >= 2 ? UI_PALETTE.hospitalBlueGray : '#454249', 2, 1,
     );
+    uiTextures.drawButtonFrame(ctx, 18, 558, 150, 42, this.hero.coins >= 2 ? 0.72 : 0.34);
     ctx.textAlign = 'center';
     ctx.fillStyle = this.hero.coins >= 2 ? UI_PALETTE.paperLight : '#6f6a70';
     ctx.font = `bold 10px ${UI_FONT_STACK}`;
     ctx.fillText('↻  换一批 · 2', 93, 583);
-    drawCutCornerPanel(ctx, 192, 558, 150, 42, UI_PALETTE.nightRaised, '#5c5554', 2, 1);
+    if (rerollFocused) this.drawFocusCorners(18, 558, 150, 42, UI_PALETTE.raincoatYellow);
+    ctx.restore();
+    const leaveFocused = this.shopFocus === 4;
+    drawCutCornerPanel(
+      ctx, 192, 558, 150, 42, UI_PALETTE.nightRaised,
+      leaveFocused ? UI_PALETTE.oldRed : '#5c5554', 2, 1,
+    );
+    uiTextures.drawButtonFrame(ctx, 192, 558, 150, 42, 0.7);
     ctx.fillStyle = UI_PALETTE.paperLight;
     ctx.fillText('▯  推门离开', 267, 583);
+    if (leaveFocused) this.drawFocusCorners(192, 558, 150, 42, UI_PALETTE.oldRed);
   }
 
   private drawItemRecord(id: ItemId, index: number, mode: 'reward' | 'shop', offer?: ShopOffer): void {
@@ -4998,50 +6284,189 @@ export class ZheYiShenGame {
     const item = getItem(id);
     const y = 88 + index * 152;
     const sold = Boolean(offer?.sold);
+    const activePurchase = mode === 'shop'
+      && this.shopFeedback?.kind === 'purchase'
+      && this.shopFeedback.index === index;
+    const displaySold = sold && !activePurchase;
+    const focused = mode === 'reward' ? this.itemRewardFocus === index : this.shopFocus === index;
+    let reveal = 1;
+    if (mode === 'shop' && this.shopFeedback?.kind === 'reroll') {
+      const progress = this.clamp(1 - this.shopFeedback.timer / this.shopFeedback.total, 0, 1);
+      reveal = this.clamp((progress - index * 0.12) / 0.64, 0, 1);
+      if (!this.reducedMotion) reveal = Math.floor(reveal * 4) / 4;
+    }
     ctx.save();
-    ctx.globalAlpha = sold ? 0.28 : 1;
-    ctx.fillStyle = '#18171c';
+    if (mode === 'shop' && reveal < 1) ctx.translate(0, Math.round((1 - reveal) * -4));
+    ctx.globalAlpha = (displaySold ? 0.28 : 1) * (0.15 + reveal * 0.85);
+    ctx.fillStyle = mode === 'reward' ? '#18171c' : 'rgba(16,12,13,.88)';
     ctx.fillRect(16, y + 4, 328, 136);
     ctx.fillStyle = item.color;
     ctx.fillRect(16, y + 4, 3, 136);
     drawStitchDivider(ctx, 24, y + 139, 312, 'horizontal', '#454147', 4, 4);
+    if (mode === 'reward') {
+      uiTextures.drawRecordFrame(ctx, item.quality, 16, y + 4, 328, 136, displaySold ? 0.3 : 0.8);
+    } else {
+      ctx.fillStyle = '#4a352b';
+      ctx.fillRect(20, y + 132, 320, 5);
+      ctx.fillStyle = '#2b211d';
+      ctx.fillRect(20, y + 137, 320, 3);
+      ctx.strokeStyle = '#6e594b';
+      ctx.strokeRect(24.5, y + 11.5, 66, 116);
+    }
 
-    this.drawItemPedestal(58, y + 75, item.quality, mode === 'shop', sold);
-    this.drawItemSymbol(id, 58, y + 38 + Math.sin(this.visualTime * 2.2 + index) * 2, 21);
+    const previewItems = this.items.includes(id) ? this.items : [...this.items, id];
+    const itemIsMoving = mode === 'reward' && this.rewardAcquire?.index === index;
+    if (!itemIsMoving) {
+      this.drawItemSymbol(id, 58, y + 31 + (this.reducedMotion ? 0 : Math.sin(this.visualTime * 2.2 + index) * 1.5), 15);
+    }
+    this.drawHero(58, y + 126, 0.62, previewItems);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = mode === 'reward' ? '#756e68' : '#8b786a';
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    ctx.fillText(displaySold ? '空' : '试穿', 58, y + 82);
     ctx.textAlign = 'left';
     ctx.fillStyle = item.color;
-    ctx.font = `bold 7px ${UI_FONT_STACK}`;
+    ctx.font = `bold 9px ${UI_FONT_STACK}`;
     ctx.fillText(`${'ⅠⅡⅢⅣ'[item.quality - 1]} · ${item.qualityName}`, 96, y + 18);
     ctx.fillStyle = UI_PALETTE.paperLight;
-    ctx.font = `bold 12px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.font = `bold 13px ${UI_ARCHIVE_FONT_STACK}`;
     this.wrapText(item.name, 96, y + 39, 210, 14, 2);
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `7px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText(item.flavor, 96, y + 67, 228, 11, 2);
+    ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
+    this.wrapText(item.flavor, 96, y + 67, 228, 12, 2);
     ctx.fillStyle = UI_PALETTE.raincoatYellow;
-    ctx.font = `bold 7px ${UI_FONT_STACK}`;
+    ctx.font = `bold 9px ${UI_FONT_STACK}`;
     ctx.fillText('得到', 96, y + 95);
     ctx.fillStyle = UI_PALETTE.paper;
-    ctx.font = `8px ${UI_FONT_STACK}`;
-    this.wrapText(item.positive, 128, y + 95, 196, 10, 2);
+    ctx.font = `10px ${UI_FONT_STACK}`;
+    this.wrapText(item.positive, 128, y + 95, 196, 11, 2);
     ctx.fillStyle = UI_PALETTE.hospitalBlueGray;
-    ctx.font = `bold 7px ${UI_FONT_STACK}`;
+    ctx.font = `bold 9px ${UI_FONT_STACK}`;
     ctx.fillText('留下', 96, y + 121);
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `8px ${UI_FONT_STACK}`;
-    this.wrapText(item.negative, 128, y + 121, 196, 10, 2);
-    if (mode === 'shop' && offer) {
-      ctx.textAlign = 'right';
-      ctx.fillStyle = sold ? UI_PALETTE.paperDim : UI_PALETTE.raincoatYellow;
-      ctx.font = `bold 9px ${UI_FONT_STACK}`;
-      ctx.fillText(sold ? '价签已撕' : `${offer.price} 枚`, 334, y + 20);
+    ctx.font = `10px ${UI_FONT_STACK}`;
+    this.wrapText(item.negative, 128, y + 121, 196, 11, 2);
+    if (mode === 'shop' && offer && !activePurchase) {
+      const tagX = 296 + this.shopDenyOffset(index);
+      this.drawShopPriceTag(tagX, y + 8, displaySold ? '已撕' : `${offer.price}枚`, displaySold);
+    }
+    if (focused && !this.rewardAcquire) {
+      this.drawFocusCorners(
+        16, y + 4, 328, 136,
+        mode === 'reward' ? UI_PALETTE.raincoatYellow : UI_PALETTE.oldRed,
+      );
     }
     ctx.restore();
   }
 
+  private drawFocusCorners(x: number, y: number, width: number, height: number, color: string): void {
+    const ctx = this.ctx;
+    const length = 12;
+    ctx.fillStyle = color;
+    ctx.fillRect(Math.round(x), Math.round(y), length, 2);
+    ctx.fillRect(Math.round(x), Math.round(y), 2, length);
+    ctx.fillRect(Math.round(x + width - length), Math.round(y + height - 2), length, 2);
+    ctx.fillRect(Math.round(x + width - 2), Math.round(y + height - length), 2, length);
+  }
+
+  private shopDenyOffset(index: number): number {
+    const feedback = this.shopFeedback;
+    if (!feedback || feedback.kind !== 'deny' || feedback.index !== index || this.reducedMotion) return 0;
+    const elapsed = feedback.total - feedback.timer;
+    return Math.floor(elapsed / 0.055) % 2 === 0 ? -1 : 1;
+  }
+
+  private drawShopPriceTag(x: number, y: number, label: string, torn = false): void {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.textAlign = 'right';
+    ctx.fillStyle = torn ? UI_PALETTE.inkSoft : UI_PALETTE.paper;
+    ctx.fillRect(Math.round(x), Math.round(y), 38, 22);
+    ctx.strokeStyle = UI_PALETTE.paperShadow;
+    ctx.strokeRect(Math.round(x) + 0.5, Math.round(y) + 0.5, 37, 21);
+    if (torn) {
+      ctx.fillStyle = UI_PALETTE.ink;
+      ctx.fillRect(Math.round(x) + 18, Math.round(y), 2, 4);
+      ctx.fillRect(Math.round(x) + 17, Math.round(y) + 4, 2, 4);
+      ctx.fillRect(Math.round(x) + 19, Math.round(y) + 8, 2, 5);
+      ctx.fillRect(Math.round(x) + 18, Math.round(y) + 13, 2, 5);
+      ctx.fillRect(Math.round(x) + 20, Math.round(y) + 18, 2, 4);
+    }
+    ctx.fillStyle = torn ? UI_PALETTE.paperShadow : UI_PALETTE.ink;
+    ctx.font = `bold 9px ${UI_FONT_STACK}`;
+    ctx.fillText(label, Math.round(x) + 34, Math.round(y) + 15);
+    ctx.restore();
+  }
+
+  private renderShopCashBox(): void {
+    const ctx = this.ctx;
+    const feedback = this.shopFeedback;
+    const active = feedback?.kind === 'purchase' || feedback?.kind === 'deny';
+    const progress = active && feedback ? this.clamp(1 - feedback.timer / feedback.total, 0, 1) : 0;
+    const denyShake = feedback?.kind === 'deny' && !this.reducedMotion
+      ? (Math.floor(progress * 8) % 2 === 0 ? -1 : 1)
+      : 0;
+    const receivePulse = feedback?.kind === 'purchase' && progress > 0.58 && progress < 0.9 ? 1 : 0;
+    const x = 276 + denyShake;
+    const y = 534 - receivePulse;
+    ctx.save();
+    ctx.fillStyle = UI_PALETTE.ink;
+    ctx.fillRect(x, y, 60, 20 + receivePulse);
+    ctx.strokeStyle = active ? '#78604A' : UI_PALETTE.inkSoft;
+    ctx.strokeRect(x + 0.5, y + 0.5, 59, 19 + receivePulse);
+    ctx.fillStyle = '#30282A';
+    ctx.fillRect(x + 5, y + 4, 50, 12);
+    ctx.fillStyle = '#08080B';
+    ctx.fillRect(x + 15, y + 6, 30, 3);
+    ctx.fillStyle = '#604536';
+    ctx.fillRect(x + 17, y + 6, 26, 1);
+    ctx.fillStyle = UI_PALETTE.paperShadow;
+    ctx.fillRect(x + 3, y + 17, 54, 1);
+    if (feedback?.kind === 'deny' && progress > 0.28) {
+      ctx.fillStyle = UI_PALETTE.oldRed;
+      ctx.fillRect(x + 27, y + 11, 6, 1);
+    }
+    ctx.restore();
+  }
+
+  private renderShopFeedback(): void {
+    const feedback = this.shopFeedback;
+    if (!feedback || feedback.kind !== 'purchase') return;
+    const ctx = this.ctx;
+    const progress = this.clamp(1 - feedback.timer / feedback.total, 0, 1);
+    const rowY = 88 + feedback.index * 152;
+    const tagProgress = this.clamp((progress - 0.08) / 0.72, 0, 1);
+    const tagStep = this.reducedMotion ? tagProgress : Math.floor(tagProgress * 6) / 6;
+    const tagX = 296 + Math.round(9 * tagStep);
+    const tagY = rowY + 8 + Math.round((526 - rowY) * tagStep);
+    ctx.save();
+    ctx.globalAlpha = this.clamp(1 - Math.max(0, tagProgress - 0.78) / 0.22, 0, 1);
+    this.drawShopPriceTag(tagX, tagY, `${feedback.price ?? 0}枚`, tagProgress > 0.26);
+    ctx.restore();
+
+    for (let index = 0; index < 3; index += 1) {
+      const coinProgress = this.clamp((progress - index * 0.1) / 0.7, 0, 1);
+      if (coinProgress <= 0 || coinProgress >= 1) continue;
+      const stepped = this.reducedMotion ? coinProgress : Math.floor(coinProgress * 7) / 7;
+      const x = Math.round(318 + (306 - 318) * stepped + Math.sin(stepped * Math.PI) * (index - 1) * 5);
+      const y = Math.round(32 + (541 - 32) * stepped - Math.sin(stepped * Math.PI) * (34 + index * 4));
+      ctx.fillStyle = '#30282A';
+      ctx.fillRect(x - 2, y - 2, 5, 5);
+      ctx.fillStyle = UI_PALETTE.raincoatYellow;
+      ctx.fillRect(x - 1, y - 1, 3, 3);
+      ctx.fillStyle = UI_PALETTE.paperLight;
+      ctx.fillRect(x, y - 1, 1, 1);
+    }
+  }
+
   private renderSpecialRoom(): void {
     const ctx = this.ctx;
-    if (this.specialRoomKind === 'light') {
+    applyPixelDiscipline(ctx);
+    const roomDrawn = sceneArt.drawRoom(ctx, this.specialRoomKind === 'light' ? 'lamp' : 'inner');
+    if (roomDrawn) {
+      ctx.fillStyle = this.specialRoomKind === 'light' ? 'rgba(20,15,9,.3)' : 'rgba(6,7,10,.44)';
+      ctx.fillRect(0, 0, W, H);
+    } else if (this.specialRoomKind === 'light') {
       ctx.fillStyle = 'rgba(55,45,26,.74)';
       ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = '#d8b95f';
@@ -5054,52 +6479,182 @@ export class ZheYiShenGame {
       ctx.fillStyle = 'rgba(190,200,205,.08)'; ctx.fillRect(88, 34, 184, 500);
       ctx.strokeStyle = '#632c37'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(70, 0); ctx.lineTo(92, H); ctx.moveTo(290, 0); ctx.lineTo(268, H); ctx.stroke();
     }
-    ctx.textAlign = 'center';
-    ctx.fillStyle = this.specialRoomKind === 'light' ? '#fff0bf' : '#e5e4de';
-    ctx.font = 'bold 25px sans-serif';
-    ctx.fillText(this.specialRoomKind === 'light' ? '留灯间' : '里屋', 180, 72);
-    ctx.font = '10px sans-serif';
-    ctx.fillStyle = this.specialRoomKind === 'light' ? '#ead69b' : '#b6b8bc';
-    ctx.fillText(this.specialRoomKind === 'light' ? '有人替你把灯留着，只能带走一件' : '拿一口气来换。只要付得起，可以多拿', 180, 98);
+    ctx.fillStyle = 'rgba(7,7,10,.76)';
+    ctx.fillRect(14, 15, 332, 76);
+    ctx.fillStyle = this.specialRoomKind === 'light' ? UI_PALETTE.raincoatYellow : UI_PALETTE.hospitalBlueGray;
+    ctx.fillRect(14, 15, 3, 76);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = UI_PALETTE.paperLight;
+    ctx.font = `bold 18px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText(this.specialRoomKind === 'light' ? '留灯间' : '里屋', 28, 45);
+    ctx.font = `9px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillStyle = this.specialRoomKind === 'light' ? '#c9b77c' : '#aeb7bb';
+    ctx.fillText(
+      this.specialRoomKind === 'light' ? '桌上没有价签。只能带走一件。' : '不收零钱。镜子只认还剩多少口气。',
+      28,
+      70,
+    );
+    drawStitchDivider(ctx, 25, 87, 310, 'horizontal', '#534b48', 5, 4);
+
     for (let index = 0; index < 3; index += 1) {
       const id = this.specialRoomOffers[index];
       if (!id) continue;
-      this.drawItemChoice(id, index, false);
-      const x = 7 + index * 119;
-      const taken = this.specialRoomTaken.has(id);
-      ctx.fillStyle = taken ? '#77777d' : this.specialRoomKind === 'light' ? '#e5c96f' : '#d36b76';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.fillText(taken ? '已经拿走' : this.specialRoomKind === 'light' ? '只能选一件' : '一口气 · 12生命上限', x + 54, 501);
-      if (taken) {
-        ctx.fillStyle = 'rgba(8,8,11,.68)'; ctx.fillRect(x + 2, 118, 104, 400);
-        ctx.fillStyle = '#c1bdb5'; ctx.font = 'bold 14px sans-serif'; ctx.fillText('已经穿上', x + 54, 320);
-      }
+      this.drawSpecialRoomOffer(id, index);
     }
-    this.panel(104, 553, 152, 49, this.specialRoomKind === 'light' ? '#8f7b43' : '#67404a');
-    ctx.fillStyle = '#d5d0c5'; ctx.font = 'bold 12px sans-serif'; ctx.fillText('什么也不拿 · Enter', 180, 583);
-    ctx.font = '8px sans-serif'; ctx.fillStyle = '#77777e';
-    ctx.fillText(`空肺 ${this.strainTendency}  ·  窗灯 ${this.lightTendency}`, 180, 620);
+    this.drawSpecialRoomPreview();
+
+    drawCutCornerPanel(
+      ctx, SPECIAL_LEAVE_RECT.x, SPECIAL_LEAVE_RECT.y, SPECIAL_LEAVE_RECT.width, SPECIAL_LEAVE_RECT.height,
+      'rgba(16,15,19,.92)', this.specialRoomLeaveFocused
+        ? (this.specialRoomKind === 'light' ? UI_PALETTE.raincoatYellow : UI_PALETTE.oldRed)
+        : (this.specialRoomKind === 'light' ? UI_PALETTE.raincoatShadow : '#62404a'), 2, 1,
+    );
+    uiTextures.drawButtonFrame(ctx, SPECIAL_LEAVE_RECT.x, SPECIAL_LEAVE_RECT.y, SPECIAL_LEAVE_RECT.width, SPECIAL_LEAVE_RECT.height, 0.64);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = UI_PALETTE.paperLight;
+    ctx.font = `bold 11px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText(this.specialRoomKind === 'light' ? '轻轻把门带上' : '掀帘出去', 180, 583);
+    if (this.specialRoomLeaveFocused) {
+      this.drawFocusCorners(
+        SPECIAL_LEAVE_RECT.x, SPECIAL_LEAVE_RECT.y, SPECIAL_LEAVE_RECT.width, SPECIAL_LEAVE_RECT.height,
+        this.specialRoomKind === 'light' ? UI_PALETTE.raincoatYellow : UI_PALETTE.oldRed,
+      );
+    }
+    ctx.font = `9px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillStyle = this.specialRoomKind === 'light' ? '#9f9272' : '#77777e';
+    ctx.fillText(
+      this.specialRoomKind === 'light' ? '另外两件东西，会继续留在灯下。' : '镜子比他先老了一步。',
+      180,
+      620,
+    );
   }
 
-  private drawItemChoice(id: ItemId, index: number, shop: boolean, offer?: ShopOffer): void {
+  private drawSpecialRoomOffer(id: ItemId, index: number): void {
     const ctx = this.ctx;
     const item = getItem(id);
-    const x = 7 + index * 119;
-    const sold = Boolean(offer?.sold);
-    this.panel(x, 116, 108, 406, sold ? '#3b3c42' : item.color);
-    ctx.globalAlpha = sold ? 0.25 : 1;
-    const itemY = 166 + Math.sin(this.visualTime * 2.2 + index * 0.9) * 3;
-    this.drawItemPedestal(x + 54, 201, item.quality, shop, sold);
-    this.drawItemSymbol(id, x + 54, itemY, 27);
-    ctx.textAlign = 'center'; ctx.fillStyle = item.color; ctx.font = 'bold 9px sans-serif'; ctx.fillText(`${'ⅠⅡⅢⅣ'[item.quality - 1]} · ${item.qualityName}`, x + 54, 218);
-    ctx.fillStyle = '#e8e1d4'; ctx.font = 'bold 11px sans-serif'; this.wrapText(item.name, x + 54, 243, 92, 14, 3);
-    ctx.fillStyle = '#8d8984'; ctx.font = '8px sans-serif'; this.wrapText(item.flavor, x + 54, 292, 88, 12, 4);
-    ctx.fillStyle = '#71b7a9'; ctx.font = '8px sans-serif'; this.wrapText(item.positive, x + 54, 353, 88, 12, 4);
-    ctx.fillStyle = '#d36570'; this.wrapText(item.negative, x + 54, 416, 88, 12, 4);
-    if (shop && offer) {
-      ctx.fillStyle = sold ? '#77777c' : '#d5b45f'; ctx.font = 'bold 12px sans-serif'; ctx.fillText(sold ? '已带走' : `${offer.price} 枚零钱`, x + 54, 496);
+    const rect = SPECIAL_OFFER_RECTS[index]!;
+    const centerX = rect.x + rect.width / 2;
+    const focused = this.specialRoomFocus === index;
+    const taken = this.specialRoomTaken.has(id);
+    const canAfford = this.specialRoomKind === 'light' || id === 'broken-spine' || this.hero.maxHp - 12 >= 20;
+    const holding = this.specialRoomPointerId !== -1 && this.specialRoomHoldIndex === index;
+    const holdProgress = holding
+      ? this.clamp((performance.now() - this.specialRoomHoldStarted) / SPECIAL_HOLD_MS, 0, 1)
+      : 0;
+
+    ctx.save();
+    if (this.specialRoomKind === 'light') {
+      ctx.fillStyle = focused ? 'rgba(198,164,74,.10)' : 'rgba(198,164,74,.035)';
+      ctx.fillRect(rect.x + 8, rect.y, rect.width - 16, 128);
+    } else {
+      ctx.strokeStyle = focused ? UI_PALETTE.oldRed : '#50484b';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(centerX, rect.y + 4);
+      ctx.lineTo(centerX, rect.y + 49);
+      ctx.lineTo(centerX - 4, rect.y + 55);
+      ctx.stroke();
     }
+
+    if (focused) {
+      const accent = this.specialRoomKind === 'light' ? UI_PALETTE.raincoatYellow : UI_PALETTE.oldRed;
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(rect.x + 0.5, rect.y + 0.5, rect.width - 1, rect.height - 1);
+      ctx.fillStyle = accent;
+      ctx.fillRect(rect.x, rect.y, 12, 2);
+      ctx.fillRect(rect.x, rect.y, 2, 12);
+      ctx.fillRect(rect.x + rect.width - 12, rect.y + rect.height - 2, 12, 2);
+      ctx.fillRect(rect.x + rect.width - 2, rect.y + rect.height - 12, 2, 12);
+    }
+
+    ctx.globalAlpha = taken ? 0.2 : canAfford ? 1 : 0.38;
+    const itemY = rect.y + 74 + (this.reducedMotion || taken ? 0 : Math.sin(this.visualTime * 2 + index * 1.1) * 2);
+    this.drawItemPedestal(centerX, rect.y + 126, item.quality, false, taken);
+    if (!taken) this.drawItemSymbol(id, centerX, itemY, 30);
     ctx.globalAlpha = 1;
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = taken ? '#6c6869' : item.color;
+    ctx.font = `bold 8px ${UI_FONT_STACK}`;
+    ctx.fillText(`${'ⅠⅡⅢⅣ'[item.quality - 1]} · ${item.qualityName}`, centerX, rect.y + 149);
+    ctx.fillStyle = taken ? '#777276' : UI_PALETTE.paperLight;
+    ctx.font = `bold 11px ${UI_ARCHIVE_FONT_STACK}`;
+    this.wrapText(taken ? '空下来的位置' : item.name, centerX, rect.y + 169, rect.width - 14, 13, 2);
+
+    const status = taken ? '已经穿上' : !canAfford ? '已经付不起' : holding ? '别松手' : focused ? '按住带走' : `${index + 1}`;
+    ctx.fillStyle = taken ? '#6d696d' : !canAfford ? UI_PALETTE.warning : focused
+      ? (this.specialRoomKind === 'light' ? UI_PALETTE.raincoatYellow : '#c57980')
+      : UI_PALETTE.paperDim;
+    ctx.font = `bold 9px ${UI_FONT_STACK}`;
+    ctx.fillText(status, centerX, rect.y + 203);
+    if (holding) {
+      ctx.fillStyle = '#29262a';
+      ctx.fillRect(rect.x + 8, rect.y + rect.height - 7, rect.width - 16, 3);
+      ctx.fillStyle = this.specialRoomKind === 'light' ? UI_PALETTE.raincoatYellow : UI_PALETTE.oldRed;
+      ctx.fillRect(rect.x + 8, rect.y + rect.height - 7, Math.round((rect.width - 16) * holdProgress), 3);
+    }
+    ctx.restore();
+  }
+
+  private drawSpecialRoomPreview(): void {
+    const ctx = this.ctx;
+    const id = this.specialRoomOffers[this.specialRoomFocus];
+    if (!id) return;
+    const item = getItem(id);
+    const taken = this.specialRoomTaken.has(id);
+    const previewItems = taken ? this.items : [...this.items, id];
+    const paper = this.specialRoomKind === 'light';
+    drawCutCornerPanel(
+      ctx, 20, 354, 320, 174,
+      paper ? 'rgba(216,208,193,.94)' : 'rgba(15,15,19,.9)',
+      paper ? UI_PALETTE.paperShadow : '#5c4c52', 3, 1,
+    );
+    if (paper) overlayPanelTexture(ctx, UI_PALETTE.paper, 20, 354, 320, 174, [UI_PALETTE.paper], []);
+
+    ctx.save();
+    ctx.strokeStyle = paper ? '#7c705d' : '#6a5b60';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(34.5, 367.5, 74, 132);
+    ctx.fillStyle = paper ? 'rgba(67,58,47,.12)' : 'rgba(160,175,180,.05)';
+    ctx.fillRect(38, 371, 67, 125);
+    this.drawHero(71, 482, 0.72, previewItems);
+    if (!paper) {
+      ctx.globalAlpha = 0.32;
+      ctx.fillStyle = '#d9dde0';
+      ctx.fillRect(43, 386, 2, 76);
+      ctx.fillRect(96, 396, 1, 54);
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+
+    const ink = paper ? UI_PALETTE.ink : UI_PALETTE.paperLight;
+    const dim = paper ? '#625a50' : UI_PALETTE.paperDim;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = paper ? UI_PALETTE.oldRed : UI_PALETTE.hospitalBlueGray;
+    ctx.font = `bold 8px ${UI_FONT_STACK}`;
+    ctx.fillText(paper ? '灯下预留' : '镜中预演', 124, 377);
+    ctx.fillStyle = ink;
+    ctx.font = `bold 12px ${UI_ARCHIVE_FONT_STACK}`;
+    this.wrapText(item.name, 124, 397, 194, 14, 2);
+    ctx.fillStyle = dim;
+    ctx.font = `9px ${UI_ARCHIVE_FONT_STACK}`;
+    this.wrapText(item.flavor, 124, 427, 194, 11, 2);
+    ctx.fillStyle = paper ? '#725e3e' : UI_PALETTE.raincoatYellow;
+    ctx.font = `bold 8px ${UI_FONT_STACK}`;
+    ctx.fillText('得到', 124, 457);
+    ctx.fillStyle = ink;
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    this.wrapText(item.positive, 154, 457, 164, 11, 2);
+    ctx.fillStyle = paper ? UI_PALETTE.hospitalBlueGrayDark : '#a9868d';
+    ctx.font = `bold 8px ${UI_FONT_STACK}`;
+    ctx.fillText(this.specialRoomKind === 'light' ? '留下' : '交换', 124, 490);
+    ctx.fillStyle = dim;
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    const cost = this.specialRoomKind === 'light'
+      ? item.negative
+      : id === 'broken-spine' ? '代价已经长在物件里面' : `最大生命 -12 · ${item.negative}`;
+    this.wrapText(cost, 154, 490, 164, 11, 2);
   }
 
   private drawItemPedestal(x: number, y: number, quality: number, shop: boolean, sold: boolean): void {
@@ -5135,62 +6690,126 @@ export class ZheYiShenGame {
   private renderResult(): void {
     const ctx = this.ctx;
     applyPixelDiscipline(ctx);
-    ctx.fillStyle = UI_PALETTE.night;
+    if (!sceneArt.drawEnding(ctx, this.resultWon ? 'lampman' : 'table', 0.78)) {
+      ctx.fillStyle = UI_PALETTE.night;
+      ctx.fillRect(0, 0, W, H);
+    }
+    ctx.fillStyle = 'rgba(7,7,10,.7)';
     ctx.fillRect(0, 0, W, H);
+    uiTextures.drawArchiveDecoration(ctx, 'postmark', 298, 10, 48, 0.38, -0.08);
     ctx.textAlign = 'left';
     ctx.fillStyle = '#6f6960';
-    ctx.font = `7px ${UI_FONT_STACK}`;
+    ctx.font = `8px ${UI_FONT_STACK}`;
     ctx.fillText(`第 ${this.runSeed.toString(16).toUpperCase().padStart(8, '0')} 号人生档案 · 已封卷`, 20, 28);
 
-    ctx.fillStyle = this.resultWon ? '#746f67' : UI_PALETTE.paperLight;
+    ctx.fillStyle = 'rgba(8,8,11,.68)';
+    ctx.fillRect(16, 36, 190, 50);
     ctx.font = `bold 30px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillText('这一身', 22, 74);
+    ctx.fillStyle = UI_PALETTE.paperLight;
+    ctx.fillText('这一', 22, 74);
+    const finalCharacterX = 92;
     if (this.resultWon) {
-      ctx.fillStyle = UI_PALETTE.oldRed;
-      ctx.font = `bold 18px ${UI_FONT_STACK}`;
-      ctx.fillText('→', 137, 69);
+      const rawMorph = this.reducedMotion ? 1 : this.clamp((performance.now() - this.resultStartedAt - 450) / 900, 0, 1);
+      const morph = Math.floor(rawMorph * 5) / 5;
+      ctx.save();
+      ctx.globalAlpha = 1 - morph;
+      ctx.fillStyle = UI_PALETTE.paperDim;
+      ctx.fillText('身', finalCharacterX, 74);
+      ctx.globalAlpha = morph;
       ctx.fillStyle = UI_PALETTE.paperLight;
-      ctx.font = `bold 30px ${UI_ARCHIVE_FONT_STACK}`;
-      ctx.fillText('这一生', 177, 74);
+      ctx.fillText('生', finalCharacterX, 74);
+      ctx.restore();
+      if (morph >= 1) {
+        drawRedStamp(
+          ctx, 240, 43, 88, 34, '已封卷', 107,
+          UI_PALETTE.oldRed, UI_PALETTE.paperLight, UI_PALETTE.night,
+        );
+      }
     } else {
-      drawRedStamp(ctx, 242, 43, 86, 34, '写到这里', 101, UI_PALETTE.oldRed);
+      ctx.fillText('身', finalCharacterX, 74);
+      drawRedStamp(
+        ctx, 242, 43, 86, 34, '写到这里', 101,
+        UI_PALETTE.oldRed, UI_PALETTE.paperLight, UI_PALETTE.night,
+      );
     }
     ctx.fillStyle = UI_PALETTE.oldRed;
     ctx.fillRect(20, 89, 320, 2);
 
+    const resultTabLabels = ['封卷', '穿过的', '咽与吐', '留下的'];
+    resultTabLabels.forEach((label, index) => {
+      const x = RESULT_TAB_RECT.x + index * 80;
+      const active = this.resultTab === RESULT_TABS[index];
+      ctx.fillStyle = active ? 'rgba(216,208,193,.15)' : 'rgba(27,26,32,.72)';
+      ctx.fillRect(x, RESULT_TAB_RECT.y, 78, RESULT_TAB_RECT.height);
+      ctx.fillStyle = active ? UI_PALETTE.oldRed : '#514d53';
+      ctx.fillRect(x, RESULT_TAB_RECT.y + RESULT_TAB_RECT.height - 2, 78, 2);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = active ? UI_PALETTE.paperLight : UI_PALETTE.paperDim;
+      ctx.font = `bold 9px ${UI_FONT_STACK}`;
+      ctx.fillText(label, x + 39, RESULT_TAB_RECT.y + 18);
+    });
+
+    if (this.resultTab === 'seal') this.renderResultSeal();
+    else if (this.resultTab === 'items') this.renderResultItems();
+    else if (this.resultTab === 'fates') this.renderResultFates();
+    else this.renderResultStats();
+
+    drawCutCornerPanel(
+      ctx, RESULT_RESTART_RECT.x, RESULT_RESTART_RECT.y, RESULT_RESTART_RECT.width, RESULT_RESTART_RECT.height,
+      UI_PALETTE.nightRaised, UI_PALETTE.oldRed, 3, 2,
+    );
+    uiTextures.drawButtonFrame(
+      ctx, RESULT_RESTART_RECT.x, RESULT_RESTART_RECT.y, RESULT_RESTART_RECT.width, RESULT_RESTART_RECT.height, 0.76,
+    );
+    ctx.textAlign = 'center';
+    ctx.fillStyle = UI_PALETTE.paperLight;
+    ctx.font = `bold 16px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText('再活一次', 180, 540);
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `9px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText(
+      this.resultWon ? '他没有赢，只是终于松了这一口气。' : '他没有走完，但已经走过的都算数。',
+      180, 600,
+    );
+  }
+
+  private renderResultSeal(): void {
+    const ctx = this.ctx;
+
     ctx.fillStyle = UI_PALETTE.paper;
     ctx.font = `bold 12px ${UI_ARCHIVE_FONT_STACK}`;
     const identity = this.origin?.nickname ? `《${this.origin.nickname}》` : this.origin?.title || '没有留下名字的人';
-    ctx.fillText(identity, 190, 122);
+    ctx.textAlign = 'left';
+    ctx.fillText(identity, 190, 150);
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `8px ${UI_FONT_STACK}`;
-    ctx.fillText(`${AGE_LABELS[Math.min(this.encounterIndex, AGE_LABELS.length - 1)]} · ${this.items.length} 件物证`, 190, 141);
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    ctx.fillText(`${AGE_LABELS[Math.min(this.encounterIndex, AGE_LABELS.length - 1)]} · ${this.items.length} 件物证`, 190, 169);
 
     ctx.fillStyle = '#403c40';
-    ctx.fillRect(42, 158, 2, 250);
+    ctx.fillRect(42, 176, 2, 250);
     for (let index = 0; index < AGE_LABELS.length; index += 1) {
-      const y = 166 + index * 46;
+      const y = 181 + index * 35;
       const reached = index <= this.encounterIndex;
       ctx.fillStyle = reached ? (index === this.encounterIndex ? UI_PALETTE.oldRed : UI_PALETTE.paper) : '#4b484e';
       ctx.fillRect(38, y, 10, 10);
       ctx.textAlign = 'left';
       ctx.fillStyle = reached ? UI_PALETTE.paperDim : '#56535a';
-      ctx.font = `8px ${UI_FONT_STACK}`;
+      ctx.font = `9px ${UI_FONT_STACK}`;
       ctx.fillText(AGE_LABELS[index]!, 58, y + 8);
     }
 
-    this.drawHero(270, 292, 1.45, this.items);
+    this.drawHero(270, 315, 1.38, this.items);
     ctx.strokeStyle = '#4e494c';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(206, 339);
-    ctx.lineTo(330, 339);
+    ctx.moveTo(206, 360);
+    ctx.lineTo(330, 360);
     ctx.stroke();
     const combos = this.activeComboNames();
     ctx.textAlign = 'center';
     ctx.fillStyle = UI_PALETTE.raincoatYellow;
     ctx.font = `bold 9px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText(combos.length ? `《${combos[0]}》` : '尚未命名的一生', 270, 363, 126, 13, 3);
+    this.wrapText(combos.length ? `《${combos[0]}》` : '尚未命名的一生', 270, 383, 126, 13, 2);
 
     const poisonMeanings: Record<PoisonKey, string> = {
       greed: '用占有抵抗失去', anger: '把受过的伤还回去', delusion: '用幻想维持关系',
@@ -5199,32 +6818,162 @@ export class ZheYiShenGame {
     const deepest = (Object.entries(this.poisons) as Array<[PoisonKey, number]>)
       .sort((left, right) => right[1] - left[1])
       .slice(0, 2);
-    drawStitchDivider(ctx, 20, 432, 320, 'horizontal', '#4d494d', 5, 4);
+    drawStitchDivider(ctx, 20, 431, 320, 'horizontal', '#4d494d', 5, 4);
     ctx.textAlign = 'left';
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `7px ${UI_FONT_STACK}`;
-    ctx.fillText('这一身最深的两道痕', 20, 451);
-    deepest.forEach(([key], index) => {
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    ctx.fillText('这一身最深的两道痕 · 到这里才第一次落字', 20, 449);
+    if ((deepest[0]?.[1] ?? 0) <= 0) {
+      ctx.fillStyle = UI_PALETTE.paper;
+      ctx.font = `9px ${UI_ARCHIVE_FONT_STACK}`;
+      ctx.fillText('没有哪一道执念，压过了其余几道。', 20, 478);
+      return;
+    }
+    deepest.forEach(([key, value], index) => {
       const x = 20 + index * 160;
       ctx.fillStyle = UI_PALETTE.oldRed;
-      ctx.font = `bold 16px ${UI_ARCHIVE_FONT_STACK}`;
-      ctx.fillText(POISON_LABELS[key], x, 479);
+      ctx.font = `bold 14px ${UI_ARCHIVE_FONT_STACK}`;
+      ctx.fillText(`${POISON_LABELS[key]} ${value}`, x, 470);
       ctx.fillStyle = UI_PALETTE.paperDim;
-      ctx.font = `8px ${UI_FONT_STACK}`;
-      ctx.fillText(poisonMeanings[key], x + 24, 478);
+      ctx.font = `9px ${UI_FONT_STACK}`;
+      ctx.fillText(this.fitText(poisonMeanings[key], 148), x, 484);
+      ctx.fillStyle = '#7e7470';
+      ctx.fillText(this.fitText(this.poisonFormationLine(key), 148), x, 497);
     });
+  }
 
-    drawCutCornerPanel(ctx, 70, 505, 220, 58, UI_PALETTE.nightRaised, UI_PALETTE.oldRed, 3, 2);
-    ctx.textAlign = 'center';
-    ctx.fillStyle = UI_PALETTE.paperLight;
-    ctx.font = `bold 16px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillText('再活一次', 180, 540);
+  private poisonFormationLine(key: PoisonKey): string {
+    const related = this.fateReceipts.filter((receipt) => (receipt.event[receipt.direction].poison[key] ?? 0) > 0);
+    if (!related.length) return '它从物件、沉默和日常里慢慢长深。';
+    const swallowed = related.filter((receipt) => receipt.direction === 'swallow').length;
+    if (swallowed === related.length) return `${related.length} 次咽下，把它留在了身体里。`;
+    if (swallowed === 0) return `${related.length} 次吐出，让它有了清楚的形状。`;
+    return `${related.length} 次回应，一起把它养深。`;
+  }
+
+  private renderResultItems(): void {
+    const ctx = this.ctx;
+    ctx.textAlign = 'left';
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `8px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillText(
-      this.resultWon ? '他没有赢，只是终于松了这一口气。' : '事情写到这里，但不是同一个人的下一局。',
-      180, 600,
-    );
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    ctx.fillText(`穿过的物证 · ${this.items.length}`, 20, 148);
+    const visible = this.items.slice(-8);
+    if (!visible.length) {
+      ctx.fillStyle = UI_PALETTE.paper;
+      ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
+      ctx.fillText('这一身没有来得及穿上什么。', 20, 198);
+      return;
+    }
+    visible.forEach((id, index) => {
+      const item = getItem(id);
+      const column = index % 2;
+      const row = Math.floor(index / 2);
+      const x = 20 + column * 162;
+      const y = 166 + row * 78;
+      this.drawItemSymbol(id, x + 18, y + 21, 14);
+      ctx.fillStyle = item.color;
+      ctx.font = `bold 9px ${UI_FONT_STACK}`;
+      ctx.fillText(`${'ⅠⅡⅢⅣ'[item.quality - 1]} · ${item.qualityName}`, x + 42, y + 10);
+      ctx.fillStyle = UI_PALETTE.paperLight;
+      ctx.font = `bold 10px ${UI_ARCHIVE_FONT_STACK}`;
+      ctx.fillText(this.fitText(item.name, 112), x + 42, y + 28);
+      ctx.fillStyle = UI_PALETTE.paperDim;
+      ctx.font = `9px ${UI_FONT_STACK}`;
+      this.wrapText(item.positive, x + 42, y + 44, 112, 11, 2);
+      drawStitchDivider(ctx, x, y + 68, 150, 'horizontal', '#454147', 4, 4);
+    });
+    if (this.items.length > visible.length) {
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#777178';
+      ctx.font = `9px ${UI_FONT_STACK}`;
+      ctx.fillText(`更早还有 ${this.items.length - visible.length} 件`, 340, 486);
+    }
+  }
+
+  private renderResultFates(): void {
+    const ctx = this.ctx;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    ctx.fillText(`咽下与吐出 · ${this.fateReceipts.length} 张回执`, 20, 148);
+    const receipts = this.fateReceipts.slice(-4).reverse();
+    if (!receipts.length) {
+      ctx.fillStyle = UI_PALETTE.paper;
+      ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
+      ctx.fillText('还没有哪件事来得及要求他回应。', 20, 198);
+      return;
+    }
+    receipts.forEach((receipt, index) => {
+      const y = 163 + index * 80;
+      const response = receipt.event[receipt.direction];
+      ctx.fillStyle = receipt.direction === 'swallow' ? UI_PALETTE.hospitalBlueGray : UI_PALETTE.oldRed;
+      ctx.fillRect(20, y, 3, 66);
+      ctx.font = `bold 9px ${UI_FONT_STACK}`;
+      ctx.fillText(receipt.direction === 'swallow' ? '咽下' : '吐出', 32, y + 11);
+      ctx.fillStyle = UI_PALETTE.paperLight;
+      ctx.font = `bold 10px ${UI_ARCHIVE_FONT_STACK}`;
+      ctx.fillText(this.fitText(receipt.event.title, 212), 78, y + 11);
+      ctx.fillStyle = UI_PALETTE.paperDim;
+      ctx.font = `9px ${UI_FONT_STACK}`;
+      ctx.fillText(this.fitText(`「${response.label}」`, 286), 32, y + 29);
+      this.wrapText(receipt.result, 32, y + 45, 294, 11, 2);
+      drawStitchDivider(ctx, 26, y + 70, 308, 'horizontal', '#454147', 4, 4);
+    });
+  }
+
+  private renderResultStats(): void {
+    const ctx = this.ctx;
+    const vector = this.computeAttackVector();
+    ctx.textAlign = 'left';
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    ctx.fillText('最后留下的数字 · 不参与善恶评级', 20, 148);
+    ctx.fillStyle = UI_PALETTE.paperLight;
+    ctx.font = `bold 10px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText('最后一口气', 20, 178);
+    const vectorRows = [
+      ['劲', (vector.damage / BASE_VECTOR.damage).toFixed(2)],
+      ['速', (BASE_VECTOR.fireInterval / vector.fireInterval).toFixed(2)],
+      ['程', (vector.range / BASE_VECTOR.range).toFixed(2)],
+    ] as const;
+    vectorRows.forEach(([label, value], index) => {
+      const x = 20 + index * 108;
+      ctx.fillStyle = UI_PALETTE.oldRed;
+      ctx.font = `bold 16px ${UI_ARCHIVE_FONT_STACK}`;
+      ctx.fillText(label, x, 211);
+      ctx.fillStyle = UI_PALETTE.paper;
+      ctx.font = `bold 12px ${UI_FONT_STACK}`;
+      ctx.fillText(value, x + 25, 210);
+    });
+    drawStitchDivider(ctx, 20, 230, 320, 'horizontal', '#4d494d', 5, 4);
+    const rows: Array<[string, string]> = [
+      ['击倒', String(this.stats.kills)],
+      ['造成伤害', String(Math.round(this.stats.damage))],
+      ['吐出的气', String(this.stats.volleys)],
+      ['穿过的物证', String(this.stats.itemsTaken)],
+      ['花掉的零钱', String(this.stats.coinsSpent)],
+      ['命运回执', String(this.stats.fateChoices)],
+      ['咽下', String(this.stats.swallowed)],
+      ['吐出', String(this.stats.exhaled)],
+    ];
+    rows.forEach(([label, value], index) => {
+      const column = index % 2;
+      const row = Math.floor(index / 2);
+      const x = 20 + column * 164;
+      const y = 264 + row * 52;
+      ctx.fillStyle = UI_PALETTE.paperDim;
+      ctx.font = `9px ${UI_FONT_STACK}`;
+      ctx.fillText(label, x, y);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = UI_PALETTE.paperLight;
+      ctx.font = `bold 13px ${UI_FONT_STACK}`;
+      ctx.fillText(value, x + 142, y);
+      ctx.textAlign = 'left';
+      drawStitchDivider(ctx, x, y + 13, 142, 'horizontal', '#403d43', 4, 4);
+    });
+    ctx.fillStyle = '#777178';
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    ctx.fillText(`留下 ${this.memories.length} 条记忆 · 走到 ${AGE_LABELS[Math.min(this.encounterIndex, AGE_LABELS.length - 1)]}`, 20, 478);
   }
 
   private drawItemSymbol(id: ItemId, x: number, y: number, size: number): void {
@@ -5316,18 +7065,32 @@ export class ZheYiShenGame {
 
   private wrapText(text: string, x: number, y: number, maxWidth: number, lineHeight: number, maxLines: number): void {
     const ctx = this.ctx;
+    if (maxLines <= 0) return;
+    const lines: string[] = [];
     let line = '';
-    let lineIndex = 0;
+    let truncated = false;
     for (const character of text) {
       const next = line + character;
       if (ctx.measureText(next).width > maxWidth && line) {
-        ctx.fillText(line, x, y + lineIndex * lineHeight);
+        lines.push(line);
         line = character;
-        lineIndex += 1;
-        if (lineIndex >= maxLines) return;
+        if (lines.length >= maxLines) {
+          truncated = true;
+          break;
+        }
       } else line = next;
     }
-    if (line && lineIndex < maxLines) ctx.fillText(line, x, y + lineIndex * lineHeight);
+    if (!truncated && line && lines.length < maxLines) lines.push(line);
+    if (truncated && lines.length) lines[lines.length - 1] = this.fitText(`${lines[lines.length - 1]}…`, maxWidth);
+    lines.forEach((entry, lineIndex) => ctx.fillText(entry, x, y + lineIndex * lineHeight));
+  }
+
+  private fitText(text: string, maxWidth: number): string {
+    const ctx = this.ctx;
+    if (ctx.measureText(text).width <= maxWidth) return text;
+    const characters = [...text];
+    while (characters.length > 1 && ctx.measureText(`${characters.join('')}…`).width > maxWidth) characters.pop();
+    return `${characters.join('')}…`;
   }
 
   private shuffle<T>(items: T[]): T[] {
@@ -5371,11 +7134,14 @@ export class ZheYiShenGame {
     const host = window as Window & {
       render_game_to_text?: () => string;
       advanceTime?: (ms: number) => void;
-      zhe_yi_shen_test?: (action: 'start' | 'reveal-origin' | 'clear' | 'choose-first' | 'swallow' | 'exhale' | 'special' | 'leave-special' | 'shop' | 'buy-first' | 'combo' | 'boss' | 'battle' | 'father' | 'father-phase2' | 'win' | 'equip', payload?: unknown) => void;
+      zhe_yi_shen_test?: (action: 'start' | 'reveal-origin' | 'clear' | 'choose-first' | 'swallow' | 'exhale' | 'open-fate' | 'special' | 'leave-special' | 'shop' | 'buy-first' | 'reroll-shop' | 'combo' | 'boss' | 'battle' | 'father' | 'father-phase2' | 'telegraph' | 'win' | 'equip' | 'pause', payload?: unknown) => void;
     };
-    host.render_game_to_text = () => JSON.stringify({
+    const renderGameState = () => JSON.stringify({
       coordinateSystem: 'origin top-left; +x right; +y down; logical 360x640',
       state: this.state,
+      paused: this.paused,
+      pauseTab: this.pauseTab,
+      resultTab: this.resultTab,
       seed: this.runSeed,
       encounter: this.encounterIndex,
       encounterName: STAGES[this.encounterIndex]?.title || '完成',
@@ -5398,27 +7164,174 @@ export class ZheYiShenGame {
       fateDestination: this.fateDestination,
       fateDragX: Math.round(this.fateDragX),
       fateResultDirection: this.fateResultDirection ?? null,
+      fateFreeWait: {
+        waiting: this.fateFreeWaiting,
+        elapsed: Number(this.fateFreeWaitElapsed.toFixed(2)),
+        cancelAvailable: this.fateFreeWaitElapsed >= FATE_FREE_CANCEL_DELAY,
+      },
       fateBuild: this.fateBuild,
       fateReceipts: this.fateReceipts.map((receipt) => ({ id: receipt.event.id, direction: receipt.direction, result: receipt.result })),
       items: this.items,
       combos: this.activeComboNames(),
       odDistortion: this.odBoost ? { boost: this.odBoost, penalty: this.odPenalty } : null,
       enemies: this.enemies.filter((enemy) => !enemy.dead).map((enemy) => ({ type: enemy.type, hp: Math.round(enemy.hp), x: Math.round(enemy.x), y: Math.round(enemy.y) })),
+      combatPools: {
+        enemies: this.enemies.length,
+        projectiles: this.projectiles.length,
+        pendingShots: this.pendingShots.length,
+        bursts: this.bursts.length,
+        enemyDeaths: this.enemyDeaths.length,
+        coinDrops: this.coinDrops.length,
+        limits: {
+          projectiles: MAX_PROJECTILES,
+          pendingShots: MAX_PENDING_SHOTS,
+          bursts: MAX_BURSTS,
+          enemyDeaths: MAX_ENEMY_DEATHS,
+          coinDrops: MAX_COIN_DROPS,
+        },
+      },
+      joystick: {
+        active: this.joyPointerId !== -1,
+        base: { x: Math.round(this.joyBaseX), y: Math.round(this.joyBaseY) },
+        input: { x: Math.round(this.joyDX), y: Math.round(this.joyDY) },
+        inputRadius: JOYSTICK_INPUT_RADIUS,
+        knobTravel: JOYSTICK_KNOB_TRAVEL,
+      },
       projectiles: this.projectiles.length,
       itemChoices: this.itemRewardChoices,
       shop: this.shopOffers,
-      specialRoom: { kind: this.specialRoomKind, offers: this.specialRoomOffers, taken: [...this.specialRoomTaken] },
+      shopFeedback: this.shopFeedback
+        ? {
+            kind: this.shopFeedback.kind,
+            index: this.shopFeedback.index,
+            timer: Number(this.shopFeedback.timer.toFixed(2)),
+            total: this.shopFeedback.total,
+          }
+        : null,
+      specialRoom: {
+        kind: this.specialRoomKind,
+        offers: this.specialRoomOffers,
+        taken: [...this.specialRoomTaken],
+        focus: this.specialRoomFocus,
+      },
       stats: this.stats,
+      audit: import.meta.env.DEV ? {
+        timeScale: this.auditTimeScale,
+        endurance: this.auditEndurance,
+        autoMove: this.auditAutoMove,
+        damageTaken: Math.round(this.auditDamageTaken),
+      } : undefined,
     });
+    host.render_game_to_text = renderGameState;
+    this.renderGameState = renderGameState;
     host.advanceTime = (ms: number) => {
       const steps = Math.max(1, Math.round(ms / (1000 / 60)));
       for (let index = 0; index < steps; index += 1) this.update(FIXED_STEP);
       this.render();
     };
     if (import.meta.env.DEV) {
+      const auditParams = new URLSearchParams(window.location.search);
+      const requestedAuditSpeed = Number.parseFloat(auditParams.get('audit-speed') ?? '');
+      if (Number.isFinite(requestedAuditSpeed)) this.auditTimeScale = this.clamp(requestedAuditSpeed, 1, 12);
+      this.auditEndurance = auditParams.get('audit-endurance') === '1';
+      this.auditAutoMove = auditParams.get('audit-auto-move') === '1';
+      const auditRoom = auditParams.get('audit-room');
+      if (auditRoom === 'light' || auditRoom === 'back') {
+        this.runSeed = 0x20260722;
+        this.rngState = this.runSeed;
+        this.hero.maxHp = 80;
+        this.hero.hp = 80;
+        this.openSpecialRoom(auditRoom);
+      } else {
+        const auditResult = auditParams.get('audit-result');
+        if (auditResult === 'won' || auditResult === 'lost') {
+          this.runSeed = 0x20260722;
+          this.rngState = this.runSeed;
+          this.encounterIndex = auditResult === 'won' ? STAGES.length - 1 : 2;
+          this.items = ['front-desk-letter', 'fathers-raincoat', 'broken-spine', 'only-key', 'moms-bowl', 'held-elevator'];
+          this.poisons = { greed: 3, anger: 1, delusion: 5, pride: 2, doubt: 4 };
+          this.memories = ['有人把门留了一条缝', '他有一次真的说了不', '雨停以后，他还是把伞收好了'];
+          this.stats = {
+            fateChoices: 3, swallowed: 2, exhaled: 1, volleys: 318,
+            kills: 147, damage: 4821, itemsTaken: this.items.length, coinsSpent: 11,
+          };
+          for (let index = 0; index < 3; index += 1) {
+            const event = generateLocalFateEvent(this.buildLifeSnapshot(), () => this.random());
+            const direction: FateDirection = index === 1 ? 'exhale' : 'swallow';
+            this.fateReceipts.push({ event, direction, result: event[direction].result });
+          }
+          this.endRun(auditResult === 'won');
+          this.resultStartedAt = performance.now() - 1800;
+          const resultTab = auditParams.get('tab');
+          if (RESULT_TABS.includes(resultTab as ResultTab)) this.resultTab = resultTab as ResultTab;
+        } else {
+          const auditScreen = auditParams.get('audit-screen');
+          if (auditScreen === 'reward' || auditScreen === 'shop' || auditScreen === 'boss' || auditScreen === 'fate') {
+            this.runSeed = 0x20260722;
+            this.rngState = this.runSeed;
+            this.encounterIndex = 2;
+            this.hero.maxHp = 96;
+            this.hero.hp = 72;
+            this.hero.coins = 12;
+            const auditCoins = Number.parseInt(auditParams.get('coins') ?? '', 10);
+            if (Number.isFinite(auditCoins)) this.hero.coins = Math.max(0, Math.min(99, auditCoins));
+            this.items = ['front-desk-letter', 'eyebrow-razor'];
+            if (auditScreen === 'reward') {
+              this.rewardTitle = '这一段路，缩成了三件东西';
+              this.initialItemReward = false;
+              this.itemRewardChoices = ['fathers-raincoat', 'broken-spine', 'moms-bowl'];
+              this.state = 'itemReward';
+            } else if (auditScreen === 'shop') {
+              this.shopOffers = [
+                { item: 'wooden-sword', price: 3, sold: false },
+                { item: 'only-key', price: 5, sold: false },
+                { item: 'unsent-phone', price: 4, sold: false },
+              ];
+              this.state = 'shop';
+            } else if (auditScreen === 'boss') {
+              this.initialItemReward = false;
+              this.hero.maxHp = 999;
+              this.hero.hp = 999;
+              this.encounterIndex = 1;
+              this.startStage();
+              this.enemies = [];
+              const boss = this.createSeekingEnemy('uniform-answer', this.heroX, this.heroY - 108);
+              boss.attackCooldown = 99;
+              this.enemies.push(boss);
+              this.eliteAlertName = '';
+              this.eliteAlertTime = 0;
+            } else {
+              this.currentFate = generateLocalFateEvent(this.buildLifeSnapshot(), () => this.random());
+              this.aiFateState = 'fallback';
+              this.fateDestination = 'advance';
+              this.fateAnim = 1;
+              this.fateResultDirection = undefined;
+              this.state = 'fateEvent';
+            }
+          }
+        }
+      }
+      if (auditParams.get('audit-joystick') === 'edge' && this.state === 'battle') {
+        this.joyPointerId = 999;
+        this.joyStartX = 10;
+        this.joyStartY = 630;
+        this.joyBaseX = this.clamp(this.joyStartX, JOYSTICK_SAFE_X, W - JOYSTICK_SAFE_X);
+        this.joyBaseY = this.clamp(this.joyStartY, JOYSTICK_SAFE_TOP, JOYSTICK_SAFE_BOTTOM);
+        this.updateJoystickInput(128, 524);
+      }
+      if (auditParams.get('audit-free-wait') === 'ready' && this.state === 'fateEvent') {
+        this.fateFreeWaiting = true;
+        this.fateFreeWaitElapsed = FATE_FREE_CANCEL_DELAY;
+        this.fateFreeRequestId += 1;
+      }
       host.zhe_yi_shen_test = (action, payload?: unknown) => {
         if (action === 'equip' && Array.isArray(payload)) {
           this.items = payload.filter((id): id is ItemId => typeof id === 'string' && ITEM_IDS.includes(id as ItemId));
+          this.render();
+          return;
+        }
+        if (action === 'pause' && (this.state === 'battle' || this.state === 'fateEvent')) {
+          this.setPaused(!this.paused);
           this.render();
           return;
         }
@@ -5431,6 +7344,7 @@ export class ZheYiShenGame {
         }
         if (action === 'swallow') this.resolveFate('swallow');
         if (action === 'exhale') this.resolveFate('exhale');
+        if (action === 'open-fate' && this.state === 'battle') this.openFate('advance');
         if (action === 'clear') {
           this.enemies.forEach((enemy) => { if (!enemy.dead && !enemy.elite && !enemy.boss) this.damageEnemy(enemy, enemy.hp + 1, '#fff'); });
           if (this.state === 'battle' && STAGES[this.encounterIndex]?.end !== 'final') this.beginStageTransition();
@@ -5440,9 +7354,13 @@ export class ZheYiShenGame {
           this.setupShop();
           this.state = 'shop';
         }
-        if (action === 'special') this.openSpecialRoom();
+        if (action === 'special') {
+          const kind = payload === 'light' || payload === 'back' ? payload : undefined;
+          this.openSpecialRoom(kind);
+        }
         if (action === 'leave-special') this.leaveSpecialRoom();
         if (action === 'buy-first') this.buyShopOffer(0);
+        if (action === 'reroll-shop') this.rerollShop();
         if (action === 'combo') {
           this.startRun(0x20260718);
           this.initialItemReward = false;
@@ -5478,6 +7396,33 @@ export class ZheYiShenGame {
           if (father) {
             father.hp = father.maxHp * 0.49;
             father.phase = 2;
+          }
+        }
+        if (action === 'telegraph' && typeof payload === 'string') {
+          const bossStages: Partial<Record<EnemyType, number>> = {
+            'uniform-answer': 1,
+            'last-bus': 2,
+            'silent-father': 3,
+            'debt-collector': 4,
+            'lamp-keeper': 5,
+          };
+          const type = payload as EnemyType;
+          const stageIndex = bossStages[type];
+          if (stageIndex !== undefined) {
+            if (this.state === 'title') this.startRun(0x20260718);
+            this.initialItemReward = false;
+            this.hero.maxHp = 999;
+            this.hero.hp = 999;
+            this.encounterIndex = stageIndex;
+            this.startStage();
+            this.enemies = [];
+            const enemy = this.createSeekingEnemy(type, this.heroX, this.heroY - 128);
+            if (type === 'uniform-answer') enemy.mechTimer = 7.35;
+            if (type === 'last-bus') { enemy.phase = 1; enemy.mechTimer = 0.58; }
+            if (type === 'silent-father') { enemy.phase = 2; enemy.phaseFlashTimer = 0.8; }
+            if (type === 'debt-collector') enemy.mechTimer = 6.4;
+            if (type === 'lamp-keeper') enemy.mechTimer = 9.2;
+            this.enemies.push(enemy);
           }
         }
         if (action === 'boss') {

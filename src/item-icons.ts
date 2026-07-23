@@ -3,7 +3,7 @@
 import iconManifest from './assets/items/icons.json';
 import type { ItemId } from './types';
 
-const ICONS_URL = new URL('./assets/canonical-v1/items/icons.png', import.meta.url).href;
+const ICONS_URL = new URL('./assets/items/icons.png', import.meta.url).href;
 
 const CELL = iconManifest.cell;
 const COLS = iconManifest.cols;

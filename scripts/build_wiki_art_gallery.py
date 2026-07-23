@@ -24,6 +24,85 @@ HERO_DIR = Path("src/assets/hero-style1-profiles")
 TITLE_PNG = Path("src/assets/ui/title-life-night.png")
 PROPS_PNG = Path("src/assets/world/props.png")
 ENTITIES_PNG = Path("src/assets/world/entities.png")
+REVIEW_ART = (
+    (
+        Path("output/art-lighting-review-v1/processed/stage-lighting-runtime-composite.png")
+        if Path("output/art-lighting-review-v1/processed/stage-lighting-runtime-composite.png").exists()
+        else Path("output/art-lighting-review-v1/stage-lighting-runtime-composite.png"),
+        "六章战场照明 · 非夜间版本",
+        "清晨 / 白昼 / 傍晚 / 饭桌灯 / 日光灯 / 苍白午后 · 深墨只留给轮廓与终局",
+    ),
+    (
+        Path("output/art-lighting-review-v1/natural-chapter-transition-storyboard.png"),
+        "五段章节过场 · 连续衔接板",
+        "世界与主角不消失 · 地面持续溶解 · 现实处境与心声 · 4.2 秒人生片段",
+    ),
+    (
+        Path("output/imagegen/zhe-yi-shen-ground-tiles-v2/processed/ground-tiles-v2-contact.png"),
+        "六章 Image2 地面 v2 · 单块候选",
+        "旧木板 / 教室水磨石 / 站台铺面 / 出租屋旧地砖 / 办公地胶 / 苍白院廊",
+    ),
+    (
+        Path("output/imagegen/zhe-yi-shen-ground-tiles-v2/processed/ground-tiles-v2-tiled-contact.png"),
+        "六章 Image2 地面 v2 · 3×3 平铺检查",
+        "128×128 · 20 色 · 对边精确一致 · 无透视与固定大物件",
+    ),
+    (
+        Path("output/imagegen/zhe-yi-shen-ground-tiles-v2/processed/ground-tiles-v2-scene-composite.png"),
+        "六章 Image2 地面 v2 · 人物与多尺度摆设组合",
+        "大件 1.30–1.45 / 中件 0.96–1.18 / 小件 0.74–0.90 · 场景簇摆放",
+    ),
+    (
+        Path("output/imagegen/zhe-yi-shen-plinth-style-gate-v1/processed/plinth-style-gate-contact-8x.png"),
+        "特殊房道具台 · 三套视觉语言",
+        "12 个 48×32 候选 · 旧家具 / 档案机关 / 末班车站",
+    ),
+    (
+        Path("output/imagegen/zhe-yi-shen-special-threshold-style-gate-v1/processed/special-threshold-style-gate-contact-8x.png"),
+        "特殊房门槛资产 · 三套视觉语言",
+        "商人 / 留灯间门 / 里屋门 / 奖励光柱 · 32×64 单元",
+    ),
+    (
+        Path("output/imagegen/zhe-yi-shen-special-threshold-style-gate-v1/processed/special-room-composite-preview-4x.png"),
+        "特殊房实机比例组合预览",
+        "使用当前主角与地面图集组合 · 未替换运行时",
+    ),
+    (
+        Path("output/imagegen/zhe-yi-shen-special-threshold-corrections-v1/processed/last-line-corrections-contact-8x.png"),
+        "末班车站 · 定点修正版",
+        "紧凑商人 / 窄里屋门 / 不被绿幕吞掉的奖励光柱 / 空台面",
+    ),
+    (
+        Path("output/imagegen/zhe-yi-shen-special-room-backgrounds-v2/processed/special-room-current-vs-candidate-contact.png"),
+        "特殊房全屏背景 v2 · 现役对照",
+        "留灯间 / 人生档案封存室 / 失物估价处 · 360×640 候选，尚未替换",
+    ),
+    (
+        Path("output/imagegen/zhe-yi-shen-special-room-backgrounds-v2/processed/special-room-v2-safe-zone-contact.png"),
+        "特殊房全屏背景 v2 · 移动端安全区",
+        "标题 / 中央道具悬浮 / 底部代价与操作区均已做构图复核",
+    ),
+    (
+        Path("output/imagegen/zhe-yi-shen-ending-backgrounds-v2/processed/ending-backgrounds-current-vs-candidate.png"),
+        "结算背景 v2 · 现役对照",
+        "失败是人生档案封卷；真结局只留下路灯、钥匙与雨衣，不再烘焙第二个人物",
+    ),
+    (
+        Path("output/imagegen/zhe-yi-shen-ending-backgrounds-v2/processed/ending-backgrounds-v2-result-previews.png"),
+        "结算背景 v2 · 实机叠层",
+        "70% 暗幕 / 标题变字 / 页签 / 模块化最终主角 / 时间线 / 再活一次按钮",
+    ),
+    (
+        Path("output/imagegen/zhe-yi-shen-environment-surprises-reference-v1/processed/environment-surprises-contact-5x.png"),
+        "六章环境惊喜 · 静态激活帧",
+        "床下眼睛 / 批改红叉 / 末班车 / 未接来电 / 空转椅 / 路灯轮椅",
+    ),
+    (
+        Path("output/imagegen/zhe-yi-shen-environment-surprises-reference-v1/processed/environment-surprises-scene-preview-3x.png"),
+        "六章环境惊喜 · 实机比例预览",
+        "96×48 边缘覆盖层 · 与当前主角及六章地面同屏复核",
+    ),
+)
 
 ENEMY_FRAME = 32
 ENEMY_MOTION_ROWS = {"idle": 0, "move": 1, "attack": 2, "hurt": 3, "death": 4}
@@ -121,17 +200,24 @@ def img_tag(uri: str, width: int, alt: str) -> str:
     )
 
 
+def review_img_tag(path: Path, alt: str) -> str:
+    return (
+        f'<img src="{file_uri(path)}" alt="{alt}" loading="lazy" style="width:100%;max-width:980px;'
+        'height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px">'
+    )
+
+
 def build_section() -> str:
     parts: list[str] = [START]
     parts.append('<section class="entry" id="gallery">')
     parts.append('<p class="vol">附 卷</p>')
     parts.append('<h2 class="serif">美术馆 · 实机资源</h2>')
     parts.append(
-        '<p class="lede">本页展示的每一张图都直接取自游戏运行时图集，不是概念稿。'
-        '2026-07-19 起全部十九种敌怪采用"生图四姿态基底 + 程序合成动作"混合管线'
+        '<p class="lede">除文末明确标注“未接入”的生产候选外，本页主体全部直接取自游戏运行时图集，不是概念稿。'
+        '2026-07-20 起全部十九种敌怪采用"生图四姿态基底 + 程序合成动作"混合管线'
         '（站立/移动/攻击三格真实姿态 + 受击红闪与残差溶解由程序推导）；'
-        '标题画、场景摆设、世界实体与道具图标同为混合管线产物；'
-        '主角人偶、《一口气》弹体与道具穿戴上身的形变仍为代码实时绘制。</p>'
+        '标题画、场景摆设、世界实体、道具图标、弹体、命中特效、房间、地面、卡框与结局画面同为混合管线产物；'
+        '主角人偶与道具穿戴上身的形变仍由代码实时绘制。</p>'
     )
 
     # 标题画
@@ -257,26 +343,106 @@ def build_section() -> str:
         )
     parts.append(f'<div style="display:flex;flex-wrap:wrap;gap:16px">{"".join(combo_tiles)}</div>')
 
+    # 战斗 VFX
+    parts.append('<div class="stage-h"><h3>《一口气》弹体与战斗特效</h3>'
+                 '<span class="cnt">弹体凝实度/形态、四材质命中、免死演出、成双协同、敌怪状态标记</span></div>')
+    vfx_tiles = []
+    for path, name, width in (
+        (Path("src/assets/vfx/projectiles.png"), "弹体图集", 300),
+        (Path("src/assets/vfx/hits.png"), "命中与消散", 220),
+        (Path("src/assets/vfx/saves.png"), "免死演出", 240),
+        (Path("src/assets/vfx/synergy.png"), "成双协同", 220),
+        (Path("src/assets/vfx/status.png"), "状态标记", 200),
+    ):
+        vfx_tiles.append(
+            '<figure style="margin:0;text-align:center">'
+            + img_tag(file_uri(path), width, name)
+            + f'<figcaption class="dim" style="font-size:12px;margin-top:4px">{name}</figcaption></figure>'
+        )
+    parts.append(f'<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end">{"".join(vfx_tiles)}</div>')
+
+    # 房间与地面
+    parts.append('<div class="stage-h"><h3>房间内景与六章地面</h3>'
+                 '<span class="cnt">留灯间 / 里屋 / 当铺 · 童年至暮年六种地表</span></div>')
+    room_tiles = []
+    for filename, name in (("lamp.png", "留灯间"), ("inner.png", "里屋"), ("pawn.png", "没有招牌的当铺")):
+        room_tiles.append(
+            '<figure style="margin:0;text-align:center">'
+            + img_tag(file_uri(Path("src/assets/rooms") / filename), 150, name)
+            + f'<figcaption class="dim" style="font-size:12px;margin-top:4px">{name}</figcaption></figure>'
+        )
+    parts.append(f'<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end">{"".join(room_tiles)}</div>')
+    ground_tiles = []
+    for index, name in enumerate(("童年木地板", "少年水磨石", "青年机械地", "成年旧地毯", "中年医院地胶", "暮年夜路")):
+        ground_tiles.append(
+            '<figure style="margin:0;text-align:center">'
+            + img_tag(file_uri(Path("src/assets/world") / f"ground-{index}.png"), 96, name)
+            + f'<figcaption class="dim" style="font-size:11px;margin-top:4px">{name}</figcaption></figure>'
+        )
+    parts.append(f'<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-top:16px">{"".join(ground_tiles)}</div>')
+
     # UI 纹理与饰件
     parts.append('<div class="stage-h"><h3>UI 纹理与饰件</h3>'
-                 '<span class="cnt">image2 生图基底 + 程序规整 · 档案纸卡/夜面板自动叠加，文字与磨损仍由代码绘制</span></div>')
+                 '<span class="cnt">纸卡、品质框、面板、按钮、档案饰件、五毒、摇杆、章节与命运纹样</span></div>')
     ui_tiles = []
-    for filename, name in (
-        ("paper-texture.png", "旧档案纸纹理"), ("night-texture.png", "暗夜布纹"),
-        ("corner-ornament.png", "档案角花"), ("seal-ornament.png", "无字章饰"),
+    for filename, name, width in (
+        ("paper-texture.png", "旧档案纸纹理", 110), ("night-texture.png", "暗夜布纹", 110),
+        ("record-frames.png", "品质Ⅰ-Ⅳ档案框", 110), ("panel-frame.png", "面板框", 90),
+        ("button-frame.png", "按钮框", 150), ("archive-deco.png", "胶带/回形针/邮戳/骑缝章", 180),
+        ("poison.png", "五毒图腾", 220), ("joystick.png", "虚拟摇杆", 150),
+        ("chapter-strips.png", "六章转场题图", 110), ("fate-profiles.png", "六类命运纹样", 260),
     ):
         ui_tiles.append(
             '<figure style="margin:0;text-align:center">'
-            + img_tag(file_uri(Path("src/assets/ui") / filename), 110, name)
+            + img_tag(file_uri(Path("src/assets/ui") / filename), width, name)
             + f'<figcaption class="dim" style="font-size:12px;margin-top:4px">{name}</figcaption></figure>'
         )
     parts.append(f'<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end">{"".join(ui_tiles)}</div>')
 
-    UI_DIR = Path("src/assets/ui")
-    total = sum(p.stat().st_size for p in [TITLE_PNG, PROPS_PNG, ENTITIES_PNG, ITEMS_PNG, *ENEMY_DIR.glob("*.png"), *HERO_DIR.glob("*.png"), *UI_DIR.glob("*-texture.png"), *UI_DIR.glob("*-ornament.png")])
+    parts.append('<div class="stage-h"><h3>结局定格</h3>'
+                 '<span class="cnt">物证陈列桌 / 路灯下的收灯人</span></div>')
+    ending_tiles = []
+    for filename, name in (("ending-table.png", "物证陈列桌"), ("ending-lampman.png", "收灯人")):
+        ending_tiles.append(
+            '<figure style="margin:0;text-align:center">'
+            + img_tag(file_uri(Path("src/assets/ui") / filename), 180, name)
+            + f'<figcaption class="dim" style="font-size:12px;margin-top:4px">{name}</figcaption></figure>'
+        )
+    parts.append(f'<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end">{"".join(ending_tiles)}</div>')
+
+    # 生产候选：保留静态评审链路，不与运行时资产混淆
+    parts.append('<div class="stage-h"><h3>生产中的美术候选与实机校验</h3>'
+                 '<span class="cnt">Image2 参考图编辑 + 固定网格切片 · 静态评审通过后才可接入</span></div>')
+    parts.append(
+        '<p class="lede">这一批不是宣传海报，而是按真实槽位与实机叠层生产的可用资产。'
+        '战场照明已撤销“整局发生在夜里”的错误前提：前五章用清晨、白昼、傍晚、饭桌灯、日光灯与苍白午后区分年龄，只有收灯人终局进入夜色；'
+        '章节过场不切黑屏，地面与摆设在玩家脚下继续溶解，并在 4.2 秒内依次呈现现实处境、主角心声与生活物件接棒；'
+        '六章地面 v2 使用 Image2 分章生成材质，再经 128×128 降采样、20 色限色和对边融合成为真正可平铺图块；背景物件按大中小三档缩放并组成生活场景簇，不再均匀撒点；'
+        '三套小型资产语言分别测试“旧家具与生活遗物”“人生档案与机关”“末班车站与失物”；'
+        '全屏背景 v2 则把留灯间、里屋和当铺分别落实为普通小屋、档案封存室和失物估价处；'
+        '结算背景 v2 把失败解释为档案封卷，把真结局解释为有人刚刚照看过的一盏普通路灯；'
+        '所有图均已去绿底、限色、清理透明 RGB 并在当前主角旁以真实精灵比例复核。'
+        '当前建议以档案机关作为全局骨架，留灯间借用旧家具的暖意，青年章节保留末班车站变体。</p>'
+    )
+    for path, name, note in REVIEW_ART:
+        if not path.exists():
+            continue
+        parts.append(
+            '<figure style="margin:18px 0;text-align:center">'
+            + review_img_tag(path, name)
+            + f'<figcaption class="dim" style="font-size:12px;margin-top:6px">{name}<br>{note}</figcaption></figure>'
+        )
+    parts.append(
+        '<p class="dim">状态：候选，尚未写入 <code>src/assets</code>。'
+        '末班车站初稿中过宽的商人、里屋门与过淡光柱已采用单格定点补图修正，'
+        '三张全屏房间与两张结算背景也已通过移动端安全区检查；'
+        '正式接入前仍需作者选择整套或混合方案。</p>'
+    )
+
+    total = sum(path.stat().st_size for path in Path("src/assets").rglob("*.png"))
     parts.append(
         f'<p class="dim" style="margin-top:18px">全部运行时栅格资源合计 {total / 1024:.0f} KB'
-        '（参赛包体上限 100MB）；其余画面元素——道具外观、弹体、UI 面板——均为代码实时绘制，零图片资产。</p>'
+        '（参赛包体上限 100MB）；所有图集均保留程序绘制或基础色块兜底，贴图未加载时不会阻断游玩。</p>'
     )
     parts.append("</section>")
     parts.append(END)

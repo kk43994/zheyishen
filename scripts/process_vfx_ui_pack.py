@@ -3,7 +3,7 @@
 量化、降采样成运行时资产。raw 缺失的族自动跳过，可断点重复执行。
 
 用法：python3 scripts/process_vfx_ui_pack.py [族名...]
-族名：proj hits saves syn status poison frames archive rooms grounds chapters fates endings
+族名：proj hits saves syn status poison frames archive rooms grounds chapters fates endings promos
 """
 
 from __future__ import annotations
@@ -63,16 +63,35 @@ def largest_component(sprite: Image.Image, keep_ratio: float = 0.06) -> Image.Im
 
 def quantize_hard(sprite: Image.Image, colors: int = 12, alpha_cut: int = 120) -> Image.Image:
     quantized = sprite.quantize(colors=colors, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).convert("RGBA")
-    hard = [(r, g, b, 255 if a > alpha_cut else 0) for r, g, b, a in quantized.getdata()]
+    hard = [
+        (r, g, b, 255) if a > alpha_cut else (0, 0, 0, 0)
+        for r, g, b, a in quantized.getdata()
+    ]
     quantized.putdata(hard)
     return quantized
 
 
+def tint_alpha_sprite(sprite: Image.Image, color: str) -> Image.Image:
+    """把生成图的杂色收进统一色相，同时保留像素明暗和透明轮廓。"""
+    base = tuple(int(color[index:index + 2], 16) for index in (1, 3, 5))
+    tinted = []
+    for red, green, blue, alpha in sprite.convert("RGBA").getdata():
+        if alpha == 0:
+            tinted.append((0, 0, 0, 0))
+            continue
+        luminance = (red * 30 + green * 59 + blue * 11) / 25500
+        shade = 0.54 + luminance * 0.62
+        tinted.append(tuple(min(255, round(channel * shade)) for channel in base) + (alpha,))
+    result = Image.new("RGBA", sprite.size, (0, 0, 0, 0))
+    result.putdata(tinted)
+    return result
+
+
 def cell_sprite(sheet: Image.Image, quadrant: int, logical: int, colors: int = 12, soft: bool = False) -> Image.Image:
     """取 2x2 格中的一格 → 抠绿 → 裁边 → 等比降到 logical 内接 → 量化。"""
-    half = sheet.width // 2
-    x, y = (quadrant % 2) * half, (quadrant // 2) * half
-    cell = strip_green(sheet.crop((x, y, x + half, y + half)))
+    half_w, half_h = sheet.width // 2, sheet.height // 2
+    x, y = (quadrant % 2) * half_w, (quadrant // 2) * half_h
+    cell = strip_green(sheet.crop((x, y, x + half_w, y + half_h)))
     cell = largest_component(cell)
     bbox = cell.getchannel("A").point(lambda v: 255 if v > 40 else 0).getbbox()
     if bbox is None:
@@ -108,7 +127,13 @@ def tile_texture(name: str, out: Path, size: int = 192, colors: int = 10, darken
     src = RAW / f"{name}.png"
     if not src.exists():
         return False
-    image = Image.open(src).convert("RGB").resize((size, size), Image.Resampling.NEAREST)
+    half = size // 2
+    base = Image.open(src).convert("RGB").resize((half, half), Image.Resampling.NEAREST)
+    image = Image.new("RGB", (size, size))
+    image.paste(base, (0, 0))
+    image.paste(base.transpose(Image.Transpose.FLIP_LEFT_RIGHT), (half, 0))
+    image.paste(base.transpose(Image.Transpose.FLIP_TOP_BOTTOM), (0, half))
+    image.paste(base.transpose(Image.Transpose.ROTATE_180), (half, half))
     if darken != 1.0:
         image = image.point(lambda v: int(v * darken))
     image = image.quantize(colors=colors, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE).convert("RGB")
@@ -226,15 +251,18 @@ def do_frames() -> bool:
     if (RAW / "frame-quality.png").exists():
         sheet = Image.open(RAW / "frame-quality.png").convert("RGBA")
         atlas = Image.new("RGBA", (128, 56 * 4), (0, 0, 0, 0))
+        # 品质只改变档案批注色，不另起一套霓虹语言。
+        quality_colors = ("#71818A", "#8A7D68", "#9F3548", "#C6A44A")
         for quadrant in range(4):
-            half = sheet.width // 2
-            x, y = (quadrant % 2) * half, (quadrant // 2) * half
-            cell = strip_green(sheet.crop((x, y, x + half, y + half)))
+            half_w, half_h = sheet.width // 2, sheet.height // 2
+            x, y = (quadrant % 2) * half_w, (quadrant // 2) * half_h
+            cell = strip_green(sheet.crop((x, y, x + half_w, y + half_h)))
             bbox = cell.getchannel("A").point(lambda v: 255 if v > 40 else 0).getbbox()
             if bbox is None:
                 continue
             frame = cell.crop(bbox).resize((128, 56), Image.Resampling.NEAREST)
-            atlas.paste(quantize_hard(frame, 10), (0, quadrant * 56), quantize_hard(frame, 10))
+            frame = tint_alpha_sprite(quantize_hard(frame, 10), quality_colors[quadrant])
+            atlas.paste(frame, (0, quadrant * 56), frame)
         (ASSETS / "ui").mkdir(parents=True, exist_ok=True)
         atlas.save(ASSETS / "ui/record-frames.png", optimize=True)
         ok = True
@@ -242,9 +270,9 @@ def do_frames() -> bool:
         sheet = Image.open(RAW / "frame-panels.png").convert("RGBA")
         targets = [("panel-frame.png", 120, 160), ("button-frame.png", 96, 30), ("torn-edge.png", 160, 14), ("receipt-edge.png", 160, 14)]
         for quadrant, (name, width, height) in enumerate(targets):
-            half = sheet.width // 2
-            x, y = (quadrant % 2) * half, (quadrant // 2) * half
-            cell = strip_green(sheet.crop((x, y, x + half, y + half)))
+            half_w, half_h = sheet.width // 2, sheet.height // 2
+            x, y = (quadrant % 2) * half_w, (quadrant // 2) * half_h
+            cell = strip_green(sheet.crop((x, y, x + half_w, y + half_h)))
             bbox = cell.getchannel("A").point(lambda v: 255 if v > 40 else 0).getbbox()
             if bbox is None:
                 continue
@@ -304,9 +332,20 @@ def do_chapters() -> bool:
         sheet = Image.open(RAW / f"{name}.png").convert("RGBA")
         half = sheet.width // 2
         x, y = (quadrant % 2) * half, (quadrant // 2) * half
-        cell = sheet.crop((x + 60, y + 150, x + half - 60, y + half - 150)).resize((96, 52), Image.Resampling.NEAREST)
-        cell = cell.point(lambda v: int(v * 0.85))
-        atlas.paste(quantize_hard(cell.convert("RGBA"), 14, alpha_cut=0), (0, index * 52))
+        cell = strip_green(sheet.crop((x, y, x + half, y + half)))
+        bbox = cell.getchannel("A").point(lambda v: 255 if v > 40 else 0).getbbox()
+        if bbox is None:
+            continue
+        scene = cell.crop(bbox)
+        scale = max(96 / scene.width, 52 / scene.height)
+        scene = scene.resize((round(scene.width * scale), round(scene.height * scale)), Image.Resampling.NEAREST)
+        left = (scene.width - 96) // 2
+        top = (scene.height - 52) // 2
+        scene = scene.crop((left, top, left + 96, top + 52))
+        backdrop = Image.new("RGBA", (96, 52), (12, 12, 16, 255))
+        backdrop.alpha_composite(scene)
+        backdrop = backdrop.point(lambda v: int(v * 0.85))
+        atlas.paste(quantize_hard(backdrop, 14, alpha_cut=0), (0, index * 52))
     (ASSETS / "ui").mkdir(parents=True, exist_ok=True)
     atlas.save(ASSETS / "ui/chapter-strips.png", optimize=True)
     return True
@@ -329,24 +368,37 @@ def do_endings() -> bool:
     return ok
 
 
+def do_promos() -> bool:
+    promo_dir = Path("docs/promo")
+    ok = full_scene("promo-cover", promo_dir / "cover-3x4.png", (768, 1024), colors=32, darken=0.96)
+    ok = full_scene("promo-banner", promo_dir / "banner-16x9.png", (1280, 720), colors=32, darken=0.96) or ok
+    return ok
+
+
 FAMILIES = {
     "proj": do_proj, "hits": do_hits, "saves": do_saves, "syn": do_syn, "status": do_status,
     "poison": do_poison, "frames": do_frames, "archive": do_archive, "rooms": do_rooms,
     "grounds": do_grounds, "chapters": do_chapters, "fates": do_fates, "endings": do_endings,
+    "promos": do_promos,
 }
 
 
 def main() -> None:
     picked = sys.argv[1:] or list(FAMILIES)
+    failed = False
     for family in picked:
         handler = FAMILIES.get(family)
         if handler is None:
             print(f"{family}: unknown family")
+            failed = True
             continue
         try:
             print(f"{family}: {'done' if handler() else 'skip (raw missing)'}", flush=True)
         except Exception as error:  # noqa: BLE001
             print(f"{family}: FAILED · {error}", flush=True)
+            failed = True
+    if failed:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

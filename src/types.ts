@@ -117,10 +117,17 @@ export interface FateResponse {
   result: string;
 }
 
+export interface FateScene {
+  time: string;
+  place: string;
+  people: string;
+}
+
 export interface FateEvent {
   id: string;
   title: string;
   fact: string;
+  scene: FateScene;
   profile: FateProfile;
   memoryId: string;
   memoryText: string;
@@ -297,7 +304,10 @@ export interface EnemyUnit {
   age: number;
   angle?: number;
   slowTimer?: number;
+  paralyzeTimer?: number;
+  loopTimer?: number;
   dashTimer?: number;
+  phaseFlashTimer?: number;
   /** 掉色雨滴标记（《那年他觉得自己很酷》）：剩余秒数，被标记的敌人受伤加成 */
   marked?: number;
   /** 《凌晨三点的已读》：挂账伤害与结算倒计时——迟到的回应一次性爆出 */
@@ -348,6 +358,8 @@ export interface Projectile {
   splitChance: number;
   explosion: number;
   generation: number;
+  /** 对象池淘汰优先级：核心攻击保留，复制/分裂出的衍生弹先回收。 */
+  poolPriority?: 'core' | 'secondary';
   color: string;
   style: ProjectileStyle;
   /** 《对方正在输入…》蓄力弹：飞行中不断缩小，命中时只剩"嗯"那么大 */
@@ -361,8 +373,8 @@ export interface Projectile {
 
 export interface BurstEffect {
   id: number;
-  kind: 'ring' | 'hit' | 'word' | 'door' | 'sigh';
-  /** 命中材质：mist/water/crit/paper，选择 hits.png 图集行；缺省走程序圆圈 */
+  kind: 'ring' | 'hit' | 'word' | 'door' | 'sigh' | 'syn';
+  /** 命中材质：mist/water/crit/paper 选 hits 行；syn 时为 ice/crack/collapse/arc */
   material?: string;
   x: number;
   y: number;

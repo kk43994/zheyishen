@@ -6,6 +6,7 @@ import type {
   FateProfile,
   FateResponse,
   FateResponseEffect,
+  FateScene,
   FateStatKey,
   ItemId,
   LifeSnapshot,
@@ -13,7 +14,7 @@ import type {
   PoisonVector,
 } from './types';
 
-interface LocalFateBlueprint extends Omit<FateEvent, 'source'> {
+interface LocalFateBlueprint extends Omit<FateEvent, 'source' | 'scene'> {
   ages: string[];
 }
 
@@ -144,15 +145,34 @@ const LOCAL_FATES: LocalFateBlueprint[] = [
   },
 ];
 
+const LOCAL_FATE_SCENES: Record<string, FateScene> = {
+  'wrong-answer-read': { time: '小学的一节课上', place: '教室讲台前', people: '他、老师和全班同学' },
+  'uniform-too-small': { time: '开学前的早晨', place: '家中穿衣镜前', people: '他和家里人' },
+  'everyone-laughed': { time: '一次课间', place: '学校教室里', people: '他和周围的同学' },
+  'letter-read-out': { time: '午休快结束时', place: '教室最后一排', people: '他和传信的同学' },
+  'hair-must-be-black': { time: '周一上学时', place: '学校门口', people: '他和值日老师' },
+  'landlord-changed-lock': { time: '下班后的晚上', place: '出租屋门外', people: '他、房东和电话那头的人' },
+  'contract-missing-page': { time: '入职签约当天', place: '公司会议室', people: '他和递合同的人' },
+  'father-fell': { time: '一个工作日下午', place: '公司走廊与医院电话间', people: '他、父亲和来电的人' },
+  'child-did-not-return': { time: '晚饭已经凉时', place: '家里的饭桌旁', people: '他和没有回家的孩子' },
+  'name-on-list': { time: '部门会议结束后', place: '没有关灯的办公室', people: '他、主管和同事' },
+  'report-arrow-up': { time: '体检复诊当天', place: '医院诊室', people: '他和医生' },
+  'photo-one-less': { time: '一个睡不着的夜里', place: '家中旧相册前', people: '他和照片里少掉的人' },
+  'two-small-coins': { time: '那天回家路上', place: '外套口袋里', people: '他和留下硬币的人' },
+};
+
 export function generateLocalFateEvent(snapshot: LifeSnapshot, random: () => number): FateEvent {
-  if (snapshot.items.length > 0 && random() < 0.28) return makeWornItemEvent(snapshot, random);
   const recent = new Set(snapshot.recentEvents);
   let candidates = LOCAL_FATES.filter((event) => event.ages.includes(snapshot.age) && !recent.has(event.id));
   if (!candidates.length) candidates = LOCAL_FATES.filter((event) => event.ages.includes(snapshot.age));
   if (!candidates.length) candidates = LOCAL_FATES;
   const picked = candidates[Math.floor(random() * candidates.length)] ?? LOCAL_FATES[0]!;
   const { ages: _ages, ...event } = picked;
-  return cloneEvent({ ...event, source: 'local' });
+  return cloneEvent({
+    ...event,
+    scene: LOCAL_FATE_SCENES[event.id] ?? defaultFateScene(snapshot),
+    source: 'local',
+  });
 }
 
 export function validateFateEvent(value: unknown, snapshot: LifeSnapshot): FateEvent | null {
@@ -160,6 +180,7 @@ export function validateFateEvent(value: unknown, snapshot: LifeSnapshot): FateE
   const id = readSlug(value.id, 3, 48);
   const title = readText(value.title, 2, 16);
   const fact = readText(value.fact, 8, 90);
+  const scene = validateScene(value.scene);
   const profile = typeof value.profile === 'string' && FATE_PROFILES.includes(value.profile as FateProfile)
     ? value.profile as FateProfile : null;
   const memoryId = readSlug(value.memoryId, 3, 48);
@@ -167,26 +188,29 @@ export function validateFateEvent(value: unknown, snapshot: LifeSnapshot): FateE
   const unavoidable = validateFactEffect(value.unavoidable, snapshot);
   const swallow = validateResponse(value.swallow);
   const exhale = validateResponse(value.exhale);
-  if (!id || !title || !fact || !profile || !memoryId || !memoryText || !unavoidable || !swallow || !exhale) return null;
+  if (!id || !title || !fact || !scene || !profile || !memoryId || !memoryText || !unavoidable || !swallow || !exhale) return null;
   if (swallow.label === exhale.label || snapshot.recentEvents.includes(id)) return null;
-  return { id, title, fact, profile, memoryId, memoryText, unavoidable, swallow, exhale, source: 'gpt' };
+  return { id, title, fact, scene, profile, memoryId, memoryText, unavoidable, swallow, exhale, source: 'gpt' };
 }
 
-function makeWornItemEvent(snapshot: LifeSnapshot, random: () => number): FateEvent {
-  const item = snapshot.items[Math.floor(random() * snapshot.items.length)] ?? snapshot.items[0]!;
-  const suffix = snapshot.chapterIndex.toString(36);
+function defaultFateScene(snapshot: LifeSnapshot): FateScene {
+  const times = ['熄灯后的晚上', '一个上学日上午', '一个工作日傍晚', '一天晚饭前后', '一个加班的夜里', '一次复诊后的下午'];
+  const places = ['家中卧室', '学校教室', '车站与出租屋之间', '家里的饭桌旁', '办公室', '病房走廊'];
+  const people = ['他和家里人', '他、同学和老师', '他、同龄人和办事的人', '他和家人', '他、同事和主管', '他、家人和医护人员'];
+  const index = Math.min(places.length - 1, Math.max(0, snapshot.chapterIndex));
   return {
-    id: `worn_${item.id}_${suffix}`,
-    title: '它在半夜响了一声',
-    fact: `穿在身上的《${item.name}》忽然发出声音。你已经记不起它上一次安静是什么时候。`,
-    profile: '荒诞',
-    memoryId: `heard_${item.id}_${suffix}`,
-    memoryText: `听见《${item.name}》在半夜发出声音`,
-    unavoidable: noFact(),
-    swallow: response('把它按在胸口', '攻击变重并提高伤害', 'heavy_breath', { delusion: 1 }, `它安静下来，重量却顺着手掌留进了身体。`),
-    exhale: response('让它继续响', '攻击分散并增加数量', 'scatter', { pride: 1 }, `声音被揉进《一口气》，每一枚弹体都带着它的回声。`),
-    source: 'local',
+    time: times[index] ?? `${snapshot.age}的一天`,
+    place: places[index] ?? '这一段人生里',
+    people: people[index] ?? '他和家里人',
   };
+}
+
+function validateScene(value: unknown): FateScene | null {
+  if (!isRecord(value)) return null;
+  const time = readText(value.time, 2, 18);
+  const place = readText(value.place, 2, 24);
+  const people = readText(value.people, 2, 28);
+  return time && place && people ? { time, place, people } : null;
 }
 
 function response(
@@ -269,6 +293,7 @@ function validateFactEffect(value: unknown, snapshot: LifeSnapshot): FateFactEff
 function cloneEvent(event: FateEvent): FateEvent {
   return {
     ...event,
+    scene: { ...event.scene },
     unavoidable: { ...event.unavoidable },
     swallow: { ...event.swallow, poison: { ...event.swallow.poison } },
     exhale: { ...event.exhale, poison: { ...event.exhale.poison } },

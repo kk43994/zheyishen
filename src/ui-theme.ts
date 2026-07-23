@@ -39,11 +39,11 @@ export const UI_ARCHIVE_FONT_STACK =
   '"Fusion Pixel 12px Proportional zh_hans", "Noto Serif CJK SC", "Songti SC", serif';
 
 export const UI_FONT = {
-  tiny: `7px ${UI_FONT_STACK}`,
-  small: `8px ${UI_FONT_STACK}`,
-  body: `10px ${UI_FONT_STACK}`,
-  label: `bold 9px ${UI_FONT_STACK}`,
-  title: `bold 13px ${UI_ARCHIVE_FONT_STACK}`,
+  tiny: `8px ${UI_FONT_STACK}`,
+  small: `9px ${UI_FONT_STACK}`,
+  body: `11px ${UI_FONT_STACK}`,
+  label: `bold 10px ${UI_FONT_STACK}`,
+  title: `bold 14px ${UI_ARCHIVE_FONT_STACK}`,
   stamp: `bold 11px ${UI_ARCHIVE_FONT_STACK}`,
 } as const;
 
@@ -60,6 +60,13 @@ export type UiResponseDirection = 'swallow' | 'exhale';
 
 const snap = (value: number): number => Math.round(value);
 const atLeast = (value: number, minimum: number): number => Math.max(minimum, snap(value));
+
+function fitText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string {
+  if (ctx.measureText(text).width <= maxWidth) return text;
+  const characters = [...text];
+  while (characters.length > 1 && ctx.measureText(`${characters.join('')}…`).width > maxWidth) characters.pop();
+  return `${characters.join('')}…`;
+}
 
 function fillPixelShape(
   ctx: CanvasRenderingContext2D,
@@ -245,6 +252,8 @@ export function drawRedStamp(
   label: string,
   seed: number = 1,
   color: string = UI_PALETTE.oldRed,
+  labelColor: string = color,
+  wearColor: string = UI_PALETTE.paper,
 ): void {
   const sx = snap(x);
   const sy = snap(y);
@@ -264,12 +273,14 @@ export function drawRedStamp(
     ctx.drawImage(sealBase, sx, sy, sw, sh);
     ctx.restore();
   }
-  ctx.fillStyle = color;
+  // Wear the ink field before lettering so small mobile stamps keep a clean,
+  // readable label while their frame still looks rubbed and uneven.
+  drawDeterministicWear(ctx, sx + 2, sy + 2, sw - 4, sh - 4, seed, 9, wearColor, 1);
+  ctx.fillStyle = labelColor;
   ctx.font = UI_FONT.stamp;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(label, sx + Math.floor(sw / 2), sy + Math.floor(sh / 2));
-  drawDeterministicWear(ctx, sx + 2, sy + 2, sw - 4, sh - 4, seed, 14, UI_PALETTE.paper, 1);
   ctx.textBaseline = 'alphabetic';
 }
 
@@ -521,13 +532,14 @@ export function drawResponseMarker(
   ctx.fillRect(arrowX + (isSwallow ? 2 : 8), sy + 19, 6, 3);
   ctx.fillRect(arrowX + (isSwallow ? 4 : 0), sy + 22, 8, 3);
   const textX = isSwallow ? sx + 25 : sx + 8;
+  const textWidth = isSwallow ? sw - 33 : sw - 32;
   ctx.textAlign = 'left';
   ctx.fillStyle = UI_PALETTE.paperLight;
   ctx.font = UI_FONT.label;
-  ctx.fillText(label, textX, sy + 16);
+  ctx.fillText(fitText(ctx, label, textWidth), textX, sy + 16);
   ctx.fillStyle = UI_PALETTE.paperDim;
-  ctx.font = UI_FONT.tiny;
-  ctx.fillText(detail, textX, sy + 31);
+  ctx.font = UI_FONT.small;
+  ctx.fillText(fitText(ctx, detail, textWidth), textX, sy + 31);
 }
 
 /**

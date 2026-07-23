@@ -2,9 +2,19 @@
 // 全部为可选增强：图集未加载时调用方保持程序化绘制，不产生任何视觉变化。
 import projectilesManifest from './assets/vfx/projectiles.json';
 import hitsManifest from './assets/vfx/hits.json';
+import savesManifest from './assets/vfx/saves.json';
+import synergyManifest from './assets/vfx/synergy.json';
+import statusManifest from './assets/vfx/status.json';
+import poisonManifest from './assets/ui/poison.json';
+import joystickManifest from './assets/ui/joystick.json';
 
 const PROJECTILES_URL = new URL('./assets/vfx/projectiles.png', import.meta.url).href;
 const HITS_URL = new URL('./assets/vfx/hits.png', import.meta.url).href;
+const SAVES_URL = new URL('./assets/vfx/saves.png', import.meta.url).href;
+const SYNERGY_URL = new URL('./assets/vfx/synergy.png', import.meta.url).href;
+const STATUS_URL = new URL('./assets/vfx/status.png', import.meta.url).href;
+const POISON_URL = new URL('./assets/ui/poison.png', import.meta.url).href;
+const JOYSTICK_URL = new URL('./assets/ui/joystick.png', import.meta.url).href;
 
 interface GridManifest { cell: number; cols: number; rows: number; index?: Record<string, number> }
 
@@ -84,6 +94,20 @@ class SpriteAtlas {
 
 export const projectileAtlas = new SpriteAtlas(PROJECTILES_URL, projectilesManifest as GridManifest);
 export const hitAtlas = new SpriteAtlas(HITS_URL, hitsManifest as GridManifest);
+export const saveAtlas = new SpriteAtlas(SAVES_URL, savesManifest as GridManifest);
+export const synergyAtlas = new SpriteAtlas(SYNERGY_URL, synergyManifest as GridManifest);
+export const statusAtlas = new SpriteAtlas(STATUS_URL, statusManifest as GridManifest);
+export const poisonAtlas = new SpriteAtlas(POISON_URL, poisonManifest as GridManifest);
+export const joystickAtlas = new SpriteAtlas(JOYSTICK_URL, joystickManifest as GridManifest);
+
+export type SaveKind = 'tooth' | 'photo' | 'shutdown';
+const SAVE_ROW: Record<SaveKind, number> = { tooth: 0, photo: 1, shutdown: 2 };
+
+/** 免死演出：kind 行 × 4 帧，progress ∈ [0,1)。 */
+export function saveFrame(kind: SaveKind, progress: number): HTMLCanvasElement | null {
+  const frame = Math.min(3, Math.floor(progress * 4));
+  return saveAtlas.slice(SAVE_ROW[kind] * 4 + frame);
+}
 
 export type HitMaterial = 'mist' | 'water' | 'crit' | 'paper';
 const HIT_ROW: Record<HitMaterial, number> = { mist: 0, water: 1, crit: 2, paper: 3 };
@@ -96,3 +120,8 @@ export function hitFrame(material: HitMaterial, progress: number): HTMLCanvasEle
 
 projectileAtlas.load();
 hitAtlas.load();
+saveAtlas.load();
+synergyAtlas.load();
+statusAtlas.load();
+poisonAtlas.load();
+joystickAtlas.load();

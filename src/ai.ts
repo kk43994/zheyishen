@@ -120,14 +120,106 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-export async function generateAIFate(snapshot: LifeSnapshot): Promise<FateEvent | null> {
-  try {
-    const raw = await requestAI('fate', { snapshot }, 29000);
-    return validateFateEvent(raw, snapshot);
-  } catch (error) {
-    console.info('[AI] 命运事件回退到本地', error instanceof Error ? error.message : error);
-    return null;
+const AI_POISON_KEYS = ['greed', 'anger', 'delusion', 'pride', 'doubt'] as const;
+
+function trimAIText(value: unknown, max: number): unknown {
+  return typeof value === 'string' ? value.trim().slice(0, max) : value;
+}
+
+function normalizeAIPoison(value: unknown): unknown {
+  if (!Array.isArray(value)) return value ?? {};
+  const poison: Record<string, number> = {};
+  for (const key of value) {
+    if (typeof key === 'string' && AI_POISON_KEYS.includes(key as typeof AI_POISON_KEYS[number])) poison[key] = 1;
   }
+  return poison;
+}
+
+function normalizeAIResponse(value: unknown): unknown {
+  if (!isRecord(value)) return value;
+  return {
+    ...value,
+    label: trimAIText(value.label, 14),
+    hint: trimAIText(value.hint, 36),
+    result: trimAIText(value.result, 90),
+    poison: normalizeAIPoison(value.poison),
+  };
+}
+
+function normalizeAIFate(value: unknown, snapshot: LifeSnapshot): unknown {
+  if (!isRecord(value)) return value;
+  const rawId = typeof value.id === 'string' ? value.id.trim().slice(0, 48) : '';
+  const id = /^[a-z0-9_-]{3,48}$/i.test(rawId)
+    ? rawId
+    : `ai_fate_${snapshot.runSeed.toString(36)}_${snapshot.chapterIndex}`;
+  const title = typeof value.title === 'string' && value.title.trim().length >= 2
+    ? value.title.trim().slice(0, 16)
+    : '没有预告的那天';
+  const fact = typeof value.fact === 'string' && value.fact.trim().length >= 8
+    ? value.fact.trim().slice(0, 90)
+    : `${title}已经发生，所有人都像提前知道，只有他刚刚收到消息。`;
+  const rawMemoryId = typeof value.memoryId === 'string' ? value.memoryId.trim().slice(0, 48) : '';
+  const memoryId = /^[a-z0-9_-]{3,48}$/i.test(rawMemoryId) ? rawMemoryId : `remember_${id}`.slice(0, 48);
+  const memoryText = typeof value.memoryText === 'string' && value.memoryText.trim().length >= 4
+    ? value.memoryText.trim().slice(0, 60)
+    : `记得${title}`;
+  const scene = isRecord(value.scene) ? value.scene : {};
+  const stageTimes = ['熄灯后的晚上', '一个上学日上午', '一个工作日傍晚', '一天晚饭前后', '一个加班的夜里', '一次复诊后的下午'];
+  const stagePlaces = ['家中卧室', '学校教室', '车站与出租屋之间', '家里的饭桌旁', '办公室', '病房走廊'];
+  const stagePeople = ['他和家里人', '他、同学和老师', '他、同龄人和办事的人', '他和家人', '他、同事和主管', '他、家人和医护人员'];
+  const sceneIndex = Math.min(stagePlaces.length - 1, Math.max(0, snapshot.chapterIndex));
+  const sceneTime = typeof scene.time === 'string' && scene.time.trim().length >= 2
+    ? scene.time.trim().slice(0, 18)
+    : (stageTimes[sceneIndex] ?? `${snapshot.age}的一天`);
+  const scenePlace = typeof scene.place === 'string' && scene.place.trim().length >= 2
+    ? scene.place.trim().slice(0, 24)
+    : (stagePlaces[sceneIndex] ?? '这一段人生里');
+  const scenePeople = typeof scene.people === 'string' && scene.people.trim().length >= 2
+    ? scene.people.trim().slice(0, 28)
+    : (stagePeople[sceneIndex] ?? '他和家里人');
+  return {
+    ...value,
+    id,
+    title,
+    fact,
+    memoryId,
+    memoryText,
+    scene: { time: sceneTime, place: scenePlace, people: scenePeople },
+    swallow: normalizeAIResponse(value.swallow),
+    exhale: normalizeAIResponse(value.exhale),
+  };
+}
+
+function isGroundedFateNarrative(event: FateEvent): boolean {
+  const fact = event.fact;
+  const sentenceCount = (fact.match(/[。！？]/g) ?? []).length;
+  const impossible = /(魔法|灵异|鬼魂|幽灵|诅咒|穿越|异世界|超能力|情书.{0,6}(说话|开口|呼吸|响|叫)|信封?.{0,6}(说话|开口|呼吸)|衣服.{0,6}(说话|开口|呼吸)|照片.{0,6}(说话|开口|呼吸|自己动))/;
+  return fact.includes(event.scene.time)
+    && fact.includes(event.scene.place)
+    && fact.includes('他')
+    && sentenceCount >= 2
+    && !impossible.test(fact);
+}
+
+export async function generateAIFate(snapshot: LifeSnapshot): Promise<FateEvent | null> {
+  // Fate is prefetched while the chapter is still running, so spend that
+  // otherwise-idle time on one retry. A transient upstream error or one
+  // schema-invalid completion should not silently turn an AI run local.
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      const raw = await requestAI('fate', { snapshot }, 29000);
+      const event = validateFateEvent(normalizeAIFate(raw, snapshot), snapshot);
+      if (event && isGroundedFateNarrative(event)) return event;
+      console.info(`[AI] 命运事件格式或现实逻辑未通过，正在重写 ${attempt}/3`);
+    } catch (error) {
+      console.info(
+        `[AI] 命运事件请求失败 ${attempt}/3`,
+        error instanceof Error ? error.message : error,
+      );
+    }
+  }
+  console.info('[AI] 命运事件三次生成均未通过，回退到写实本地事件');
+  return null;
 }
 
 export async function generateAIFreeFate(payload: {

@@ -8,6 +8,9 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "package": "bash scripts/package.sh",
+    "validate:art": "python3 scripts/validate_runtime_art.py",
+    "validate:mobile": "python3 scripts/validate_mobile_ui.py",
+    "audit:art-style": "python3 scripts/build_style_consistency_audit.py",
     "validate": "bash scripts/run-validator.sh --required index.html --max-size 104857600 dist"
   },
   "devDependencies": {
