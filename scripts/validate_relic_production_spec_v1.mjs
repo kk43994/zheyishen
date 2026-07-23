@@ -11,8 +11,10 @@ const allowedRoles = new Set([
 const allowedProduction = new Set([
   'fitted', 'rigid', 'decal', 'morph', 'aura', 'event', 'projectile',
 ]);
+// name 不参与"≥4字"长度校验：它单独走与 relics.ts 的相等校验。
+// 否则《验孕棒》《五个哈》《雪花屏》等 3 字真名会与"必须等于原名"自相矛盾。
 const requiredTextFields = [
-  'name', 'numbers', 'rule', 'hero', 'projectile', 'feedback', 'stack',
+  'numbers', 'rule', 'hero', 'projectile', 'feedback', 'stack',
 ];
 
 const runtimeSource = await readFile(resolve(root, 'src/relics.ts'), 'utf8');
