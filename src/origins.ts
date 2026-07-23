@@ -365,13 +365,22 @@ function validateAppearance(value: unknown): AppearanceDNA | null {
   const eyeShape = pick(value.eyeShape, ['wide', 'downcast', 'narrow', 'uneven'] as const);
   const hairStyle = pick(value.hairStyle, ['soft_short', 'buzz', 'side_part', 'curly', 'messy'] as const);
   const hairColor = pick(value.hairColor, ['ink', 'brown', 'soft_black'] as const);
-  const stature = pick(value.stature, ['short', 'average', 'tall'] as const);
-  const bodyBuild = pick(value.bodyBuild, ['slim', 'average', 'sturdy', 'soft'] as const);
   const posture = pick(value.posture, ['upright', 'guarded', 'alert', 'slight_slouch'] as const);
   const outfit = pick(value.outfit, ['undershirt', 'old_sweater', 'uniform_liner', 'plain_shirt'] as const);
   const feature = pick(value.feature, ['none', 'cheek_mole', 'freckles', 'brow_gap', 'uneven_brows'] as const);
-  if (!skinTone || !faceShape || !eyeShape || !hairStyle || !hairColor || !stature || !bodyBuild || !posture || !outfit || !feature) return null;
-  return { skinTone, faceShape, eyeShape, hairStyle, hairColor, stature, bodyBuild, posture, outfit, feature };
+  if (!skinTone || !faceShape || !eyeShape || !hairStyle || !hairColor || !posture || !outfit || !feature) return null;
+  return {
+    skinTone,
+    faceShape,
+    eyeShape,
+    hairStyle,
+    hairColor,
+    stature: 'average',
+    bodyBuild: 'average',
+    posture,
+    outfit,
+    feature,
+  };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

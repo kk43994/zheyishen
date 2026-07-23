@@ -362,6 +362,8 @@ export interface Projectile {
   reversals: number;
   homing: number;
   splitChance: number;
+  /** 真正的分裂递归层级；与年度回放、雨滴等视觉代次分开计算。 */
+  splitDepth: number;
   explosion: number;
   generation: number;
   /** 对象池淘汰优先级：核心攻击保留，复制/分裂出的衍生弹先回收。 */
@@ -370,7 +372,7 @@ export interface Projectile {
   style: ProjectileStyle;
   /** 《对方正在输入…》蓄力弹：飞行中不断缩小，命中时只剩"嗯"那么大 */
   shrink?: boolean;
-  /** 《朋友圈仅三天可见》环绕弹：绕身三圈后消失 */
+  /** 《朋友圈仅三天可见》环绕弹：绕身三圈后向外释放 */
   orbit?: { angle: number; total: number; elapsed: number };
   visual: ProjectileVisual;
   critical: boolean;

@@ -11,6 +11,7 @@
     "validate:art": "python3 scripts/validate_runtime_art.py",
     "validate:mobile": "python3 scripts/validate_mobile_ui.py",
     "audit:art-style": "python3 scripts/build_style_consistency_audit.py",
+    "build:visual-manifest": "node scripts/run_item_visual_manifest_v2.mjs",
     "validate": "bash scripts/run-validator.sh --required index.html --max-size 104857600 dist"
   },
   "devDependencies": {

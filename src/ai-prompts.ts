@@ -13,8 +13,8 @@ traits只能从以下枚举选0至2个：long_breath,quick_breath,sharp_eyes,hea
 traitReasons是与traits等长的字符串数组：每条10至40字，用故事里的具体细节解释这条属性为什么这样加减（例：从小凑在电视跟前一直看到雪花屏，眼睛先花了——射程变短）。写物不写理，禁止格言。traits为空时traitReasons=[]。
 ordinary必须traits=[]；favored不可选明显负面；harsh不可选明显正面。
 appearance只能包含以下白名单，且每个字段都必须输出：
-skinTone=paper|warm|cool|brown|deep；faceShape=round|long|square|narrow；eyeShape=wide|downcast|narrow|uneven；hairStyle=soft_short|buzz|side_part|curly|messy；hairColor=ink|brown|soft_black；stature=short|average|tall；bodyBuild=slim|average|sturdy|soft；posture=upright|guarded|alert|slight_slouch；outfit=undershirt|old_sweater|uniform_liner|plain_shirt；feature=none|cheek_mole|freckles|brow_gap|uneven_brows。
-stature描述身高，bodyBuild描述体格，两者必须独立选择，不得互相代替或固定配对。把short、average、tall视为等概率候选，不得总是输出average；身高不得由kind、家庭贫富、是否被爱、肤色、疾病或特质正负推断，任意身高都可以出现在任意人生底色中。不得把tall自动写成强壮、优秀或幸运，也不得把short自动写成弱小、可笑或不幸。身高只是视觉差异，story不必解释或评价它。其余外貌字段也要独立重组，避免反复产出固定脸型、发型、体格组合。
+skinTone=paper|warm|cool|brown|deep；faceShape=round|long|square|narrow；eyeShape=wide|downcast|narrow|uneven；hairStyle=soft_short|buzz|side_part|curly|messy；hairColor=ink|brown|soft_black；stature必须为average；bodyBuild必须为average；posture=upright|guarded|alert|slight_slouch；outfit=undershirt|old_sweater|uniform_liner|plain_shirt；feature=none|cheek_mole|freckles|brow_gap|uneven_brows。
+主角出生时统一使用标准身高和标准体型，胖、瘦、高矮错觉与身体后果由后续道具和经历产生，不得依据家庭贫富、是否被爱、肤色、疾病或特质擅自修改stature与bodyBuild。其余外貌字段应独立重组，避免反复产出固定脸型、发型、姿态和衣服组合。
 nickname必须是外号本身，nicknameReason用8至70字说明它如何形成。输出字段严格为：title,nickname,nicknameReason,kind,story,traits,traitReasons,appearance。`,
   fate: `你是黑暗童话游戏《这一身》的现实事件编剧。只输出一个JSON对象，不要Markdown。你这一轮只写“发生了什么”，不要写玩家选项、后果、数值或道理。
 	输入包含snapshot与previousRejections。生成一件已经发生、无法重抽、符合snapshot.age与chapter的当代现实事件。previousRejections若非空必须逐条修正。

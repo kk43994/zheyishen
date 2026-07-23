@@ -215,6 +215,7 @@ interface PendingShot {
   homing: number;
   returning: boolean;
   splitChance: number;
+  splitDepth?: number;
   explosion: number;
   color: string;
   style: ProjectileStyle;
@@ -224,6 +225,23 @@ interface PendingShot {
   priority?: 'core' | 'secondary';
   shrink?: boolean;
 }
+
+interface ProjectileMechanicInheritance {
+  pierceScale?: number;
+  pierceAdd?: number;
+  pierceFloor?: number;
+  homingScale?: number;
+  homingFloor?: number;
+  splitScale?: number;
+  explosionScale?: number;
+  returning?: boolean;
+  splitDepth?: number;
+}
+
+type InheritedProjectileMechanics = Pick<
+  Projectile,
+  'pierce' | 'returning' | 'homing' | 'splitChance' | 'splitDepth' | 'explosion'
+>;
 
 interface StageSpec {
   chapter: string;
@@ -1874,7 +1892,7 @@ export class ZheYiShenGame {
           x: this.heroX, y: this.heroY - 14, angle: shot.angle, damage: shot.damage,
           speed: shot.speed, radius: shot.radius, range: shot.range, life: shot.life,
           pierce: shot.pierce, returning: shot.returning, homing: shot.homing, splitChance: shot.splitChance,
-          explosion: shot.explosion, generation: shot.generation, color: shot.color, style: shot.style,
+          splitDepth: shot.splitDepth, explosion: shot.explosion, generation: shot.generation, color: shot.color, style: shot.style,
           critical: shot.critical, knockback: shot.knockback, shrink: shot.shrink,
         });
       }
@@ -1885,13 +1903,18 @@ export class ZheYiShenGame {
       if (this.ktvTimer >= 6) {
         this.ktvTimer = 0;
         const roar = this.computeAttackVector();
+        const roarMechanics = this.inheritProjectileMechanics(roar, {
+          pierceAdd: 1,
+          homingScale: 0.6,
+          splitScale: 0.45,
+          explosionScale: 0.6,
+        });
         for (let index = 0; index < 10; index += 1) {
           const angle = (index / 10) * Math.PI * 2;
           this.spawnProjectile({
             x: this.heroX, y: this.heroY - 12, angle, damage: roar.damage * 0.9,
             speed: roar.projectileSpeed * 0.8, radius: Math.max(3, roar.width * 0.9),
-            range: 150, life: 1.2, pierce: roar.pierce + 1, returning: false,
-            homing: 0, splitChance: 0, explosion: 0, generation: 0, style: 'sound',
+            range: 150, life: 1.2, ...roarMechanics, generation: 0, style: 'sound',
             critical: false, knockback: roar.knockback * 1.4, color: '#8fa8bd',
           });
         }
@@ -2498,12 +2521,12 @@ export class ZheYiShenGame {
     }
     // 《年度听歌报告》：每第4轮把上一轮弹道原样重放一遍
     if (this.hasItem('year-report') && this.volleyCount % 4 === 0 && this.lastVolleyAngles.length > 0) {
+      const replayMechanics = this.inheritProjectileMechanics(vector);
       for (const angle of this.lastVolleyAngles) {
         this.spawnProjectile({
           x: this.heroX, y: this.heroY - 14, angle, damage: vector.damage * 0.6,
           speed: vector.projectileSpeed, radius: vector.width, range: vector.range,
-          life: vector.lifetime, pierce: vector.pierce, returning: vector.returning,
-          homing: vector.homing, splitChance: 0, explosion: 0, generation: 1, style,
+          life: vector.lifetime, ...replayMechanics, generation: 1, style,
           critical: false, knockback: vector.knockback * 0.6, color: '#8c81a0',
         });
       }
@@ -2512,25 +2535,32 @@ export class ZheYiShenGame {
     this.lastVolleyAngles = volleyAngles;
     // 《等大家有空》：空相框复制合照的弹道，复制越多越褪色
     if (photoVolley && this.hasCombo('等大家有空')) {
+      const copyMechanics = this.inheritProjectileMechanics(vector, {
+        splitScale: 0.7,
+        explosionScale: 0.8,
+      });
       for (let copy = 0; copy < 2; copy += 1) {
         this.spawnProjectile({
           x: this.heroX, y: this.heroY - 14, angle: baseAngle + (copy === 0 ? -0.4 : 0.4),
           damage: vector.damage * (copy === 0 ? 0.8 : 0.65), speed: vector.projectileSpeed,
-          radius: vector.width, range: vector.range, life: vector.lifetime, pierce: vector.pierce,
-          returning: vector.returning, homing: vector.homing, splitChance: 0,
-          explosion: vector.explosion, generation: 1, style, critical: false, knockback: vector.knockback,
+          radius: vector.width, range: vector.range, life: vector.lifetime, ...copyMechanics,
+          generation: 1, style, critical: false, knockback: vector.knockback,
           color: copy === 0 ? '#b6aa94' : '#8f887c',
         });
       }
     }
     this.sigh(1);
     if (this.hasItem('pregnancy-test') && this.volleyCount % 3 === 0) {
+      const followerMechanics = this.inheritProjectileMechanics(vector, {
+        homingFloor: 0.1,
+        splitScale: 0.5,
+        explosionScale: 0.45,
+      });
       this.spawnProjectile({
         x: this.heroX, y: this.heroY - 8, angle: baseAngle, damage: vector.damage * 0.8,
         speed: vector.projectileSpeed * 0.9, radius: Math.max(2.5, vector.width * 0.7),
-        range: vector.range, life: vector.lifetime, pierce: vector.pierce,
-        returning: vector.returning, homing: Math.max(0.1, vector.homing), splitChance: 0,
-        explosion: 0, generation: 1, color: '#cdb8cf', style, critical: false, knockback: vector.knockback * 0.6,
+        range: vector.range, life: vector.lifetime, ...followerMechanics,
+        generation: 1, color: '#cdb8cf', style, critical: false, knockback: vector.knockback * 0.6,
       });
     }
     this.burst('ring', this.heroX, this.heroY - 14, 16 + count * 2, this.projectileColor(style));
@@ -2545,7 +2575,7 @@ export class ZheYiShenGame {
 
   private spawnProjectile(options: {
     x: number; y: number; angle: number; damage: number; speed: number; radius: number; range: number; life: number;
-    pierce: number; returning: boolean; homing: number; splitChance: number; explosion: number;
+    pierce: number; returning: boolean; homing: number; splitChance: number; splitDepth?: number; explosion: number;
     generation: number; color: string; style: ProjectileStyle; critical: boolean; knockback?: number; visual?: ProjectileVisual;
     shrink?: boolean; orbit?: { angle: number; total: number; elapsed: number }; priority?: 'core' | 'secondary';
   }): void {
@@ -2556,12 +2586,27 @@ export class ZheYiShenGame {
       radius: options.radius, damage: options.damage, knockback: options.knockback ?? 0, life: options.life, maxLife: options.life,
       distance: 0, maxDistance: options.range, pierce: options.pierce, pierceMax: options.pierce,
       returning: options.returning, reversals: 0, homing: options.homing, splitChance: options.splitChance,
-      explosion: options.explosion, generation: options.generation, color: options.color,
+      splitDepth: options.splitDepth ?? 0, explosion: options.explosion, generation: options.generation, color: options.color,
       poolPriority: options.priority ?? (options.generation === 0 ? 'core' : 'secondary'),
       style: options.style, visual: options.visual ?? this.computeProjectileVisual(material, options.generation),
       critical: options.critical, hitIds: [],
       shrink: options.shrink, orbit: options.orbit,
     });
+  }
+
+  private inheritProjectileMechanics(
+    vector: AttackVector,
+    options: ProjectileMechanicInheritance = {},
+  ): InheritedProjectileMechanics {
+    const pierce = Math.round(vector.pierce * (options.pierceScale ?? 1)) + (options.pierceAdd ?? 0);
+    return {
+      pierce: Math.max(options.pierceFloor ?? 0, pierce),
+      returning: options.returning ?? vector.returning,
+      homing: Math.max(options.homingFloor ?? 0, vector.homing * (options.homingScale ?? 1)),
+      splitChance: this.clamp(vector.splitChance * (options.splitScale ?? 1), 0, 1),
+      splitDepth: options.splitDepth ?? 0,
+      explosion: this.clamp(vector.explosion * (options.explosionScale ?? 1), 0, 90),
+    };
   }
 
   private pushPendingShot(shot: PendingShot): void {
@@ -2588,22 +2633,36 @@ export class ZheYiShenGame {
     this.projectiles.push(projectile);
   }
 
-  /** 《朋友圈仅三天可见》：三枚环绕弹绕身三圈然后消失 */
+  /** 《朋友圈仅三天可见》：三枚当前弹体绕身三圈后向外释放 */
   private spawnOrbitRing(): void {
     const vector = this.computeAttackVector();
+    const orbitMechanics = this.inheritProjectileMechanics(vector, {
+      pierceFloor: 99,
+      homingScale: 0.65,
+      splitScale: 0.35,
+      explosionScale: 0.6,
+    });
     for (let index = 0; index < 3; index += 1) {
+      const angle = (index / 3) * Math.PI * 2;
       this.spawnProjectile({
-        x: this.heroX, y: this.heroY - 8, angle: (index / 3) * Math.PI * 2,
-        damage: Math.max(3, vector.damage * 0.8), speed: 0, radius: Math.max(3, vector.width * 0.9),
-        range: 99999, life: 2.6, pierce: 99, returning: false, homing: 0, splitChance: 0,
-        explosion: 0, generation: 1, style: 'plain', critical: false, knockback: 5,
-        color: '#9a94a6', orbit: { angle: (index / 3) * Math.PI * 2, total: 2.6, elapsed: 0 },
+        x: this.heroX, y: this.heroY - 8, angle,
+        damage: Math.max(3, vector.damage * 0.8), speed: vector.projectileSpeed * 0.72,
+        radius: Math.max(3, vector.width * 0.9), range: Math.min(180, vector.range * 0.75),
+        life: 2.6 + Math.max(1, vector.lifetime * 0.7), ...orbitMechanics,
+        generation: 1, style: 'plain', critical: false, knockback: 5,
+        color: '#9a94a6', orbit: { angle, total: 2.6, elapsed: 0 },
       });
     }
   }
 
   private releaseRain(): void {
     const vector = this.computeAttackVector();
+    const rainMechanics = this.inheritProjectileMechanics(vector, {
+      pierceFloor: 1,
+      homingFloor: 0.04,
+      splitScale: 0.5,
+      explosionScale: 0.5,
+    });
     // 《他当年也是这样站着的》：两代人的雨下得更密；《那年他觉得自己很酷》：雨滴掉色
     const drops = this.hasCombo('他当年也是这样站着的') ? 14 : 9;
     const dropColor = this.hasCombo('那年他觉得自己很酷') ? '#cbb757' : '#7eb5bd';
@@ -2611,8 +2670,7 @@ export class ZheYiShenGame {
       const angle = (index / drops) * Math.PI * 2;
       this.spawnProjectile({
         x: this.heroX, y: this.heroY - 12, angle, damage: Math.max(3, vector.damage * 0.55),
-        speed: 165, radius: 3.5, range: 230, life: 2.2, pierce: 1,
-        returning: false, homing: 0.04, splitChance: 0, explosion: 0,
+        speed: 165, radius: 3.5, range: 230, life: 2.2, ...rainMechanics,
         generation: 1, color: dropColor, style: 'rain', critical: false, knockback: 4,
       });
     }
@@ -2627,7 +2685,7 @@ export class ZheYiShenGame {
     for (const projectile of this.projectiles) {
       if (projectile.life <= 0) continue;
       if (projectile.orbit) {
-        // 环绕弹：绕身三圈，圈数走完即消散；命中判定内联
+        // 环绕阶段保留独立弹道；三圈走完后向外释放，让追踪、回返与范围爆炸继续生效。
         projectile.orbit.elapsed += dt;
         const sweep = projectile.orbit.angle + (projectile.orbit.elapsed / projectile.orbit.total) * Math.PI * 6;
         projectile.x = this.heroX + Math.cos(sweep) * 42;
@@ -2638,9 +2696,17 @@ export class ZheYiShenGame {
           if (Math.hypot(enemy.x - projectile.x, enemy.y - projectile.y) < enemy.radius + projectile.radius + 2) {
             projectile.hitIds.push(enemy.id);
             this.damageEnemy(enemy, projectile.damage, projectile.color, this.hitMaterialOf(projectile));
+            this.trySplitProjectile(projectile, sweep + Math.PI / 2, spawned);
           }
         }
-        continue;
+        if (projectile.orbit.elapsed < projectile.orbit.total) continue;
+        const releaseSpeed = Math.hypot(projectile.vx, projectile.vy);
+        const releaseAngle = Math.atan2(projectile.y - (this.heroY - 8), projectile.x - this.heroX);
+        projectile.vx = Math.cos(releaseAngle) * releaseSpeed;
+        projectile.vy = Math.sin(releaseAngle) * releaseSpeed;
+        projectile.distance = 0;
+        projectile.hitIds = [];
+        projectile.orbit = undefined;
       }
       if (projectile.shrink) {
         // 蓄力弹：飞行中不断缩小，命中时只剩"嗯"那么大
@@ -2735,10 +2801,7 @@ export class ZheYiShenGame {
             spawned.push(this.makeChildProjectile(projectile, bounceAngle));
           }
         }
-        if (projectile.generation === 0 && this.random() < projectile.splitChance) {
-          const angle = Math.atan2(projectile.vy, projectile.vx);
-          for (const offset of [-0.45, 0.45]) spawned.push(this.makeChildProjectile(projectile, angle + offset));
-        }
+        this.trySplitProjectile(projectile, Math.atan2(projectile.vy, projectile.vx), spawned);
         projectile.pierce -= 1;
         if (projectile.pierce < 0) {
           projectile.life = 0;
@@ -2788,6 +2851,12 @@ export class ZheYiShenGame {
     for (const projectile of spawned) this.pushProjectile(projectile);
   }
 
+  private trySplitProjectile(projectile: Projectile, angle: number, spawned: Projectile[]): void {
+    if (projectile.splitDepth > 0 || projectile.splitChance <= 0 || this.random() >= projectile.splitChance) return;
+    projectile.splitChance = 0;
+    for (const offset of [-0.45, 0.45]) spawned.push(this.makeChildProjectile(projectile, angle + offset));
+  }
+
   private makeChildProjectile(parent: Projectile, angle: number): Projectile {
     const speed = Math.hypot(parent.vx, parent.vy) * 0.82;
     const dadBoost = this.hasItem('group-dad') ? 1.4 : 1;
@@ -2801,7 +2870,7 @@ export class ZheYiShenGame {
       pierce: inheritedPierce, pierceMax: inheritedPierce,
       returning: parent.returning, reversals: 0,
       // 子弹继承其他 flags 与削弱后的范围爆炸，只关闭递归分裂，避免指数级弹幕。
-      splitChance: 0, explosion: parent.explosion * 0.55,
+      splitChance: 0, splitDepth: parent.splitDepth + 1, explosion: parent.explosion * 0.55,
       generation: parent.generation + 1, hitIds: [], orbit: undefined,
       poolPriority: 'secondary',
       visual: {
@@ -3161,12 +3230,18 @@ export class ZheYiShenGame {
     }
     if (this.hasItem('sock-cigs')) this.sockBoostTimer = 2;
     if (this.hasItem('always-crying') && remaining > 0) {
-      const tearDamage = Math.max(3, this.computeAttackVector().damage * 0.4);
+      const vector = this.computeAttackVector();
+      const tearDamage = Math.max(3, vector.damage * 0.4);
+      const tearMechanics = this.inheritProjectileMechanics(vector, {
+        pierceFloor: 3,
+        homingFloor: 0.08,
+        splitScale: 0.5,
+        explosionScale: 0.35,
+      });
       for (let tearIndex = 0; tearIndex < 3; tearIndex += 1) {
         this.spawnProjectile({
           x: this.heroX, y: this.heroY - 10, angle: this.random() * Math.PI * 2,
-          damage: tearDamage, speed: 200, radius: 3, range: 180, life: 1.6, pierce: 3,
-          returning: false, homing: 0.08, splitChance: 0, explosion: 0,
+          damage: tearDamage, speed: 200, radius: 3, range: 180, life: 1.6, ...tearMechanics,
           generation: 1, color: '#9fc2d8', style: 'rain', critical: false, knockback: 2,
         });
       }
@@ -3564,7 +3639,7 @@ export class ZheYiShenGame {
     if (id === 'broken-spine') this.changeMaxHp(-12);
     if (['eyebrow-razor', 'od-pill', 'white-bottle', 'broken-spine', 'spent-decade', 'painless-night'].includes(id)) this.strainTendency += 2;
     if (['fathers-raincoat', 'baby-tooth', 'missing-photo'].includes(id)) this.lightTendency += 2;
-    // 《朋友圈仅三天可见》：拾取任何道具后，3 枚环绕弹绕身三圈然后消失
+    // 《朋友圈仅三天可见》：拾取任何道具后，3 枚当前弹体绕身三圈后向外释放
     if (this.hasItem('three-day-visible')) this.spawnOrbitRing();
     this.say(`穿戴 · ${getItem(id).name}`);
     for (const combo of this.activeComboNames()) {
@@ -7400,7 +7475,12 @@ export class ZheYiShenGame {
     this.hero.hp = 999;
     this.encounterIndex = 2;
     this.startStage();
-    this.items = ['front-desk-letter', 'red-workbook', 'stone-schoolbag', 'only-key', 'broken-spine'];
+    this.items = [
+      'front-desk-letter', 'red-workbook', 'stone-schoolbag', 'only-key', 'broken-spine',
+      'fathers-raincoat', 'three-day-visible', 'always-crying',
+    ];
+    this.poisons.delusion = 8;
+    this.poisons.doubt = 8;
     this.shotTimer = 999;
     this.spawnPause = 999;
     this.enemies = [];
@@ -7423,6 +7503,8 @@ export class ZheYiShenGame {
       this.pushProjectile(this.makeChildProjectile(parent, -0.42));
       this.pushProjectile(this.makeChildProjectile(parent, 0.42));
     }
+    this.releaseRain();
+    this.spawnOrbitRing();
   }
 
   private installTestHooks(): void {
@@ -7498,7 +7580,8 @@ export class ZheYiShenGame {
         knobTravel: JOYSTICK_KNOB_TRAVEL,
       },
       projectiles: this.projectiles.length,
-      projectileSamples: this.projectiles.slice(0, 8).map((projectile) => ({
+      projectileSamples: this.projectiles.slice(0, 24).map((projectile) => ({
+        style: projectile.style,
         form: projectile.visual.form,
         trail: projectile.visual.trail,
         flags: projectileFlags(projectile),
@@ -7506,8 +7589,10 @@ export class ZheYiShenGame {
         radius: Number(projectile.radius.toFixed(1)),
         homing: Number(projectile.homing.toFixed(2)),
         splitChance: Number(projectile.splitChance.toFixed(2)),
+        splitDepth: projectile.splitDepth,
         areaDamage: Number(projectile.explosion.toFixed(1)),
         generation: projectile.generation,
+        orbit: Boolean(projectile.orbit),
       })),
       itemChoices: this.itemRewardChoices,
       shop: this.shopOffers,
@@ -7763,6 +7848,17 @@ export class ZheYiShenGame {
         }
         this.render();
       };
+      if (auditParams.has('audit-screen')) {
+        const previousMirror = document.querySelector('#game-state-audit');
+        previousMirror?.remove();
+        const stateMirror = document.createElement('pre');
+        stateMirror.id = 'game-state-audit';
+        stateMirror.hidden = true;
+        document.body.appendChild(stateMirror);
+        const refreshStateMirror = () => { stateMirror.textContent = renderGameState(); };
+        refreshStateMirror();
+        window.setInterval(refreshStateMirror, 250);
+      }
     }
   }
 }

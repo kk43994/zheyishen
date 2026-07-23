@@ -131,7 +131,7 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
   },
   'three-day-visible': {
     id: 'three-day-visible', name: '朋友圈仅三天可见', quality: 2, qualityName: '旧物', slot: 'shadow', glyph: '圈',
-    flavor: '过去被折叠成三天。', summary: '三圈可见', positive: '拾取任何道具后，3枚环绕弹绕身三圈然后消失', negative: '治疗-5%', price: 8, color: '#8a8274',
+    flavor: '过去被折叠成三天。', summary: '三圈后放手', positive: '拾取任何道具后，3枚当前弹体绕身三圈，再向外释放', negative: '治疗-5%', price: 8, color: '#8a8274',
   },
   'read-3am': {
     id: 'read-3am', name: '凌晨三点的已读', quality: 2, qualityName: '旧物', slot: 'hand', glyph: '读',
