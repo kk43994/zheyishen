@@ -192,12 +192,12 @@ function normalizeAIFate(value: unknown, snapshot: LifeSnapshot): unknown {
 
 function isGroundedFateNarrative(event: FateEvent): boolean {
   const fact = event.fact;
-  const sentenceCount = (fact.match(/[。！？]/g) ?? []).length;
+  const clauseCount = (fact.match(/[，。！？；]/g) ?? []).length;
   const impossible = /(魔法|灵异|鬼魂|幽灵|诅咒|穿越|异世界|超能力|情书.{0,6}(说话|开口|呼吸|响|叫)|信封?.{0,6}(说话|开口|呼吸)|衣服.{0,6}(说话|开口|呼吸)|照片.{0,6}(说话|开口|呼吸|自己动))/;
   return fact.includes(event.scene.time)
     && fact.includes(event.scene.place)
     && fact.includes('他')
-    && sentenceCount >= 2
+    && clauseCount >= 3
     && !impossible.test(fact);
 }
 
