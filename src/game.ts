@@ -10,6 +10,7 @@ import type { HeroFacing } from './hero-morph';
 import { PixelHeroRenderer } from './hero-pixel';
 import { DEFAULT_APPEARANCE, commitOriginWheels, getOriginModifiers, getOriginTrait, rollOriginWheels } from './origins';
 import { FATE_ITEM_IDS, getItem, ITEM_IDS } from './relics';
+import { clearRunCheckpoint, readRunCheckpoint, writeRunCheckpoint, type RunCheckpoint } from './run-checkpoint';
 import { comboArtAtlas } from './combo-art';
 import { itemIconAtlas } from './item-icons';
 import { projectileAtlas, hitFrame, saveFrame, synergyAtlas, statusAtlas, poisonAtlas, joystickAtlas, type HitMaterial, type SaveKind } from './vfx-sprites';
@@ -478,6 +479,7 @@ export class ZheYiShenGame {
   private runSeed = 0;
   private rngState = 0x20260718;
   private runSerial = 0;
+  private lastCheckpointKey = '';
   private coinKillProgress = 0;
   private stats: RunStats = { fateChoices: 0, swallowed: 0, exhaled: 0, volleys: 0, kills: 0, damage: 0, itemsTaken: 0, coinsSpent: 0 };
   private lastTime = 0;
@@ -604,6 +606,12 @@ export class ZheYiShenGame {
     this.titleBackground.src = TITLE_BACKGROUND_URL;
     this.installInput();
     this.installTestHooks();
+    // 断点恢复：无审计参数时，启动即尝试恢复上一局（豆抖平台可能中途断连）。
+    // 恢复沿用存档里已 AI 生成的出生，不是新造出生，不触碰"每局 AI 出生"红线。
+    const bootParams = new URLSearchParams(window.location.search);
+    if (!bootParams.has('audit') && !bootParams.has('audit-screen')) {
+      this.tryResumeFromCheckpoint();
+    }
     requestAnimationFrame((time) => this.frame(time));
   }
 
@@ -1058,7 +1066,202 @@ export class ZheYiShenGame {
     }
   }
 
+  /**
+   * 断点恢复：把当前对局快照成 RunCheckpoint。返回类型强制包含全部字段，
+   * 漏字段会在编译期报错。仅在稳定的"画面间"时刻可存档（战斗/命运/奖励/商店/特殊房）；
+   * title/result/origin 与命运牌异步未就绪时返回 null。
+   */
+  private captureCheckpoint(): RunCheckpoint | null {
+    if (!this.origin) return null;
+    const screen = this.state;
+    if (screen !== 'battle' && screen !== 'fateEvent' && screen !== 'itemReward'
+      && screen !== 'shop' && screen !== 'specialRoom') return null;
+    // 命运牌是异步生成的：正文未落定（或正在播放结果动画）时不存，避免恢复出空事件。
+    if (screen === 'fateEvent' && (!this.currentFate || this.fateResultDirection)) return null;
+    return {
+      version: 1,
+      savedAt: Date.now(),
+      screen,
+      runSeed: this.runSeed,
+      rngState: this.rngState,
+      encounterIndex: this.encounterIndex,
+      requestedOriginKind: this.requestedOriginKind,
+      origin: this.origin,
+      hero: { hp: this.hero.hp, maxHp: this.hero.maxHp, block: this.hero.block, coins: this.hero.coins },
+      items: [...this.items],
+      poisons: { ...this.poisons },
+      memories: [...this.memories],
+      fateReceipts: this.fateReceipts.map((receipt) => ({ ...receipt })),
+      stats: { ...this.stats },
+      fateBuild: { ...this.fateBuild },
+      persistent: {
+        firstFateDamageReduction: this.firstFateDamageReduction,
+        strainTendency: this.strainTendency,
+        lightTendency: this.lightTendency,
+        phoneCharges: this.phoneCharges,
+        voiceCharges: this.voiceCharges,
+        ruCharges: this.ruCharges,
+        noBuyStacks: this.noBuyStacks,
+        deathSaves: this.deathSaves,
+        heartCount: this.heartCount,
+        petGone: this.petGone,
+        graceUsed: this.graceUsed,
+        coinKillProgress: this.coinKillProgress,
+        comboSeen: [...this.comboSeen],
+        synergySeen: [...this.synergySeen],
+      },
+      battleTime: this.battleTime,
+      currentFate: this.currentFate,
+      fateDestination: this.fateDestination,
+      fateResultDirection: this.fateResultDirection,
+      initialItemReward: this.initialItemReward,
+      rewardTitle: this.rewardTitle,
+      rewardReturn: this.rewardReturn,
+      itemRewardChoices: [...this.itemRewardChoices],
+      itemRewardFocus: this.itemRewardFocus,
+      rewardAcquire: this.rewardAcquire ? { ...this.rewardAcquire } : undefined,
+      shopOffers: this.shopOffers.map((offer) => ({ ...offer })),
+      shopFocus: this.shopFocus,
+      boughtThisShop: this.boughtThisShop,
+      specialRoomKind: this.specialRoomKind,
+      specialRoomOffers: [...this.specialRoomOffers],
+      specialRoomTaken: [...this.specialRoomTaken],
+      specialRoomFocus: this.specialRoomFocus,
+    };
+  }
+
+  /** 每帧调用：仅当可存档且状态签名变化时写盘，避免每帧 localStorage 写入。 */
+  private maybePersistCheckpoint(): void {
+    const checkpoint = this.captureCheckpoint();
+    if (!checkpoint) return;
+    const key = [
+      checkpoint.screen,
+      checkpoint.encounterIndex,
+      checkpoint.items.length,
+      Math.round(checkpoint.hero.hp),
+      checkpoint.hero.coins,
+      checkpoint.currentFate?.title ?? '',
+      checkpoint.itemRewardChoices.join(','),
+      checkpoint.shopOffers.map((offer) => `${offer.item}:${offer.sold ? 1 : 0}`).join(','),
+      checkpoint.specialRoomOffers.join(','),
+      checkpoint.specialRoomTaken.length,
+    ].join('|');
+    if (key === this.lastCheckpointKey) return;
+    if (writeRunCheckpoint(checkpoint)) this.lastCheckpointKey = key;
+  }
+
+  /** 把快照写回对局字段，并按画面重建场景。任何异常由调用方兜底清档回标题。 */
+  private applyCheckpoint(checkpoint: RunCheckpoint): void {
+    this.runSerial += 1;
+    this.fateGenerationId += 1; // 作废任何在飞的命运异步请求
+    this.runSeed = checkpoint.runSeed;
+    this.rngState = checkpoint.rngState;
+    this.encounterIndex = checkpoint.encounterIndex;
+    this.requestedOriginKind = checkpoint.requestedOriginKind;
+    this.origin = checkpoint.origin;
+    this.originModifiers = getOriginModifiers(checkpoint.origin.traits);
+    this.originAttempt = 0;
+    this.originElapsed = this.originStoryDuration();
+    this.aiOriginState = 'gpt';
+    this.hero = {
+      hp: checkpoint.hero.hp,
+      maxHp: checkpoint.hero.maxHp,
+      block: checkpoint.hero.block,
+      coins: checkpoint.hero.coins,
+    };
+    this.items = [...checkpoint.items];
+    this.poisons = { ...checkpoint.poisons };
+    this.memories = [...checkpoint.memories];
+    this.fateReceipts = checkpoint.fateReceipts.map((receipt) => ({ ...receipt }));
+    this.stats = { ...checkpoint.stats };
+    this.fateBuild = { ...checkpoint.fateBuild };
+    this.firstFateDamageReduction = checkpoint.persistent.firstFateDamageReduction;
+    this.strainTendency = checkpoint.persistent.strainTendency;
+    this.lightTendency = checkpoint.persistent.lightTendency;
+    this.phoneCharges = checkpoint.persistent.phoneCharges;
+    this.voiceCharges = checkpoint.persistent.voiceCharges;
+    this.ruCharges = checkpoint.persistent.ruCharges;
+    this.noBuyStacks = checkpoint.persistent.noBuyStacks;
+    this.deathSaves = checkpoint.persistent.deathSaves;
+    this.heartCount = checkpoint.persistent.heartCount;
+    this.petGone = checkpoint.persistent.petGone;
+    this.graceUsed = checkpoint.persistent.graceUsed;
+    this.coinKillProgress = checkpoint.persistent.coinKillProgress;
+    this.comboSeen = new Set(checkpoint.persistent.comboSeen);
+    this.synergySeen = new Set(checkpoint.persistent.synergySeen);
+    this.battleTime = checkpoint.battleTime;
+    this.initialItemReward = checkpoint.initialItemReward;
+    this.rewardTitle = checkpoint.rewardTitle;
+    this.rewardReturn = checkpoint.rewardReturn;
+    this.itemRewardChoices = [...checkpoint.itemRewardChoices];
+    this.itemRewardFocus = checkpoint.itemRewardFocus;
+    this.rewardAcquire = undefined; // 恢复到拾取动画之前，交互重新开始
+    this.shopOffers = checkpoint.shopOffers.map((offer) => ({ ...offer }));
+    this.shopFocus = checkpoint.shopFocus;
+    this.boughtThisShop = checkpoint.boughtThisShop;
+    this.specialRoomKind = checkpoint.specialRoomKind;
+    this.specialRoomOffers = [...checkpoint.specialRoomOffers];
+    this.specialRoomTaken = new Set(checkpoint.specialRoomTaken);
+    this.specialRoomFocus = checkpoint.specialRoomFocus;
+    this.fateDestination = checkpoint.fateDestination;
+    this.currentFate = checkpoint.currentFate;
+    // 清空一切瞬态战场对象
+    this.enemies = [];
+    this.enemyDeaths = [];
+    this.projectiles = [];
+    this.bursts = [];
+    this.pendingShots = [];
+    this.coinDrops = [];
+    this.prefetchedFate = undefined;
+    this.paused = false;
+    this.resetMovementInput();
+    this.resetFateInput();
+    this.closeFreeInput();
+    switch (checkpoint.screen) {
+      case 'battle':
+        this.startStage(true); // 重建敌人/计时，跳过一次性入场经济
+        break;
+      case 'fateEvent':
+        this.aiFateState = this.currentFate ? 'gpt' : 'fallback';
+        this.fateResultDirection = undefined;
+        this.fateResultTimer = 0;
+        this.fateAnim = 0;
+        this.fateExitTimer = 0;
+        this.fateResultMinTimer = 0;
+        this.fatePlayerText = '';
+        this.state = 'fateEvent';
+        break;
+      case 'itemReward':
+      case 'shop':
+      case 'specialRoom':
+        this.state = checkpoint.screen;
+        break;
+    }
+  }
+
+  /** 启动时尝试恢复上一局；快照非法或恢复抛错则清档回到标题。 */
+  private tryResumeFromCheckpoint(): boolean {
+    let checkpoint: RunCheckpoint | null = null;
+    try {
+      checkpoint = readRunCheckpoint();
+    } catch {
+      checkpoint = null;
+    }
+    if (!checkpoint) return false;
+    try {
+      this.applyCheckpoint(checkpoint);
+      this.lastCheckpointKey = '';
+      return true;
+    } catch {
+      clearRunCheckpoint();
+      this.state = 'title';
+      return false;
+    }
+  }
+
   private startRun(fixedSeed?: number): void {
+    clearRunCheckpoint();
+    this.lastCheckpointKey = '';
     this.feedback.play('page');
     this.resetMovementInput();
     this.resetFateInput();
@@ -1276,7 +1479,7 @@ export class ZheYiShenGame {
     return this.aiOriginState === 'gpt' && Boolean(this.origin) && this.originElapsed >= this.originStoryDuration();
   }
 
-  private startStage(): void {
+  private startStage(resume = false): void {
     const stage = STAGES[this.encounterIndex];
     if (!stage) {
       this.endRun(true);
@@ -1332,27 +1535,31 @@ export class ZheYiShenGame {
     this.takeoutTick = 2;
     this.billTimer = 0;
     this.borrowedStat = undefined;
-    if (this.hasItem('card-binder')) {
-      const borrowables: DistortionStat[] = ['伤害', '射速', '射程'];
-      this.borrowedStat = borrowables[Math.floor(this.random() * borrowables.length)];
-      this.say(`翻出一张旧卡 · ${this.borrowedStat}+12%`);
+    // 一次性入场经济：扣费、进场掉血、翻卡加成只在首次进入本阶段结算。
+    // 断点恢复时存档已是"结算之后"的血量/零钱，重跑会二次扣血扣钱，故 resume 跳过。
+    if (!resume) {
+      if (this.hasItem('card-binder')) {
+        const borrowables: DistortionStat[] = ['伤害', '射速', '射程'];
+        this.borrowedStat = borrowables[Math.floor(this.random() * borrowables.length)];
+        this.say(`翻出一张旧卡 · ${this.borrowedStat}+12%`);
+      }
+      let stageFees = 0;
+      if (this.hasItem('gym-card')) stageFees += 1;
+      if (this.hasItem('auto-renew')) stageFees += 1;
+      if (this.hasItem('shared-powerbank')) stageFees += 1;
+      if (stageFees > 0 && this.hero.coins > 0) {
+        this.hero.coins = Math.max(0, this.hero.coins - stageFees);
+        this.say(`自动扣费 · -${stageFees}零钱`);
+      }
+      if (this.hasItem('drank-for-boss')) this.stunTimer = 1.2;
+      if (this.hasItem('year-report')) this.loseHealth(2);
     }
-    let stageFees = 0;
-    if (this.hasItem('gym-card')) stageFees += 1;
-    if (this.hasItem('auto-renew')) stageFees += 1;
-    if (this.hasItem('shared-powerbank')) stageFees += 1;
-    if (stageFees > 0 && this.hero.coins > 0) {
-      this.hero.coins = Math.max(0, this.hero.coins - stageFees);
-      this.say(`自动扣费 · -${stageFees}零钱`);
-    }
-    if (this.hasItem('drank-for-boss')) this.stunTimer = 1.2;
-    if (this.hasItem('year-report')) this.loseHealth(2);
     this.raincoatReady = this.hasItem('fathers-raincoat');
     this.toothReady = this.hasItem('baby-tooth');
     this.volleyCount = 0;
     this.rollOdDistortion();
-    if (this.hasItem('white-bottle')) this.loseHealth(2);
-    if (stage.end === 'fate' || stage.end === 'final') this.prepareFate();
+    if (!resume && this.hasItem('white-bottle')) this.loseHealth(2);
+    if (!resume && (stage.end === 'fate' || stage.end === 'final')) this.prepareFate();
     this.caption = stage.enterLine;
     this.captionTime = 5.5;
     this.say(stage.chapter);
@@ -1819,6 +2026,7 @@ export class ZheYiShenGame {
 
   private update(dt: number): void {
     if (this.paused) return;
+    this.maybePersistCheckpoint();
     this.visualTime += dt;
     if (this.toastTime > 0) this.toastTime -= dt;
     if (this.flash > 0) this.flash -= dt;
@@ -3800,6 +4008,9 @@ export class ZheYiShenGame {
     this.projectiles = [];
     this.toast = '';
     this.toastTime = 0;
+    // 本局已结束，清掉断点以免下次启动误恢复到已完结的对局。
+    clearRunCheckpoint();
+    this.lastCheckpointKey = '';
   }
 
   private nearestEnemy(x: number, y: number): EnemyUnit | undefined {
