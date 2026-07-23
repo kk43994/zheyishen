@@ -144,6 +144,7 @@ class PixelSurface {
 
 export class PixelHeroRenderer {
   private cache = new Map<string, HTMLCanvasElement>();
+  private outlineCache = new WeakMap<HTMLCanvasElement, HTMLCanvasElement>();
 
   constructor() {
     void heroStyle1Atlas.whenReady()
@@ -155,6 +156,7 @@ export class PixelHeroRenderer {
 
   clear(): void {
     this.cache.clear();
+    this.outlineCache = new WeakMap<HTMLCanvasElement, HTMLCanvasElement>();
   }
 
   draw(
@@ -171,8 +173,44 @@ export class PixelHeroRenderer {
     const destinationY = Math.round(groundY - PIVOT_Y * pixelScale);
     const previousSmoothing = target.imageSmoothingEnabled;
     target.imageSmoothingEnabled = false;
+    const outline = this.getOutlineFrame(frame);
+    target.save();
+    target.globalAlpha *= state.motion === 'hurt' ? 0.72 : 0.58;
+    target.drawImage(
+      outline,
+      destinationX - pixelScale,
+      destinationY - pixelScale,
+      (SURFACE_W + 2) * pixelScale,
+      (SURFACE_H + 2) * pixelScale,
+    );
+    target.restore();
     target.drawImage(frame, destinationX, destinationY, SURFACE_W * pixelScale, SURFACE_H * pixelScale);
     target.imageSmoothingEnabled = previousSmoothing;
+  }
+
+  private getOutlineFrame(frame: HTMLCanvasElement): HTMLCanvasElement {
+    const cached = this.outlineCache.get(frame);
+    if (cached) return cached;
+    const canvas = document.createElement('canvas');
+    canvas.width = SURFACE_W + 2;
+    canvas.height = SURFACE_H + 2;
+    const context = canvas.getContext('2d', { alpha: true });
+    if (!context) throw new Error('无法创建主角像素轮廓画布');
+    context.imageSmoothingEnabled = false;
+    for (let y = 0; y <= 2; y += 1) {
+      for (let x = 0; x <= 2; x += 1) {
+        if (x === 1 && y === 1) continue;
+        context.drawImage(frame, x, y);
+      }
+    }
+    context.globalCompositeOperation = 'source-in';
+    context.fillStyle = '#d8cbb5';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.globalCompositeOperation = 'destination-out';
+    context.drawImage(frame, 1, 1);
+    context.globalCompositeOperation = 'source-over';
+    this.outlineCache.set(frame, canvas);
+    return canvas;
   }
 
   private getFrame(state: PixelHeroState): HTMLCanvasElement {

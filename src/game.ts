@@ -64,6 +64,7 @@ const H = 640;
 const FIXED_STEP = 1 / 60;
 const HERO_SCREEN_X = 180;
 const HERO_SCREEN_Y = 310;
+const HERO_WORLD_SCALE = 1;
 const HERO_BASE_SPEED = 132;
 const MAX_ALIVE_ENEMIES = 18;
 const MAX_PROJECTILES = 280;
@@ -3810,7 +3811,7 @@ export class ZheYiShenGame {
       : heroMotion === 'attack'
         ? (this.heroAttackTimer > HERO_ATTACK_ANIMATION_DURATION * 0.5 ? 0 : 1)
         : undefined;
-    this.drawHero(this.heroX, this.heroY, 1, this.items, heroFacing, heroMotion, heroActionFrame);
+    this.drawHero(this.heroX, this.heroY, HERO_WORLD_SCALE, this.items, heroFacing, heroMotion, heroActionFrame);
     this.renderBursts();
     ctx.restore();
   }
@@ -4061,20 +4062,22 @@ export class ZheYiShenGame {
 
   private renderHeroGrounding(): void {
     const ctx = this.ctx;
-    const compression = this.heroMoving ? 2 : 0;
-    const hurtShift = this.hurtCooldown > 0 ? 3 : 0;
-    const shadowY = Math.round(this.heroY + 3 + hurtShift);
+    const compression = this.heroMoving ? 3 : 0;
+    const hurtShift = this.hurtCooldown > 0 ? 2 : 0;
+    const shadowY = Math.round(this.heroY + 2 + hurtShift);
+    const shadowWidth = 34 - compression * 2;
     ctx.save();
-    ctx.globalAlpha = this.hurtCooldown > 0 ? 0.28 : 0.42;
+    ctx.globalAlpha = this.hurtCooldown > 0 ? 0.34 : 0.54;
     ctx.fillStyle = '#09090c';
-    ctx.fillRect(Math.round(this.heroX - 13 + compression), shadowY, 26 - compression * 2, 3);
-    ctx.fillRect(Math.round(this.heroX - 8), shadowY + 3, 16, 2);
-    if (this.heroMoving) {
-      ctx.globalAlpha = 0.12;
-      ctx.fillStyle = STAGES[this.encounterIndex]?.propColor ?? '#d0b264';
-      ctx.fillRect(Math.round(this.heroX - 18 - compression), shadowY + 1, 4, 1);
-      ctx.fillRect(Math.round(this.heroX + 14 + compression), shadowY + 1, 4, 1);
-    }
+    ctx.fillRect(Math.round(this.heroX - shadowWidth / 2), shadowY, shadowWidth, 3);
+    ctx.fillRect(Math.round(this.heroX - 10), shadowY + 3, 20, 2);
+    ctx.globalAlpha = this.heroMoving ? 0.34 : 0.24;
+    ctx.fillStyle = STAGES[this.encounterIndex]?.propColor ?? UI_PALETTE.raincoatYellow;
+    ctx.fillRect(Math.round(this.heroX - 21 - compression), shadowY + 1, 6, 1);
+    ctx.fillRect(Math.round(this.heroX + 15 + compression), shadowY + 1, 6, 1);
+    ctx.globalAlpha = 0.12;
+    ctx.fillStyle = UI_PALETTE.paperLight;
+    ctx.fillRect(Math.round(this.heroX - 17), shadowY - 2, 34, 1);
     ctx.restore();
   }
 
@@ -4349,8 +4352,8 @@ export class ZheYiShenGame {
     ctx.fillRect(44, panelY + 4, 18, 2);
     ctx.fillStyle = '#e8e1d3';
     ctx.textAlign = 'center';
-    ctx.font = `bold 9px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText(this.caption, 180, panelY + 16, W - 96, 13, 2);
+    ctx.font = `bold 10px ${UI_ARCHIVE_FONT_STACK}`;
+    this.wrapText(this.caption, 180, panelY + 17, W - 96, 14, 2);
     ctx.restore();
   }
 
@@ -4803,7 +4806,7 @@ export class ZheYiShenGame {
     ctx.globalAlpha = cardAlpha;
     ctx.textAlign = 'left';
     ctx.fillStyle = '#6b6358';
-    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.font = `9px ${UI_FONT_STACK}`;
     ctx.fillText(`${AGE_LABELS[this.encounterIndex] ?? '这一生'} · 第 ${this.stats.fateChoices + 1} 次命运`, -96, -184);
     sceneArt.drawFateProfile(ctx, event.profile, -132, -200, 28, 0.9);
     drawRedStamp(ctx, 46, -198, 82, 24, '事实已落账', 19 + this.encounterIndex, UI_PALETTE.oldRed);
@@ -4812,8 +4815,8 @@ export class ZheYiShenGame {
     ctx.font = `bold 18px ${UI_ARCHIVE_FONT_STACK}`;
     this.wrapText(event.title, 0, -137, 226, 22, 2);
     ctx.fillStyle = '#3f3a34';
-    ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText(event.fact, 0, -74, 232, 17, 7);
+    ctx.font = `11px ${UI_ARCHIVE_FONT_STACK}`;
+    this.wrapText(event.fact, 0, -74, 232, 18, 7);
     drawStitchDivider(ctx, -112, 58, 224, 'horizontal', '#81786b', 5, 4);
     ctx.fillStyle = UI_PALETTE.oldRed;
     ctx.font = `bold 9px ${UI_FONT_STACK}`;
@@ -4917,7 +4920,7 @@ export class ZheYiShenGame {
     ctx.globalAlpha = fadeIn;
     ctx.textAlign = 'left';
     ctx.fillStyle = '#6b6358';
-    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.font = `9px ${UI_FONT_STACK}`;
     sceneArt.drawFateProfile(ctx, event.profile, 31, 198, 28, 0.88);
     ctx.fillText(
       this.fitText(`${AGE_LABELS[this.encounterIndex] ?? '这一生'} · ${event.title}`, 164),
@@ -5222,25 +5225,25 @@ export class ZheYiShenGame {
     this.bar(26, 22, 96, 3, this.hero.block / 24, UI_PALETTE.raincoatYellow);
     ctx.textAlign = 'left';
     ctx.fillStyle = UI_PALETTE.paperLight;
-    ctx.font = `9px ${UI_FONT_STACK}`;
-    ctx.fillText(`${Math.ceil(this.hero.hp)}/${this.hero.maxHp}`, 26, 38);
+    ctx.font = `bold 10px ${UI_FONT_STACK}`;
+    ctx.fillText(`${Math.ceil(this.hero.hp)} / ${Math.round(this.hero.maxHp)}`, 26, 38);
 
     drawCutCornerPanel(ctx, 136, 6, 108, 39, hudFill, hudStroke, 2, 1);
     ctx.textAlign = 'center';
     const activeBoss = this.enemies.find((enemy) => !enemy.dead && enemy.boss);
     if (activeBoss) {
-      ctx.font = `bold 9px ${UI_ARCHIVE_FONT_STACK}`;
+      ctx.font = `bold 10px ${UI_ARCHIVE_FONT_STACK}`;
       ctx.fillStyle = UI_PALETTE.paperLight;
       ctx.fillText(this.fitText(activeBoss.name, 92), 190, 17);
       this.bar(147, 23, 86, 5, activeBoss.hp / activeBoss.maxHp, UI_PALETTE.oldRed);
-      ctx.font = `8px ${UI_FONT_STACK}`;
+      ctx.font = `9px ${UI_FONT_STACK}`;
       ctx.fillStyle = UI_PALETTE.paperDim;
-      ctx.fillText(`${Math.ceil(activeBoss.hp)}/${activeBoss.maxHp}`, 190, 39);
+      ctx.fillText(`${Math.ceil(activeBoss.hp)} / ${Math.round(activeBoss.maxHp)}`, 190, 39);
     } else {
       ctx.font = `bold 10px ${UI_ARCHIVE_FONT_STACK}`;
       ctx.fillStyle = UI_PALETTE.paperLight;
       ctx.fillText(AGE_LABELS[this.encounterIndex] || '', 190, 20);
-      ctx.font = `8px ${UI_FONT_STACK}`;
+      ctx.font = `9px ${UI_FONT_STACK}`;
       ctx.fillStyle = UI_PALETTE.paperDim;
       const combo = this.activeComboNames()[0];
       const mid = stage?.end === 'final' && this.darkActive
@@ -5251,20 +5254,17 @@ export class ZheYiShenGame {
       ctx.fillText(this.fitText(mid, 92), 190, 36);
     }
 
-    drawCutCornerPanel(ctx, 248, 6, 106, 39, hudFill, hudStroke, 2, 1);
+    // Pause owns the far-right 28px. Keep the resource panel separate so the
+    // two controls do not visually merge on a narrow phone screen.
+    drawCutCornerPanel(ctx, 248, 6, 74, 39, hudFill, hudStroke, 2, 1);
     drawStatusIcon(ctx, 257, 13, 'coins', 1, UI_PALETTE.raincoatYellow);
     ctx.textAlign = 'left';
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.font = `9px ${UI_FONT_STACK}`;
     ctx.fillText('零钱', 274, 18);
     ctx.fillStyle = UI_PALETTE.raincoatYellow;
-    ctx.font = `bold 10px ${UI_FONT_STACK}`;
+    ctx.font = `bold 11px ${UI_FONT_STACK}`;
     ctx.fillText(String(this.hero.coins), 274, 36);
-    ctx.textAlign = 'right';
-    ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `8px ${UI_FONT_STACK}`;
-    ctx.fillText('物证', 320, 20);
-    ctx.fillText(String(this.items.length).padStart(2, '0'), 320, 36);
 
     drawLifeChapterTrack(ctx, 18, 52, 324, STAGES.length, this.encounterIndex, AGE_LABELS.join('|'), 0);
   }
@@ -5560,6 +5560,73 @@ export class ZheYiShenGame {
     }
   }
 
+  private drawPixelWarningRing(
+    x: number,
+    y: number,
+    radius: number,
+    color: string,
+    alpha: number,
+    completion = 1,
+    segments = 28,
+  ): void {
+    const ctx = this.ctx;
+    const count = Math.max(1, Math.floor(segments * this.clamp(completion, 0, 1)));
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.globalAlpha = alpha;
+    for (let index = 0; index < count; index += 1) {
+      const angle = -Math.PI / 2 + (index / segments) * Math.PI * 2;
+      const size = index % 4 === 0 ? 4 : 3;
+      ctx.fillRect(
+        Math.round(x + Math.cos(angle) * radius - size / 2),
+        Math.round(y + Math.sin(angle) * radius - size / 2),
+        size,
+        size,
+      );
+    }
+    ctx.restore();
+  }
+
+  private drawPixelWarningRect(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    color: string,
+    alpha: number,
+  ): void {
+    const ctx = this.ctx;
+    const sx = Math.round(x);
+    const sy = Math.round(y);
+    const sw = Math.max(12, Math.round(width));
+    const sh = Math.max(12, Math.round(height));
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.globalAlpha = alpha * 0.12;
+    ctx.fillRect(sx + 3, sy + 3, sw - 6, sh - 6);
+    ctx.globalAlpha = alpha;
+    for (let dx = 0; dx < sw; dx += 10) {
+      const dash = Math.min(6, sw - dx);
+      ctx.fillRect(sx + dx, sy, dash, 2);
+      ctx.fillRect(sx + dx, sy + sh - 2, dash, 2);
+    }
+    for (let dy = 0; dy < sh; dy += 10) {
+      const dash = Math.min(6, sh - dy);
+      ctx.fillRect(sx, sy + dy, 2, dash);
+      ctx.fillRect(sx + sw - 2, sy + dy, 2, dash);
+    }
+    ctx.globalAlpha = Math.min(1, alpha + 0.18);
+    ctx.fillRect(sx, sy, 7, 3);
+    ctx.fillRect(sx, sy, 3, 7);
+    ctx.fillRect(sx + sw - 7, sy, 7, 3);
+    ctx.fillRect(sx + sw - 3, sy, 3, 7);
+    ctx.fillRect(sx, sy + sh - 3, 7, 3);
+    ctx.fillRect(sx, sy + sh - 7, 3, 7);
+    ctx.fillRect(sx + sw - 7, sy + sh - 3, 7, 3);
+    ctx.fillRect(sx + sw - 3, sy + sh - 7, 3, 7);
+    ctx.restore();
+  }
+
   private renderBossTelegraph(enemy: EnemyUnit): void {
     if (!enemy.boss) return;
     const ctx = this.ctx;
@@ -5570,38 +5637,38 @@ export class ZheYiShenGame {
       const duration = enemy.type === 'silent-father' ? 1.2 : 1.1;
       const progress = 1 - this.clamp((enemy.phaseFlashTimer ?? 0) / duration, 0, 1);
       const radius = enemy.radius + 14 + progress * 72;
-      ctx.globalAlpha = 1 - progress;
-      ctx.strokeStyle = enemy.type === 'silent-father' ? '#d2b35f' : '#74647e';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(enemy.x, enemy.y, radius, 0, Math.PI * 2);
-      ctx.stroke();
+      const color = enemy.type === 'silent-father' ? '#d2b35f' : '#74647e';
+      this.drawPixelWarningRing(enemy.x, enemy.y, radius, color, 1 - progress, 1, 32);
+      ctx.fillStyle = color;
+      ctx.globalAlpha = (1 - progress) * 0.7;
       for (let index = 0; index < 7; index += 1) {
         const angle = (index / 7) * Math.PI * 2 + progress * 0.35;
-        const inner = enemy.radius + 6;
-        ctx.beginPath();
-        ctx.moveTo(enemy.x + Math.cos(angle) * inner, enemy.y + Math.sin(angle) * inner);
-        ctx.lineTo(enemy.x + Math.cos(angle + 0.18) * radius, enemy.y + Math.sin(angle + 0.18) * radius);
-        ctx.stroke();
+        for (let step = 0; step < 4; step += 1) {
+          const distance = enemy.radius + 8 + step * Math.max(6, (radius - enemy.radius - 8) / 4);
+          ctx.fillRect(
+            Math.round(enemy.x + Math.cos(angle) * distance - 1),
+            Math.round(enemy.y + Math.sin(angle) * distance - 1),
+            3,
+            3,
+          );
+        }
       }
     }
 
     if (enemy.type === 'uniform-answer' && (enemy.mechTimer ?? 0) > 6.4) {
       const progress = this.clamp(((enemy.mechTimer ?? 0) - 6.4) / 1.6, 0, 1);
-      ctx.globalAlpha = 0.35 + progress * 0.55;
-      ctx.strokeStyle = '#d05063';
-      ctx.fillStyle = 'rgba(159,42,59,.13)';
-      ctx.lineWidth = 2;
+      const alpha = 0.38 + progress * 0.5;
       for (let index = 0; index < 3; index += 1) {
         const x = enemy.x - 40 + index * 40;
         const y = enemy.y + 34;
         const size = 18 + progress * 8;
-        ctx.fillRect(Math.round(x - size), Math.round(y - size), Math.round(size * 2), Math.round(size * 2));
-        ctx.strokeRect(Math.round(x - size), Math.round(y - size), Math.round(size * 2), Math.round(size * 2));
-        ctx.beginPath();
-        ctx.moveTo(x - 8, y - 8); ctx.lineTo(x + 8, y + 8);
-        ctx.moveTo(x + 8, y - 8); ctx.lineTo(x - 8, y + 8);
-        ctx.stroke();
+        this.drawPixelWarningRect(x - size, y - size, size * 2, size * 2, '#d05063', alpha);
+        ctx.fillStyle = '#d05063';
+        ctx.globalAlpha = alpha * 0.72;
+        for (let offset = -8; offset <= 8; offset += 4) {
+          ctx.fillRect(Math.round(x + offset - 1), Math.round(y + offset - 1), 3, 3);
+          ctx.fillRect(Math.round(x - offset - 1), Math.round(y + offset - 1), 3, 3);
+        }
       }
     }
 
@@ -5612,12 +5679,14 @@ export class ZheYiShenGame {
       ctx.rotate(angle);
       ctx.globalAlpha = 0.2 + progress * 0.58;
       ctx.fillStyle = '#b74958';
-      ctx.fillRect(12, -28, 390, 3);
-      ctx.fillRect(12, 25, 390, 3);
+      for (let distance = 12; distance < 390; distance += 18) {
+        ctx.fillRect(distance, -28, 11, 3);
+        ctx.fillRect(distance, 25, 11, 3);
+      }
       for (let distance = 42; distance < 390; distance += 46) {
         ctx.fillRect(distance, -5, 18, 10);
       }
-      ctx.fillStyle = 'rgba(202,75,91,.12)';
+      ctx.globalAlpha = 0.08 + progress * 0.1;
       ctx.fillRect(12, -25, 390, 50);
       ctx.restore();
       return;
@@ -5625,14 +5694,19 @@ export class ZheYiShenGame {
 
     if (enemy.type === 'debt-collector' && (enemy.mechTimer ?? 0) > 5.5) {
       const progress = this.clamp(((enemy.mechTimer ?? 0) - 5.5) / 1.5, 0, 1);
-      ctx.globalAlpha = 0.3 + progress * 0.55;
-      ctx.strokeStyle = '#d4865e';
-      ctx.fillStyle = 'rgba(146,70,49,.14)';
-      ctx.lineWidth = 2;
+      const alpha = 0.34 + progress * 0.52;
       const width = 74 + progress * 12;
       const height = 42 + progress * 8;
-      ctx.fillRect(this.heroX - width / 2, this.heroY - height / 2, width, height);
-      ctx.strokeRect(this.heroX - width / 2, this.heroY - height / 2, width, height);
+      this.drawPixelWarningRect(
+        this.heroX - width / 2,
+        this.heroY - height / 2,
+        width,
+        height,
+        '#d4865e',
+        alpha,
+      );
+      ctx.globalAlpha = alpha * 0.72;
+      ctx.fillStyle = '#d4865e';
       ctx.fillRect(this.heroX - width / 2 + 8, this.heroY - 3, width - 16, 2);
       ctx.fillRect(this.heroX - width / 2 + 8, this.heroY + 7, width * 0.56, 2);
       const segments = 10;
@@ -5650,12 +5724,15 @@ export class ZheYiShenGame {
     if (enemy.type === 'lamp-keeper' && (enemy.mechTimer ?? 0) > 8.2) {
       const progress = this.clamp(((enemy.mechTimer ?? 0) - 8.2) / 1.8, 0, 1);
       const radius = Math.max(70, this.darkR - progress * 10);
-      ctx.globalAlpha = 0.24 + progress * 0.52;
-      ctx.strokeStyle = '#d5bd73';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(this.darkCX, this.darkCY, radius, 0, Math.PI * 2);
-      ctx.stroke();
+      this.drawPixelWarningRing(
+        this.darkCX,
+        this.darkCY,
+        radius,
+        '#d5bd73',
+        0.24 + progress * 0.52,
+        1,
+        36,
+      );
       ctx.fillStyle = '#d5bd73';
       for (let index = 0; index < 12; index += 1) {
         const angle = (index / 12) * Math.PI * 2;
@@ -5707,20 +5784,26 @@ export class ZheYiShenGame {
     ctx.save();
     ctx.translate(enemy.x, enemy.y + (pixelDrawn ? 0 : Math.sin(enemy.age * 3) * 2));
     if (enemy.elite || enemy.boss) {
-      ctx.strokeStyle = enemy.boss ? '#d0b264' : '#c5485b';
-      ctx.globalAlpha = 0.45 + (Math.sin(enemy.age * 5) + 1) * 0.18;
-      ctx.lineWidth = enemy.boss ? 3 : 2;
-      ctx.beginPath();
-      ctx.arc(0, 0, r + 8 + Math.sin(enemy.age * 4) * 2, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.globalAlpha = 1;
+      this.drawPixelWarningRing(
+        0,
+        0,
+        r + 8 + Math.sin(enemy.age * 4) * 2,
+        enemy.boss ? '#d0b264' : '#c5485b',
+        0.45 + (Math.sin(enemy.age * 5) + 1) * 0.18,
+        1,
+        enemy.boss ? 28 : 20,
+      );
     }
     if (attacking) {
-      ctx.strokeStyle = `rgba(234,83,101,${0.35 + attackProgress * 0.55})`;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(0, 0, r + 4, -Math.PI / 2, -Math.PI / 2 + attackProgress * Math.PI * 2);
-      ctx.stroke();
+      this.drawPixelWarningRing(
+        0,
+        0,
+        r + 4,
+        '#ea5365',
+        0.35 + attackProgress * 0.55,
+        attackProgress,
+        20,
+      );
     }
     if (pixelDrawn) {
       ctx.restore();
@@ -7270,6 +7353,10 @@ export class ZheYiShenGame {
             this.runSeed = 0x20260722;
             this.rngState = this.runSeed;
             this.encounterIndex = 2;
+            const auditAge = Number.parseInt(auditParams.get('audit-age') ?? '', 10);
+            if (Number.isFinite(auditAge)) {
+              this.encounterIndex = Math.max(0, Math.min(STAGES.length - 1, auditAge));
+            }
             this.hero.maxHp = 96;
             this.hero.hp = 72;
             this.hero.coins = 12;
@@ -7296,6 +7383,7 @@ export class ZheYiShenGame {
               this.startStage();
               this.enemies = [];
               const boss = this.createSeekingEnemy('uniform-answer', this.heroX, this.heroY - 108);
+              boss.speed = 0;
               boss.attackCooldown = 99;
               this.enemies.push(boss);
               this.eliteAlertName = '';

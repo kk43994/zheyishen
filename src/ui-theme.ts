@@ -523,7 +523,7 @@ export function drawResponseMarker(
   const sw = atLeast(width, 96);
   const isSwallow = direction === 'swallow';
   const accent = isSwallow ? UI_PALETTE.hospitalBlueGray : UI_PALETTE.oldRed;
-  drawCutCornerPanel(ctx, sx, sy, sw, 42, UI_PALETTE.nightRaised, accent, 3, 1);
+  drawCutCornerPanel(ctx, sx, sy, sw, 46, UI_PALETTE.nightRaised, accent, 3, 1);
   const arrowX = isSwallow ? sx + 7 : sx + sw - 16;
   ctx.fillStyle = accent;
   ctx.fillRect(arrowX + (isSwallow ? 4 : 0), sy + 10, 8, 3);
@@ -535,11 +535,11 @@ export function drawResponseMarker(
   const textWidth = isSwallow ? sw - 33 : sw - 32;
   ctx.textAlign = 'left';
   ctx.fillStyle = UI_PALETTE.paperLight;
-  ctx.font = UI_FONT.label;
-  ctx.fillText(fitText(ctx, label, textWidth), textX, sy + 16);
+  ctx.font = `bold 11px ${UI_FONT_STACK}`;
+  ctx.fillText(fitText(ctx, label, textWidth), textX, sy + 17);
   ctx.fillStyle = UI_PALETTE.paperDim;
-  ctx.font = UI_FONT.small;
-  ctx.fillText(fitText(ctx, detail, textWidth), textX, sy + 31);
+  ctx.font = `10px ${UI_FONT_STACK}`;
+  ctx.fillText(fitText(ctx, detail, textWidth), textX, sy + 34);
 }
 
 /**

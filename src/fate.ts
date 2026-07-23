@@ -179,12 +179,12 @@ export function validateFateEvent(value: unknown, snapshot: LifeSnapshot): FateE
   if (!isRecord(value)) return null;
   const id = readSlug(value.id, 3, 48);
   const title = readText(value.title, 2, 16);
-  const fact = readText(value.fact, 8, 90);
+  const fact = readText(value.fact, 8, 120);
   const scene = validateScene(value.scene);
   const profile = typeof value.profile === 'string' && FATE_PROFILES.includes(value.profile as FateProfile)
     ? value.profile as FateProfile : null;
   const memoryId = readSlug(value.memoryId, 3, 48);
-  const memoryText = readText(value.memoryText, 4, 60);
+  const memoryText = readText(value.memoryText, 4, 80);
   const unavoidable = validateFactEffect(value.unavoidable, snapshot);
   const swallow = validateResponse(value.swallow);
   const exhale = validateResponse(value.exhale);
@@ -210,7 +210,12 @@ function validateScene(value: unknown): FateScene | null {
   const time = readText(value.time, 2, 18);
   const place = readText(value.place, 2, 24);
   const people = readText(value.people, 2, 28);
-  return time && place && people ? { time, place, people } : null;
+  const listedObject = people?.split(/[、，,和与]/).some((entry) =>
+    /(?:柜机|屏幕|手机|电话|信封|情书|衣服|雨衣|照片|相框|纽扣|钥匙|药丸|工牌|书包|课桌|充电宝)$/.test(entry.trim()),
+  );
+  return time && place && people && people.includes('他') && !listedObject
+    ? { time, place, people }
+    : null;
 }
 
 function response(
