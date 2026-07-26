@@ -1,4 +1,5 @@
 import { readFileSync, statSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { AI_SYSTEM_PROMPTS } from './src/ai-prompts';
 
@@ -26,11 +27,11 @@ function loadActiveProfile(fallback: AiProfile): AiProfile {
 }
 
 function aiProxyPlugin(mode: string): Plugin {
-  const env = loadEnv(mode, process.cwd(), 'BLOOD_MOON_AI_');
+  const env = loadEnv(mode, process.cwd(), '');
   const fallback: AiProfile = {
-    baseUrl: (env.BLOOD_MOON_AI_BASE_URL || process.env.BLOOD_MOON_AI_BASE_URL || 'https://ark.cn-beijing.volces.com/api/v3').replace(/\/$/, ''),
-    apiKey: env.BLOOD_MOON_AI_API_KEY || process.env.BLOOD_MOON_AI_API_KEY || '',
-    model: env.BLOOD_MOON_AI_MODEL || process.env.BLOOD_MOON_AI_MODEL || 'doubao-seed-evolving',
+    baseUrl: (env.ZHEYISHEN_AI_BASE_URL || process.env.ZHEYISHEN_AI_BASE_URL || env.BLOOD_MOON_AI_BASE_URL || process.env.BLOOD_MOON_AI_BASE_URL || 'https://ark.cn-beijing.volces.com/api/v3').replace(/\/$/, ''),
+    apiKey: env.ZHEYISHEN_AI_API_KEY || process.env.ZHEYISHEN_AI_API_KEY || env.BLOOD_MOON_AI_API_KEY || process.env.BLOOD_MOON_AI_API_KEY || '',
+    model: env.ZHEYISHEN_AI_MODEL || process.env.ZHEYISHEN_AI_MODEL || env.BLOOD_MOON_AI_MODEL || process.env.BLOOD_MOON_AI_MODEL || 'doubao-seed-evolving',
   };
 
   const middleware = (req: any, res: any, next: () => void) => {
@@ -160,5 +161,14 @@ export default defineConfig(({ mode }) => ({
     assetsInlineLimit: 0,
     sourcemap: false,
     minify: 'esbuild',
+    rollupOptions: {
+      input: mode === 'production'
+        ? { game: resolve(import.meta.dirname, 'index.html') }
+        : {
+            game: resolve(import.meta.dirname, 'index.html'),
+            itemArtReview: resolve(import.meta.dirname, 'item-art-review.html'),
+            voiceReview: resolve(import.meta.dirname, 'voice-review.html'),
+          },
+    },
   },
 }));

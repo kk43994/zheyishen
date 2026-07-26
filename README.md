@@ -1,7 +1,7 @@
 # 这一身
 
 <p align="center">
-  <img src="src/assets/ui/title-life-night.png" width="280" alt="标题画：夜里的房间" />
+  <img src="docs/readme/screenshot-title.png" width="280" alt="实机开屏：从第一口气开始" />
 </p>
 
 <p align="center">
@@ -15,7 +15,7 @@
   <img src="https://img.shields.io/badge/Vite-7.x-646cff?logo=vite&logoColor=white" alt="Vite" />
   <img src="https://img.shields.io/badge/渲染-Canvas_2D-e34f26" alt="Canvas 2D" />
   <img src="https://img.shields.io/badge/版本-V0.4-8a6d3b" alt="V0.4" />
-  <img src="https://img.shields.io/badge/包体-%3C100MB-2e7d32" alt="包体限制" />
+  <img src="https://img.shields.io/badge/包体-%3C8MB-2e7d32" alt="包体限制" />
 </p>
 
 竖屏、自由走位、自动索敌弹道的 **AI-native 人生构筑 Roguelite**。
@@ -42,6 +42,7 @@
 
 1. **出生绝无兜底人物。** 每一局的出生故事、童年外号、外貌 DNA、数值底色全部由 AI 实时生成；生成失败就停在重试页，绝不塞示例人物进这一局。代码里的案例只做风格参照。
 2. **出生要千奇百怪。** 「家庭底色 × 地域 × 叙事基调 × 外号构词」四个轮盘由代码掷定（种子随机 + 防近局重复），抽定结果交给 AI 执行——把随机性放在有状态的代码里，防止无状态的模型叙事塌缩。
+   外号限定为 2–7 个汉字，并通过“喂，___，过来”的人物称谓校验；“数凉席”这类只描述动作的短语不会落档。
 3. **AI 慢可以，但要无感加载。** 等待被包装成「出生登记处」的开场叙事遮罩，档案在路上，玩家在读他的人生。
 
 ## 核心特性
@@ -75,7 +76,7 @@
 ```bash
 npm install
 cp .env.local.example .env.local
-# 只在 .env.local 中填写 BLOOD_MOON_AI_API_KEY；该文件已被 Git 忽略
+# 只在 .env.local 中填写 ZHEYISHEN_AI_API_KEY；该文件已被 Git 忽略
 npm run dev
 ```
 
@@ -104,6 +105,28 @@ python3 scripts/process_vfx_ui_pack.py
 python3 scripts/build_wiki_art_gallery.py
 ```
 
+## 声音资源管线
+
+游戏使用 16 个固定音效/环境循环和 51 条固定人物语音，运行时不调用 TTS。语音合同逐句记录音色定位、语调、情绪、语速、音高、强度与动作标签，发布前可在 `http://127.0.0.1:5173/voice-review.html` 逐条试听。
+
+```bash
+# 拉取并制作 CC0 音效与环境循环
+npm run build:sound-assets
+
+# 使用 MiniMax 国内接口生成缺失人物语音
+npm run generate:voice
+
+# MiniMax 账户不可用时，用 Kokoro 中文专用模型保留现有成品并补齐缺失项
+npm run generate:voice:local
+
+# 用 Whisper 反向转写，检查漏字、错音和异常语速
+npm run audit:voice
+
+# 发布前硬校验 16 个声音资源与 51 条语音
+npm run validate:sound
+npm run validate:voice:strict
+```
+
 ## 构建与发布
 
 三种构建，各司其职：
@@ -114,11 +137,12 @@ python3 scripts/build_wiki_art_gallery.py
 | 演示 | `npx vite build --mode demo` | Vite 代理 → 方舟 | 线上演示站 |
 | 平台 | `npm run package` | 仅 `tt.callAIChatCompletion` | 抖音上传包 |
 
-平台包（production 构建）中 Web 请求分支被常量折叠整体剔除，**产物内不含任何 `fetch` 调用**（平台审核红线）；正式接入时同一生成协议直接换成平台 AI 服务。上传包生成于 `release/zhe-yi-shen-mvp.zip`，压缩包根目录直接包含 `index.html`，平台校验上限 100MB。
+平台包（production 构建）中 Web 请求分支被常量折叠整体剔除，音频由 WebView 原生媒体元素读取包内相对资源，**产物内不含任何 `fetch` 调用**（平台审核红线）。上传包只保留玩家运行时，不包含美术/声音审阅页与生产清单；产物生成于 `release/zhe-yi-shen-mvp.zip`，压缩包根目录直接包含 `index.html`，平台校验上限 8MB。后台单独上传的 300 x 300 图标位于 `docs/promo/app-icon-300.png`，不重复塞入游戏包。
 
 ## 文档
 
 - `docs/这一身_游戏开发计划书_V0.4.md` — 设计正典
 - `docs/道具攻击方式重设计提案V1.md` — 「机制即隐喻」的道具改型记录
 - `docs/沉默的父亲_Boss设计书_V2.md` — Boss 设计
+- `docs/互动空间发布验收-v1.md` — 8 MiB 离线包、平台校验器与 MCP 发布前检查
 - `docs/这一身百科.html` — 百科（部署即在线版）
