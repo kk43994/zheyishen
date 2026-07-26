@@ -641,3 +641,52 @@ header.hero .frame { position: relative; }
 @keyframes lampClose { 0% { opacity: 0; transform: scale(2.6); } 45% { opacity: 1; } 100% { opacity: 0; transform: scale(1); } }
 @keyframes lampOpen { 0% { opacity: 0; transform: scale(.4); } 40% { opacity: 1; } 100% { opacity: 0; transform: scale(2.2); } }
 @media (prefers-reduced-motion: reduce) { .lamp-veil { display: none !important; } .wiki-recall { transition: none; } }
+
+/* ══════════ v3.1 图文结合层 ══════════ */
+
+/* 档案照通用框 */
+.art-fig { margin: 0; padding: 8px 8px 6px; background: var(--card); border: 1px solid var(--line); border-radius: 3px; width: max-content; max-width: 100%; }
+.art-fig img { display: block; image-rendering: pixelated; border: 1px solid #302e34; background: #101014; max-width: 100%; height: auto; }
+.art-fig figcaption { margin-top: 6px; font-size: 10px; letter-spacing: .14em; color: var(--fg-3); max-width: 200px; line-height: 1.7; }
+.art-right { float: right; margin: 6px 0 18px 26px; transform: rotate(1.6deg); }
+section.entry::after { content: ""; display: block; clear: both; }
+@media (max-width: 760px) { .art-right { float: none; transform: none; margin: 16px 0; } }
+
+/* 六章地面渐变带 */
+.ground-band { margin: 22px 0 6px; padding: 10px 10px 6px; background: var(--card); border: 1px solid var(--line); border-radius: 3px; width: max-content; max-width: 100%; overflow-x: auto; }
+.ground-band img { image-rendering: pixelated; width: 64px; height: 64px; display: inline-block; vertical-align: top; border: 1px solid #302e34; margin-right: -1px; }
+.ground-band figcaption { margin-top: 6px; font-size: 10px; letter-spacing: .14em; color: var(--fg-3); }
+
+/* 八章表内的怪物小像 */
+.mini-beast { white-space: nowrap; }
+.mini-beast img { image-rendering: pixelated; width: 22px; height: 22px; vertical-align: -6px; margin-right: 4px; background: #101014; border: 1px solid #302e34; border-radius: 2px; }
+
+/* 一口气弹体条 */
+.proj-band { margin: 20px 0 4px; padding: 12px 12px 8px; background: var(--card); border: 1px solid var(--line); border-radius: 3px; width: max-content; max-width: 100%; }
+.proj-cell { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; margin-right: 10px; }
+.proj-cell b { font-size: 10px; font-weight: 400; letter-spacing: .1em; color: var(--fg-3); }
+.proj-sep { display: inline-block; width: 1px; height: 44px; background: var(--line); margin: 0 14px 0 4px; vertical-align: top; }
+.proj-i { display: block; width: 56px; height: 56px; image-rendering: pixelated; background-image: url("assets/projectiles.png"); background-repeat: no-repeat; background-size: 336px 224px; background-position: calc(var(--px) * -56px) calc(var(--py) * -56px); background-color: #101014; border: 1px solid #302e34; border-radius: 3px; }
+.proj-band figcaption { margin-top: 8px; font-size: 10px; letter-spacing: .12em; color: var(--fg-3); max-width: 34em; line-height: 1.7; }
+
+/* 命运牌六签面 */
+.fate-faces { display: flex; flex-wrap: wrap; gap: 14px; margin: 18px 0 6px; }
+.fate-faces .ff { display: inline-flex; flex-direction: column; align-items: center; gap: 5px; font-size: 11px; letter-spacing: .18em; color: var(--fg-2); font-family: "Songti SC", "STSong", serif; }
+.fate-faces .ff i { display: block; width: 60px; height: 60px; image-rendering: pixelated; background-image: url("assets/fate-profiles.png"); background-repeat: no-repeat; background-size: 360px 60px; background-position: calc(var(--fx) * -60px) 0; background-color: #101014; border: 1px solid #302e34; border-radius: 3px; }
+
+/* 五毒图腾（纯 CSS 按卡序贴到大字旁） */
+.poison .ch { display: inline-flex; align-items: center; gap: 10px; }
+.poison .ch::after { content: ""; display: inline-block; width: 40px; height: 40px; image-rendering: pixelated; background-image: url("assets/poison.png"); background-repeat: no-repeat; background-size: 200px 40px; background-color: #101014; border: 1px solid #302e34; border-radius: 3px; }
+.poisons .poison:nth-child(1) .ch::after { background-position: 0 0; }
+.poisons .poison:nth-child(2) .ch::after { background-position: -40px 0; }
+.poisons .poison:nth-child(3) .ch::after { background-position: -80px 0; }
+.poisons .poison:nth-child(4) .ch::after { background-position: -120px 0; }
+.poisons .poison:nth-child(5) .ch::after { background-position: -160px 0; }
+
+/* 房间内景三联 / 终局双联 */
+.room-shots { display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0 8px; }
+.room-shots .art-fig:nth-child(2) { transform: rotate(-1.4deg); }
+.room-shots .art-fig:nth-child(1) { transform: rotate(1.1deg); }
+.room-shots .art-fig:nth-child(3) { transform: rotate(2deg); }
+.ending-shots { justify-content: flex-start; }
+@media (max-width: 760px) { .room-shots { gap: 12px; } .room-shots .art-fig { transform: none; } }
