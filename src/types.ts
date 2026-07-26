@@ -360,11 +360,34 @@ export interface EnemyUnit {
   auraCooldown?: number;
   phase?: number;
   mechTimer?: number;
+  /** 青年任务怪生命周期动作：把分裂、返工、到期与同步事件接到各自正式攻击帧。 */
+  taskActionTimer?: number;
+  taskActionDuration?: number;
+  /** 《热过两遍的那锅》：靠近且站定时累计的重新加热进度。 */
+  potReheatProgress?: number;
+  /** 《识别中》：横向扫描在前摇开始时锁定的世界 Y 坐标，以及本轮是否已经命中。 */
+  scanTargetY?: number;
+  scanHit?: boolean;
+  /** 《错过的车》：本轮横穿锁定的车道，以及用于左右交替进场的累计趟数。 */
+  laneY?: number;
+  lanePassIndex?: number;
+  /** 暮年叫号屏：是否正在叫到 42 号、当前显示号码与已换过几间。 */
+  queueCalled?: boolean;
+  queueNumber?: number;
+  queueArrivals?: number;
+  /** 暮年输液架：只由存活时间决定的十秒提速档。 */
+  ivSpeedTier?: number;
   /** Boss 招式前摇：>0 时正在预警，归零瞬间结算命中。通用于各 boss 的定向招式。 */
   windupTimer?: number;
   /** 前摇锁定的招式方向（弧度）与招式类型标签，供渲染与结算共用。 */
   attackAngle?: number;
   attackKind?: string;
+  attackTargetId?: number;
+  /** 局部 Boss 招式在起手时锁定的世界坐标；预警与结算必须共用。 */
+  attackTargetX?: number;
+  attackTargetY?: number;
+  /** 《里面还有手》唯一安全缺口的中心方向。 */
+  attackSafeAngle?: number;
   /** 《换个门》：上门催收自上次换门后累计承受的伤害。 */
   relocateDamage?: number;
   /** Dedicated boss-skill sprite sequence; independent from contact attacks. */

@@ -128,6 +128,14 @@ body::before {
   display: none;
 }
 
+@media (max-width: 520px) {
+  /* 手机上不摆桌面画框：厚阴影和偏移在小屏上像贴歪的贴纸 */
+  #app {
+    outline-color: #26242c;
+    box-shadow: 0 0 0 1px #050508;
+  }
+}
+
 @media (min-width: 700px) and (min-height: 680px) {
   body::before {
     display: block;

@@ -252,7 +252,7 @@ def main() -> None:
             Path("src/hero-item-mutations.ts"), "sourceDerivedPaint("
         ),
         "image2-projectile-trigger-preview": (
-            Path("src/game.ts"), "projectileAtlas.tintedNamed("
+            Path("src/game.ts"), "projectileAtlas.outlinedTinted("
         ),
     }
     for consumer_name, (implementation, signature) in implementations.items():

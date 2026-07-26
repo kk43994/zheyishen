@@ -10,7 +10,15 @@ npm run build:production-audio
 npm run validate:sound
 npm run validate:release-icon
 python3 scripts/validate_runtime_art.py
+npm run validate:boss-skills
 python3 scripts/validate_mobile_ui.py
+npm run validate:childhood-enemies
+npm run validate:adulthood-enemies
+npm run validate:school-work-enemies
+npm run validate:youth-commute-enemies
+npm run validate:youth-task-enemies
+npm run validate:middle-age-enemies
+npm run validate:old-age-enemies
 npm run build
 
 # Review-only pages and production metadata are useful locally but must not

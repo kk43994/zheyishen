@@ -14,7 +14,7 @@ usage() {
 
 runtime_ref_for() {
   case "$1" in
-    closet-dark-skills) printf 'closet-dark-hd.png\n' ;;
+    closet-dark-skills|closet-dark-extra-skills) printf 'closet-dark-hd.png\n' ;;
     silent-father-p1-skills) printf 'silent-father-hd.png\n' ;;
     silent-father-p2-skills) printf 'silent-father-p2-hd.png\n' ;;
     praise-chair-p1-skills) printf 'praise-chair-p1.png\n' ;;

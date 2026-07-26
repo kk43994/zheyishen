@@ -19,7 +19,8 @@ const requireToken = (source, token, message) => {
 requireToken(types, 'countedItem?: ItemId;', '敌人状态缺少清点目标');
 requireToken(types, 'countedItemTimer?: number;', '敌人状态缺少清点倒计时');
 requireToken(game, 'private stageDisabledItems = new Set<ItemId>();', '缺少本章失效标记集合');
-requireToken(game, 'return this.items.includes(id) && !this.stageDisabledItems.has(id);', 'hasItem 没有统一停用被封物证');
+requireToken(game, '&& !this.stageDisabledItems.has(id);', 'hasItem 没有统一停用被封物证');
+requireToken(game, 'this.bonusSuppressionTimer <= 0', 'hasItem 没有接入体检报告的加成失效窗口');
 if ((game.match(/this\.stageDisabledItems\.clear\(\);/g) ?? []).length < 3) {
   errors.push('新局、章节重建或出关没有完整恢复被封物证');
 }

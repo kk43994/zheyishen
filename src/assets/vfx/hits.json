@@ -1,1 +1,1 @@
-{"cell": 32, "cols": 4, "rows": 11, "materials": ["mist", "water", "crit", "paper", "wood", "stone", "metal", "ice", "signal", "key", "glass"], "generator": "scripts/build_hit_atlas_v2.py"}
+{"cell": 32, "cols": 4, "rows": 11, "materials": ["mist", "water", "crit", "paper", "wood", "stone", "metal", "ice", "signal", "key", "glass"]}

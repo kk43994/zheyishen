@@ -5,60 +5,60 @@
   "jobFile": "scripts/image2/projectile-v3/jobs.jsonl",
   "sources": {
     "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-breath.png": {
-      "sha256": "2a9e281a83b5f2a1325c5db23b511280aaf9183a2d619aaab46442ac7425941b",
+      "sha256": "9ea132febec99812ae17e032c7b34d469ec147d2683928652bc5d62d02082569",
       "size": [
         1254,
         1254
       ],
-      "greenRatio": 0.8409
+      "greenRatio": 0.8362
     },
     "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-forms.png": {
-      "sha256": "7a3f3f7be03138adfe1f4c4033a92b589104bb5782bd516c9f3e7084e55e45ea",
+      "sha256": "b3b806653c319b7adfa82c7bd5e40ebaa7ca2038d451c6a6d3cbc44a5e488676",
       "size": [
         1254,
         1254
       ],
-      "greenRatio": 0.9412
+      "greenRatio": 0.7964
     },
     "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-special.png": {
-      "sha256": "c55e20ca8152c8bc30a9f97e4f1923ef4221bcfa74c04e3d4c6515147ca00822",
+      "sha256": "3d18a7a13b0d6a710086fa130eb95468a3d9372c5974c023ec96e1f180716a65",
       "size": [
         1254,
         1254
       ],
-      "greenRatio": 0.8733
+      "greenRatio": 0.7505
     },
     "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-readable-a.png": {
-      "sha256": "c775b5e0914ff3eb60d8c9fad9d77f6e368ce97843e857b42c6725c7495f5a38",
+      "sha256": "165c4c04a912d37ef6942fa8ad2e30449496ca70d566a63f244b713bab7a33f8",
       "size": [
         1254,
         1254
       ],
-      "greenRatio": 0.8417
+      "greenRatio": 0.7224
     },
     "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-readable-b.png": {
-      "sha256": "a256d66faac8816c5239bc0b2d0b885923f3ff82fed87f2057b5d65eda977d98",
+      "sha256": "1519a7cdadafc24f8852c0057e78827cc883a0d5f28b65967ec1cba0aa240543",
       "size": [
         1254,
         1254
       ],
-      "greenRatio": 0.8192
+      "greenRatio": 0.7358
     },
     "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-readable-c.png": {
-      "sha256": "44b4007e91bb87532dd7e8323d8f67a96b07aca177353c042aefe87bad74f862",
+      "sha256": "d17f1c8e57eb93c4288b01da7ff70a9b09c0368f5d87e146a27b7a715f02fd52",
       "size": [
         1254,
         1254
       ],
-      "greenRatio": 0.9058
+      "greenRatio": 0.6012
     },
     "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-wood-slash-v2.png": {
-      "sha256": "17c2d24b74c33cd87ad848708991333ef5ca7e39d30eeb2e8dbb944cf1ebf4cc",
+      "sha256": "fd28b2fb237010e00daa4cb8866829ec7939b465249ced24a696f3b7b7874e4b",
       "size": [
         1254,
         1254
       ],
-      "greenRatio": 0.8874
+      "greenRatio": 0.7786
     }
   },
   "referenceJobs": {

@@ -16,6 +16,19 @@
       ]
     },
     {
+      "id": "closet-dark-extra-skills",
+      "name": "Nobody-believes monster extra attacks",
+      "reference": "closet-dark-hd.png",
+      "frame": 48,
+      "display": 128,
+      "key": "green",
+      "poses": ["hands-windup", "hands-release", "door-slam", "recover"],
+      "skills": [
+        {"id": "closet-hands", "sequence": [0, 0, 1, 3]},
+        {"id": "closet-slam", "sequence": [0, 0, 2, 3]}
+      ]
+    },
+    {
       "id": "silent-father-p1-skills",
       "name": "Silent father phase one",
       "reference": "silent-father-hd.png",

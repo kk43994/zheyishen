@@ -38,8 +38,8 @@ def main() -> None:
 
     if source.get("status") != "approved-and-promoted":
         fail("boss skill source manifest is not approved")
-    if len(source["assets"]) != 15:
-        fail(f"expected 15 boss forms, got {len(source['assets'])}")
+    if len(source["assets"]) != 16:
+        fail(f"expected 16 boss forms, got {len(source['assets'])}")
 
     skill_ids: list[str] = []
     for asset in source["assets"]:
@@ -95,8 +95,8 @@ def main() -> None:
         if expected_asset not in renderer:
             fail(f"renderer asset spec drift for {asset_id}")
 
-    if len(skill_ids) != 39 or len(set(skill_ids)) != 39:
-        fail(f"expected 39 unique skills, got {len(skill_ids)} / {len(set(skill_ids))} unique")
+    if len(skill_ids) != 41 or len(set(skill_ids)) != 41:
+        fail(f"expected 41 unique skills, got {len(skill_ids)} / {len(set(skill_ids))} unique")
     if set(runtime["skills"]) != set(skill_ids):
         fail("runtime skill manifest does not match source manifest")
     father_p2 = runtime["assets"]["silent-father-p2-skills"]
@@ -105,6 +105,7 @@ def main() -> None:
 
     continuity_contracts = {
         "closet-dark-skills": ("closet-dark", 128),
+        "closet-dark-extra-skills": ("closet-dark", 128),
         "silent-father-p1-skills": ("silent-father", 144),
         "silent-father-p2-skills": ("silent-father-p2", 96),
         "praise-chair-p1-skills": ("praise-chair-p1", 128),
@@ -186,10 +187,29 @@ def main() -> None:
         "praise retreat animation": "'praise-p1-retreat'",
         "praise consultation animation": "'praise-p1-consult'",
         "praise one-seat animation": "this.playBossAnimation(chair, 'praise-p2-one-seat'",
+        "praise optimize has a reaction windup": "enemy.attackKind = 'praise-optimize'",
+        "praise dismiss has a reaction windup": "enemy.attackKind = 'praise-dismiss'",
+        "praise one-seat has a reaction windup": "enemy.attackKind = 'praise-one-seat'",
+        "praise optimize resolves after windup": "case 'praise-optimize':",
+        "praise dismiss resolves after windup": "case 'praise-dismiss':",
+        "praise one-seat resolves after windup": "case 'praise-one-seat':",
+        "praise pending attacks render target warnings": "enemy.attackKind === 'praise-optimize'",
+        "praise optimize frozen audit": "telegraphVariant === 'praise-optimize'",
+        "praise dismiss frozen audit": "telegraphVariant === 'praise-dismiss'",
+        "praise one-seat frozen audit": "telegraphVariant === 'praise-one-seat'",
         "task-simple one-generation split": "enemy.type === 'task-simple' && (enemy.phase ?? 0) === 0",
         "task-revise one-time revival": "enemy.type === 'task-revise' && (enemy.phase ?? 0) === 0",
-        "task-deadline timed expiry": "enemy.type === 'task-deadline' && (enemy.mechTimer ?? 0) >= 8",
-        "task-sync periodic gathering": "enemy.type === 'task-sync' && (enemy.mechTimer ?? 0) >= 4",
+        "task-deadline timed expiry": "enemy.type === 'task-deadline' && (enemy.mechTimer ?? 0) >= TASK_DEADLINE_DURATION",
+        "task-sync periodic gathering": "enemy.type === 'task-sync' && (enemy.mechTimer ?? 0) >= TASK_SYNC_INTERVAL",
+        "closet three-move cycle": "const move = this.closetMoveIndex % 3;",
+        "closet hands attack dispatch": "enemy.attackKind = 'closet-hands'",
+        "closet hands strike resolution": "case 'closet-hands':",
+        "closet slam attack dispatch": "enemy.attackKind = 'closet-slam'",
+        "closet slam strike resolution": "case 'closet-slam':",
+        "closet hands dedicated animation": "this.playBossAnimation(enemy, 'closet-hands'",
+        "closet slam dedicated animation": "this.playBossAnimation(enemy, 'closet-slam'",
+        "closet local target lock": "enemy.attackTargetX = this.heroX",
+        "closet dedicated audit scene": "action === 'childhood-boss-hazards'",
         "phone caller wife recovery": "this.healHero(5)",
         "phone caller mother refund": "this.hero.coins += 2",
         "phone caller hospital relief": "this.phoneRelief += 1",
@@ -206,6 +226,7 @@ def main() -> None:
         "lamp choice rendering": "private renderLampChoice(): void",
         "collector damage-triggered relocation": "enemy.relocateDamage >= enemy.maxHp * 0.14",
         "collector relocation action": "private relocateDebtCollector(enemy: EnemyUnit)",
+        "collector offscreen-radius pull chain": "const pullDX = enemy.x - this.heroX;",
         "stage elite identity downgrade": "spawn.boss = false",
         "uniform answer canonical elite": "'uniform-answer': { name: '统一答案', hp: 200, speed: 22, radius: 26, damage: 6, elite: true }",
         "last bus canonical elite": "'last-bus': { name: '末班车', hp: 260, speed: 26, radius: 28, damage: 10, elite: true }",
@@ -234,6 +255,12 @@ def main() -> None:
     for contract, token in behavior_contracts.items():
         if token not in game:
             fail(f"boss behavior contract missing: {contract}")
+    praise_cycle_start = game.index("const chairMove = this.praiseMoveIndex % 5;")
+    praise_cycle_end = game.index("// 一阶段不让你靠近", praise_cycle_start)
+    praise_cycle = game[praise_cycle_start:praise_cycle_end]
+    for instant_effect in ("eaten.dead = true", "this.resolveOneSeat(enemy, tasks)"):
+        if instant_effect in praise_cycle:
+            fail(f"praise phase-two effect still resolves before its animation: {instant_effect}")
     if "3 秒内走向哪件就保哪件" not in wiki:
         fail("wiki lamp choice rule has drifted from runtime")
     if "主动踩中才让当前加成与本轮任务同时翻倍" not in wiki:
@@ -250,7 +277,7 @@ def main() -> None:
         fail("wiki is missing the directional telegraph/strike geometry contract")
     if "title: '响个不停'" not in game:
         fail("adulthood stage title has drifted from its chapter boss")
-    print("boss skill validation passed: 15 forms, 39 actions, 156 wired frames")
+    print("boss skill validation passed: 16 forms, 41 actions, 164 wired frames")
 
 
 if __name__ == "__main__":

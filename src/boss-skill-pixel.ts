@@ -1,7 +1,7 @@
 import type { EnemyUnit } from './types';
 
 export type BossSkillId =
-  | 'closet-shadow' | 'closet-split'
+  | 'closet-shadow' | 'closet-split' | 'closet-hands' | 'closet-slam'
   | 'father-stomp' | 'father-stand' | 'father-brace'
   | 'father-charge' | 'father-tantrum' | 'father-tears'
   | 'praise-p1-praise' | 'praise-p1-delegate' | 'praise-p1-retreat' | 'praise-p1-consult'
@@ -16,7 +16,7 @@ export type BossSkillId =
   | 'lantern-summon' | 'lantern-summon-fast';
 
 type BossSkillAssetKey =
-  | 'closet-dark-skills'
+  | 'closet-dark-skills' | 'closet-dark-extra-skills'
   | 'silent-father-p1-skills' | 'silent-father-p2-skills'
   | 'praise-chair-p1-skills' | 'praise-chair-p2-skills'
   | 'ringing-phone-p1-skills' | 'ringing-phone-p2-skills'
@@ -39,6 +39,7 @@ interface BossSkillSpec {
 
 const ASSETS: Record<BossSkillAssetKey, BossSkillAssetSpec> = {
   'closet-dark-skills': { frame: 48, rows: 2, display: 128, url: new URL('./assets/enemies/boss-skills-v1/closet-dark-skills.png', import.meta.url).href },
+  'closet-dark-extra-skills': { frame: 48, rows: 2, display: 128, url: new URL('./assets/enemies/boss-skills-v1/closet-dark-extra-skills.png', import.meta.url).href },
   'silent-father-p1-skills': { frame: 64, rows: 3, display: 144, url: new URL('./assets/enemies/boss-skills-v1/silent-father-p1-skills.png', import.meta.url).href },
   'silent-father-p2-skills': { frame: 64, rows: 3, display: 96, url: new URL('./assets/enemies/boss-skills-v1/silent-father-p2-skills.png', import.meta.url).href },
   'praise-chair-p1-skills': { frame: 64, rows: 4, display: 128, url: new URL('./assets/enemies/boss-skills-v1/praise-chair-p1-skills.png', import.meta.url).href },
@@ -58,6 +59,8 @@ const ASSETS: Record<BossSkillAssetKey, BossSkillAssetSpec> = {
 const SKILLS: Record<BossSkillId, BossSkillSpec> = {
   'closet-shadow': { asset: 'closet-dark-skills', row: 0 },
   'closet-split': { asset: 'closet-dark-skills', row: 1 },
+  'closet-hands': { asset: 'closet-dark-extra-skills', row: 0 },
+  'closet-slam': { asset: 'closet-dark-extra-skills', row: 1 },
   'father-stomp': { asset: 'silent-father-p1-skills', row: 0 },
   'father-stand': { asset: 'silent-father-p1-skills', row: 1 },
   'father-brace': { asset: 'silent-father-p1-skills', row: 2 },

@@ -167,9 +167,112 @@ const PRAISE_SLAM_RADIUS = 230;
 const COAT_SLEEVE_REACH = 165;
 const COAT_SLEEVE_HALF_WIDTH = 26;
 const COAT_DOUBLE_SLEEVE_HALF_WIDTH = 46;
+/** 童年大 Boss：三招共用锁点几何；视觉可以夸张，判定必须只落在这些局部边界内。 */
+const CLOSET_ATTACK_INTERVAL = 3.8;
+const CLOSET_PHASE_TWO_INTERVAL = 3.25;
+const CLOSET_SHADOW_WINDUP = 0.85;
+const CLOSET_HANDS_WINDUP = 0.95;
+const CLOSET_HANDS_RADIUS = 132;
+const CLOSET_HANDS_SAFE_INNER_RADIUS = 30;
+const CLOSET_HANDS_SAFE_HALF_ANGLE = 0.48;
+const CLOSET_SLAM_WINDUP = 0.8;
+const CLOSET_SLAM_HALF_WIDTH = 42;
+const CLOSET_SLAM_HALF_HEIGHT = 96;
 const WET_SHOES_STOP_THRESHOLD = 1.2;
 const WET_SHOES_SPEED_STEP = 4;
 const WET_SHOES_MAX_SPEED = 96;
+/** 成年小怪不是静态障碍：台灯用高风险增伤圈，隔夜饭用全场倒计时逼玩家回身处理。 */
+const DESK_LAMP_AURA_RADIUS = 88;
+const DESK_LAMP_DAMAGE_MULTIPLIER = 1.2;
+const DESK_LAMP_BURN_INTERVAL = 1;
+const DESK_LAMP_BURN_DAMAGE = 1;
+const REHEATED_POT_COOL_DURATION = 8;
+const REHEATED_POT_REHEAT_RADIUS = 54;
+const REHEATED_POT_REHEAT_DURATION = 1;
+const REHEATED_POT_COLD_INTERVAL = 2;
+const REHEATED_POT_COLD_DAMAGE = 2;
+/** 成年旧怪也必须把压力画出来：来电按固定节拍脉冲，沉默只减速、不暗扣血。 */
+const MISSED_CALL_AURA_RADIUS = 70;
+const MISSED_CALL_PULSE_INTERVAL = 1.2;
+const MISSED_CALL_PULSE_DAMAGE = 1;
+const SILENCE_SLOW_RADIUS = 90;
+const SILENCE_SLOW_MULTIPLIER = 0.75;
+/** 少年比较场与签字追逐：三个距离档明确表达“越靠近，比较越疼”。 */
+const OTHERS_PAPER_AURA_RADIUS = 150;
+const OTHERS_PAPER_MID_RADIUS = 96;
+const OTHERS_PAPER_INNER_RADIUS = 56;
+const SIGN_HERE_SLOW_RADIUS = 48;
+/** 少年旧怪：红叉挨到人后退开再改，耳语始终绕着人贴身消耗。 */
+const RED_MARK_RETREAT_DURATION = 0.42;
+const RED_MARK_RETREAT_SPEED = 128;
+const RED_MARK_POUNCE_WINDUP = 0.32;
+const RED_MARK_POUNCE_DURATION = 0.42;
+const RED_MARK_POUNCE_SPEED = 220;
+const RED_MARK_POUNCE_HALF_WIDTH = 18;
+const WHISPER_ORBIT_X = 54;
+const WHISPER_ORBIT_Y = 34;
+const WHISPER_ORBIT_SPEED = 1.9;
+const WHISPER_PRESSURE_RADIUS = 44;
+const WHISPER_PRESSURE_INTERVAL = 1.5;
+/** 青年《识别中》：先锁定一条可躲横线，再让怪群按工号聚拢。 */
+const ID_SCANNER_CYCLE = 4.4;
+const ID_SCANNER_WINDUP = 0.9;
+const ID_SCANNER_ACTIVE = 0.48;
+const ID_SCANNER_HALF_HEIGHT = 13;
+const ID_SCANNER_LOCK_DURATION = 3;
+const ID_SCANNER_CONVERGE_MULTIPLIER = 1.65;
+/** 《错过的车》是横穿车流，不是追踪玩家的小型末班车。 */
+const MISSED_BUS_REENTRY_DELAY = 1.8;
+const MISSED_BUS_WINDUP = 0.62;
+const MISSED_BUS_PASS_DURATION = 1.36;
+const MISSED_BUS_PASS_SPEED = 330;
+const MISSED_BUS_ENTRY_DISTANCE = 224;
+const MISSED_BUS_BODY_HALF_LENGTH = 24;
+const MISSED_BUS_BODY_HALF_WIDTH = 22;
+const MISSED_BUS_LANE_HALF_SPAN = 240;
+/** 青年任务怪：生命周期数值与独立攻击帧共用，避免“机制发生了但看不见”。 */
+const TASK_SIMPLE_CHILD_HP = 6;
+const TASK_SIMPLE_SPLIT_ACTION_DURATION = 0.55;
+const TASK_REVISE_REVIVE_RATIO = 0.6;
+const TASK_REVISE_ACTION_DURATION = 0.65;
+const TASK_DEADLINE_DURATION = 8;
+const TASK_DEADLINE_WARNING_DURATION = 0.7;
+const TASK_SYNC_INTERVAL = 4;
+const TASK_SYNC_MIN_DISTANCE = 30;
+const TASK_SYNC_RADIUS = 260;
+const TASK_SYNC_PULL_RATIO = 0.3;
+const TASK_SYNC_ACTION_DURATION = 0.56;
+/** 中年办公室：门拿走位置，体检报告暂时拿走已经积累的战斗加成。 */
+const MEETING_DOOR_SLOW_RADIUS = 124;
+const MEETING_DOOR_SLOW_MULTIPLIER = 0.68;
+const CHECKUP_REPORT_BONUS_LOCK_DURATION = 3;
+const CHECKUP_REPORT_CONTACT_PADDING = 8;
+const CHECKUP_REPORT_RECONTACT_DELAY = 0.9;
+/** 暮年走廊：叫号逼位、家属掠过、输液架按纯时间提速。 */
+const QUEUE_SCREEN_CALL_INTERVAL = 5.2;
+const QUEUE_SCREEN_ARRIVAL_RADIUS = 48;
+const QUEUE_SCREEN_WRONG_WAY_DOT = 0.2;
+const QUEUE_SCREEN_WRONG_WAY_MULTIPLIER = 0.58;
+const OTHERS_FAMILY_SLOW_RADIUS = 66;
+const OTHERS_FAMILY_SLOW_MULTIPLIER = 0.72;
+const IV_STAND_SPEED_INTERVAL = 10;
+const IV_STAND_BASE_SPEED = 14;
+const IV_STAND_SPEED_STEP = 7;
+const IV_STAND_STAGE_CAP = 2;
+/** 童年三种原始压力：绕灯哭声、床下呼吸、饥饿直扑。 */
+const CRY_MOTH_ORBIT_X = 84;
+const CRY_MOTH_ORBIT_Y = 58;
+const CRY_MOTH_POWDER_CYCLE = 2.4;
+const CRY_MOTH_POWDER_WINDUP = 0.55;
+const CRY_MOTH_POWDER_RADIUS = 62;
+const FEAR_BREATH_CYCLE = 2.8;
+const FEAR_BREATH_WINDUP = 0.72;
+const FEAR_BREATH_RADIUS = 88;
+const HUNGER_SHADOW_DASH_CYCLE = 3;
+const HUNGER_SHADOW_DASH_WINDUP = 0.58;
+const HUNGER_SHADOW_DASH_DURATION = 0.48;
+const HUNGER_SHADOW_DASH_SPEED = 245;
+const HUNGER_SHADOW_DASH_HALF_WIDTH = 18;
 /** 《上门》是以催收人自身为圆心的拖行，不是朝玩家方向挥出的一条车道。 */
 const COLLECTOR_DRAG_RADIUS = 280;
 const HERO_SCREEN_X = 180;
@@ -366,6 +469,15 @@ const PROJECTILE_FLAG_LABELS: Record<ProjectileMechanicFlag, string> = {
   orbit: '环绕', echo: '继承回声',
 };
 
+/**
+ * 弹体显示全局抬升：主角 49px、怪 40–160px 的世界里，10–15px 的弹没有视觉权重。
+ * 只动显示，碰撞半径不动——手感不变。
+ */
+const PROJECTILE_DISPLAY_LIFT = 1.45;
+/** 实物弹自旋速率（rad/s）：钥匙、弹珠这类"被扔出去的东西"该转起来。刀刃类沿弹道朝向，不转。 */
+const PROJECTILE_SPIN: Partial<Record<ProjectileForm, number>> = {
+  key: 5, bone: 6, marble: 7.5, button: 6, stone: 3.5, link: 4, laugh: 2.2,
+};
 const PROJECTILE_FORM_DISPLAY_SIZE: Partial<Record<ProjectileForm, readonly [number, number, number, number]>> = {
   paper: [13, 2.2, 17, 28], rain: [11, 2.4, 15, 26], sound: [13, 2.4, 18, 30],
   key: [15, 3, 20, 31], tear: [11, 2.4, 15, 25], cone: [16, 2.6, 21, 34],
@@ -799,6 +911,16 @@ export class ZheYiShenGame {
   private lampReleaseTimer = 0;
   private finalFateTriggered = false;
   private hurtCooldown = 0;
+  private deskLampAuraActive = false;
+  private deskLampBurnTimer = DESK_LAMP_BURN_INTERVAL;
+  private reheatedPotColdTimer = REHEATED_POT_COLD_INTERVAL;
+  private silenceSlowTimer = 0;
+  private scannerLockTimer = 0;
+  private meetingDoorSlowTimer = 0;
+  private bonusSuppressionTimer = 0;
+  private queueWrongWaySlowTimer = 0;
+  private familySlowTimer = 0;
+  private ivStandsSpawnedThisStage = 0;
   private screenShake = 0;
   private reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   private titleStartedAt = performance.now();
@@ -928,6 +1050,8 @@ export class ZheYiShenGame {
   private tauntTimer = 8;
   private billTimer = 0;
   private takeoutTick = 2;
+  /** HiDPI 整数渲染倍率（1–3），构造时按 devicePixelRatio 定死。 */
+  private renderScale = 1;
   private stunTimer = 0;
   // —— 青年《你很优秀》：他夸你，加成是真的 ——
   /** 好话叠层：伤害/攻速/移速百分比。一阶段只涨不减；二阶段翻脸后不再给。 */
@@ -936,6 +1060,7 @@ export class ZheYiShenGame {
   private praiseMove = 0;
   private praiseSpawnCount = 0;
   private praiseMoveIndex = 0;
+  private closetMoveIndex = 0;
   private praiseOneSeatUsed = false;
   private praiseConsult?: { x: number; y: number; timer: number; total: number; extraTasks: number };
   private praisePaperZones: Array<{ x: number; y: number; life: number; total: number }> = [];
@@ -982,10 +1107,18 @@ export class ZheYiShenGame {
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw new Error('当前设备不支持 Canvas 2D');
     this.ctx = ctx;
+    // HiDPI：手机是 2x/3x 屏，360×640 的 1x 背板会被 CSS 非整数放大导致整屏发糊。
+    // 背板按整数倍 DPR 放大、ctx 全局等比缩放——所有既有 360×640 坐标不变，
+    // 像素画以整数倍放大保持硬边（imageSmoothing 已关）。上限 3 防超大屏爆显存。
+    const dpr = Math.min(3, Math.max(1, Math.floor(window.devicePixelRatio || 1)));
+    this.renderScale = dpr;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    ctx.scale(dpr, dpr);
     this.ctx.imageSmoothingEnabled = false;
     this.transitionFrame = document.createElement('canvas');
-    this.transitionFrame.width = W;
-    this.transitionFrame.height = H;
+    this.transitionFrame.width = W * dpr;
+    this.transitionFrame.height = H * dpr;
     this.titleCover.decoding = 'async';
     this.titleCover.src = TITLE_COVER_URL;
     this.installInput();
@@ -2051,6 +2184,7 @@ export class ZheYiShenGame {
     this.praiseMove = 0;
     this.praiseSpawnCount = 0;
     this.praiseMoveIndex = 0;
+    this.closetMoveIndex = 0;
     this.praiseOneSeatUsed = false;
     this.praiseConsult = undefined;
     this.praisePaperZones = [];
@@ -2303,6 +2437,16 @@ export class ZheYiShenGame {
     this.painlessDamage = 0;
     this.painlessTimer = 0;
     this.hurtCooldown = 0;
+    this.deskLampAuraActive = false;
+    this.deskLampBurnTimer = DESK_LAMP_BURN_INTERVAL;
+    this.reheatedPotColdTimer = REHEATED_POT_COLD_INTERVAL;
+    this.silenceSlowTimer = 0;
+    this.scannerLockTimer = 0;
+    this.meetingDoorSlowTimer = 0;
+    this.bonusSuppressionTimer = 0;
+    this.queueWrongWaySlowTimer = 0;
+    this.familySlowTimer = 0;
+    this.ivStandsSpawnedThisStage = 0;
     this.heroAttackTimer = 0;
     this.screenShake = 0;
     this.darkActive = false;
@@ -2630,6 +2774,16 @@ export class ZheYiShenGame {
   }
 
   private computeMoveSpeed(): number {
+    if (this.bonusSuppressionTimer > 0) {
+      let suppressedSpeed = HERO_BASE_SPEED;
+      if (this.heroSlowTimer > 0) suppressedSpeed *= 0.75;
+      if (this.silenceSlowTimer > 0) suppressedSpeed *= SILENCE_SLOW_MULTIPLIER;
+      if (this.meetingDoorSlowTimer > 0) suppressedSpeed *= MEETING_DOOR_SLOW_MULTIPLIER;
+      if (this.queueWrongWaySlowTimer > 0) suppressedSpeed *= QUEUE_SCREEN_WRONG_WAY_MULTIPLIER;
+      if (this.familySlowTimer > 0) suppressedSpeed *= OTHERS_FAMILY_SLOW_MULTIPLIER;
+      if (this.rainActive && this.heroInRain) suppressedSpeed *= 0.85;
+      return this.clamp(suppressedSpeed, 62, 178);
+    }
     let speed = HERO_BASE_SPEED;
     if (this.hasItem('stone-schoolbag')) speed *= 0.8;
     if (this.hasItem('fathers-raincoat')) speed *= 0.92;
@@ -2641,6 +2795,10 @@ export class ZheYiShenGame {
     if (this.hasItem('summer-run')) speed *= 1.12;
     if (this.hasItem('sock-cigs') && this.sockBoostTimer > 0) speed *= 1.25;
     if (this.heroSlowTimer > 0) speed *= 0.75;
+    if (this.silenceSlowTimer > 0) speed *= SILENCE_SLOW_MULTIPLIER;
+    if (this.meetingDoorSlowTimer > 0) speed *= MEETING_DOOR_SLOW_MULTIPLIER;
+    if (this.queueWrongWaySlowTimer > 0) speed *= QUEUE_SCREEN_WRONG_WAY_MULTIPLIER;
+    if (this.familySlowTimer > 0) speed *= OTHERS_FAMILY_SLOW_MULTIPLIER;
     if (this.hasItem('class-break')) {
       if (this.battleTime < 10) speed *= 1.35;
       else if (this.battleTime < 13) speed *= 0.85;
@@ -2827,6 +2985,11 @@ export class ZheYiShenGame {
       return;
     }
 
+    // 输液架是暮年全章压力，不允许随机池一局没刷；同时严格限制为 1–2 只。
+    if (this.encounterIndex === 5 && this.ivStandsSpawnedThisStage === 0 && this.battleTime >= 8) {
+      this.spawnSeekingEnemy('iv-stand');
+    }
+
     const alive = this.enemies.filter((enemy) => !enemy.dead).length;
     const maxAlive = this.encounterIndex === 0 ? 10 : this.encounterIndex === 1 ? 12 : MAX_ALIVE_ENEMIES;
     const majorThreatAlive = this.enemies.some((enemy) => !enemy.dead && (enemy.elite || (enemy.boss && enemy.type !== 'lamp-keeper')));
@@ -2838,7 +3001,10 @@ export class ZheYiShenGame {
       const pressure = Math.max(0.62, 1 - (this.battleTime / stage.duration) * 0.4);
       while (this.spawnTimer <= 0) {
         this.spawnTimer += stage.spawnEvery * pressure * (this.darkActive ? 2.2 : 1);
-        const type = stage.pool[Math.floor(this.random() * stage.pool.length)]!;
+        const availablePool = this.encounterIndex === 5 && this.ivStandsSpawnedThisStage >= IV_STAND_STAGE_CAP
+          ? stage.pool.filter((candidate) => candidate !== 'iv-stand')
+          : stage.pool;
+        const type = availablePool[Math.floor(this.random() * availablePool.length)]!;
         this.spawnSeekingEnemy(type);
       }
     }
@@ -3169,6 +3335,7 @@ export class ZheYiShenGame {
   }
 
   private spawnSeekingEnemy(type: EnemyType, opts?: { elite?: boolean; name?: string }): void {
+    if (type === 'iv-stand' && this.encounterIndex === 5 && this.ivStandsSpawnedThisStage >= IV_STAND_STAGE_CAP) return;
     const angle = this.random() * Math.PI * 2;
     const dist = 250 + this.random() * 90;
     let x = this.heroX + Math.cos(angle) * dist;
@@ -3182,6 +3349,7 @@ export class ZheYiShenGame {
       }
     }
     this.enemies.push(this.createSeekingEnemy(type, x, y, opts));
+    if (type === 'iv-stand' && this.encounterIndex === 5) this.ivStandsSpawnedThisStage += 1;
   }
 
   private frame(time: number): void {
@@ -3495,6 +3663,12 @@ export class ZheYiShenGame {
     }
     else if (this.enemyHasteTimer > 0) this.enemyHasteTimer = Math.max(0, this.enemyHasteTimer - dt);
     if (this.heroSlowTimer > 0) this.heroSlowTimer -= dt;
+    if (this.silenceSlowTimer > 0) this.silenceSlowTimer = Math.max(0, this.silenceSlowTimer - dt);
+    if (this.scannerLockTimer > 0) this.scannerLockTimer = Math.max(0, this.scannerLockTimer - dt);
+    if (this.meetingDoorSlowTimer > 0) this.meetingDoorSlowTimer = Math.max(0, this.meetingDoorSlowTimer - dt);
+    if (this.bonusSuppressionTimer > 0) this.bonusSuppressionTimer = Math.max(0, this.bonusSuppressionTimer - dt);
+    if (this.queueWrongWaySlowTimer > 0) this.queueWrongWaySlowTimer = Math.max(0, this.queueWrongWaySlowTimer - dt);
+    if (this.familySlowTimer > 0) this.familySlowTimer = Math.max(0, this.familySlowTimer - dt);
     if (this.sockBoostTimer > 0) this.sockBoostTimer = Math.max(0, this.sockBoostTimer - dt);
     this.noHitTime += dt;
     if (this.billTimer > 0) {
@@ -3681,6 +3855,7 @@ export class ZheYiShenGame {
   }
 
   private computeAttackVector(): AttackVector {
+    if (this.bonusSuppressionTimer > 0) return { ...BASE_VECTOR };
     const vector: AttackVector = { ...BASE_VECTOR };
     vector.damage *= this.originModifiers.damageMul * this.fateBuild.damageMul;
     vector.fireInterval *= this.originModifiers.fireIntervalMul * this.fateBuild.intervalMul;
@@ -3698,6 +3873,8 @@ export class ZheYiShenGame {
     vector.damage *= 1 + this.poisons.anger * 0.025;
     // 《你很优秀》的好话加成：他夸你，你是真的变强了
     vector.damage *= 1 + this.praiseDamage;
+    // 《没关的台灯》：站进灯下赶工，输出更高，但身体也在持续被耗掉。
+    if (this.heroInDeskLampAura()) vector.damage *= DESK_LAMP_DAMAGE_MULTIPLIER;
     vector.fireInterval /= 1 + this.praiseFire;
     vector.range *= Math.max(0.72, 1 - this.poisons.anger * 0.015);
     vector.homing += this.poisons.delusion * 0.012;
@@ -4928,6 +5105,31 @@ export class ZheYiShenGame {
     this.burst(this.hasProjectileTrigger('only-key') ? 'door' : 'ring', projectile.x, projectile.y, radius, '#d3a85d');
   }
 
+  private relocateQueueScreen(enemy: EnemyUnit): void {
+    const arrivals = (enemy.queueArrivals ?? 0) + 1;
+    const angle = (enemy.id * 0.73 + arrivals * 2.399) % (Math.PI * 2);
+    enemy.queueArrivals = arrivals;
+    enemy.queueCalled = false;
+    enemy.queueNumber = 43 + (arrivals * 17) % 54;
+    enemy.mechTimer = 0;
+    enemy.x = this.heroX + Math.cos(angle) * 145;
+    enemy.y = this.heroY + Math.sin(angle) * 205;
+    this.burst('ring', enemy.x, enemy.y, 72, '#c75d4c');
+    this.burst('word', this.heroX, this.heroY - 54, 30, '#d9b8a5', '不是这间');
+    this.feedback.play('page', 0.72);
+  }
+
+  private restartFamilyPass(enemy: EnemyUnit): void {
+    const entryAngle = (enemy.id * 1.17 + (enemy.mechTimer ?? 0) * 0.13) % (Math.PI * 2);
+    const side = enemy.id % 2 === 0 ? 1 : -1;
+    enemy.x = this.heroX + Math.cos(entryAngle) * 310;
+    enemy.y = this.heroY + Math.sin(entryAngle) * 310;
+    const targetX = this.heroX + Math.cos(entryAngle + Math.PI / 2) * 34 * side;
+    const targetY = this.heroY + Math.sin(entryAngle + Math.PI / 2) * 34 * side;
+    enemy.attackAngle = Math.atan2(targetY - enemy.y, targetX - enemy.x);
+    enemy.phase = 0;
+  }
+
   private updateEnemies(dt: number): void {
     const speedMultiplier = this.hasItem('bleach-powder') ? 1.15 : 1;
     for (const enemy of this.enemies) {
@@ -4965,27 +5167,443 @@ export class ZheYiShenGame {
           enemy.bossAnimLoop = undefined;
         }
       }
+      if (enemy.taskActionTimer !== undefined && enemy.taskActionTimer > 0) {
+        enemy.taskActionTimer = Math.max(0, enemy.taskActionTimer - dt);
+        if (enemy.taskActionTimer <= 0 && enemy.attackKind?.startsWith('task-')) {
+          enemy.attackKind = undefined;
+          enemy.taskActionDuration = undefined;
+        }
+      }
       enemy.mechTimer = (enemy.mechTimer ?? 0) + dt;
 
       // —— 小怪特性 ——
+      if (enemy.type === 'cry-moth') {
+        if (enemy.attackKind === 'moth-powder-warn') {
+          enemy.windupTimer = Math.max(0, (enemy.windupTimer ?? 0) - dt);
+          if ((enemy.windupTimer ?? 0) <= 0) {
+            enemy.attackKind = undefined;
+            enemy.mechTimer = 0;
+            this.burst('ring', enemy.x, enemy.y, CRY_MOTH_POWDER_RADIUS, '#b88fa9');
+            this.burst('ring', enemy.x, enemy.y, 34, '#d7b7ca');
+            this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 22, '#d8afc7', '鳞粉');
+            if (dist <= CRY_MOTH_POWDER_RADIUS && this.hurtHero(1, `${enemy.name} · 鳞粉`)) {
+              this.heroSlowTimer = Math.max(this.heroSlowTimer, 0.22);
+            }
+          }
+        } else if ((enemy.mechTimer ?? 0) >= CRY_MOTH_POWDER_CYCLE) {
+          enemy.attackKind = 'moth-powder-warn';
+          enemy.windupTimer = CRY_MOTH_POWDER_WINDUP;
+          enemy.mechTimer = 0;
+        }
+
+        const hardControlled = (enemy.freezeTimer ?? 0) > 0 || (enemy.paralyzeTimer ?? 0) > 0;
+        if (!hardControlled) {
+          const orbitDirection = enemy.id % 2 === 0 ? 1 : -1;
+          enemy.attackAngle = (enemy.attackAngle ?? Math.atan2(enemy.y - this.heroY, enemy.x - this.heroX))
+            + orbitDirection * dt * 1.18;
+          const targetX = this.heroX + Math.cos(enemy.attackAngle) * CRY_MOTH_ORBIT_X;
+          const targetY = this.heroY + Math.sin(enemy.attackAngle) * CRY_MOTH_ORBIT_Y;
+          const orbitDX = targetX - enemy.x;
+          const orbitDY = targetY - enemy.y;
+          const orbitDistance = Math.hypot(orbitDX, orbitDY) || 1;
+          const slowPace = (enemy.slowTimer ?? 0) > 0 ? 0.5 : 1;
+          const step = Math.min(orbitDistance, enemy.speed * 1.7 * slowPace * dt);
+          enemy.x += (orbitDX / orbitDistance) * step;
+          enemy.y += (orbitDY / orbitDistance) * step;
+        }
+        continue;
+      }
+      if (enemy.type === 'fear') {
+        if (enemy.attackKind === 'fear-inhale') {
+          enemy.windupTimer = Math.max(0, (enemy.windupTimer ?? 0) - dt);
+          if ((enemy.windupTimer ?? 0) <= 0) {
+            enemy.attackKind = undefined;
+            enemy.mechTimer = 0;
+            this.burst('ring', enemy.x, enemy.y, FEAR_BREATH_RADIUS, '#51485f');
+            this.burst('ring', enemy.x, enemy.y, 42, '#8f8197');
+            this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 24, '#b4a6bb', '呼——');
+            if (dist <= FEAR_BREATH_RADIUS && this.hurtHero(1, `${enemy.name} · 呼吸`)) {
+              this.heroSlowTimer = Math.max(this.heroSlowTimer, 0.26);
+            }
+          }
+          continue;
+        }
+        if ((enemy.mechTimer ?? 0) >= FEAR_BREATH_CYCLE) {
+          enemy.attackKind = 'fear-inhale';
+          enemy.windupTimer = FEAR_BREATH_WINDUP;
+          enemy.mechTimer = 0;
+          this.burst('word', enemy.x, enemy.y - enemy.radius - 10, 18, '#8f8197', '吸——');
+          continue;
+        }
+      }
+      if (enemy.type === 'hunger-shadow') {
+        if (enemy.attackKind === 'hunger-warn') {
+          enemy.windupTimer = Math.max(0, (enemy.windupTimer ?? 0) - dt);
+          if ((enemy.windupTimer ?? 0) <= 0) {
+            enemy.attackKind = 'hunger-dash';
+            enemy.dashTimer = HUNGER_SHADOW_DASH_DURATION;
+            enemy.dashHit = false;
+            enemy.mechTimer = 0;
+            this.burst('word', enemy.x, enemy.y - enemy.radius - 10, 24, '#d6c6ad', '扑');
+          }
+          continue;
+        }
+        if (enemy.attackKind === 'hunger-dash') {
+          const hardControlled = (enemy.freezeTimer ?? 0) > 0 || (enemy.paralyzeTimer ?? 0) > 0;
+          if ((enemy.dashTimer ?? 0) > 0 && !hardControlled) {
+            const dashAngle = enemy.attackAngle ?? 0;
+            const startX = enemy.x;
+            const startY = enemy.y;
+            const slowPace = (enemy.slowTimer ?? 0) > 0 ? 0.58 : 1;
+            const dashDistance = HUNGER_SHADOW_DASH_SPEED * slowPace * dt;
+            enemy.x += Math.cos(dashAngle) * dashDistance;
+            enemy.y += Math.sin(dashAngle) * dashDistance;
+            const segmentX = enemy.x - startX;
+            const segmentY = enemy.y - startY;
+            const segmentLengthSquared = segmentX * segmentX + segmentY * segmentY || 1;
+            const projection = this.clamp(
+              ((this.heroX - startX) * segmentX + (this.heroY - startY) * segmentY) / segmentLengthSquared,
+              0,
+              1,
+            );
+            const nearestX = startX + segmentX * projection;
+            const nearestY = startY + segmentY * projection;
+            if (!enemy.dashHit
+              && Math.hypot(this.heroX - nearestX, this.heroY - nearestY) <= HUNGER_SHADOW_DASH_HALF_WIDTH) {
+              enemy.dashHit = true;
+              if (this.hurtHero(enemy.damage, enemy.name)) {
+                this.screenShake = Math.max(this.screenShake, 0.16);
+                this.burst('ring', this.heroX, this.heroY - 8, 46, '#b9a68d');
+              }
+            }
+          }
+          if ((enemy.dashTimer ?? 0) <= 0) {
+            enemy.attackKind = undefined;
+            enemy.mechTimer = 0;
+          }
+          continue;
+        }
+        if ((enemy.mechTimer ?? 0) >= HUNGER_SHADOW_DASH_CYCLE) {
+          enemy.attackKind = 'hunger-warn';
+          enemy.attackAngle = Math.atan2(this.heroY - enemy.y, this.heroX - enemy.x);
+          enemy.windupTimer = HUNGER_SHADOW_DASH_WINDUP;
+          enemy.mechTimer = 0;
+          continue;
+        }
+      }
+      if (enemy.type === 'red-mark') {
+        const hardControlled = (enemy.freezeTimer ?? 0) > 0 || (enemy.paralyzeTimer ?? 0) > 0;
+        const slowPace = (enemy.slowTimer ?? 0) > 0 ? 0.5 : 1;
+        if (enemy.attackKind === 'red-retreat') {
+          enemy.windupTimer = Math.max(0, (enemy.windupTimer ?? 0) - dt);
+          if (!hardControlled) {
+            enemy.x += Math.cos(enemy.attackAngle ?? 0) * RED_MARK_RETREAT_SPEED * slowPace * dt;
+            enemy.y += Math.sin(enemy.attackAngle ?? 0) * RED_MARK_RETREAT_SPEED * slowPace * dt;
+          }
+          if ((enemy.windupTimer ?? 0) <= 0) {
+            enemy.attackKind = 'red-pounce-warn';
+            enemy.windupTimer = RED_MARK_POUNCE_WINDUP;
+            enemy.attackAngle = Math.atan2(this.heroY - enemy.y, this.heroX - enemy.x);
+            this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 22, '#e5666f', '再改');
+          }
+          continue;
+        }
+        if (enemy.attackKind === 'red-pounce-warn') {
+          enemy.windupTimer = Math.max(0, (enemy.windupTimer ?? 0) - dt);
+          if ((enemy.windupTimer ?? 0) <= 0) {
+            enemy.attackKind = 'red-pounce';
+            enemy.dashTimer = RED_MARK_POUNCE_DURATION;
+            enemy.dashHit = false;
+            this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 24, '#f08a8b', '×');
+          }
+          continue;
+        }
+        if (enemy.attackKind === 'red-pounce') {
+          if ((enemy.dashTimer ?? 0) > 0 && !hardControlled) {
+            const startX = enemy.x;
+            const startY = enemy.y;
+            const angle = enemy.attackAngle ?? 0;
+            const distance = RED_MARK_POUNCE_SPEED * slowPace * dt;
+            enemy.x += Math.cos(angle) * distance;
+            enemy.y += Math.sin(angle) * distance;
+            const segmentX = enemy.x - startX;
+            const segmentY = enemy.y - startY;
+            const segmentLengthSquared = segmentX * segmentX + segmentY * segmentY || 1;
+            const projection = this.clamp(
+              ((this.heroX - startX) * segmentX + (this.heroY - startY) * segmentY) / segmentLengthSquared,
+              0,
+              1,
+            );
+            const nearestX = startX + segmentX * projection;
+            const nearestY = startY + segmentY * projection;
+            if (!enemy.dashHit
+              && Math.hypot(this.heroX - nearestX, this.heroY - nearestY) <= RED_MARK_POUNCE_HALF_WIDTH) {
+              enemy.dashHit = true;
+              if (this.hurtHero(enemy.damage, `${enemy.name} · 再扑`)) {
+                this.burst('ring', this.heroX, this.heroY - 8, 54, '#e44f5d');
+                this.burst('word', this.heroX, this.heroY - 56, 30, '#ef7780', '又错了');
+                this.screenShake = Math.max(this.screenShake, 0.14);
+              }
+            }
+          }
+          if ((enemy.dashTimer ?? 0) <= 0) {
+            enemy.attackKind = undefined;
+            enemy.attackCooldown = Math.max(enemy.attackCooldown, 0.72);
+            enemy.mechTimer = 0;
+          }
+          continue;
+        }
+      }
+      if (enemy.type === 'whisper') {
+        const hardControlled = (enemy.freezeTimer ?? 0) > 0 || (enemy.paralyzeTimer ?? 0) > 0;
+        if (!hardControlled) {
+          const direction = enemy.id % 2 === 0 ? 1 : -1;
+          enemy.attackAngle = (enemy.attackAngle ?? Math.atan2(enemy.y - this.heroY, enemy.x - this.heroX))
+            + direction * WHISPER_ORBIT_SPEED * dt;
+          const targetX = this.heroX + Math.cos(enemy.attackAngle) * WHISPER_ORBIT_X;
+          const targetY = this.heroY + Math.sin(enemy.attackAngle) * WHISPER_ORBIT_Y;
+          const orbitDX = targetX - enemy.x;
+          const orbitDY = targetY - enemy.y;
+          const orbitDistance = Math.hypot(orbitDX, orbitDY) || 1;
+          const slowPace = (enemy.slowTimer ?? 0) > 0 ? 0.5 : 1;
+          const step = Math.min(orbitDistance, enemy.speed * 1.85 * slowPace * dt);
+          enemy.x += orbitDX / orbitDistance * step;
+          enemy.y += orbitDY / orbitDistance * step;
+        }
+        const pressureDistance = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y);
+        if (pressureDistance <= WHISPER_PRESSURE_RADIUS) {
+          enemy.auraCooldown = (enemy.auraCooldown ?? WHISPER_PRESSURE_INTERVAL) - dt;
+          if (enemy.auraCooldown <= 0) {
+            enemy.auraCooldown += WHISPER_PRESSURE_INTERVAL;
+            if (this.hurtHero(enemy.damage, enemy.name)) {
+              this.burst('ring', enemy.x, enemy.y, WHISPER_PRESSURE_RADIUS, '#9a668c');
+              this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 24, '#c992b3', '都在说');
+            }
+          }
+        } else {
+          enemy.auraCooldown = WHISPER_PRESSURE_INTERVAL;
+        }
+        continue;
+      }
+      if (enemy.type === 'missed-bus') {
+        const hardControlled = (enemy.freezeTimer ?? 0) > 0 || (enemy.paralyzeTimer ?? 0) > 0;
+        if (enemy.attackKind === 'missed-bus-warn') {
+          enemy.windupTimer = Math.max(0, (enemy.windupTimer ?? 0) - dt);
+          if ((enemy.windupTimer ?? 0) <= 0) {
+            enemy.attackKind = 'missed-bus-pass';
+            enemy.phase = 2;
+            enemy.dashTimer = MISSED_BUS_PASS_DURATION;
+            enemy.dashHit = false;
+            enemy.mechTimer = 0;
+            this.burst('word', enemy.x, (enemy.laneY ?? enemy.y) - enemy.radius - 12, 28, '#ebc65d', '开走了');
+            this.feedback.play('boss', 0.52);
+          }
+          continue;
+        }
+        if (enemy.attackKind === 'missed-bus-pass') {
+          if ((enemy.dashTimer ?? 0) > 0 && hardControlled) {
+            // 通用计时已在本帧开头扣除；硬控期间补回，避免车停住却把剩余路程吃掉。
+            enemy.dashTimer = (enemy.dashTimer ?? 0) + dt;
+            continue;
+          }
+          if ((enemy.dashTimer ?? 0) > 0) {
+            const angle = enemy.attackAngle ?? 0;
+            const startX = enemy.x;
+            const startY = enemy.y;
+            const slowPace = (enemy.slowTimer ?? 0) > 0 ? 0.62 : 1;
+            // 减速同时延长剩余时长，保证车仍走完相同路程，而不是半途消失。
+            enemy.dashTimer = (enemy.dashTimer ?? 0) + dt * (1 - slowPace);
+            const travel = MISSED_BUS_PASS_SPEED * slowPace * dt;
+            enemy.x += Math.cos(angle) * travel;
+            enemy.y += Math.sin(angle) * travel;
+
+            // 覆盖整辆 64px 小巴的车身和本帧扫过的路径，玩家只需离开锁定车道。
+            const cos = Math.cos(angle);
+            const sin = Math.sin(angle);
+            const relativeX = this.heroX - startX;
+            const relativeY = this.heroY - startY;
+            const along = relativeX * cos + relativeY * sin;
+            const across = Math.abs(-relativeX * sin + relativeY * cos);
+            if (!enemy.dashHit
+              && along >= -MISSED_BUS_BODY_HALF_LENGTH
+              && along <= travel + MISSED_BUS_BODY_HALF_LENGTH
+              && across <= MISSED_BUS_BODY_HALF_WIDTH) {
+              enemy.dashHit = true;
+              if (this.hurtHero(enemy.damage, `${enemy.name} · 横穿`)) {
+                this.burst('ring', this.heroX, this.heroY - 8, 62, '#e6bc50');
+                this.burst('word', this.heroX, this.heroY - 58, 30, '#f06c62', '没赶上');
+                this.screenShake = Math.max(this.screenShake, 0.18);
+                this.feedback.vibrate([24, 34, 18]);
+              }
+            }
+          }
+          if ((enemy.dashTimer ?? 0) <= 0) {
+            const exitDirection = Math.cos(enemy.attackAngle ?? 0) >= 0 ? 1 : -1;
+            enemy.x = this.heroX + exitDirection * (MISSED_BUS_ENTRY_DISTANCE + 36);
+            enemy.y = enemy.laneY ?? enemy.y;
+            enemy.attackKind = undefined;
+            enemy.phase = 0;
+            enemy.mechTimer = 0;
+            enemy.windupTimer = 0;
+            enemy.laneY = undefined;
+            enemy.dashHit = false;
+          }
+          continue;
+        }
+        if ((enemy.mechTimer ?? 0) >= MISSED_BUS_REENTRY_DELAY) {
+          const passIndex = (enemy.lanePassIndex ?? 0) + 1;
+          const direction = (enemy.id + passIndex) % 2 === 0 ? 1 : -1;
+          enemy.lanePassIndex = passIndex;
+          enemy.phase = 1;
+          enemy.attackKind = 'missed-bus-warn';
+          enemy.windupTimer = MISSED_BUS_WINDUP;
+          enemy.mechTimer = 0;
+          enemy.laneY = this.heroY;
+          enemy.attackAngle = direction > 0 ? 0 : Math.PI;
+          enemy.angle = enemy.attackAngle;
+          enemy.x = this.heroX - direction * MISSED_BUS_ENTRY_DISTANCE;
+          enemy.y = enemy.laneY;
+          enemy.dashHit = false;
+          this.burst('word', this.heroX, enemy.laneY - 34, 24, '#d9bd62', '这班要走');
+        }
+        // 冷却中的车停在画面外；它不会像普通近战怪一样追着主角拐弯。
+        continue;
+      }
       if (enemy.type === 'empty-chair') {
         continue; // 静止，不动不打，只是站在你的弹道优先级里
       }
-      if (enemy.type === 'silence' && dist < 90) this.heroSlowTimer = Math.max(this.heroSlowTimer, 0.3);
-      if (enemy.type === 'missed-call') {
-        enemy.auraCooldown = (enemy.auraCooldown ?? 1.2) - dt;
-        if (dist < 70 && enemy.auraCooldown <= 0) {
-          enemy.auraCooldown = 1.2;
-          this.hurtHero(1, enemy.name);
-          this.burst('ring', enemy.x, enemy.y, 70, '#7fa8b5');
+      if (enemy.type === 'silence' && dist <= SILENCE_SLOW_RADIUS) {
+        this.silenceSlowTimer = Math.max(this.silenceSlowTimer, 0.18);
+      }
+      if (enemy.type === 'others-paper') {
+        if (dist <= OTHERS_PAPER_AURA_RADIUS) {
+          const inner = dist <= OTHERS_PAPER_INNER_RADIUS;
+          const middle = dist <= OTHERS_PAPER_MID_RADIUS;
+          const interval = inner ? 0.62 : middle ? 1 : 1.5;
+          const damage = inner ? 2 : 1;
+          enemy.auraCooldown = (enemy.auraCooldown ?? interval) - dt;
+          if (enemy.auraCooldown <= 0) {
+            enemy.auraCooldown += interval;
+            if (this.hurtHero(damage, enemy.name)) {
+              this.burst('ring', enemy.x, enemy.y, inner ? 72 : middle ? 108 : 154, '#c84f62');
+              this.burst('word', this.heroX, this.heroY - 52, inner ? 28 : 22, '#df6571', inner ? '比下去了' : '比较');
+              this.screenShake = Math.max(this.screenShake, inner ? 0.12 : 0.06);
+            }
+          }
+        } else {
+          enemy.auraCooldown = 1.5;
         }
       }
-      if (enemy.type === 'hunger-shadow' && enemy.mechTimer >= 3) {
-        enemy.mechTimer = 0;
-        enemy.dashTimer = 0.5;
+      if (enemy.type === 'sign-here' && dist <= SIGN_HERE_SLOW_RADIUS) {
+        this.heroSlowTimer = Math.max(this.heroSlowTimer, 0.18);
       }
-      // 《辛苦下周一前》：倒计时到点没打死，它自己消失并扣你零钱——deadline 过了
-      if (enemy.type === 'task-deadline' && (enemy.mechTimer ?? 0) >= 8) {
+      if (enemy.type === 'meeting-door' && dist <= MEETING_DOOR_SLOW_RADIUS) {
+        this.meetingDoorSlowTimer = Math.max(this.meetingDoorSlowTimer, 0.18);
+      }
+      if (enemy.type === 'id-scanner') {
+        if (enemy.attackKind === 'id-scan-warn') {
+          enemy.windupTimer = Math.max(0, (enemy.windupTimer ?? 0) - dt);
+          if ((enemy.windupTimer ?? 0) <= 0) {
+            enemy.attackKind = 'id-scan-active';
+            enemy.windupTimer = ID_SCANNER_ACTIVE;
+            enemy.scanHit = false;
+            this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 26, '#67d6a0', '扫描');
+            this.feedback.play('page', 0.54);
+          }
+        } else if (enemy.attackKind === 'id-scan-active') {
+          enemy.windupTimer = Math.max(0, (enemy.windupTimer ?? 0) - dt);
+          const targetY = enemy.scanTargetY ?? enemy.y;
+          if (!enemy.scanHit && Math.abs(this.heroY - targetY) <= ID_SCANNER_HALF_HEIGHT) {
+            enemy.scanHit = true;
+            this.scannerLockTimer = Math.max(this.scannerLockTimer, ID_SCANNER_LOCK_DURATION);
+            this.burst('ring', this.heroX, this.heroY - 8, 66, '#5ce59b');
+            this.burst('word', this.heroX, this.heroY - 62, 34, '#83f0b3', '已识别 · #017');
+            this.screenShake = Math.max(this.screenShake, 0.14);
+            this.feedback.play('boss', 0.62);
+            this.feedback.vibrate([18, 26, 18]);
+          }
+          if ((enemy.windupTimer ?? 0) <= 0) {
+            enemy.attackKind = undefined;
+            enemy.windupTimer = 0;
+            enemy.scanTargetY = undefined;
+            enemy.scanHit = false;
+            enemy.mechTimer = 0;
+          }
+        } else if ((enemy.mechTimer ?? 0) >= ID_SCANNER_CYCLE) {
+          enemy.mechTimer = 0;
+          enemy.attackKind = 'id-scan-warn';
+          enemy.windupTimer = ID_SCANNER_WINDUP;
+          enemy.scanTargetY = this.heroY;
+          enemy.scanHit = false;
+          this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 24, '#78cfa2', '识别中');
+        }
+      }
+      if (enemy.type === 'queue-screen') {
+        if (!enemy.queueCalled && (enemy.mechTimer ?? 0) >= QUEUE_SCREEN_CALL_INTERVAL) {
+          enemy.queueCalled = true;
+          enemy.queueNumber = 42;
+          this.burst('ring', enemy.x, enemy.y, 92, '#d46750');
+          this.burst('word', enemy.x, enemy.y - enemy.radius - 14, 34, '#ef9977', '42号');
+          this.playVoiceOnce('clinic-next-number');
+        }
+        if (enemy.queueCalled) {
+          if (dist <= QUEUE_SCREEN_ARRIVAL_RADIUS) {
+            this.relocateQueueScreen(enemy);
+          } else if (this.heroInputMoving) {
+            const towardX = -dx / dist;
+            const towardY = -dy / dist;
+            const inputToward = this.summerSlideDX * towardX + this.summerSlideDY * towardY;
+            if (inputToward < QUEUE_SCREEN_WRONG_WAY_DOT) {
+              this.queueWrongWaySlowTimer = Math.max(this.queueWrongWaySlowTimer, 0.18);
+            }
+          }
+        }
+        continue;
+      }
+      if (enemy.type === 'others-family') {
+        if (enemy.attackAngle === undefined) {
+          const side = enemy.id % 2 === 0 ? 1 : -1;
+          enemy.attackAngle = Math.atan2(this.heroY - enemy.y, this.heroX - enemy.x) + side * 0.12;
+          enemy.phase = 0;
+        }
+        const hardControlled = (enemy.freezeTimer ?? 0) > 0 || (enemy.paralyzeTimer ?? 0) > 0;
+        const pace = hardControlled ? 0 : (enemy.slowTimer ?? 0) > 0 ? 0.5 : 1;
+        enemy.x += Math.cos(enemy.attackAngle) * enemy.speed * pace * dt;
+        enemy.y += Math.sin(enemy.attackAngle) * enemy.speed * pace * dt;
+        if (dist <= OTHERS_FAMILY_SLOW_RADIUS) {
+          this.familySlowTimer = Math.max(this.familySlowTimer, 0.18);
+        }
+        if (dist < 90) enemy.phase = 1;
+        if (((enemy.phase ?? 0) === 1 && dist > 330) || dist > 440) this.restartFamilyPass(enemy);
+        continue;
+      }
+      if (enemy.type === 'missed-call') {
+        if (dist <= MISSED_CALL_AURA_RADIUS) {
+          enemy.auraCooldown = (enemy.auraCooldown ?? MISSED_CALL_PULSE_INTERVAL) - dt;
+          if (enemy.auraCooldown <= 0) {
+            enemy.auraCooldown += MISSED_CALL_PULSE_INTERVAL;
+            if (this.hurtHero(MISSED_CALL_PULSE_DAMAGE, `${enemy.name} · 铃声`)) {
+              this.burst('ring', enemy.x, enemy.y, MISSED_CALL_AURA_RADIUS, '#79b8c8');
+              this.burst('ring', enemy.x, enemy.y, 46, '#b8dce0');
+              this.burst('word', enemy.x, enemy.y - enemy.radius - 14, 28, '#a9d5dc', '铃——');
+              this.screenShake = Math.max(this.screenShake, 0.08);
+            }
+          }
+        } else {
+          enemy.auraCooldown = MISSED_CALL_PULSE_INTERVAL;
+        }
+      }
+      // 《辛苦下周一前》：最后 0.7 秒播放正式红色到期动作，归零后再扣账。
+      if (enemy.type === 'task-deadline'
+        && (enemy.phase ?? 0) === 0
+        && TASK_DEADLINE_DURATION - (enemy.mechTimer ?? 0) <= TASK_DEADLINE_WARNING_DURATION) {
+        enemy.phase = 1;
+        enemy.attackKind = 'task-deadline-expire';
+        enemy.taskActionTimer = TASK_DEADLINE_WARNING_DURATION;
+        enemy.taskActionDuration = TASK_DEADLINE_WARNING_DURATION;
+        this.burst('word', enemy.x, enemy.y - enemy.radius - 16, 24, '#d3605c', '现在就要');
+      }
+      if (enemy.type === 'task-deadline' && (enemy.mechTimer ?? 0) >= TASK_DEADLINE_DURATION) {
         enemy.dead = true;
         if (this.hero.coins > 0) {
           this.hero.coins -= 1;
@@ -4993,21 +5611,29 @@ export class ZheYiShenGame {
         } else {
           this.burst('word', enemy.x, enemy.y - enemy.radius - 10, 26, '#b58558', '过期了');
         }
+        this.burst('ring', enemy.x, enemy.y, 76, '#d65b58');
+        this.burst('ring', enemy.x, enemy.y, 42, '#f0a06d');
+        this.screenShake = Math.max(this.screenShake, 0.12);
         continue;
       }
       // 《对齐一下》：不打你，把场上其他活拉到一起同步行动——开会
-      if (enemy.type === 'task-sync' && (enemy.mechTimer ?? 0) >= 4) {
+      if (enemy.type === 'task-sync' && (enemy.mechTimer ?? 0) >= TASK_SYNC_INTERVAL) {
         enemy.mechTimer = 0;
+        enemy.attackKind = 'task-sync-pull';
+        enemy.taskActionTimer = TASK_SYNC_ACTION_DURATION;
+        enemy.taskActionDuration = TASK_SYNC_ACTION_DURATION;
         for (const other of this.enemies) {
           if (other.dead || other === enemy || other.boss || other.elite) continue;
           const pull = Math.hypot(other.x - enemy.x, other.y - enemy.y);
-          if (pull > 30 && pull < 260) {
-            other.x += (enemy.x - other.x) * 0.3;
-            other.y += (enemy.y - other.y) * 0.3;
+          if (pull > TASK_SYNC_MIN_DISTANCE && pull < TASK_SYNC_RADIUS) {
+            other.x += (enemy.x - other.x) * TASK_SYNC_PULL_RATIO;
+            other.y += (enemy.y - other.y) * TASK_SYNC_PULL_RATIO;
           }
         }
-        this.burst('ring', enemy.x, enemy.y, 120, '#6f8f8a');
+        this.burst('ring', enemy.x, enemy.y, 156, '#6f8f8a');
+        this.burst('ring', enemy.x, enemy.y, 92, '#9fb9aa');
         this.burst('word', enemy.x, enemy.y - enemy.radius - 10, 24, '#6f8f8a', '对齐一下');
+        this.screenShake = Math.max(this.screenShake, 0.08);
       }
 
       // —— 青年大 Boss《你很优秀》——
@@ -5074,30 +5700,25 @@ export class ZheYiShenGame {
             enemy.attackKind = 'paper';
             this.playBossAnimation(enemy, 'praise-p2-paper', 0.95);
           } else if (chairMove === 2 && tasks.length > 0) {
-            // 《优化》：指向一只活吃掉，自己回血——你得抢在他之前打掉那只
-            const eaten = tasks[0]!;
-            this.playBossAnimation(enemy, 'praise-p2-optimize', 0.9);
-            eaten.dead = true;
-            const healed = Math.min(enemy.maxHp - enemy.hp, enemy.maxHp * 0.07);
-            enemy.hp += healed;
-            this.burst('ring', eaten.x, eaten.y, 60, '#c9a24a');
-            this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 30, '#c9a24a', `优化 +${Math.ceil(healed)}`);
+            // 《优化》：先点名一只活，动画给出抢杀窗口；前摇结束才吃掉仍活着的目标。
+            const target = tasks[0]!;
+            enemy.attackTargetId = target.id;
+            enemy.windupTimer = 0.9;
+            enemy.attackKind = 'praise-optimize';
+            this.playBossAnimation(enemy, 'praise-p2-optimize', 1.05);
+            this.burst('word', target.x, target.y - target.radius - 10, 28, '#d7bd73', '优化中');
           } else if (chairMove === 3 && tasks.length > 0) {
-            // 《离职！》：积压的活全部同时爆炸，威力＝剩余小怪数
-            let hits = 0;
-            this.playBossAnimation(enemy, 'praise-p2-dismiss', 1.05);
-            for (const task of tasks) {
-              task.dead = true;
-              this.burst('ring', task.x, task.y, 84, '#c66c5a');
-              if (Math.hypot(task.x - this.heroX, task.y - this.heroY) < 96) hits += 1;
-            }
-            this.screenShake = Math.max(this.screenShake, 0.24);
-            this.feedback.vibrate([40, 60, 40]);
-            if (hits > 0) this.hurtHero(Math.min(18, 3 + hits * 3 + tasks.length), enemy.name);
+            // 《离职！》：先让每一件积压的活亮出爆炸边界，再一起结算。
+            enemy.windupTimer = 1.1;
+            enemy.attackKind = 'praise-dismiss';
+            this.playBossAnimation(enemy, 'praise-p2-dismiss', 1.2);
             this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 34, '#c66c5a', '离职！');
-            this.say('你没做完的活，一起炸了');
           } else if (chairMove === 4 && !this.praiseOneSeatUsed) {
-            this.resolveOneSeat(enemy, tasks);
+            // 《岗位只有一个！》：所有候选先被同一圈点名，最后才吞并出幸存者。
+            enemy.windupTimer = 1.2;
+            enemy.attackKind = 'praise-one-seat';
+            this.playBossAnimation(enemy, 'praise-p2-one-seat', 1.3);
+            this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 34, '#8a5560', '岗位只有一个！');
           } else {
             // 没有可用的活：补一件
             this.enemies.push(this.createSeekingEnemy('task-simple', enemy.x, enemy.y + 40));
@@ -5277,13 +5898,15 @@ export class ZheYiShenGame {
           }
         }
       }
-      if (enemy.type === 'iv-stand' && enemy.mechTimer >= 5.8) {
-        enemy.mechTimer = 0;
-        const healed = Math.min(enemy.maxHp - enemy.hp, enemy.maxHp * 0.08);
-        if (healed > 0) {
-          enemy.hp += healed;
-          this.burst('ring', enemy.x, enemy.y, 54, '#779887');
-          this.burst('word', enemy.x, enemy.y - enemy.radius - 10, 22, '#d8d0c1', `续滴 +${Math.ceil(healed)}`);
+      if (enemy.type === 'iv-stand') {
+        const nextTier = Math.floor((enemy.mechTimer ?? 0) / IV_STAND_SPEED_INTERVAL);
+        const previousTier = enemy.ivSpeedTier ?? 0;
+        enemy.ivSpeedTier = nextTier;
+        enemy.speed = IV_STAND_BASE_SPEED + nextTier * IV_STAND_SPEED_STEP;
+        if (nextTier > previousTier) {
+          this.burst('ring', enemy.x, enemy.y, 54 + nextTier * 4, '#83a99a');
+          this.burst('word', enemy.x, enemy.y - enemy.radius - 10, 24, '#c9ddd1', `第${nextTier}档 · ${Math.round(enemy.speed)}`);
+          this.feedback.play('page', Math.min(1.2, 0.58 + nextTier * 0.06));
         }
       }
 
@@ -5495,15 +6118,41 @@ export class ZheYiShenGame {
           }
         }
       }
-      // 没人相信的怪物《影子压来》：影子先沿你方向拉长，再整片压过来，本体几乎不动
-      if (enemy.type === 'closet-dark' && (enemy.windupTimer ?? 0) <= 0 && (enemy.mechTimer ?? 0) >= 3.8) {
+      // 没人相信的怪物：直线压影、环形影手、双门挤压三招循环；半血分裂后加快但不加判定范围。
+      const closetInterval = (enemy.phase ?? 1) === 2 ? CLOSET_PHASE_TWO_INTERVAL : CLOSET_ATTACK_INTERVAL;
+      if (enemy.type === 'closet-dark' && (enemy.windupTimer ?? 0) <= 0 && (enemy.mechTimer ?? 0) >= closetInterval) {
         enemy.mechTimer = 0;
-        enemy.attackAngle = Math.atan2(this.heroY - enemy.y, this.heroX - enemy.x);
-        enemy.windupTimer = 0.85;
-        enemy.attackKind = 'shadow';
-        this.playBossAnimation(enemy, 'closet-shadow', 1.05);
+        const move = this.closetMoveIndex % 3;
+        this.closetMoveIndex += 1;
+        if (move === 0) {
+          enemy.attackTargetX = undefined;
+          enemy.attackTargetY = undefined;
+          enemy.attackSafeAngle = undefined;
+          enemy.attackAngle = Math.atan2(this.heroY - enemy.y, this.heroX - enemy.x);
+          enemy.windupTimer = CLOSET_SHADOW_WINDUP;
+          enemy.attackKind = 'shadow';
+          this.playBossAnimation(enemy, 'closet-shadow', 1.3);
+          this.say('影子压来');
+        } else if (move === 1) {
+          enemy.attackTargetX = this.heroX;
+          enemy.attackTargetY = this.heroY;
+          enemy.attackSafeAngle = Math.atan2(this.heroY - enemy.y, this.heroX - enemy.x);
+          enemy.attackAngle = enemy.attackSafeAngle;
+          enemy.windupTimer = CLOSET_HANDS_WINDUP;
+          enemy.attackKind = 'closet-hands';
+          this.playBossAnimation(enemy, 'closet-hands', CLOSET_HANDS_WINDUP + 0.45);
+          this.say('里面还有手');
+        } else {
+          enemy.attackTargetX = this.heroX;
+          enemy.attackTargetY = this.heroY;
+          enemy.attackSafeAngle = undefined;
+          enemy.attackAngle = undefined;
+          enemy.windupTimer = CLOSET_SLAM_WINDUP;
+          enemy.attackKind = 'closet-slam';
+          this.playBossAnimation(enemy, 'closet-slam', CLOSET_SLAM_WINDUP + 0.4);
+          this.say('门要关了');
+        }
         this.feedback.play('boss', 0.85);
-        this.say('别看。');
       }
       if (enemy.type === 'debt-collector' && enemy.mechTimer >= 7 && (enemy.windupTimer ?? 0) <= 0) {
         enemy.mechTimer = 0;
@@ -5574,6 +6223,8 @@ export class ZheYiShenGame {
           continue;
         }
       }
+      // 会议室的门不攻击也不追人；它只靠门槛范围拿走玩家的位置。
+      if (enemy.type === 'meeting-door') continue;
       if (enemy.elite && !enemy.boss && dist > 430) {
         enemy.x = this.heroX - (dx / dist) * 260;
         enemy.y = this.heroY - (dy / dist) * 260;
@@ -5587,9 +6238,12 @@ export class ZheYiShenGame {
         enemy.y = this.heroY + Math.sin(angle) * 300;
         continue;
       }
-      const reach = enemy.radius + 15;
+      const reach = enemy.radius + 15 + (enemy.type === 'checkup-report' ? CHECKUP_REPORT_CONTACT_PADDING : 0);
       let moveMult = speedMultiplier;
       if (this.enemyHasteTimer > 0) moveMult *= 1.1;
+      if (this.scannerLockTimer > 0 && enemy.type !== 'id-scanner' && !enemy.elite && !enemy.boss) {
+        moveMult *= ID_SCANNER_CONVERGE_MULTIPLIER;
+      }
       if ((enemy.slowTimer ?? 0) > 0) moveMult *= 0.5;
       if ((enemy.wetTimer ?? 0) > 0) moveMult *= 0.95;
       const heavyStacks = (enemy.heavyTimer ?? 0) > 0 ? Math.min(3, enemy.heavyStacks ?? 1) : 0;
@@ -5599,7 +6253,7 @@ export class ZheYiShenGame {
       if (hardControlled) moveMult = 0;
       if ((enemy.dashTimer ?? 0) > 0) {
         const stageEliteDash = enemy.type === 'coat-rack';
-        moveMult *= enemy.type === 'hunger-shadow' ? 3 : stageEliteDash ? 2.15 : 1.35;
+        moveMult *= stageEliteDash ? 2.15 : 1.35;
       }
       if (enemy.type === 'silent-father' && (enemy.phase ?? 1) === 2) moveMult *= 1.5;
       if (enemy.type === 'silent-father' && this.fatherBraceTimer > 0) moveMult = 0; // 《外面冷》：转身迎雨，不追
@@ -5614,6 +6268,32 @@ export class ZheYiShenGame {
       } else {
         if (hardControlled) continue;
         enemy.attackCooldown -= dt * heavyPace;
+        if (enemy.type === 'checkup-report') {
+          if (enemy.attackCooldown <= 0) {
+            enemy.attackCooldown = CHECKUP_REPORT_RECONTACT_DELAY;
+            this.bonusSuppressionTimer = CHECKUP_REPORT_BONUS_LOCK_DURATION;
+            enemy.x -= (dx / dist) * 34;
+            enemy.y -= (dy / dist) * 34;
+            this.burst('ring', this.heroX, this.heroY - 14, 78, '#d06068');
+            this.burst('ring', this.heroX, this.heroY - 14, 48, '#f0b0a6');
+            this.burst('word', this.heroX, this.heroY - 62, 34, '#df6c72', '加成封存 · 3s');
+            this.screenShake = Math.max(this.screenShake, 0.18);
+            this.feedback.play('deny', 0.82);
+            this.feedback.vibrate([28, 24, 38]);
+          }
+          continue;
+        }
+        if (enemy.type === 'red-mark') {
+          if (enemy.attackCooldown <= 0 && this.hurtHero(enemy.damage, enemy.name)) {
+            enemy.attackCooldown = 1.35;
+            enemy.attackKind = 'red-retreat';
+            enemy.windupTimer = RED_MARK_RETREAT_DURATION;
+            enemy.attackAngle = Math.atan2(enemy.y - this.heroY, enemy.x - this.heroX);
+            this.burst('ring', this.heroX, this.heroY - 12, 46, '#d94a57');
+            this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 22, '#e5666f', '错');
+          }
+          continue;
+        }
         if (enemy.attackCooldown <= 0 && this.hurtHero(enemy.damage, enemy.name)) {
           enemy.attackCooldown = enemy.boss ? 2.2 : enemy.elite ? 1.9 : 1.35;
           enemy.x -= (dx / dist) * 28;
@@ -5630,6 +6310,7 @@ export class ZheYiShenGame {
         }
       }
     }
+    this.updateAdulthoodEnemyHazards(dt);
     for (let i = 0; i < this.enemies.length; i += 1) {
       const a = this.enemies[i]!;
       if (a.dead) continue;
@@ -5648,6 +6329,87 @@ export class ZheYiShenGame {
           b.y += dy * push;
         }
       }
+    }
+  }
+
+  private heroInDeskLampAura(): boolean {
+    return this.enemies.some((enemy) => (
+      !enemy.dead
+      && enemy.type === 'desk-lamp'
+      && Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y) <= DESK_LAMP_AURA_RADIUS
+    ));
+  }
+
+  private reheatedPotHeat(enemy: EnemyUnit): number {
+    return 1 - this.clamp((enemy.mechTimer ?? 0) / REHEATED_POT_COOL_DURATION, 0, 1);
+  }
+
+  private updateAdulthoodEnemyHazards(dt: number): void {
+    const lampActiveBefore = this.deskLampAuraActive;
+    this.deskLampAuraActive = this.heroInDeskLampAura();
+    if (this.deskLampAuraActive) {
+      if (!lampActiveBefore) {
+        this.deskLampBurnTimer = DESK_LAMP_BURN_INTERVAL;
+        this.burst('ring', this.heroX, this.heroY - 12, 76, '#e5b54e');
+        this.burst('word', this.heroX, this.heroY - 58, 30, '#f2cc71', '灯下赶工 ×1.2');
+        this.feedback.play('page', 0.46);
+      }
+      this.deskLampBurnTimer -= dt;
+      if (this.deskLampBurnTimer <= 0) {
+        this.deskLampBurnTimer += DESK_LAMP_BURN_INTERVAL;
+        if (this.hurtHero(DESK_LAMP_BURN_DAMAGE, '没关的台灯')) {
+          this.screenShake = Math.max(this.screenShake, 0.08);
+          this.burst('ring', this.heroX, this.heroY - 10, 36, '#e36a45');
+          this.burst('word', this.heroX, this.heroY - 52, 24, '#f0a04d', '烫');
+        }
+      }
+    } else {
+      this.deskLampBurnTimer = DESK_LAMP_BURN_INTERVAL;
+    }
+
+    const pots = this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'reheated-pot');
+    let coldPot: EnemyUnit | undefined;
+    for (const pot of pots) {
+      const heat = this.reheatedPotHeat(pot);
+      const distance = Math.hypot(this.heroX - pot.x, this.heroY - pot.y);
+      const canReheat = heat <= 0
+        && distance <= REHEATED_POT_REHEAT_RADIUS
+        && !this.heroMoving;
+      if (canReheat) {
+        pot.potReheatProgress = Math.min(
+          REHEATED_POT_REHEAT_DURATION,
+          (pot.potReheatProgress ?? 0) + dt,
+        );
+        if ((pot.potReheatProgress ?? 0) >= REHEATED_POT_REHEAT_DURATION) {
+          pot.mechTimer = 0;
+          pot.potReheatProgress = 0;
+          pot.flash = Math.max(pot.flash, 0.28);
+          this.screenShake = Math.max(this.screenShake, 0.16);
+          this.burst('ring', pot.x, pot.y, 54, '#f3c65b');
+          this.burst('ring', pot.x, pot.y, 86, '#df6b42');
+          this.burst('word', pot.x, pot.y - pot.radius - 18, 34, '#f5d47a', '又热了一遍');
+          this.feedback.play('coin', 0.64);
+          this.feedback.vibrate(12);
+        }
+      } else {
+        pot.potReheatProgress = 0;
+      }
+      if (this.reheatedPotHeat(pot) <= 0) coldPot ??= pot;
+    }
+
+    if (coldPot) {
+      this.reheatedPotColdTimer -= dt;
+      if (this.reheatedPotColdTimer <= 0) {
+        this.reheatedPotColdTimer += REHEATED_POT_COLD_INTERVAL;
+        if (this.hurtHero(REHEATED_POT_COLD_DAMAGE, `${coldPot.name} · 凉透了`)) {
+          this.screenShake = Math.max(this.screenShake, 0.14);
+          this.burst('ring', coldPot.x, coldPot.y, 94, '#a8414c');
+          this.burst('word', coldPot.x, coldPot.y - coldPot.radius - 16, 32, '#d8575d', '凉透了');
+          this.feedback.play('hurt', 0.46);
+        }
+      }
+    } else {
+      this.reheatedPotColdTimer = REHEATED_POT_COLD_INTERVAL;
     }
   }
 
@@ -5696,7 +6458,7 @@ export class ZheYiShenGame {
       'meeting-door': { name: '会议室的门', hp: 60, speed: 0, radius: 26, damage: 0 },
       'checkup-report': { name: '去年的体检报告', hp: 38, speed: 40, radius: 14, damage: 0 },
       // —— 暮年小怪 ——
-      'queue-screen': { name: '叫号屏', hp: 44, speed: 16, radius: 19, damage: 4 },
+      'queue-screen': { name: '叫号屏', hp: 44, speed: 0, radius: 19, damage: 0 },
       'others-family': { name: '别人的家属', hp: 50, speed: 30, radius: 18, damage: 0 },
       'iv-stand': { name: '输液架', hp: 90, speed: 14, radius: 16, damage: 6 },
     };
@@ -5797,8 +6559,13 @@ export class ZheYiShenGame {
     // 《再改一版》：打死后原地复活一次，第二次才真死
     if (enemy.type === 'task-revise' && (enemy.phase ?? 0) === 0) {
       enemy.phase = 1;
-      enemy.hp = enemy.maxHp * 0.6;
-      enemy.flash = 0.4;
+      enemy.hp = enemy.maxHp * TASK_REVISE_REVIVE_RATIO;
+      enemy.taskActionTimer = TASK_REVISE_ACTION_DURATION;
+      enemy.taskActionDuration = TASK_REVISE_ACTION_DURATION;
+      enemy.attackKind = 'task-revise-reopen';
+      enemy.flash = 0.12;
+      this.burst('ring', enemy.x, enemy.y, 68, '#b58ea8');
+      this.burst('ring', enemy.x, enemy.y, 42, '#e2c5d7');
       this.burst('word', enemy.x, enemy.y - enemy.radius - 10, 24, '#a2849c', '再改一版');
       return;
     }
@@ -5809,10 +6576,16 @@ export class ZheYiShenGame {
       for (const side of [-1, 1]) {
         const child = this.createSeekingEnemy('task-simple', enemy.x + side * 20, enemy.y - 8);
         child.phase = 1;
-        child.hp = 6; child.maxHp = 6;
+        child.hp = TASK_SIMPLE_CHILD_HP;
+        child.maxHp = TASK_SIMPLE_CHILD_HP;
+        child.attackKind = 'task-simple-split';
+        child.taskActionTimer = TASK_SIMPLE_SPLIT_ACTION_DURATION;
+        child.taskActionDuration = TASK_SIMPLE_SPLIT_ACTION_DURATION;
         child.lanternSummon = enemy.lanternSummon;
         this.enemies.push(child);
       }
+      this.burst('ring', enemy.x, enemy.y, 74, '#839bad');
+      this.burst('ring', enemy.x, enemy.y, 46, '#c2d2da');
       this.burst('word', enemy.x, enemy.y - enemy.radius - 10, 24, '#7f96a8', '又变成两件');
     }
     // 走马灯灭了：它召出来的怪全部同时消失——影子没了。不掉道具，直接接收灯人。
@@ -5925,9 +6698,37 @@ export class ZheYiShenGame {
     this.state = 'itemReward';
   }
 
-  private resolveOneSeat(chair: EnemyUnit, tasks: EnemyUnit[]): void {
+  private resolvePraiseOptimize(chair: EnemyUnit): void {
+    const target = this.enemies.find((unit) => !unit.dead && unit.id === chair.attackTargetId);
+    chair.attackTargetId = undefined;
+    if (!target) {
+      this.burst('word', chair.x, chair.y - chair.radius - 12, 28, '#8f9a90', '优化落空');
+      return;
+    }
+    target.dead = true;
+    const healed = Math.min(chair.maxHp - chair.hp, chair.maxHp * 0.07);
+    chair.hp += healed;
+    this.burst('ring', target.x, target.y, 60, '#c9a24a');
+    this.burst('word', chair.x, chair.y - chair.radius - 12, 30, '#c9a24a', `优化 +${Math.ceil(healed)}`);
+  }
+
+  private resolvePraiseDismiss(chair: EnemyUnit): void {
+    const tasks = this.enemies.filter((unit) => !unit.dead && unit.type.startsWith('task-'));
+    let hits = 0;
+    for (const task of tasks) {
+      task.dead = true;
+      this.burst('ring', task.x, task.y, 84, '#c66c5a');
+      if (Math.hypot(task.x - this.heroX, task.y - this.heroY) < 96) hits += 1;
+    }
+    this.screenShake = Math.max(this.screenShake, 0.24);
+    this.feedback.vibrate([40, 60, 40]);
+    if (hits > 0) this.hurtHero(Math.min(18, 3 + hits * 3 + tasks.length), chair.name);
+    this.say('你没做完的活，一起炸了');
+  }
+
+  private resolveOneSeat(chair: EnemyUnit, tasks: EnemyUnit[], animate = true): void {
     this.praiseOneSeatUsed = true;
-    this.playBossAnimation(chair, 'praise-p2-one-seat', 1.05);
+    if (animate) this.playBossAnimation(chair, 'praise-p2-one-seat', 1.05);
     const xiaoSurvives = this.helpedXiaoZhang && !this.xiaoZhangBetrayed;
     let survivor: EnemyUnit;
     if (xiaoSurvives) {
@@ -6488,6 +7289,57 @@ export class ZheYiShenGame {
       case 'shadow': // 床底怪《影子压来》：巨影压过来，本体几乎不动
         this.bossLunge(enemy, { reach: 240, band: 34, dmg: enemy.damage, knock: 22, slow: 0.3, color: '#48434f', word: '别看', lunge: 36 });
         break;
+      case 'closet-hands': { // 《里面还有手》：十二向夹击，只有背离衣柜的一道扇形缺口。
+        const targetX = enemy.attackTargetX ?? this.heroX;
+        const targetY = enemy.attackTargetY ?? this.heroY;
+        const safeAngle = enemy.attackSafeAngle ?? 0;
+        const dx = this.heroX - targetX;
+        const dy = this.heroY - targetY;
+        const distance = Math.hypot(dx, dy);
+        const heroAngle = Math.atan2(dy, dx);
+        const angleDelta = Math.abs(Math.atan2(Math.sin(heroAngle - safeAngle), Math.cos(heroAngle - safeAngle)));
+        const insideSafeWedge = distance >= CLOSET_HANDS_SAFE_INNER_RADIUS
+          && angleDelta <= CLOSET_HANDS_SAFE_HALF_ANGLE;
+        for (const radius of [CLOSET_HANDS_RADIUS, CLOSET_HANDS_RADIUS * 0.68, CLOSET_HANDS_SAFE_INNER_RADIUS]) {
+          this.burst('ring', targetX, targetY, radius, '#5b405f');
+        }
+        for (let hand = 0; hand < 12; hand += 1) {
+          const angle = (hand / 12) * Math.PI * 2 + 0.13;
+          this.burst(
+            'hit',
+            targetX + Math.cos(angle) * (52 + (hand % 3) * 14),
+            targetY + Math.sin(angle) * (52 + (hand % 3) * 14),
+            12,
+            hand % 2 === 0 ? '#7b507c' : '#3d2a48',
+          );
+        }
+        this.feedback.vibrate([24, 24, 34]);
+        this.screenShake = Math.max(this.screenShake, 0.28);
+        if (distance <= CLOSET_HANDS_RADIUS + 12 && !insideSafeWedge) {
+          this.hurtHero(5, `${enemy.name} · 里面还有手`);
+          this.heroSlowTimer = Math.max(this.heroSlowTimer, 0.35);
+        }
+        break;
+      }
+      case 'closet-slam': { // 《门要关了》：锁定点上的狭长双门挤压，横移出门缝即可躲开。
+        const targetX = enemy.attackTargetX ?? this.heroX;
+        const targetY = enemy.attackTargetY ?? this.heroY;
+        const dx = Math.abs(this.heroX - targetX);
+        const dy = Math.abs(this.heroY - targetY);
+        this.burst('door', targetX - CLOSET_SLAM_HALF_WIDTH, targetY, 72, '#71444e');
+        this.burst('door', targetX + CLOSET_SLAM_HALF_WIDTH, targetY, 72, '#71444e');
+        this.burst('ring', targetX, targetY, CLOSET_SLAM_HALF_HEIGHT, '#4b354b');
+        this.feedback.vibrate([34, 18, 48]);
+        this.screenShake = Math.max(this.screenShake, 0.34);
+        if (dx <= CLOSET_SLAM_HALF_WIDTH + 10 && dy <= CLOSET_SLAM_HALF_HEIGHT + 10) {
+          if (this.hurtHero(6, `${enemy.name} · 门要关了`)) {
+            const pushDirection = this.heroX >= targetX ? 1 : -1;
+            this.heroX = this.clamp(this.heroX + pushDirection * 32, 18, W - 18);
+            this.heroSlowTimer = Math.max(this.heroSlowTimer, 0.45);
+          }
+        }
+        break;
+      }
       case 'sleeve': // 单袖：窄车道，给新手留下明确的横移出口
         this.bossLunge(enemy, { reach: COAT_SLEEVE_REACH, band: COAT_SLEEVE_HALF_WIDTH, dmg: 5, knock: 10, slow: 0.5, color: '#9f3548', word: '是袖子', lunge: 0 });
         break;
@@ -6497,6 +7349,17 @@ export class ZheYiShenGame {
       case 'paper': // 领导《这个下班前给我》：一叠文件甩过来
         this.bossLunge(enemy, { reach: 190, band: 30, dmg: 6, knock: 14, slow: 0.4, color: '#8a8a94', word: '下班前给我', lunge: 0 });
         break;
+      case 'praise-optimize':
+        this.resolvePraiseOptimize(enemy);
+        break;
+      case 'praise-dismiss':
+        this.resolvePraiseDismiss(enemy);
+        break;
+      case 'praise-one-seat': {
+        const tasks = this.enemies.filter((unit) => !unit.dead && unit.type.startsWith('task-'));
+        this.resolveOneSeat(enemy, tasks, false);
+        break;
+      }
       case 'backstab': // 岗位幸存者《背刺》：先绕到视线后方，再沿短窄预警线刺入
         this.bossLunge(enemy, { reach: 126, band: 18, dmg: 7, knock: 14, slow: 0.35, color: '#8a3d4c', word: '背刺', lunge: 94 });
         break;
@@ -6544,6 +7407,9 @@ export class ZheYiShenGame {
         break;
     }
     enemy.attackKind = undefined;
+    enemy.attackTargetX = undefined;
+    enemy.attackTargetY = undefined;
+    enemy.attackSafeAngle = undefined;
   }
 
   /** 沿前摇锁定方向压过去：命中带状区结算伤害/击退/减速，本体顺势前冲。 */
@@ -7389,7 +8255,9 @@ export class ZheYiShenGame {
   }
 
   private hasItem(id: ItemId): boolean {
-    return this.items.includes(id) && !this.stageDisabledItems.has(id);
+    return this.bonusSuppressionTimer <= 0
+      && this.items.includes(id)
+      && !this.stageDisabledItems.has(id);
   }
 
   private hasProjectileTrigger(id: ItemId): boolean {
@@ -7843,6 +8711,7 @@ export class ZheYiShenGame {
     const capture = this.transitionFrame.getContext('2d', { alpha: false });
     if (capture) {
       capture.imageSmoothingEnabled = false;
+      capture.setTransform(this.renderScale, 0, 0, this.renderScale, 0, 0);
       capture.clearRect(0, 0, W, H);
       capture.drawImage(this.canvas, 0, 0, W, H);
     }
@@ -8031,6 +8900,13 @@ export class ZheYiShenGame {
     this.renderWorldEntities();
     this.renderHeroGrounding();
     for (const band of this.dangerBands) renderDangerBand(ctx, band);
+    this.renderChildhoodEnemyFields();
+    this.renderAdulthoodEnemyFields();
+    this.renderSchoolWorkEnemyFields();
+    this.renderYouthCommuteEnemyFields();
+    this.renderYouthTaskEnemyFields();
+    this.renderMiddleAgeEnemyFields();
+    this.renderOldAgeEnemyFields();
     this.renderFatherWeather(ctx);
     this.renderProjectiles();
     this.renderBursts();
@@ -8342,7 +9218,7 @@ export class ZheYiShenGame {
       ctx.fillStyle = '#817769';
       ctx.fillRect(84, 162, 4, 4);
 
-      if ((boss.windupTimer ?? 0) > 0 && boss.attackAngle !== undefined) {
+      if ((boss.windupTimer ?? 0) > 0 && boss.attackKind === 'shadow' && boss.attackAngle !== undefined) {
         ctx.save();
         ctx.translate(bossX, bossY);
         ctx.rotate(boss.attackAngle);
@@ -10858,6 +11734,1180 @@ export class ZheYiShenGame {
     }
   }
 
+  private renderChildhoodEnemyFields(): void {
+    const ctx = this.ctx;
+    for (const enemy of this.enemies) {
+      if (enemy.dead || !this.visibleInLampLight(enemy.x, enemy.y, 210)) continue;
+      const pulse = (Math.sin(this.visualTime * 8 + enemy.id * 0.61) + 1) * 0.5;
+      if (enemy.type === 'cry-moth') {
+        const warning = enemy.attackKind === 'moth-powder-warn';
+        const charge = warning
+          ? 1 - this.clamp((enemy.windupTimer ?? 0) / CRY_MOTH_POWDER_WINDUP, 0, 1)
+          : 0;
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        const orbitAngle = enemy.attackAngle ?? 0;
+        const tangent = orbitAngle + (enemy.id % 2 === 0 ? Math.PI / 2 : -Math.PI / 2);
+        for (let echo = 1; echo <= 6; echo += 1) {
+          const ex = enemy.x - Math.cos(tangent) * (8 + echo * 9);
+          const ey = enemy.y - Math.sin(tangent) * (8 + echo * 9);
+          ctx.fillStyle = echo % 2 === 0 ? '#aa7e9b' : '#d3a8c0';
+          ctx.globalAlpha = Math.max(0.12, 0.62 - echo * 0.08);
+          ctx.fillRect(Math.round(ex - 5 - echo), Math.round(ey - 2), 5 + echo, 4);
+          ctx.fillRect(Math.round(ex + 1), Math.round(ey - 5), 4 + Math.floor(echo / 2), 3);
+        }
+        const dustCount = warning ? 20 : 8;
+        for (let dust = 0; dust < dustCount; dust += 1) {
+          const angle = dust * 2.399 + enemy.id * 0.37;
+          const radius = 16 + ((dust * 13) % 43) * (warning ? 0.78 + charge * 0.22 : 0.42);
+          const size = dust % 4 === 0 ? 4 : 2;
+          ctx.fillStyle = dust % 3 === 0 ? '#e1bfd0' : '#9b728e';
+          ctx.globalAlpha = warning ? 0.32 + charge * 0.48 : 0.16 + pulse * 0.1;
+          ctx.fillRect(
+            Math.round(enemy.x + Math.cos(angle) * radius - size / 2),
+            Math.round(enemy.y + Math.sin(angle) * radius - size / 2),
+            size,
+            size,
+          );
+        }
+        if (warning) {
+          this.drawPixelWarningRing(
+            enemy.x,
+            enemy.y,
+            CRY_MOTH_POWDER_RADIUS - charge * 9 + pulse * 2,
+            '#d39bb8',
+            0.66 + charge * 0.28,
+            Math.max(0.08, charge),
+            40,
+          );
+          ctx.fillStyle = '#e0b5ca';
+          ctx.globalAlpha = 0.72 + charge * 0.24;
+          ctx.font = `bold 10px ${UI_FONT_STACK}`;
+          ctx.textAlign = 'center';
+          ctx.fillText('鳞粉', enemy.x, enemy.y - enemy.radius - 18);
+        }
+        ctx.restore();
+      } else if (enemy.type === 'fear') {
+        const inhale = enemy.attackKind === 'fear-inhale';
+        const charge = inhale
+          ? 1 - this.clamp((enemy.windupTimer ?? 0) / FEAR_BREATH_WINDUP, 0, 1)
+          : 0;
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        this.drawPixelWarningRing(enemy.x, enemy.y, 28 + pulse * 5, '#4e465d', 0.28 + pulse * 0.18, 1, 28);
+        if (inhale) {
+          for (let breath = 0; breath < 3; breath += 1) {
+            this.drawPixelWarningRing(
+              enemy.x,
+              enemy.y,
+              FEAR_BREATH_RADIUS - charge * 38 - breath * 10 + pulse * 3,
+              breath === 0 ? '#a99ab0' : '#62586d',
+              0.72 - breath * 0.16 + charge * 0.12,
+              1,
+              34 - breath * 4,
+            );
+          }
+          const toHeroX = this.heroX - enemy.x;
+          const toHeroY = this.heroY - enemy.y;
+          const linkDistance = Math.hypot(toHeroX, toHeroY) || 1;
+          for (let link = 22; link < Math.min(92, linkDistance - 18); link += 15) {
+            const size = link % 30 === 0 ? 5 : 3;
+            ctx.fillStyle = '#93859d';
+            ctx.globalAlpha = 0.34 + charge * 0.46;
+            ctx.fillRect(
+              Math.round(enemy.x + toHeroX * link / linkDistance - size / 2),
+              Math.round(enemy.y + toHeroY * link / linkDistance - size / 2),
+              size,
+              size,
+            );
+          }
+          ctx.fillStyle = '#b9aabd';
+          ctx.globalAlpha = 0.76 + charge * 0.2;
+          ctx.font = `bold 10px ${UI_FONT_STACK}`;
+          ctx.textAlign = 'center';
+          ctx.fillText('吸——', enemy.x, enemy.y - enemy.radius - 18);
+        }
+        ctx.restore();
+      } else if (enemy.type === 'hunger-shadow') {
+        const warning = enemy.attackKind === 'hunger-warn';
+        const dashing = enemy.attackKind === 'hunger-dash';
+        if (!warning && !dashing) continue;
+        const charge = warning
+          ? 1 - this.clamp((enemy.windupTimer ?? 0) / HUNGER_SHADOW_DASH_WINDUP, 0, 1)
+          : 1;
+        const angle = enemy.attackAngle ?? 0;
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        ctx.translate(enemy.x, enemy.y);
+        ctx.rotate(angle);
+        if (warning) {
+          for (let step = 22; step <= 150; step += 18) {
+            const alpha = 0.24 + charge * 0.58 - step / 900;
+            ctx.fillStyle = step % 36 === 22 ? '#e2cdb0' : '#a59078';
+            ctx.globalAlpha = alpha;
+            ctx.fillRect(step - 7, -5, 8, 3);
+            ctx.fillRect(step, -2, 8, 3);
+            ctx.fillRect(step - 7, 1, 8, 3);
+          }
+          ctx.fillStyle = '#d9c4a7';
+          ctx.globalAlpha = 0.72 + charge * 0.22;
+          ctx.font = `bold 10px ${UI_FONT_STACK}`;
+          ctx.textAlign = 'center';
+          ctx.fillText('饿', 0, -enemy.radius - 18);
+        } else {
+          for (let echo = 1; echo <= 8; echo += 1) {
+            const back = 11 + echo * 11;
+            ctx.fillStyle = echo % 2 === 0 ? '#dcc9ad' : '#8f7c68';
+            ctx.globalAlpha = Math.max(0.1, 0.7 - echo * 0.075);
+            ctx.fillRect(-back - 5, -8 - echo % 3, 12 + echo * 2, 5);
+            ctx.fillRect(-back - 2, 0, 8 + echo, 5);
+          }
+        }
+        ctx.restore();
+        this.drawPixelWarningRing(
+          enemy.x,
+          enemy.y,
+          28 + (warning ? (1 - charge) * 12 : pulse * 8),
+          dashing ? '#e0c9a9' : '#b69878',
+          dashing ? 0.9 : 0.58 + charge * 0.3,
+          1,
+          28,
+        );
+      }
+    }
+  }
+
+  private renderAdulthoodEnemyFields(): void {
+    const ctx = this.ctx;
+    let lampBoostLabelDrawn = false;
+    let missedCallHeroMarkDrawn = false;
+    let silenceHeroMarkDrawn = false;
+    for (const enemy of this.enemies) {
+      if (enemy.dead || !['desk-lamp', 'reheated-pot', 'missed-call', 'silence'].includes(enemy.type)) continue;
+      if (!this.visibleInLampLight(enemy.x, enemy.y, 170)) continue;
+      const pulse = (Math.sin(this.visualTime * 7 + enemy.id * 0.73) + 1) * 0.5;
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+
+      if (enemy.type === 'desk-lamp') {
+        const active = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y) <= DESK_LAMP_AURA_RADIUS;
+        // 三层平涂光盘故意比怪本体大很多；外缘只用离散灯泡点，不形成网格。
+        const lampLayers = [
+          { radius: DESK_LAMP_AURA_RADIUS, alpha: active ? 0.18 : 0.1, color: '#d78a3d' },
+          { radius: 64 + pulse * 4, alpha: active ? 0.18 : 0.09, color: '#e8b952' },
+          { radius: 39 + pulse * 3, alpha: active ? 0.22 : 0.12, color: '#f5dc83' },
+        ];
+        for (const layer of lampLayers) {
+          ctx.fillStyle = layer.color;
+          ctx.globalAlpha = layer.alpha;
+          ctx.beginPath();
+          ctx.arc(enemy.x, enemy.y, layer.radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        for (let rayIndex = 0; rayIndex < 16; rayIndex += 1) {
+          const angle = rayIndex / 16 * Math.PI * 2 + this.visualTime * 0.18;
+          const radius = 48 + (rayIndex % 2) * 22 + pulse * 3;
+          const size = active && rayIndex % 4 === 0 ? 7 : 4;
+          ctx.fillStyle = rayIndex % 3 === 0 ? '#ef5d43' : '#ffd66b';
+          ctx.globalAlpha = active ? 0.72 : 0.42;
+          ctx.fillRect(
+            Math.round(enemy.x + Math.cos(angle) * radius - size / 2),
+            Math.round(enemy.y + Math.sin(angle) * radius - size / 2),
+            size,
+            size,
+          );
+        }
+        this.drawPixelWarningRing(
+          enemy.x,
+          enemy.y,
+          DESK_LAMP_AURA_RADIUS,
+          active ? '#ef5d43' : '#d4ad58',
+          active ? 0.88 : 0.5,
+          1,
+          40,
+        );
+        this.drawPixelWarningRing(
+          enemy.x,
+          enemy.y,
+          55 + pulse * 5,
+          '#ffe18a',
+          active ? 0.76 : 0.35,
+          1,
+          28,
+        );
+        if (active && !lampBoostLabelDrawn) {
+          lampBoostLabelDrawn = true;
+          this.drawPixelWarningRing(this.heroX, this.heroY - 8, 28 + pulse * 4, '#ffb640', 0.86, 1, 24);
+          ctx.fillStyle = '#ffe18a';
+          ctx.globalAlpha = 0.95;
+          ctx.font = `bold 11px ${UI_FONT_STACK}`;
+          ctx.textAlign = 'center';
+          ctx.fillText('×1.2', this.heroX, this.heroY - 38);
+        }
+      } else if (enemy.type === 'reheated-pot') {
+        const heat = this.reheatedPotHeat(enemy);
+        const reheat = this.clamp((enemy.potReheatProgress ?? 0) / REHEATED_POT_REHEAT_DURATION, 0, 1);
+        const cold = heat <= 0;
+        const fieldRadius = cold ? 70 + pulse * 8 : 36 + heat * 25 + pulse * 4;
+        ctx.fillStyle = cold ? '#6d2434' : '#d85b35';
+        ctx.globalAlpha = cold ? 0.18 + pulse * 0.08 : 0.08 + heat * 0.14;
+        ctx.beginPath();
+        ctx.arc(enemy.x, enemy.y, fieldRadius, 0, Math.PI * 2);
+        ctx.fill();
+        this.drawPixelWarningRing(
+          enemy.x,
+          enemy.y,
+          fieldRadius,
+          cold ? '#e34f5c' : '#f7bd4c',
+          cold ? 0.68 + pulse * 0.28 : 0.45 + heat * 0.4,
+          1,
+          cold ? 36 : 28,
+        );
+        this.drawPixelWarningRing(
+          enemy.x,
+          enemy.y,
+          30,
+          cold ? '#8c3d50' : '#ffdb6d',
+          0.8,
+          Math.max(0.08, heat),
+          24,
+        );
+        if (reheat > 0) {
+          this.drawPixelWarningRing(enemy.x, enemy.y, REHEATED_POT_REHEAT_RADIUS, '#fff0a0', 0.92, reheat, 36);
+          this.drawPixelWarningRing(enemy.x, enemy.y, 43 - reheat * 8, '#f16b3e', 0.78, 1, 24);
+        }
+
+        const steamCount = cold ? 2 : 3 + Math.round(heat * 5) + (reheat > 0 ? 3 : 0);
+        for (let steamIndex = 0; steamIndex < steamCount; steamIndex += 1) {
+          const drift = (this.visualTime * (18 + steamIndex * 1.7) + steamIndex * 13) % 48;
+          const steamX = enemy.x + (steamIndex - (steamCount - 1) / 2) * 7 + Math.sin(this.visualTime * 4 + steamIndex) * 3;
+          const steamY = enemy.y - 18 - drift;
+          const steamSize = cold ? 3 : 4 + (steamIndex % 2);
+          ctx.fillStyle = cold ? '#8da5a3' : steamIndex % 3 === 0 ? '#ffd36a' : '#efe8cf';
+          ctx.globalAlpha = cold ? 0.28 : 0.38 + heat * 0.42;
+          ctx.fillRect(Math.round(steamX), Math.round(steamY), steamSize, steamSize);
+          if (!cold && steamIndex % 2 === 0) {
+            ctx.fillRect(Math.round(steamX + 3), Math.round(steamY - 6), 3, 5);
+          }
+        }
+        if (cold) {
+          ctx.fillStyle = '#e65360';
+          ctx.globalAlpha = 0.72 + pulse * 0.25;
+          for (let crackIndex = 0; crackIndex < 10; crackIndex += 1) {
+            const angle = crackIndex / 10 * Math.PI * 2 + 0.18;
+            const start = 34;
+            const length = 13 + (crackIndex % 3) * 6;
+            ctx.save();
+            ctx.translate(enemy.x + Math.cos(angle) * start, enemy.y + Math.sin(angle) * start);
+            ctx.rotate(angle);
+            ctx.fillRect(0, -1, length, 3);
+            ctx.fillRect(length - 4, crackIndex % 2 === 0 ? -5 : 2, 7, 3);
+            ctx.restore();
+          }
+          ctx.fillStyle = '#f0c5bd';
+          ctx.globalAlpha = 0.95;
+          ctx.font = `bold 13px ${UI_FONT_STACK}`;
+          ctx.textAlign = 'center';
+          ctx.fillText('凉', enemy.x, enemy.y - enemy.radius - 22);
+        }
+      } else if (enemy.type === 'missed-call') {
+        const distance = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y);
+        const active = distance <= MISSED_CALL_AURA_RADIUS;
+        const cooldown = this.clamp(
+          (enemy.auraCooldown ?? MISSED_CALL_PULSE_INTERVAL) / MISSED_CALL_PULSE_INTERVAL,
+          0,
+          1,
+        );
+        const charge = 1 - cooldown;
+        const fieldLayers = [
+          { radius: MISSED_CALL_AURA_RADIUS, alpha: active ? 0.15 : 0.07, color: '#467988' },
+          { radius: 50 + pulse * 5, alpha: active ? 0.16 : 0.08, color: '#6fa6b3' },
+          { radius: 29 + pulse * 4, alpha: active ? 0.2 : 0.1, color: '#b5d9dc' },
+        ];
+        for (const layer of fieldLayers) {
+          ctx.fillStyle = layer.color;
+          ctx.globalAlpha = layer.alpha + charge * 0.08;
+          ctx.beginPath();
+          ctx.arc(enemy.x, enemy.y, layer.radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        for (let ring = 0; ring < 3; ring += 1) {
+          this.drawPixelWarningRing(
+            enemy.x,
+            enemy.y,
+            30 + ring * 18 + charge * 9 + pulse * 2,
+            ring === 0 ? '#d4eef0' : ring === 1 ? '#85bcc6' : '#528a99',
+            (active ? 0.62 : 0.32) + charge * 0.2 - ring * 0.07,
+            1,
+            24 + ring * 6,
+          );
+        }
+        for (let tick = 0; tick < 20; tick += 1) {
+          const angle = tick / 20 * Math.PI * 2 + this.visualTime * (tick % 2 === 0 ? 0.28 : -0.22);
+          const radius = 58 + (tick % 3) * 6 + charge * 4;
+          const length = tick % 4 === 0 ? 9 : 5;
+          ctx.save();
+          ctx.translate(enemy.x + Math.cos(angle) * radius, enemy.y + Math.sin(angle) * radius);
+          ctx.rotate(angle);
+          ctx.fillStyle = tick % 3 === 0 ? '#c3e3e5' : '#6fa5b1';
+          ctx.globalAlpha = (active ? 0.72 : 0.38) + charge * 0.14;
+          ctx.fillRect(-Math.floor(length / 2), -1, length, 3);
+          ctx.restore();
+        }
+        ctx.fillStyle = '#b8dce0';
+        ctx.globalAlpha = 0.72 + charge * 0.24;
+        ctx.font = `bold 10px ${UI_FONT_STACK}`;
+        ctx.textAlign = 'center';
+        ctx.fillText(active ? '铃——' : '未接', enemy.x, enemy.y - enemy.radius - 19);
+        if (active && !missedCallHeroMarkDrawn) {
+          missedCallHeroMarkDrawn = true;
+          this.drawPixelWarningRing(this.heroX, this.heroY - 8, 30 + pulse * 5, '#8bc8d1', 0.86, 1, 28);
+          ctx.fillStyle = '#c8e8e9';
+          ctx.globalAlpha = 0.94;
+          ctx.font = `bold 10px ${UI_FONT_STACK}`;
+          ctx.fillText(`铃声 · ${Math.max(0, enemy.auraCooldown ?? MISSED_CALL_PULSE_INTERVAL).toFixed(1)}s`, this.heroX, this.heroY - 42);
+        }
+      } else if (enemy.type === 'silence') {
+        const distance = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y);
+        const active = distance <= SILENCE_SLOW_RADIUS;
+        const fieldLayers = [
+          { radius: SILENCE_SLOW_RADIUS, alpha: active ? 0.14 : 0.07, color: '#403c4b' },
+          { radius: 66 + pulse * 4, alpha: active ? 0.16 : 0.08, color: '#5d5668' },
+          { radius: 39 + pulse * 3, alpha: active ? 0.2 : 0.1, color: '#83798b' },
+        ];
+        for (const layer of fieldLayers) {
+          ctx.fillStyle = layer.color;
+          ctx.globalAlpha = layer.alpha;
+          ctx.beginPath();
+          ctx.arc(enemy.x, enemy.y, layer.radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        this.drawPixelWarningRing(enemy.x, enemy.y, SILENCE_SLOW_RADIUS, '#777080', active ? 0.72 : 0.4, 1, 40);
+        this.drawPixelWarningRing(enemy.x, enemy.y, 61 + pulse * 4, '#5d5867', active ? 0.64 : 0.34, 1, 32);
+        this.drawPixelWarningRing(enemy.x, enemy.y, 34 + pulse * 3, '#aaa0ad', active ? 0.66 : 0.36, 1, 24);
+        for (let fragment = 0; fragment < 16; fragment += 1) {
+          const angle = fragment / 16 * Math.PI * 2 + enemy.id * 0.23;
+          const radius = 48 + (fragment % 4) * 10;
+          const x = enemy.x + Math.cos(angle) * radius;
+          const y = enemy.y + Math.sin(angle) * radius;
+          ctx.fillStyle = fragment % 3 === 0 ? '#b3a8b6' : '#716a78';
+          ctx.globalAlpha = active ? 0.54 + pulse * 0.18 : 0.3;
+          ctx.fillRect(Math.round(x - 5), Math.round(y - 2), 8, 3);
+          if (fragment % 2 === 0) ctx.fillRect(Math.round(x + 5), Math.round(y - 2), 3, 3);
+        }
+        ctx.fillStyle = '#b8aebc';
+        ctx.globalAlpha = active ? 0.9 : 0.58;
+        ctx.font = `bold 11px ${UI_FONT_STACK}`;
+        ctx.textAlign = 'center';
+        ctx.fillText('……', enemy.x, enemy.y - enemy.radius - 20);
+        if (active && !silenceHeroMarkDrawn) {
+          silenceHeroMarkDrawn = true;
+          this.drawPixelWarningRing(this.heroX, this.heroY - 8, 34 + pulse * 4, '#8d8393', 0.84, 1, 28);
+          this.drawPixelWarningRing(this.heroX, this.heroY - 8, 24 + pulse * 2, '#c0b5c1', 0.62, 1, 20);
+          ctx.fillStyle = '#c9becb';
+          ctx.globalAlpha = 0.94;
+          ctx.font = `bold 10px ${UI_FONT_STACK}`;
+          ctx.fillText('没人说话 · 移速×0.75', this.heroX, this.heroY - 45);
+        }
+      }
+      ctx.restore();
+    }
+  }
+
+  private renderSchoolWorkEnemyFields(): void {
+    const ctx = this.ctx;
+    let paperHeroMarkDrawn = false;
+    let signHeroMarkDrawn = false;
+    let whisperHeroMarkDrawn = false;
+    for (const enemy of this.enemies) {
+      if (enemy.dead || !this.visibleInLampLight(enemy.x, enemy.y, 170)) continue;
+      const pulse = (Math.sin(this.visualTime * 6.5 + enemy.id * 0.61) + 1) * 0.5;
+      if (enemy.type === 'others-paper') {
+        const distance = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y);
+        const active = distance <= OTHERS_PAPER_AURA_RADIUS;
+        const pressure = 1 - this.clamp(
+          (distance - OTHERS_PAPER_INNER_RADIUS)
+            / (OTHERS_PAPER_AURA_RADIUS - OTHERS_PAPER_INNER_RADIUS),
+          0,
+          1,
+        );
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        for (const layer of [
+          { radius: OTHERS_PAPER_AURA_RADIUS, alpha: active ? 0.07 + pressure * 0.05 : 0.035, color: '#8f2f48' },
+          { radius: OTHERS_PAPER_MID_RADIUS, alpha: active ? 0.08 + pressure * 0.08 : 0.04, color: '#b84158' },
+          { radius: OTHERS_PAPER_INNER_RADIUS, alpha: active ? 0.12 + pressure * 0.12 : 0.05, color: '#d95062' },
+        ]) {
+          ctx.fillStyle = layer.color;
+          ctx.globalAlpha = layer.alpha;
+          ctx.beginPath();
+          ctx.arc(enemy.x, enemy.y, layer.radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        this.drawPixelWarningRing(enemy.x, enemy.y, OTHERS_PAPER_AURA_RADIUS, '#a94358', active ? 0.46 : 0.24, 1, 42);
+        this.drawPixelWarningRing(enemy.x, enemy.y, OTHERS_PAPER_MID_RADIUS, '#cb5262', active ? 0.54 : 0.28, 1, 32);
+        this.drawPixelWarningRing(enemy.x, enemy.y, OTHERS_PAPER_INNER_RADIUS + pulse * 4, '#ef6a76', active ? 0.74 : 0.34, 1, 24);
+        // 分数只以散点方式飘在场里，不铺成试卷网格。
+        ctx.textAlign = 'center';
+        ctx.font = `bold 10px ${UI_FONT_STACK}`;
+        const scores = ['98', '100', '99'];
+        for (let scoreIndex = 0; scoreIndex < scores.length; scoreIndex += 1) {
+          const angle = this.visualTime * 0.16 + scoreIndex * Math.PI * 2 / 3 + enemy.id;
+          const radius = 68 + scoreIndex * 22;
+          ctx.fillStyle = scoreIndex === 1 ? '#f18a91' : '#c35a68';
+          ctx.globalAlpha = active ? 0.5 + pressure * 0.34 : 0.28;
+          ctx.fillText(
+            scores[scoreIndex]!,
+            Math.round(enemy.x + Math.cos(angle) * radius),
+            Math.round(enemy.y + Math.sin(angle) * radius),
+          );
+        }
+        if (active) {
+          const dx = this.heroX - enemy.x;
+          const dy = this.heroY - enemy.y;
+          const linkDistance = Math.hypot(dx, dy) || 1;
+          ctx.fillStyle = '#e55a6c';
+          ctx.globalAlpha = 0.34 + pressure * 0.5;
+          for (let link = 18; link < linkDistance - 18; link += 15) {
+            const size = link % 30 === 0 ? 5 : 3;
+            ctx.fillRect(
+              Math.round(enemy.x + dx * link / linkDistance - size / 2),
+              Math.round(enemy.y + dy * link / linkDistance - size / 2),
+              size,
+              size,
+            );
+          }
+          if (!paperHeroMarkDrawn) {
+            paperHeroMarkDrawn = true;
+            this.drawPixelWarningRing(this.heroX, this.heroY - 7, 30 + pressure * 7, '#ed6674', 0.76 + pressure * 0.2, 1, 28);
+            ctx.fillStyle = '#f19aa0';
+            ctx.globalAlpha = 0.92;
+            ctx.font = `bold 11px ${UI_FONT_STACK}`;
+            ctx.fillText(distance <= OTHERS_PAPER_INNER_RADIUS ? '被比下去' : '比较中', this.heroX, this.heroY - 41);
+          }
+        }
+        ctx.restore();
+      } else if (enemy.type === 'sign-here') {
+        const distance = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y);
+        const active = distance <= SIGN_HERE_SLOW_RADIUS;
+        this.drawPixelWarningRing(
+          enemy.x,
+          enemy.y,
+          SIGN_HERE_SLOW_RADIUS + pulse * 3,
+          active ? '#e34e61' : '#9f3c4e',
+          active ? 0.82 : 0.32,
+          1,
+          24,
+        );
+        if (active) {
+          ctx.save();
+          ctx.imageSmoothingEnabled = false;
+          const dx = this.heroX - enemy.x;
+          const dy = this.heroY - enemy.y;
+          const distanceToHero = Math.hypot(dx, dy) || 1;
+          ctx.fillStyle = '#e05263';
+          ctx.globalAlpha = 0.72;
+          for (let link = 8; link < distanceToHero; link += 11) {
+            ctx.fillRect(
+              Math.round(enemy.x + dx * link / distanceToHero - 4),
+              Math.round(enemy.y + dy * link / distanceToHero),
+              9,
+              2,
+            );
+          }
+          if (!signHeroMarkDrawn) {
+            signHeroMarkDrawn = true;
+            ctx.fillStyle = '#ef5d6b';
+            ctx.globalAlpha = 0.88;
+            const underlineY = this.heroY + 23;
+            for (let lineIndex = 0; lineIndex < 3; lineIndex += 1) {
+              const inset = lineIndex * 7;
+              ctx.fillRect(this.heroX - 35 + inset, underlineY + lineIndex * 4, 70 - inset * 2, 3);
+            }
+            ctx.font = `bold 12px ${UI_FONT_STACK}`;
+            ctx.textAlign = 'center';
+            ctx.fillText('待签', this.heroX, this.heroY - 39);
+          }
+          ctx.restore();
+        }
+      } else if (enemy.type === 'red-mark') {
+        const retreating = enemy.attackKind === 'red-retreat';
+        const warning = enemy.attackKind === 'red-pounce-warn';
+        const pouncing = enemy.attackKind === 'red-pounce';
+        const angle = enemy.attackAngle ?? 0;
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        this.drawPixelWarningRing(
+          enemy.x,
+          enemy.y,
+          28 + pulse * 4,
+          pouncing ? '#f07a78' : warning ? '#df5964' : '#a93d4c',
+          pouncing ? 0.92 : warning ? 0.78 : 0.42,
+          1,
+          24,
+        );
+        for (let mark = 0; mark < 10; mark += 1) {
+          const markAngle = mark / 10 * Math.PI * 2 + enemy.id * 0.19;
+          const radius = 24 + (mark % 3) * 8 + pulse * 2;
+          const x = enemy.x + Math.cos(markAngle) * radius;
+          const y = enemy.y + Math.sin(markAngle) * radius;
+          ctx.fillStyle = mark % 2 === 0 ? '#e86168' : '#9f3848';
+          ctx.globalAlpha = warning || pouncing ? 0.7 : 0.34;
+          ctx.fillRect(Math.round(x - 4), Math.round(y - 1), 9, 3);
+          ctx.fillRect(Math.round(x - 1), Math.round(y - 4), 3, 9);
+        }
+        if (retreating || pouncing) {
+          ctx.save();
+          ctx.translate(enemy.x, enemy.y);
+          ctx.rotate(angle);
+          const echoCount = pouncing ? 8 : 6;
+          for (let echo = 1; echo <= echoCount; echo += 1) {
+            const back = 12 + echo * 10;
+            ctx.fillStyle = echo % 2 === 0 ? '#e65b63' : '#8f3343';
+            ctx.globalAlpha = Math.max(0.1, 0.68 - echo * 0.07);
+            ctx.fillRect(-back - 8, -8, 12 + echo, 5);
+            ctx.fillRect(-back - 5, 1, 9 + echo, 5);
+            if (echo % 2 === 0) ctx.fillRect(-back - 1, -4, 4, 12);
+          }
+          ctx.restore();
+        }
+        if (warning) {
+          const charge = 1 - this.clamp((enemy.windupTimer ?? 0) / RED_MARK_POUNCE_WINDUP, 0, 1);
+          ctx.save();
+          ctx.translate(enemy.x, enemy.y);
+          ctx.rotate(angle);
+          for (let step = 20; step <= 116; step += 16) {
+            ctx.fillStyle = step % 32 === 20 ? '#f08b87' : '#b74350';
+            ctx.globalAlpha = 0.34 + charge * 0.54 - step / 800;
+            ctx.fillRect(step - 6, -5, 8, 3);
+            ctx.fillRect(step, -2, 7, 3);
+            ctx.fillRect(step - 6, 1, 8, 3);
+          }
+          ctx.restore();
+        }
+        ctx.fillStyle = '#ee8b8d';
+        ctx.globalAlpha = warning || pouncing ? 0.94 : 0.58;
+        ctx.font = `bold 10px ${UI_FONT_STACK}`;
+        ctx.textAlign = 'center';
+        ctx.fillText(retreating ? '退回' : warning ? '再改' : pouncing ? '×' : '错', enemy.x, enemy.y - enemy.radius - 18);
+        ctx.restore();
+      } else if (enemy.type === 'whisper') {
+        const distance = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y);
+        const active = distance <= WHISPER_PRESSURE_RADIUS;
+        const orbitAngle = enemy.attackAngle ?? 0;
+        const direction = enemy.id % 2 === 0 ? 1 : -1;
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        for (let point = 0; point < 18; point += 1) {
+          const angle = point / 18 * Math.PI * 2 + this.visualTime * 0.08 * direction;
+          const x = this.heroX + Math.cos(angle) * WHISPER_ORBIT_X;
+          const y = this.heroY + Math.sin(angle) * WHISPER_ORBIT_Y;
+          const size = point % 4 === 0 ? 4 : 2;
+          ctx.fillStyle = point % 3 === 0 ? '#c28dab' : '#795976';
+          ctx.globalAlpha = active ? 0.36 + pulse * 0.18 : 0.2;
+          ctx.fillRect(Math.round(x - size / 2), Math.round(y - size / 2), size, size);
+        }
+        const tangent = orbitAngle + direction * Math.PI / 2;
+        for (let echo = 1; echo <= 8; echo += 1) {
+          const ex = enemy.x - Math.cos(tangent) * (8 + echo * 8);
+          const ey = enemy.y - Math.sin(tangent) * (8 + echo * 8);
+          ctx.fillStyle = echo % 2 === 0 ? '#ad759c' : '#66465f';
+          ctx.globalAlpha = Math.max(0.12, 0.64 - echo * 0.065);
+          ctx.fillRect(Math.round(ex - 5 - echo / 2), Math.round(ey - 2), 8 + echo, 4);
+          ctx.fillRect(Math.round(ex - 2), Math.round(ey + 3), 5 + echo / 2, 2);
+        }
+        for (let fragment = 0; fragment < 12; fragment += 1) {
+          const angle = fragment / 12 * Math.PI * 2 + enemy.id * 0.27;
+          const radius = 20 + (fragment % 4) * 7 + pulse * 2;
+          ctx.fillStyle = fragment % 3 === 0 ? '#d19bb7' : '#8d6785';
+          ctx.globalAlpha = active ? 0.66 : 0.36;
+          ctx.font = `bold ${fragment % 4 === 0 ? 9 : 7}px ${UI_FONT_STACK}`;
+          ctx.textAlign = 'center';
+          ctx.fillText(fragment % 3 === 0 ? '都' : fragment % 3 === 1 ? '…' : '说', enemy.x + Math.cos(angle) * radius, enemy.y + Math.sin(angle) * radius);
+        }
+        this.drawPixelWarningRing(enemy.x, enemy.y, WHISPER_PRESSURE_RADIUS + pulse * 3, '#a56f96', active ? 0.82 : 0.4, 1, 30);
+        this.drawPixelWarningRing(enemy.x, enemy.y, 30 + pulse * 4, '#d09bb7', active ? 0.76 : 0.36, 1, 24);
+        this.drawPixelWarningRing(enemy.x, enemy.y, 20 + pulse * 2, '#72516c', active ? 0.7 : 0.32, 1, 20);
+        if (active && !whisperHeroMarkDrawn) {
+          whisperHeroMarkDrawn = true;
+          this.drawPixelWarningRing(this.heroX, this.heroY - 7, 32 + pulse * 5, '#bd82a6', 0.86, 1, 28);
+          ctx.fillStyle = '#d6a4bf';
+          ctx.globalAlpha = 0.94;
+          ctx.font = `bold 10px ${UI_FONT_STACK}`;
+          ctx.textAlign = 'center';
+          ctx.fillText(`他们都在说 · ${(enemy.auraCooldown ?? WHISPER_PRESSURE_INTERVAL).toFixed(1)}s`, this.heroX, this.heroY - 43);
+        }
+        ctx.restore();
+      } else if (enemy.type === 'id-scanner') {
+        const warning = enemy.attackKind === 'id-scan-warn';
+        const active = enemy.attackKind === 'id-scan-active';
+        const targetY = enemy.scanTargetY;
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        this.drawPixelWarningRing(enemy.x, enemy.y, 31 + pulse * 3, '#55d89a', active ? 0.9 : warning ? 0.7 : 0.34, 1, 24);
+        if ((warning || active) && targetY !== undefined) {
+          const charge = active ? 1 : 1 - this.clamp((enemy.windupTimer ?? 0) / ID_SCANNER_WINDUP, 0, 1);
+          const span = active ? 238 : 28 + charge * 210;
+          ctx.fillStyle = active ? '#48ef9e' : '#55c58d';
+          ctx.globalAlpha = active ? 0.22 + pulse * 0.12 : 0.08 + charge * 0.12;
+          ctx.fillRect(enemy.x - span, targetY - ID_SCANNER_HALF_HEIGHT, span * 2, ID_SCANNER_HALF_HEIGHT * 2);
+          ctx.globalAlpha = active ? 0.96 : 0.46 + charge * 0.4;
+          for (let x = enemy.x - span; x < enemy.x + span; x += 14) {
+            const segment = Math.min(9, enemy.x + span - x);
+            ctx.fillRect(Math.round(x), Math.round(targetY - 2), segment, active ? 5 : 3);
+          }
+          if (active) {
+            ctx.fillStyle = '#c1ffe0';
+            ctx.globalAlpha = 0.72;
+            ctx.fillRect(enemy.x - span, targetY - ID_SCANNER_HALF_HEIGHT, span * 2, 2);
+            ctx.fillRect(enemy.x - span, targetY + ID_SCANNER_HALF_HEIGHT - 2, span * 2, 2);
+          }
+          ctx.fillStyle = '#a7f7cd';
+          ctx.globalAlpha = active ? 0.95 : 0.62;
+          for (const sx of [-1, 1]) {
+            ctx.fillRect(this.heroX + sx * 25 - (sx < 0 ? 0 : 8), targetY - 20, 8, 3);
+            ctx.fillRect(this.heroX + sx * 25 - (sx < 0 ? 0 : 3), targetY - 20, 3, 9);
+            ctx.fillRect(this.heroX + sx * 25 - (sx < 0 ? 0 : 8), targetY + 17, 8, 3);
+            ctx.fillRect(this.heroX + sx * 25 - (sx < 0 ? 0 : 3), targetY + 11, 3, 9);
+          }
+        }
+        ctx.restore();
+      }
+    }
+
+    if (this.scannerLockTimer > 0) {
+      const lockPulse = (Math.sin(this.visualTime * 10) + 1) * 0.5;
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      this.drawPixelWarningRing(this.heroX, this.heroY - 7, 34 + lockPulse * 6, '#57e79d', 0.9, 1, 32);
+      this.drawPixelWarningRing(this.heroX, this.heroY - 7, 48 - lockPulse * 5, '#267b5b', 0.62, 1, 28);
+      ctx.fillStyle = '#a8ffd0';
+      ctx.globalAlpha = 0.95;
+      ctx.font = `bold 11px ${UI_FONT_STACK}`;
+      ctx.textAlign = 'center';
+      ctx.fillText(`#017 · ${this.scannerLockTimer.toFixed(1)}s`, this.heroX, this.heroY - 49);
+      for (const enemy of this.enemies) {
+        if (enemy.dead || enemy.type === 'id-scanner' || enemy.elite || enemy.boss) continue;
+        const dx = this.heroX - enemy.x;
+        const dy = this.heroY - enemy.y;
+        const distance = Math.hypot(dx, dy) || 1;
+        if (distance > 260) continue;
+        const angle = Math.atan2(dy, dx);
+        ctx.save();
+        ctx.translate(enemy.x + Math.cos(angle) * (enemy.radius + 10), enemy.y + Math.sin(angle) * (enemy.radius + 10));
+        ctx.rotate(angle);
+        ctx.fillStyle = '#5ce59b';
+        ctx.globalAlpha = 0.58 + lockPulse * 0.3;
+        ctx.fillRect(0, -5, 10, 3);
+        ctx.fillRect(7, -2, 7, 3);
+        ctx.fillRect(0, 3, 10, 3);
+        ctx.restore();
+      }
+      ctx.restore();
+    }
+  }
+
+  private renderYouthCommuteEnemyFields(): void {
+    const ctx = this.ctx;
+    for (const enemy of this.enemies) {
+      if (enemy.dead || enemy.type !== 'missed-bus') continue;
+      const warning = enemy.attackKind === 'missed-bus-warn';
+      const passing = enemy.attackKind === 'missed-bus-pass';
+      if (!warning && !passing) continue;
+      const laneY = enemy.laneY ?? enemy.y;
+      if (!this.visibleInLampLight(enemy.x, laneY, 300)) continue;
+      const angle = enemy.attackAngle ?? 0;
+      const direction = Math.cos(angle) >= 0 ? 1 : -1;
+      const pulse = (Math.sin(this.visualTime * 13 + enemy.id * 0.61) + 1) * 0.5;
+      const laneStart = this.heroX - MISSED_BUS_LANE_HALF_SPAN;
+      const laneEnd = this.heroX + MISSED_BUS_LANE_HALF_SPAN;
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      ctx.textAlign = 'center';
+
+      if (warning) {
+        const charge = 1 - this.clamp((enemy.windupTimer ?? 0) / MISSED_BUS_WINDUP, 0, 1);
+        const halfWidth = MISSED_BUS_BODY_HALF_WIDTH + 3 + charge * 4;
+        ctx.fillStyle = '#d2ad49';
+        ctx.globalAlpha = 0.055 + charge * 0.13;
+        ctx.fillRect(laneStart, laneY - halfWidth, laneEnd - laneStart, halfWidth * 2);
+
+        // 两条断开的边界就是实际危险车身；中间只放同向箭头，不延伸成场景网格。
+        for (let x = laneStart; x < laneEnd; x += 38) {
+          const segment = 17 + ((Math.floor(x / 38) + enemy.id) & 1) * 7;
+          ctx.fillStyle = charge > 0.72 ? '#ef6b5b' : '#e4bf56';
+          ctx.globalAlpha = 0.42 + charge * 0.45;
+          ctx.fillRect(Math.round(x), Math.round(laneY - halfWidth), segment, 3);
+          ctx.fillRect(Math.round(x + 9), Math.round(laneY + halfWidth - 3), segment, 3);
+        }
+        for (let marker = -4; marker <= 4; marker += 1) {
+          const markerX = this.heroX + marker * 48;
+          ctx.save();
+          ctx.translate(markerX, laneY);
+          if (direction < 0) ctx.scale(-1, 1);
+          ctx.fillStyle = charge > 0.7 ? '#f07561' : '#e6c25e';
+          ctx.globalAlpha = 0.38 + charge * 0.52;
+          ctx.fillRect(-10, -3, 12, 6);
+          ctx.fillRect(1, -6, 6, 12);
+          ctx.restore();
+        }
+        this.drawPixelWarningRing(enemy.x, laneY, 35 + charge * 11 + pulse * 3, '#e5be55', 0.62 + charge * 0.3, charge, 28);
+        ctx.fillStyle = charge > 0.72 ? '#f0846b' : '#edcf75';
+        ctx.globalAlpha = 0.96;
+        ctx.font = `bold 10px ${UI_FONT_STACK}`;
+        ctx.fillText(`这班要走 · ${(enemy.windupTimer ?? 0).toFixed(1)}s`, this.heroX, laneY - halfWidth - 12);
+      }
+
+      if (passing) {
+        const remaining = this.clamp((enemy.dashTimer ?? 0) / MISSED_BUS_PASS_DURATION, 0, 1);
+        const traveled = (1 - remaining) * MISSED_BUS_PASS_SPEED * MISSED_BUS_PASS_DURATION;
+        // 十层车身残影与二十四条碎裂速度线把“开走”放大，全部跟随真实车头方向。
+        for (let echo = 10; echo >= 1; echo -= 1) {
+          const tailDistance = 12 + echo * 14;
+          const echoX = enemy.x - Math.cos(angle) * tailDistance;
+          const echoY = laneY - Math.sin(angle) * tailDistance;
+          const width = 42 + echo * 2;
+          const height = 15 + (echo % 3) * 3;
+          ctx.fillStyle = echo % 3 === 0 ? '#b53e4b' : echo % 2 === 0 ? '#e2b84e' : '#765446';
+          ctx.globalAlpha = Math.max(0.08, 0.47 - echo * 0.035) * (0.74 + pulse * 0.26);
+          ctx.fillRect(Math.round(echoX - width / 2), Math.round(echoY - height / 2), width, height);
+          ctx.fillStyle = '#f16a58';
+          ctx.fillRect(Math.round(echoX - direction * width * 0.42 - 3), Math.round(echoY - 5), 6, 4);
+          ctx.fillRect(Math.round(echoX - direction * width * 0.42 - 3), Math.round(echoY + 2), 6, 4);
+        }
+        for (let streak = 0; streak < 24; streak += 1) {
+          const hash = this.cellHash(enemy.id * 97 + streak * 17, Math.floor(traveled / 18));
+          const behind = 36 + (hash % 190);
+          const lateral = ((hash >>> 8) % 67) - 33;
+          const length = 7 + ((hash >>> 16) % 25);
+          const x = enemy.x - Math.cos(angle) * behind - Math.sin(angle) * lateral;
+          const y = laneY - Math.sin(angle) * behind + Math.cos(angle) * lateral;
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(angle);
+          ctx.fillStyle = streak % 4 === 0 ? '#f16a5b' : streak % 3 === 0 ? '#f0d174' : '#b9904b';
+          ctx.globalAlpha = 0.24 + (streak % 5) * 0.09;
+          ctx.fillRect(-length, -1, length, streak % 4 === 0 ? 4 : 2);
+          ctx.restore();
+        }
+        this.drawPixelWarningRing(enemy.x, laneY, 38 + pulse * 8, '#f2c95c', 0.84, remaining, 30);
+        this.drawPixelWarningRing(enemy.x - direction * 30, laneY, 48 + pulse * 5, '#c74750', 0.52, remaining, 26);
+        ctx.fillStyle = '#f3d77a';
+        ctx.globalAlpha = 0.94;
+        ctx.font = `bold 9px ${UI_FONT_STACK}`;
+        ctx.fillText('错过的车', enemy.x, laneY - 39);
+      }
+      ctx.restore();
+    }
+  }
+
+  private renderYouthTaskEnemyFields(): void {
+    const ctx = this.ctx;
+    for (const enemy of this.enemies) {
+      if (enemy.dead || !enemy.type.startsWith('task-') || !this.visibleInLampLight(enemy.x, enemy.y, 280)) continue;
+      const pulse = (Math.sin(this.visualTime * 8.5 + enemy.id * 0.53) + 1) * 0.5;
+      const actionActive = (enemy.taskActionTimer ?? 0) > 0;
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      ctx.textAlign = 'center';
+
+      if (enemy.type === 'task-simple') {
+        const child = (enemy.phase ?? 0) > 0;
+        this.drawPixelWarningRing(enemy.x, enemy.y, 28 + pulse * 4, '#829aad', child ? 0.82 : 0.42, 1, 24);
+        ctx.fillStyle = child ? '#c9d9e2' : '#849daf';
+        ctx.globalAlpha = child ? 0.82 : 0.36;
+        if (!child) {
+          for (const side of [-1, 1]) {
+            const echoX = enemy.x + side * (24 + pulse * 4);
+            this.drawPixelWarningRect(echoX - 8, enemy.y - 6, 16, 12, '#829aad', 0.26 + pulse * 0.14);
+            for (let step = 8; step <= 20; step += 6) {
+              ctx.fillRect(Math.round(enemy.x + side * step - 2), Math.round(enemy.y - 1), 4, 3);
+            }
+          }
+        } else {
+          for (let shard = 0; shard < 10; shard += 1) {
+            const angle = shard / 10 * Math.PI * 2 + enemy.id * 0.31;
+            const radius = 18 + (shard % 3) * 6 + pulse * 3;
+            ctx.fillRect(
+              Math.round(enemy.x + Math.cos(angle) * radius - 3),
+              Math.round(enemy.y + Math.sin(angle) * radius - 2),
+              shard % 2 === 0 ? 7 : 4,
+              4,
+            );
+          }
+          ctx.font = `bold 9px ${UI_FONT_STACK}`;
+          ctx.fillText('1/2', enemy.x, enemy.y - enemy.radius - 18);
+        }
+      } else if (enemy.type === 'task-revise') {
+        const revised = (enemy.phase ?? 0) > 0;
+        this.drawPixelWarningRect(enemy.x - 25, enemy.y - 20, 50, 40, '#a2849c', revised ? 0.64 : 0.3);
+        if (revised) this.drawPixelWarningRect(enemy.x - 31, enemy.y - 26, 62, 52, '#d3aec6', 0.44 + pulse * 0.2);
+        ctx.fillStyle = revised ? '#dfc1d2' : '#ab8aa1';
+        ctx.globalAlpha = revised ? 0.9 : 0.46;
+        for (let arc = 0; arc < 12; arc += 1) {
+          const angle = -Math.PI * 0.2 + arc / 12 * Math.PI * 1.45;
+          const radius = 31 + pulse * 4;
+          ctx.fillRect(
+            Math.round(enemy.x + Math.cos(angle) * radius - 2),
+            Math.round(enemy.y + Math.sin(angle) * radius - 2),
+            arc % 3 === 0 ? 6 : 3,
+            3,
+          );
+        }
+        ctx.font = `bold 9px ${UI_FONT_STACK}`;
+        ctx.fillText(revised ? 'final_v2' : 'final', enemy.x, enemy.y - enemy.radius - 18);
+      } else if (enemy.type === 'task-deadline') {
+        const remaining = Math.max(0, TASK_DEADLINE_DURATION - (enemy.mechTimer ?? 0));
+        const urgent = remaining <= 2;
+        const color = urgent ? '#e15c58' : '#b9895a';
+        const radius = urgent ? 36 + pulse * 6 : 31 + pulse * 3;
+        this.drawPixelWarningRing(enemy.x, enemy.y, radius, color, urgent ? 0.9 : 0.52, 1, 28);
+        ctx.fillStyle = color;
+        for (let tick = 0; tick < 12; tick += 1) {
+          const angle = tick / 12 * Math.PI * 2 - Math.PI / 2;
+          const lit = tick / 12 <= remaining / TASK_DEADLINE_DURATION;
+          ctx.globalAlpha = lit ? (urgent ? 0.9 : 0.62) : 0.18;
+          const tickRadius = radius - 4;
+          ctx.fillRect(
+            Math.round(enemy.x + Math.cos(angle) * tickRadius - 2),
+            Math.round(enemy.y + Math.sin(angle) * tickRadius - 2),
+            urgent && tick % 3 === 0 ? 6 : 4,
+            4,
+          );
+        }
+        ctx.globalAlpha = 0.96;
+        ctx.font = `bold ${urgent ? 11 : 9}px ${UI_FONT_STACK}`;
+        ctx.fillText(`${remaining.toFixed(1)}s`, enemy.x, enemy.y - enemy.radius - 19);
+        if (urgent) {
+          for (let arrow = 0; arrow < 8; arrow += 1) {
+            const angle = arrow / 8 * Math.PI * 2;
+            const arrowRadius = 48 + pulse * 7;
+            ctx.save();
+            ctx.translate(enemy.x + Math.cos(angle) * arrowRadius, enemy.y + Math.sin(angle) * arrowRadius);
+            ctx.rotate(angle + Math.PI);
+            ctx.fillRect(0, -4, 8, 3);
+            ctx.fillRect(5, -1, 7, 3);
+            ctx.fillRect(0, 2, 8, 3);
+            ctx.restore();
+          }
+        }
+      } else if (enemy.type === 'task-sync') {
+        const nextIn = Math.max(0, TASK_SYNC_INTERVAL - (enemy.mechTimer ?? 0));
+        const activeAlpha = actionActive ? 0.92 : 0.42 + pulse * 0.2;
+        this.drawPixelWarningRing(enemy.x, enemy.y, 38 + pulse * 5, '#6f9c91', activeAlpha, 1, 28);
+        this.drawPixelWarningRing(enemy.x, enemy.y, 54 - pulse * 4, '#9cb8aa', activeAlpha * 0.72, 1, 32);
+        const targets = this.enemies.filter((other) => {
+          if (other.dead || other === enemy || other.boss || other.elite) return false;
+          const distance = Math.hypot(other.x - enemy.x, other.y - enemy.y);
+          return distance > TASK_SYNC_MIN_DISTANCE && distance < TASK_SYNC_RADIUS;
+        });
+        for (const target of targets) {
+          const dx = target.x - enemy.x;
+          const dy = target.y - enemy.y;
+          const distance = Math.hypot(dx, dy) || 1;
+          const angle = Math.atan2(dy, dx);
+          for (let step = 18; step < distance - 12; step += 18) {
+            const pullProgress = step / distance;
+            ctx.save();
+            ctx.translate(enemy.x + dx * pullProgress, enemy.y + dy * pullProgress);
+            ctx.rotate(angle + Math.PI);
+            ctx.fillStyle = step % 36 === 18 ? '#a7c2b4' : '#678d85';
+            ctx.globalAlpha = actionActive ? 0.9 : 0.28 + pulse * 0.18;
+            ctx.fillRect(0, -3, 7, 3);
+            ctx.fillRect(4, 0, 7, 3);
+            ctx.fillRect(0, 3, 7, 3);
+            ctx.restore();
+          }
+          this.drawPixelWarningRing(target.x, target.y, target.radius + 8 + pulse * 3, '#7ea397', activeAlpha * 0.7, 1, 18);
+        }
+        ctx.fillStyle = '#b4ccbf';
+        ctx.globalAlpha = 0.94;
+        ctx.font = `bold 9px ${UI_FONT_STACK}`;
+        ctx.fillText(`对齐 ${nextIn.toFixed(1)}s · ${targets.length}`, enemy.x, enemy.y - enemy.radius - 20);
+      }
+
+      if (actionActive) {
+        this.drawPixelWarningRing(enemy.x, enemy.y, 44 + pulse * 8, '#e3d5c2', 0.88, 1, 32);
+      }
+      ctx.restore();
+    }
+  }
+
+  private renderMiddleAgeEnemyFields(): void {
+    const ctx = this.ctx;
+    const doorSlowActive = this.meetingDoorSlowTimer > 0;
+    for (const enemy of this.enemies) {
+      if (enemy.dead || !this.visibleInLampLight(enemy.x, enemy.y, 150)) continue;
+      const pulse = (Math.sin(this.visualTime * 7 + enemy.id * 0.47) + 1) * 0.5;
+      if (enemy.type === 'meeting-door') {
+        const distance = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y);
+        const active = distance <= MEETING_DOOR_SLOW_RADIUS;
+        const pressure = 1 - this.clamp(distance / MEETING_DOOR_SLOW_RADIUS, 0, 1);
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        ctx.fillStyle = '#334653';
+        ctx.globalAlpha = active ? 0.12 + pressure * 0.12 : 0.045;
+        ctx.beginPath();
+        ctx.arc(enemy.x, enemy.y, MEETING_DOOR_SLOW_RADIUS, 0, Math.PI * 2);
+        ctx.fill();
+        this.drawPixelWarningRing(
+          enemy.x,
+          enemy.y,
+          MEETING_DOOR_SLOW_RADIUS + pulse * 3,
+          active ? '#8197a0' : '#5c6870',
+          active ? 0.72 : 0.28,
+          1,
+          40,
+        );
+        // 门槛只在门脚边出现，不把战场铺成移动网格。
+        ctx.fillStyle = active ? '#9ca9aa' : '#6a7475';
+        ctx.globalAlpha = active ? 0.7 : 0.34;
+        const thresholdY = enemy.y + enemy.radius + 12;
+        for (let step = 0; step < 3; step += 1) {
+          const width = 76 + step * 28;
+          ctx.fillRect(Math.round(enemy.x - width / 2), Math.round(thresholdY + step * 7), width, 3);
+        }
+        ctx.textAlign = 'center';
+        ctx.font = `bold 10px ${UI_FONT_STACK}`;
+        ctx.fillStyle = '#b9c4c2';
+        ctx.globalAlpha = active ? 0.82 : 0.4;
+        ctx.fillText('下一页', enemy.x - 55, enemy.y - enemy.radius - 16);
+        ctx.fillText('再往下拆', enemy.x + 55, enemy.y - enemy.radius - 3);
+        if (active) {
+          const angle = Math.atan2(enemy.y - this.heroY, enemy.x - this.heroX);
+          for (let bracket = 0; bracket < 3; bracket += 1) {
+            const radius = 35 + bracket * 10 + pulse * 2;
+            ctx.save();
+            ctx.translate(this.heroX + Math.cos(angle) * radius, this.heroY - 7 + Math.sin(angle) * radius);
+            ctx.rotate(angle);
+            ctx.fillStyle = '#a9b3b0';
+            ctx.globalAlpha = 0.52 + pressure * 0.34;
+            ctx.fillRect(-7, -7, 11, 3);
+            ctx.fillRect(1, -7, 3, 14);
+            ctx.fillRect(-7, 4, 11, 3);
+            ctx.restore();
+          }
+        }
+        ctx.restore();
+      } else if (enemy.type === 'checkup-report') {
+        const contactRadius = enemy.radius + 15 + CHECKUP_REPORT_CONTACT_PADDING;
+        const distance = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y);
+        const near = distance <= contactRadius + 32;
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        this.drawPixelWarningRing(
+          enemy.x,
+          enemy.y,
+          contactRadius + pulse * 4,
+          near ? '#df626b' : '#984852',
+          near ? 0.86 : 0.38,
+          1,
+          28,
+        );
+        ctx.strokeStyle = near ? '#f08886' : '#a85d61';
+        ctx.lineWidth = near ? 3 : 2;
+        ctx.globalAlpha = near ? 0.88 : 0.42;
+        ctx.beginPath();
+        ctx.moveTo(enemy.x - 42, enemy.y + enemy.radius + 16);
+        ctx.lineTo(enemy.x - 24, enemy.y + enemy.radius + 16);
+        ctx.lineTo(enemy.x - 16, enemy.y + enemy.radius + 8);
+        ctx.lineTo(enemy.x - 7, enemy.y + enemy.radius + 26);
+        ctx.lineTo(enemy.x + 4, enemy.y + enemy.radius + 2);
+        ctx.lineTo(enemy.x + 14, enemy.y + enemy.radius + 16);
+        ctx.lineTo(enemy.x + 42, enemy.y + enemy.radius + 16);
+        ctx.stroke();
+        if (near) {
+          ctx.fillStyle = '#ef777a';
+          ctx.globalAlpha = 0.65 + pulse * 0.25;
+          ctx.font = `bold 10px ${UI_FONT_STACK}`;
+          ctx.textAlign = 'center';
+          ctx.fillText('↑  ↑  ↑', enemy.x, enemy.y - enemy.radius - 18);
+        }
+        ctx.restore();
+      }
+    }
+
+    if (doorSlowActive) {
+      const slowPulse = (Math.sin(this.visualTime * 8) + 1) * 0.5;
+      this.drawPixelWarningRing(this.heroX, this.heroY - 7, 38 + slowPulse * 5, '#93a3a5', 0.62, 1, 30);
+    }
+    if (this.bonusSuppressionTimer > 0) {
+      const lockPulse = (Math.sin(this.visualTime * 11) + 1) * 0.5;
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      this.drawPixelWarningRing(this.heroX, this.heroY - 7, 38 + lockPulse * 7, '#ef6a70', 0.96, 1, 32);
+      this.drawPixelWarningRing(this.heroX, this.heroY - 7, 55 - lockPulse * 5, '#8f3545', 0.7, 1, 28);
+      ctx.fillStyle = '#f2a09a';
+      ctx.globalAlpha = 0.92;
+      ctx.font = `bold 11px ${UI_FONT_STACK}`;
+      ctx.textAlign = 'center';
+      ctx.fillText(`加成封存 · ${this.bonusSuppressionTimer.toFixed(1)}s`, this.heroX, this.heroY - 52);
+      ctx.font = `bold 17px ${UI_FONT_STACK}`;
+      for (let mark = 0; mark < 4; mark += 1) {
+        const angle = mark * Math.PI / 2 + Math.PI / 4;
+        ctx.globalAlpha = 0.55 + lockPulse * 0.3;
+        ctx.fillText('×', this.heroX + Math.cos(angle) * 52, this.heroY - 7 + Math.sin(angle) * 52 + 5);
+      }
+      ctx.restore();
+    }
+  }
+
+  private renderOldAgeEnemyFields(): void {
+    const ctx = this.ctx;
+    for (const enemy of this.enemies) {
+      if (enemy.dead || !this.visibleInLampLight(enemy.x, enemy.y, 230)) continue;
+      const pulse = (Math.sin(this.visualTime * 7.5 + enemy.id * 0.53) + 1) * 0.5;
+      if (enemy.type === 'queue-screen') {
+        const called = Boolean(enemy.queueCalled);
+        const distance = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y);
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        this.drawPixelWarningRing(enemy.x, enemy.y, 42 + pulse * 5, called ? '#e26a4d' : '#83615d', called ? 0.92 : 0.34, 1, 32);
+        if (called) {
+          const dx = enemy.x - this.heroX;
+          const dy = enemy.y - this.heroY;
+          const linkDistance = Math.hypot(dx, dy) || 1;
+          const angle = Math.atan2(dy, dx);
+          for (let link = 46; link < linkDistance - 24; link += 24) {
+            ctx.save();
+            ctx.translate(this.heroX + dx * link / linkDistance, this.heroY + dy * link / linkDistance);
+            ctx.rotate(angle);
+            ctx.fillStyle = '#df7558';
+            ctx.globalAlpha = 0.48 + pulse * 0.32;
+            ctx.fillRect(-7, -4, 9, 3);
+            ctx.fillRect(0, -1, 9, 3);
+            ctx.fillRect(-7, 2, 9, 3);
+            ctx.restore();
+          }
+          ctx.fillStyle = '#f1a282';
+          ctx.globalAlpha = 0.96;
+          ctx.font = `bold 12px ${UI_FONT_STACK}`;
+          ctx.textAlign = 'center';
+          ctx.fillText(
+            `${enemy.queueNumber ?? 42}号 · 三诊室`,
+            this.clamp(enemy.x, 72, W - 72),
+            enemy.y - enemy.radius - 22,
+          );
+          ctx.fillStyle = '#d87355';
+          ctx.globalAlpha = 0.76;
+          ctx.fillRect(this.heroX - 23, this.heroY + 27, 46, 15);
+          ctx.fillStyle = '#211e20';
+          ctx.globalAlpha = 0.95;
+          ctx.font = `bold 10px ${UI_FONT_STACK}`;
+          ctx.fillText('042', this.heroX, this.heroY + 38);
+          if (distance <= QUEUE_SCREEN_ARRIVAL_RADIUS + 24) {
+            this.drawPixelWarningRing(this.heroX, this.heroY - 7, 34 + pulse * 5, '#f0a179', 0.82, 1, 28);
+          }
+        }
+        ctx.restore();
+      } else if (enemy.type === 'others-family') {
+        const distance = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y);
+        const active = distance <= OTHERS_FAMILY_SLOW_RADIUS;
+        const travelAngle = enemy.attackAngle ?? 0;
+        this.drawPixelWarningRing(
+          enemy.x,
+          enemy.y,
+          OTHERS_FAMILY_SLOW_RADIUS + pulse * 3,
+          active ? '#c59a78' : '#7b665f',
+          active ? 0.78 : 0.28,
+          1,
+          28,
+        );
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        for (let echo = 1; echo <= 8; echo += 1) {
+          const behind = 10 + echo * 12;
+          const ex = enemy.x - Math.cos(travelAngle) * behind;
+          const ey = enemy.y - Math.sin(travelAngle) * behind;
+          ctx.fillStyle = echo % 2 === 0 ? '#b38b63' : '#826c72';
+          ctx.globalAlpha = Math.max(0.12, 0.68 - echo * 0.07);
+          ctx.fillRect(Math.round(ex - 6), Math.round(ey - 5), 12, 10);
+          ctx.fillRect(Math.round(ex - 2), Math.round(ey - 11), 5, 6);
+          ctx.fillStyle = '#d3b07e';
+          ctx.globalAlpha *= 0.78;
+          ctx.fillRect(Math.round(ex + 6), Math.round(ey - 2), 7, 6);
+        }
+        if (active) {
+          ctx.fillStyle = '#d8b08c';
+          ctx.globalAlpha = 0.9;
+          ctx.font = `bold 11px ${UI_FONT_STACK}`;
+          ctx.textAlign = 'center';
+          ctx.fillText('经过 · 移速×0.72', this.heroX, this.heroY - 51);
+          for (let impact = 0; impact < 3; impact += 1) {
+            this.drawPixelWarningRing(
+              this.heroX,
+              this.heroY - 7,
+              31 + impact * 12 + pulse * 4,
+              impact === 0 ? '#e1bd95' : '#9b7968',
+              0.72 - impact * 0.16,
+              1,
+              28 + impact * 4,
+            );
+          }
+        }
+        ctx.restore();
+      } else if (enemy.type === 'iv-stand') {
+        const tier = enemy.ivSpeedTier ?? Math.floor((enemy.mechTimer ?? 0) / IV_STAND_SPEED_INTERVAL);
+        const tierProgress = ((enemy.mechTimer ?? 0) % IV_STAND_SPEED_INTERVAL) / IV_STAND_SPEED_INTERVAL;
+        const moveAngle = Math.atan2(this.heroY - enemy.y, this.heroX - enemy.x);
+        this.drawPixelWarningRing(enemy.x, enemy.y, 34 + tier * 3 + pulse * 3, '#79a99a', 0.64 + Math.min(0.3, tier * 0.07), 1, 32);
+        this.drawPixelWarningRing(enemy.x, enemy.y, 45 + tier * 3, '#b5d4c7', 0.72, tierProgress, 36);
+        for (let shock = 1; shock <= Math.min(3, tier); shock += 1) {
+          this.drawPixelWarningRing(
+            enemy.x,
+            enemy.y,
+            49 + shock * 10 + pulse * (3 + shock),
+            shock % 2 === 0 ? '#d1e8df' : '#6f9f91',
+            0.5 - shock * 0.08,
+            1,
+            32 + shock * 6,
+          );
+        }
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        ctx.translate(enemy.x, enemy.y);
+        ctx.rotate(moveAngle);
+        for (let streak = 0; streak < 4 + Math.min(12, tier * 3); streak += 1) {
+          const back = 23 + (streak % 7) * 11;
+          const side = (streak % 5 - 2) * 7;
+          ctx.fillStyle = streak % 3 === 0 ? '#c7e0d6' : '#71958b';
+          ctx.globalAlpha = 0.24 + Math.min(0.48, tier * 0.08) + pulse * 0.12;
+          ctx.fillRect(-back, side, 11 + tier * 5, streak % 3 === 0 ? 4 : 3);
+        }
+        ctx.restore();
+        ctx.save();
+        ctx.fillStyle = '#c4ddd3';
+        ctx.globalAlpha = 0.9;
+        ctx.font = `bold 10px ${UI_FONT_STACK}`;
+        ctx.textAlign = 'center';
+        ctx.fillText(`滴速 ${IV_STAND_BASE_SPEED + tier * IV_STAND_SPEED_STEP} · ${tier}档`, enemy.x, enemy.y - enemy.radius - 22);
+        if (tier >= 2) {
+          ctx.fillStyle = '#e2eee9';
+          ctx.globalAlpha = 0.78 + pulse * 0.18;
+          ctx.font = `bold 9px ${UI_FONT_STACK}`;
+          ctx.fillText('十秒一档', enemy.x, enemy.y - enemy.radius - 10);
+        }
+        ctx.restore();
+      }
+    }
+
+    if (this.queueWrongWaySlowTimer > 0) {
+      const pulse = (Math.sin(this.visualTime * 11) + 1) * 0.5;
+      this.drawPixelWarningRing(this.heroX, this.heroY - 7, 41 + pulse * 6, '#e37857', 0.9, 1, 30);
+      ctx.save();
+      ctx.fillStyle = '#ee9b79';
+      ctx.globalAlpha = 0.94;
+      ctx.font = `bold 11px ${UI_FONT_STACK}`;
+      ctx.textAlign = 'center';
+      ctx.fillText('走错方向', this.heroX, this.heroY - 50);
+      ctx.restore();
+    }
+    if (this.familySlowTimer > 0) {
+      const pulse = (Math.sin(this.visualTime * 9) + 1) * 0.5;
+      this.drawPixelWarningRing(this.heroX, this.heroY - 7, 34 + pulse * 5, '#c9a17e', 0.68, 1, 28);
+    }
+  }
+
   private visibleInLampLight(x: number, y: number, margin = 0): boolean {
     if (!this.darkActive || this.darkR >= 320) return true;
     return Math.hypot(x - this.darkCX, y - this.darkCY) <= Math.max(70, this.darkR) + margin;
@@ -10930,11 +12980,205 @@ export class ZheYiShenGame {
     ctx.restore();
   }
 
+  private renderClosetHandsTelegraph(enemy: EnemyUnit): void {
+    const ctx = this.ctx;
+    const targetX = enemy.attackTargetX ?? this.heroX;
+    const targetY = enemy.attackTargetY ?? this.heroY;
+    const safeAngle = enemy.attackSafeAngle ?? 0;
+    const charge = 1 - this.clamp((enemy.windupTimer ?? 0) / CLOSET_HANDS_WINDUP, 0, 1);
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+
+    // 三圈缺口边界和十二只向内生长的手共用同一安全角；没有屏幕级网格或无端点线。
+    for (let ring = 0; ring < 3; ring += 1) {
+      const radius = CLOSET_HANDS_RADIUS - ring * 24 + charge * ring * 7;
+      for (let segment = 0; segment < 48; segment += 1) {
+        const angle = (segment / 48) * Math.PI * 2;
+        const safeDelta = Math.abs(Math.atan2(Math.sin(angle - safeAngle), Math.cos(angle - safeAngle)));
+        if (safeDelta <= CLOSET_HANDS_SAFE_HALF_ANGLE) continue;
+        const size = segment % 4 === 0 ? 5 : 3;
+        ctx.fillStyle = ring === 0 ? '#df4d70' : ring === 1 ? '#8c557c' : '#4a344f';
+        ctx.globalAlpha = 0.48 + charge * 0.42 - ring * 0.06;
+        ctx.fillRect(
+          Math.round(targetX + Math.cos(angle) * radius - size / 2),
+          Math.round(targetY + Math.sin(angle) * radius - size / 2),
+          size,
+          size,
+        );
+      }
+    }
+
+    for (let hand = 0; hand < 12; hand += 1) {
+      const angle = (hand / 12) * Math.PI * 2 + 0.13;
+      const safeDelta = Math.abs(Math.atan2(Math.sin(angle - safeAngle), Math.cos(angle - safeAngle)));
+      if (safeDelta <= CLOSET_HANDS_SAFE_HALF_ANGLE + 0.08) continue;
+      const outer = CLOSET_HANDS_RADIUS + 12 + (hand % 2) * 8;
+      const reach = 60 + charge * 78 + (hand % 3) * 5;
+      const inner = outer - reach;
+      ctx.save();
+      ctx.translate(targetX, targetY);
+      ctx.rotate(angle);
+      for (let block = 0; block < 8; block += 1) {
+        const blockX = inner + (outer - inner) * (block / 8);
+        const thickness = 5 + Math.floor(block / 3);
+        ctx.fillStyle = block % 3 === 0 ? '#93618b' : hand % 2 === 0 ? '#5d3b67' : '#35263f';
+        ctx.globalAlpha = 0.46 + charge * 0.48;
+        ctx.fillRect(Math.round(blockX), -Math.floor(thickness / 2), Math.ceil((outer - inner) / 7), thickness);
+      }
+      ctx.fillStyle = '#d8a7bd';
+      ctx.globalAlpha = 0.58 + charge * 0.4;
+      for (const finger of [-1, 0, 1]) {
+        ctx.fillRect(Math.round(inner - 8), finger * 5 - 2, 12 + Math.abs(finger) * 2, 3);
+      }
+      ctx.restore();
+    }
+
+    // 缺口只用两列暖色碎点标边；玩家看到的是一条空出来的路，不是一条说明文字。
+    ctx.save();
+    ctx.translate(targetX, targetY);
+    ctx.rotate(safeAngle);
+    ctx.fillStyle = '#ead9a7';
+    ctx.globalAlpha = 0.66 + charge * 0.28;
+    for (let distance = CLOSET_HANDS_SAFE_INNER_RADIUS + 7; distance <= CLOSET_HANDS_RADIUS + 8; distance += 13) {
+      const edge = Math.tan(CLOSET_HANDS_SAFE_HALF_ANGLE) * distance;
+      ctx.fillRect(Math.round(distance - 2), Math.round(edge - 2), 5, 4);
+      ctx.fillRect(Math.round(distance - 2), Math.round(-edge - 2), 5, 4);
+    }
+    ctx.restore();
+    this.drawPixelWarningRing(
+      targetX,
+      targetY,
+      CLOSET_HANDS_SAFE_INNER_RADIUS - charge * 7,
+      '#ef5364',
+      0.68 + charge * 0.28,
+      1,
+      24,
+    );
+    ctx.fillStyle = '#e7c8d5';
+    ctx.globalAlpha = 0.9;
+    ctx.font = `bold 11px ${UI_FONT_STACK}`;
+    ctx.textAlign = 'center';
+    ctx.fillText('里面还有手', targetX, targetY - CLOSET_HANDS_RADIUS - 13);
+    ctx.restore();
+  }
+
+  private renderClosetSlamTelegraph(enemy: EnemyUnit): void {
+    const ctx = this.ctx;
+    const targetX = enemy.attackTargetX ?? this.heroX;
+    const targetY = enemy.attackTargetY ?? this.heroY;
+    const charge = 1 - this.clamp((enemy.windupTimer ?? 0) / CLOSET_SLAM_WINDUP, 0, 1);
+    const gap = 54 * (1 - charge);
+    const top = targetY - CLOSET_SLAM_HALF_HEIGHT;
+    const height = CLOSET_SLAM_HALF_HEIGHT * 2;
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    this.drawPixelWarningRect(
+      targetX - CLOSET_SLAM_HALF_WIDTH,
+      top,
+      CLOSET_SLAM_HALF_WIDTH * 2,
+      height,
+      '#ef5364',
+      0.7 + charge * 0.28,
+    );
+
+    const panels = [
+      { x: targetX - CLOSET_SLAM_HALF_WIDTH - gap, edge: targetX - gap, flip: -1 },
+      { x: targetX + gap, edge: targetX + CLOSET_SLAM_HALF_WIDTH + gap, flip: 1 },
+    ];
+    for (const panel of panels) {
+      const width = panel.edge - panel.x;
+      ctx.fillStyle = '#1c141d';
+      ctx.globalAlpha = 0.48 + charge * 0.34;
+      ctx.fillRect(Math.round(panel.x), Math.round(top), Math.round(width), height);
+      ctx.fillStyle = '#6f4748';
+      ctx.globalAlpha = 0.68 + charge * 0.26;
+      ctx.fillRect(Math.round(panel.x + 4), Math.round(top + 7), Math.max(4, Math.round(width - 8)), 5);
+      ctx.fillRect(Math.round(panel.x + 4), Math.round(targetY - 3), Math.max(4, Math.round(width - 8)), 6);
+      ctx.fillRect(Math.round(panel.x + 4), Math.round(top + height - 12), Math.max(4, Math.round(width - 8)), 5);
+      ctx.fillStyle = '#d5a172';
+      ctx.globalAlpha = 0.42 + charge * 0.44;
+      ctx.fillRect(Math.round(panel.flip < 0 ? panel.edge - 6 : panel.x + 3), Math.round(targetY - 4), 4, 8);
+    }
+
+    ctx.fillStyle = '#c07a75';
+    for (let shard = 0; shard < 20; shard += 1) {
+      const side = shard % 2 === 0 ? -1 : 1;
+      const vertical = ((shard * 37) % (height - 20)) - (height - 20) / 2;
+      const spread = 12 + (shard % 5) * 9 + charge * 20;
+      ctx.globalAlpha = 0.28 + charge * 0.54;
+      ctx.fillRect(
+        Math.round(targetX + side * spread),
+        Math.round(targetY + vertical),
+        3 + shard % 3,
+        2 + (shard + 1) % 3,
+      );
+    }
+    ctx.fillStyle = '#f2c7c8';
+    ctx.globalAlpha = 0.38 + charge * 0.58;
+    ctx.fillRect(Math.round(targetX - 2), Math.round(top), 4, height);
+    ctx.font = `bold 11px ${UI_FONT_STACK}`;
+    ctx.textAlign = 'center';
+    ctx.fillText('门要关了', targetX, top - 13);
+    ctx.restore();
+  }
+
   private renderBossTelegraph(enemy: EnemyUnit): void {
     if (!enemy.boss && !enemy.elite && !enemy.backstabber) return;
     const ctx = this.ctx;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
+
+    if ((enemy.windupTimer ?? 0) > 0
+      && (enemy.attackKind === 'praise-optimize'
+        || enemy.attackKind === 'praise-dismiss'
+        || enemy.attackKind === 'praise-one-seat')) {
+      const maxWindup = enemy.attackKind === 'praise-optimize' ? 0.9 : enemy.attackKind === 'praise-dismiss' ? 1.1 : 1.2;
+      const charge = 1 - this.clamp((enemy.windupTimer ?? 0) / maxWindup, 0, 1);
+      const tasks = this.enemies.filter((unit) => !unit.dead && unit.type.startsWith('task-'));
+      if (enemy.attackKind === 'praise-optimize') {
+        const target = tasks.find((unit) => unit.id === enemy.attackTargetId);
+        if (target) {
+          const dx = target.x - enemy.x;
+          const dy = target.y - enemy.y;
+          const distance = Math.hypot(dx, dy) || 1;
+          ctx.fillStyle = '#d7bd73';
+          ctx.globalAlpha = 0.42 + charge * 0.5;
+          for (let step = 12; step < distance - 12; step += 14) {
+            ctx.fillRect(
+              Math.round(enemy.x + dx * step / distance - 2),
+              Math.round(enemy.y + dy * step / distance - 2),
+              4,
+              4,
+            );
+          }
+          this.drawPixelWarningRing(target.x, target.y, target.radius + 13 - charge * 5, '#d94b61', 0.7 + charge * 0.25, 1, 22);
+        }
+      } else {
+        const color = enemy.attackKind === 'praise-dismiss' ? '#d94b61' : '#c7a858';
+        for (const task of tasks) {
+          const radius = task.radius + 10 + charge * 12;
+          this.drawPixelWarningRing(task.x, task.y, radius, color, 0.58 + charge * 0.36, 1, 20);
+          ctx.fillStyle = color;
+          ctx.globalAlpha = 0.35 + charge * 0.55;
+          const arm = 5 + Math.round(charge * 5);
+          ctx.fillRect(Math.round(task.x - arm), Math.round(task.y - 1), arm * 2, 3);
+          ctx.fillRect(Math.round(task.x - 1), Math.round(task.y - arm), 3, arm * 2);
+        }
+      }
+      ctx.restore();
+      return;
+    }
+
+    if ((enemy.windupTimer ?? 0) > 0 && enemy.attackKind === 'closet-hands') {
+      this.renderClosetHandsTelegraph(enemy);
+      ctx.restore();
+      return;
+    }
+    if ((enemy.windupTimer ?? 0) > 0 && enemy.attackKind === 'closet-slam') {
+      this.renderClosetSlamTelegraph(enemy);
+      ctx.restore();
+      return;
+    }
 
     // 通用 boss 定向招式前摇：材质色负责氛围，统一红边负责危险语义。
     if ((enemy.windupTimer ?? 0) > 0 && enemy.attackAngle !== undefined) {
@@ -11040,6 +13284,55 @@ export class ZheYiShenGame {
           1,
           36,
         );
+        // 280px 结算圈在竖屏上经常落到画外；链扣直接连接玩家与催收人，明确“会被拖向哪里”。
+        const pullDX = enemy.x - this.heroX;
+        const pullDY = enemy.y - this.heroY;
+        const pullDistance = Math.hypot(pullDX, pullDY) || 1;
+        ctx.save();
+        ctx.translate(this.heroX, this.heroY);
+        ctx.rotate(Math.atan2(pullDY, pullDX));
+        const chainLength = Math.max(0, pullDistance - enemy.radius - 12);
+        ctx.fillStyle = '#241719';
+        ctx.globalAlpha = 0.5 + dragCharge * 0.24;
+        ctx.fillRect(10, -7, chainLength, 14);
+        ctx.fillStyle = '#f0c976';
+        ctx.globalAlpha = 0.72 + dragCharge * 0.26;
+        for (let distance = 14; distance < chainLength; distance += 18) {
+          const offset = Math.floor(distance / 18) % 2 === 0 ? -5 : -4;
+          ctx.fillRect(Math.round(distance), offset, 11, 3);
+          ctx.fillRect(Math.round(distance), offset + 8, 11, 3);
+          ctx.fillRect(Math.round(distance), offset, 3, 11);
+          ctx.fillRect(Math.round(distance + 8), offset, 3, 11);
+        }
+        ctx.fillStyle = '#ef5364';
+        ctx.globalAlpha = 0.78 + dragCharge * 0.2;
+        for (let distance = 40; distance < chainLength; distance += 54) {
+          ctx.fillRect(Math.round(distance), -8, 4, 5);
+          ctx.fillRect(Math.round(distance + 4), -4, 4, 8);
+          ctx.fillRect(Math.round(distance), 3, 4, 5);
+        }
+        ctx.restore();
+        const lockRadius = 29 - dragCharge * 5;
+        this.drawPixelWarningRing(
+          this.heroX,
+          this.heroY,
+          lockRadius,
+          '#ef5364',
+          0.76 + dragCharge * 0.22,
+          1,
+          28,
+        );
+        ctx.save();
+        ctx.translate(this.heroX, this.heroY);
+        ctx.rotate(Math.atan2(pullDY, pullDX));
+        ctx.fillStyle = '#f0c976';
+        ctx.globalAlpha = 0.72 + dragCharge * 0.26;
+        for (const distance of [lockRadius + 3, lockRadius + 13]) {
+          ctx.fillRect(Math.round(distance), -7, 4, 5);
+          ctx.fillRect(Math.round(distance + 4), -3, 4, 6);
+          ctx.fillRect(Math.round(distance), 2, 4, 5);
+        }
+        ctx.restore();
         ctx.restore();
         return;
       }
@@ -11191,8 +13484,14 @@ export class ZheYiShenGame {
     const warningWindow = enemy.boss ? 0.9 : enemy.elite ? 0.65 : 0.32;
     const eliteSkillWindup = Boolean((enemy.elite || enemy.backstabber) && (enemy.windupTimer ?? 0) > 0);
     const contactAttack = contactDistance <= enemy.radius + 17 && enemy.attackCooldown <= warningWindow;
-    const attacking = eliteSkillWindup || contactAttack;
-    const attackProgress = eliteSkillWindup
+    const taskAction = enemy.type.startsWith('task-') && (enemy.taskActionTimer ?? 0) > 0;
+    const commuteAction = enemy.type === 'missed-bus' && enemy.attackKind === 'missed-bus-pass';
+    const attacking = taskAction || commuteAction || eliteSkillWindup || contactAttack;
+    const attackProgress = commuteAction
+      ? 1 - this.clamp((enemy.dashTimer ?? 0) / MISSED_BUS_PASS_DURATION, 0, 1)
+      : taskAction
+      ? 1 - this.clamp((enemy.taskActionTimer ?? 0) / (enemy.taskActionDuration ?? 1), 0, 1)
+      : eliteSkillWindup
       ? 1 - this.clamp((enemy.windupTimer ?? 0) / 1.1, 0, 1)
       : contactAttack
         ? 1 - this.clamp(enemy.attackCooldown / warningWindow, 0, 1)
@@ -11215,7 +13514,11 @@ export class ZheYiShenGame {
       ctx.fillRect(Math.round(enemy.x - r - 3), Math.round(enemy.y + r - 1), Math.round(r * 2 + 6), 3);
       ctx.restore();
     }
-    const faceLeft = this.heroX < enemy.x;
+    const vehiclePass = (enemy.type === 'missed-bus' && enemy.attackKind === 'missed-bus-pass')
+      || (enemy.type === 'last-bus' && (enemy.phase ?? 0) === 2);
+    const faceLeft = vehiclePass && enemy.attackAngle !== undefined
+      ? Math.cos(enemy.attackAngle) < 0
+      : this.heroX < enemy.x;
     const bossAnimation = this.bossAnimationFrame(enemy);
     const skillDrawn = bossAnimation
       ? this.pixelBossSkills.draw(ctx, enemy, bossAnimation.id, bossAnimation.frame, faceLeft)
@@ -11809,17 +14112,17 @@ export class ZheYiShenGame {
           ? `breath${Math.min(3, Math.floor(firmness * 4))}`
           : visual.form;
         const tint = projectile.critical ? '#fff1a8' : visual.materialTint;
-        const tintStrength = visual.form === 'breath' ? 0.28 : visual.form === 'slash' ? 0.68 : 0.42;
-        const sprite = projectileAtlas.tintedNamed(spriteName, tint, tintStrength);
+        const tintStrength = visual.form === 'breath' ? 0.28 : visual.form === 'slash' ? 0.4 : 0.22; // v4 资产自带主色，染色只留材质倾向
+        const sprite = projectileAtlas.outlinedTinted(spriteName, tint, tintStrength);
         if (sprite) {
           // Collision radius stays mechanical; readable forms use their own
           // display curve so diminishing volleys remain distinct but legible.
           const displayCurve = PROJECTILE_FORM_DISPLAY_SIZE[visual.form];
-          const baseSize = visual.form === 'breath'
-            ? projectile.radius * 3.4
+          const baseSize = (visual.form === 'breath'
+            ? Math.max(projectile.radius * 3.4, 13)
             : displayCurve
               ? this.clamp(displayCurve[0] + projectile.radius * displayCurve[1], displayCurve[2], displayCurve[3])
-              : Math.max(projectile.radius * 3.1, 15);
+              : Math.max(projectile.radius * 3.1, 15)) * PROJECTILE_DISPLAY_LIFT;
           const formWidthScale = visual.form === 'slash' ? 1.18 : visual.form === 'razor' || visual.form === 'lens' ? 1.15 : 1;
           const formHeightScale = visual.form === 'slash' ? 1.12 : visual.form === 'razor' || visual.form === 'lens' ? 0.72 : 1;
           const widthScale = this.clamp(0.78 + visual.length * 0.2 + visual.sharpness * 0.12, 0.85, 1.9) * formWidthScale;
@@ -11829,12 +14132,31 @@ export class ZheYiShenGame {
             : 0;
           const drawWidth = baseSize * widthScale * (1 + wobble);
           const drawHeight = baseSize * heightScale;
+          // 实体残影拖尾：沿弹道向后两帧渐隐的本体影，替代纯点划——快弹才有"快"的样子。
+          if (!secondary && drawTrail && !this.reducedMotion) {
+            for (const [ghostOffset, ghostAlpha, ghostScale] of [[0.6, 0.2, 0.86], [1.15, 0.1, 0.72]] as const) {
+              ctx.globalAlpha = lifeFade * visual.opacity * ghostAlpha;
+              ctx.imageSmoothingEnabled = false;
+              ctx.drawImage(
+                sprite,
+                -drawWidth * ghostScale / 2 - drawWidth * ghostOffset,
+                -drawHeight * ghostScale / 2,
+                drawWidth * ghostScale,
+                drawHeight * ghostScale,
+              );
+            }
+          }
+          // 实物弹自旋（在拖尾之后：残影沿弹道，本体自转）
+          const spinRate = PROJECTILE_SPIN[visual.form];
+          if (spinRate && !this.reducedMotion) {
+            ctx.rotate(projectile.life * spinRate + projectile.id * 0.9);
+          }
           // 堆叠越夸张，越要让母弹可追踪：核心弹加一层放大叠光，派生弹一颗也不裁。
           if (!secondary && visualBudget.coreLift) {
             const corePulse = this.reducedMotion ? 1.16 : 1.16 + Math.sin(projectile.life * 11 + projectile.id) * 0.035;
             ctx.save();
             ctx.globalCompositeOperation = 'screen';
-            ctx.globalAlpha = lifeFade * (projectile.critical ? 0.34 : 0.22);
+            ctx.globalAlpha = lifeFade * ((projectile.critical ? 0.34 : 0.22) + (visual.form === 'breath' ? firmness * 0.12 : 0));
             ctx.imageSmoothingEnabled = false;
             ctx.drawImage(
               sprite,
@@ -12963,8 +15285,8 @@ export class ZheYiShenGame {
     const spriteName = visual.form === 'breath'
       ? `breath${Math.min(3, Math.floor(firmness * 4))}`
       : visual.form;
-    const tintStrength = visual.form === 'breath' ? 0.28 : visual.form === 'slash' ? 0.68 : 0.42;
-    const sprite = projectileAtlas.tintedNamed(spriteName, visual.materialTint, tintStrength);
+    const tintStrength = visual.form === 'breath' ? 0.28 : visual.form === 'slash' ? 0.4 : 0.22;
+    const sprite = projectileAtlas.outlinedTinted(spriteName, visual.materialTint, tintStrength);
     const displayCurve = PROJECTILE_FORM_DISPLAY_SIZE[visual.form];
     const baseSize = visual.form === 'breath'
       ? radius * 3.4
@@ -14010,7 +16332,7 @@ export class ZheYiShenGame {
     const host = window as Window & {
       render_game_to_text?: () => string;
       advanceTime?: (ms: number) => void;
-      zhe_yi_shen_test?: (action: 'start' | 'reveal-origin' | 'clear' | 'choose-first' | 'swallow' | 'exhale' | 'open-fate' | 'special' | 'leave-special' | 'shop' | 'buy-first' | 'reroll-shop' | 'combo' | 'boss' | 'battle' | 'stress-battle' | 'projectile-combo-stress' | 'lantern-stress' | 'origin-badge-audit' | 'projectile-audit' | 'projectile-form' | 'projectile-mechanic' | 'relic-audit' | 'memory-recall' | 'father' | 'father-phase2' | 'boss-art' | 'boss-skill-art' | 'elite-art' | 'enemy-art' | 'scene-art' | 'telegraph' | 'praise-consult' | 'praise-approach' | 'praise-paper-approach' | 'phone-split' | 'phone-approach' | 'phone-caller' | 'phone-missed' | 'xiao-zhang-prompt' | 'xiao-zhang-help' | 'xiao-zhang-one-seat' | 'xiao-zhang-box' | 'win' | 'equip' | 'hurt' | 'defeat-stage-elite' | 'defeat-boss' | 'one-more' | 'pause', payload?: unknown) => void;
+      zhe_yi_shen_test?: (action: 'start' | 'reveal-origin' | 'clear' | 'choose-first' | 'swallow' | 'exhale' | 'open-fate' | 'special' | 'leave-special' | 'shop' | 'buy-first' | 'reroll-shop' | 'combo' | 'boss' | 'battle' | 'stress-battle' | 'projectile-combo-stress' | 'lantern-stress' | 'origin-badge-audit' | 'projectile-audit' | 'projectile-form' | 'projectile-mechanic' | 'relic-audit' | 'memory-recall' | 'father' | 'father-phase2' | 'boss-art' | 'boss-skill-art' | 'elite-art' | 'enemy-art' | 'scene-art' | 'childhood-boss-hazards' | 'childhood-hazards' | 'adult-hazards' | 'school-work-hazards' | 'youth-commute-hazards' | 'youth-task-hazards' | 'middle-age-hazards' | 'old-age-hazards' | 'telegraph' | 'praise-consult' | 'praise-approach' | 'praise-paper-approach' | 'phone-split' | 'phone-approach' | 'phone-caller' | 'phone-missed' | 'xiao-zhang-prompt' | 'xiao-zhang-help' | 'xiao-zhang-one-seat' | 'xiao-zhang-box' | 'win' | 'equip' | 'hurt' | 'defeat-stage-elite' | 'defeat-boss' | 'one-more' | 'pause', payload?: unknown) => void;
     };
     const renderGameState = () => JSON.stringify({
       coordinateSystem: 'origin top-left; +x right; +y down; logical 360x640',
@@ -14127,7 +16449,226 @@ export class ZheYiShenGame {
       fateReceipts: this.fateReceipts.map((receipt) => ({ id: receipt.event.id, direction: receipt.direction, result: receipt.result })),
       items: this.items,
       combos: this.activeComboNames(),
+      enemyMechanics: {
+        childhood: {
+          moths: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'cry-moth').map((enemy) => ({
+            id: enemy.id,
+            distance: Number(Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y).toFixed(1)),
+            state: enemy.attackKind ?? 'orbit',
+            timer: Number((enemy.attackKind ? enemy.windupTimer ?? 0 : CRY_MOTH_POWDER_CYCLE - (enemy.mechTimer ?? 0)).toFixed(2)),
+            orbitAngle: Number((enemy.attackAngle ?? 0).toFixed(2)),
+          })),
+          breaths: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'fear').map((enemy) => ({
+            id: enemy.id,
+            distance: Number(Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y).toFixed(1)),
+            state: enemy.attackKind ?? 'approach',
+            timer: Number((enemy.attackKind ? enemy.windupTimer ?? 0 : FEAR_BREATH_CYCLE - (enemy.mechTimer ?? 0)).toFixed(2)),
+          })),
+          hungerShadows: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'hunger-shadow').map((enemy) => ({
+            id: enemy.id,
+            distance: Number(Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y).toFixed(1)),
+            state: enemy.attackKind ?? 'approach',
+            timer: Number((enemy.attackKind === 'hunger-dash' ? enemy.dashTimer ?? 0 : enemy.windupTimer ?? 0).toFixed(2)),
+            angle: Number((enemy.attackAngle ?? 0).toFixed(2)),
+            dashHit: Boolean(enemy.dashHit),
+          })),
+        },
+        schoolWork: {
+          redMarks: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'red-mark').map((enemy) => ({
+            id: enemy.id,
+            distance: Number(Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y).toFixed(1)),
+            state: enemy.attackKind ?? 'approach',
+            timer: Number((enemy.attackKind === 'red-pounce' ? enemy.dashTimer ?? 0 : enemy.windupTimer ?? 0).toFixed(2)),
+            angle: Number((enemy.attackAngle ?? 0).toFixed(2)),
+            dashHit: Boolean(enemy.dashHit),
+          })),
+          whispers: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'whisper').map((enemy) => ({
+            id: enemy.id,
+            distance: Number(Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y).toFixed(1)),
+            orbitAngle: Number((enemy.attackAngle ?? 0).toFixed(2)),
+            active: Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y) <= WHISPER_PRESSURE_RADIUS,
+            cooldown: Number((enemy.auraCooldown ?? WHISPER_PRESSURE_INTERVAL).toFixed(2)),
+          })),
+          paperFields: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'others-paper').map((enemy) => {
+            const distance = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y);
+            return {
+              id: enemy.id,
+              distance: Number(distance.toFixed(1)),
+              tier: distance <= OTHERS_PAPER_INNER_RADIUS
+                ? 'inner'
+                : distance <= OTHERS_PAPER_MID_RADIUS
+                  ? 'middle'
+                  : distance <= OTHERS_PAPER_AURA_RADIUS
+                    ? 'outer'
+                    : 'safe',
+              cooldown: Number((enemy.auraCooldown ?? 0).toFixed(2)),
+            };
+          }),
+          signSlowed: this.enemies.some((enemy) => !enemy.dead
+            && enemy.type === 'sign-here'
+            && Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y) <= SIGN_HERE_SLOW_RADIUS),
+          heroSlowTimer: Number(this.heroSlowTimer.toFixed(2)),
+          heroMoveSpeed: Number(this.computeMoveSpeed().toFixed(2)),
+          scannerLock: Number(this.scannerLockTimer.toFixed(2)),
+          convergeMultiplier: this.scannerLockTimer > 0 ? ID_SCANNER_CONVERGE_MULTIPLIER : 1,
+          scanners: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'id-scanner').map((enemy) => ({
+            id: enemy.id,
+            state: enemy.attackKind ?? 'idle',
+            timer: Number((enemy.windupTimer ?? 0).toFixed(2)),
+            targetY: enemy.scanTargetY === undefined ? null : Math.round(enemy.scanTargetY),
+            hit: Boolean(enemy.scanHit),
+          })),
+        },
+        youthCommute: {
+          heroHp: Math.round(this.hero.hp),
+          missedBuses: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'missed-bus').map((enemy) => ({
+            id: enemy.id,
+            state: enemy.attackKind ?? 'offscreen-cooldown',
+            timer: Number((enemy.attackKind === 'missed-bus-pass'
+              ? enemy.dashTimer ?? 0
+              : enemy.attackKind === 'missed-bus-warn'
+                ? enemy.windupTimer ?? 0
+                : Math.max(0, MISSED_BUS_REENTRY_DELAY - (enemy.mechTimer ?? 0))).toFixed(2)),
+            x: Number(enemy.x.toFixed(1)),
+            y: Number(enemy.y.toFixed(1)),
+            laneY: enemy.laneY === undefined ? null : Number(enemy.laneY.toFixed(1)),
+            angle: Number((enemy.attackAngle ?? 0).toFixed(2)),
+            passIndex: enemy.lanePassIndex ?? 0,
+            hit: Boolean(enemy.dashHit),
+          })),
+          lastBus: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'last-bus').map((enemy) => ({
+            id: enemy.id,
+            phase: enemy.phase ?? 0,
+            state: enemy.attackKind ?? 'approach',
+            timer: Number((enemy.windupTimer ?? enemy.mechTimer ?? 0).toFixed(2)),
+            fatigueMultiplier: (enemy.phase ?? 0) === 3 ? 1.7 : 0.75,
+          })),
+        },
+        youthTasks: {
+          simple: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'task-simple').map((enemy) => ({
+            id: enemy.id,
+            phase: enemy.phase ?? 0,
+            hp: Number(enemy.hp.toFixed(2)),
+            x: Number(enemy.x.toFixed(1)),
+            y: Number(enemy.y.toFixed(1)),
+            action: enemy.attackKind ?? null,
+            actionTimer: Number((enemy.taskActionTimer ?? 0).toFixed(2)),
+          })),
+          revise: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'task-revise').map((enemy) => ({
+            id: enemy.id,
+            revision: enemy.phase ?? 0,
+            hp: Number(enemy.hp.toFixed(2)),
+            action: enemy.attackKind ?? null,
+            actionTimer: Number((enemy.taskActionTimer ?? 0).toFixed(2)),
+          })),
+          deadlines: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'task-deadline').map((enemy) => ({
+            id: enemy.id,
+            remaining: Number(Math.max(0, TASK_DEADLINE_DURATION - (enemy.mechTimer ?? 0)).toFixed(2)),
+            action: enemy.attackKind ?? null,
+            actionTimer: Number((enemy.taskActionTimer ?? 0).toFixed(2)),
+          })),
+          syncs: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'task-sync').map((enemy) => ({
+            id: enemy.id,
+            x: Number(enemy.x.toFixed(1)),
+            y: Number(enemy.y.toFixed(1)),
+            nextIn: Number(Math.max(0, TASK_SYNC_INTERVAL - (enemy.mechTimer ?? 0)).toFixed(2)),
+            targets: this.enemies.filter((other) => !other.dead && other !== enemy && !other.boss && !other.elite
+              && Math.hypot(other.x - enemy.x, other.y - enemy.y) > TASK_SYNC_MIN_DISTANCE
+              && Math.hypot(other.x - enemy.x, other.y - enemy.y) < TASK_SYNC_RADIUS).map((other) => other.id),
+            action: enemy.attackKind ?? null,
+            actionTimer: Number((enemy.taskActionTimer ?? 0).toFixed(2)),
+          })),
+          heroCoins: this.hero.coins,
+        },
+        middleAge: {
+          doorSlow: Number(this.meetingDoorSlowTimer.toFixed(2)),
+          doorSlowMultiplier: this.meetingDoorSlowTimer > 0 ? MEETING_DOOR_SLOW_MULTIPLIER : 1,
+          heroMoveSpeed: Number(this.computeMoveSpeed().toFixed(2)),
+          bonusSuppression: Number(this.bonusSuppressionTimer.toFixed(2)),
+          bonusEffectsActive: this.items.filter((item) => this.hasItem(item)),
+          attack: this.computeAttackVector(),
+          doors: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'meeting-door').map((enemy) => ({
+            id: enemy.id,
+            distance: Number(Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y).toFixed(1)),
+            active: Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y) <= MEETING_DOOR_SLOW_RADIUS,
+            stationary: enemy.speed === 0,
+          })),
+          reports: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'checkup-report').map((enemy) => ({
+            id: enemy.id,
+            distance: Number(Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y).toFixed(1)),
+            contactRadius: enemy.radius + 15 + CHECKUP_REPORT_CONTACT_PADDING,
+            attackCooldown: Number(enemy.attackCooldown.toFixed(2)),
+          })),
+        },
+        oldAge: {
+          queueWrongWaySlow: Number(this.queueWrongWaySlowTimer.toFixed(2)),
+          familySlow: Number(this.familySlowTimer.toFixed(2)),
+          heroMoveSpeed: Number(this.computeMoveSpeed().toFixed(2)),
+          ivSpawnedThisStage: this.ivStandsSpawnedThisStage,
+          queues: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'queue-screen').map((enemy) => ({
+            id: enemy.id,
+            called: Boolean(enemy.queueCalled),
+            number: enemy.queueNumber ?? null,
+            arrivals: enemy.queueArrivals ?? 0,
+            distance: Number(Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y).toFixed(1)),
+            x: Number(enemy.x.toFixed(1)),
+            y: Number(enemy.y.toFixed(1)),
+          })),
+          families: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'others-family').map((enemy) => ({
+            id: enemy.id,
+            distance: Number(Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y).toFixed(1)),
+            passing: enemy.attackAngle !== undefined,
+            angle: enemy.attackAngle === undefined ? null : Number(enemy.attackAngle.toFixed(3)),
+          })),
+          ivStands: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'iv-stand').map((enemy) => ({
+            id: enemy.id,
+            elapsed: Number((enemy.mechTimer ?? 0).toFixed(2)),
+            tier: enemy.ivSpeedTier ?? 0,
+            speed: Number(enemy.speed.toFixed(2)),
+            nextTierIn: Number((IV_STAND_SPEED_INTERVAL - ((enemy.mechTimer ?? 0) % IV_STAND_SPEED_INTERVAL)).toFixed(2)),
+          })),
+        },
+        adulthood: {
+          silenceSlowTimer: Number(this.silenceSlowTimer.toFixed(2)),
+          silenceSlowMultiplier: this.silenceSlowTimer > 0 ? SILENCE_SLOW_MULTIPLIER : 1,
+          heroMoveSpeed: Number(this.computeMoveSpeed().toFixed(2)),
+          missedCalls: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'missed-call').map((enemy) => ({
+            id: enemy.id,
+            distance: Number(Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y).toFixed(1)),
+            active: Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y) <= MISSED_CALL_AURA_RADIUS,
+            cooldown: Number((enemy.auraCooldown ?? MISSED_CALL_PULSE_INTERVAL).toFixed(2)),
+          })),
+          silences: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'silence').map((enemy) => ({
+            id: enemy.id,
+            distance: Number(Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y).toFixed(1)),
+            active: Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y) <= SILENCE_SLOW_RADIUS,
+          })),
+          lampActive: this.heroInDeskLampAura(),
+          lampCount: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'desk-lamp').length,
+          damageMultiplier: this.heroInDeskLampAura() ? DESK_LAMP_DAMAGE_MULTIPLIER : 1,
+          burnTimer: Number(this.deskLampBurnTimer.toFixed(2)),
+          coldPotCount: this.enemies.filter((enemy) => !enemy.dead
+            && enemy.type === 'reheated-pot' && this.reheatedPotHeat(enemy) <= 0).length,
+          coldDamageTimer: Number(this.reheatedPotColdTimer.toFixed(2)),
+          pots: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'reheated-pot').map((enemy) => ({
+            id: enemy.id,
+            heat: Number(this.reheatedPotHeat(enemy).toFixed(2)),
+            reheat: Number(((enemy.potReheatProgress ?? 0) / REHEATED_POT_REHEAT_DURATION).toFixed(2)),
+          })),
+        },
+      },
       bossMechanics: {
+        closet: {
+          moveIndex: this.closetMoveIndex,
+          attacks: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'closet-dark').map((enemy) => ({
+            kind: enemy.attackKind ?? null,
+            windup: Number((enemy.windupTimer ?? 0).toFixed(2)),
+            target: enemy.attackTargetX === undefined || enemy.attackTargetY === undefined
+              ? null
+              : { x: Math.round(enemy.attackTargetX), y: Math.round(enemy.attackTargetY) },
+            safeAngle: enemy.attackSafeAngle === undefined ? null : Number(enemy.attackSafeAngle.toFixed(3)),
+          })),
+        },
         lamp: {
           active: this.darkActive,
           radius: this.darkActive ? Number(this.darkR.toFixed(1)) : null,
@@ -15415,6 +17956,879 @@ export class ZheYiShenGame {
           this.eliteAlertName = '';
           this.eliteAlertTime = 0;
         }
+        if (action === 'childhood-boss-hazards') {
+          const payloadVariant = payload && typeof payload === 'object' && 'variant' in payload
+            ? (payload as { variant?: unknown }).variant
+            : undefined;
+          const variant = typeof payload === 'string'
+            ? payload
+            : typeof payloadVariant === 'string'
+              ? payloadVariant
+              : 'stack-art';
+          if (this.state === 'title') this.startRun(0x20260726, true);
+          this.initialItemReward = false;
+          this.hero.maxHp = 999;
+          this.hero.hp = 999;
+          this.hero.block = 0;
+          this.hurtCooldown = 0;
+          this.raincoatReady = false;
+          this.items = [];
+          this.encounterIndex = 0;
+          this.startStage(true);
+          this.screenTransition = undefined;
+          this.lastRenderedState = this.state;
+          this.heroX = W / 2;
+          this.heroY = HERO_SCREEN_Y;
+          this.resetMovementInput();
+          this.heroMoving = false;
+          this.enemies = [];
+          this.projectiles = [];
+          this.pendingShots = [];
+          this.bursts = [];
+          this.coinDrops = [];
+          const boss = this.createSeekingEnemy('closet-dark', this.heroX, this.heroY - 154);
+          boss.speed = 0;
+          boss.attackCooldown = 99;
+          boss.mechTimer = -999;
+          this.enemies.push(boss);
+          const lockHands = (timer: number) => {
+            boss.attackKind = 'closet-hands';
+            boss.attackTargetX = this.heroX;
+            boss.attackTargetY = this.heroY;
+            boss.attackSafeAngle = 0;
+            boss.attackAngle = 0;
+            boss.windupTimer = timer;
+            this.playBossAnimation(boss, 'closet-hands', CLOSET_HANDS_WINDUP + 0.45);
+          };
+          const lockSlam = (timer: number) => {
+            boss.attackKind = 'closet-slam';
+            boss.attackTargetX = this.heroX;
+            boss.attackTargetY = this.heroY;
+            boss.attackSafeAngle = undefined;
+            boss.attackAngle = undefined;
+            boss.windupTimer = timer;
+            this.playBossAnimation(boss, 'closet-slam', CLOSET_SLAM_WINDUP + 0.4);
+          };
+          if (variant === 'shadow-art') {
+            boss.attackKind = 'shadow';
+            boss.attackAngle = Math.atan2(this.heroY - boss.y, this.heroX - boss.x);
+            boss.windupTimer = CLOSET_SHADOW_WINDUP * 0.56;
+            this.playBossAnimation(boss, 'closet-shadow', 1.3);
+            boss.bossAnimFrame = 1;
+          } else if (variant === 'hands-hit' || variant === 'hands-dodge' || variant === 'hands-art' || variant === 'stack-art') {
+            lockHands(variant === 'hands-hit' || variant === 'hands-dodge' ? 0.05 : CLOSET_HANDS_WINDUP * 0.52);
+            if (variant === 'hands-dodge') this.heroX += 72;
+            if (variant === 'hands-art') boss.bossAnimFrame = 0;
+            if (variant === 'stack-art') {
+              boss.bossAnimFrame = 1;
+              const childhoodTypes: EnemyType[] = ['cry-moth', 'fear', 'hunger-shadow'];
+              for (let index = 0; index < 12; index += 1) {
+                const angle = (index / 12) * Math.PI * 2 + 0.18;
+                const radius = index % 2 === 0 ? 76 : 124;
+                const minion = this.createSeekingEnemy(
+                  childhoodTypes[index % childhoodTypes.length]!,
+                  this.heroX + Math.cos(angle) * radius,
+                  this.heroY + Math.sin(angle) * radius,
+                );
+                minion.speed = 0;
+                minion.attackCooldown = 99;
+                this.enemies.push(minion);
+              }
+            }
+          } else {
+            lockSlam(variant === 'slam-hit' || variant === 'slam-dodge' ? 0.05 : CLOSET_SLAM_WINDUP * 0.54);
+            if (variant === 'slam-dodge') this.heroX += 72;
+            if (variant === 'slam-art') boss.bossAnimFrame = 2;
+          }
+          this.shotTimer = 999;
+          this.spawnPause = 999;
+          this.auditBossArtActive = variant === 'shadow-art'
+            || variant === 'hands-art'
+            || variant === 'slam-art'
+            || variant === 'stack-art';
+          this.auditEndurance = false;
+          this.auditDamageTaken = 0;
+          this.caption = '';
+          this.captionTime = 0;
+          this.eliteAlertName = '';
+          this.eliteAlertTime = 0;
+        }
+        if (action === 'childhood-hazards') {
+          const payloadVariant = payload && typeof payload === 'object' && 'variant' in payload
+            ? (payload as { variant?: unknown }).variant
+            : undefined;
+          const variant = typeof payload === 'string'
+            ? payload
+            : typeof payloadVariant === 'string'
+              ? payloadVariant
+              : 'horde';
+          if (this.state === 'title') this.startRun(0x20260718, true);
+          this.initialItemReward = false;
+          this.hero.maxHp = 999;
+          this.hero.hp = 999;
+          this.encounterIndex = 0;
+          this.startStage(true);
+          this.screenTransition = undefined;
+          this.lastRenderedState = this.state;
+          this.heroX = W / 2;
+          this.heroY = HERO_SCREEN_Y;
+          this.resetMovementInput();
+          this.heroMoving = false;
+          this.items = [];
+          this.enemies = [];
+          const addEnemy = (type: EnemyType, x: number, y: number, speed?: number) => {
+            const enemy = this.createSeekingEnemy(type, x, y);
+            if (speed !== undefined) enemy.speed = speed;
+            enemy.attackCooldown = 99;
+            this.enemies.push(enemy);
+            return enemy;
+          };
+          const setMothWarning = (enemy: EnemyUnit, timer = CRY_MOTH_POWDER_WINDUP * 0.5) => {
+            enemy.attackKind = 'moth-powder-warn';
+            enemy.windupTimer = timer;
+            enemy.mechTimer = 0;
+            enemy.attackAngle = Math.atan2(enemy.y - this.heroY, enemy.x - this.heroX);
+          };
+          const setBreathWarning = (enemy: EnemyUnit, timer = FEAR_BREATH_WINDUP * 0.5) => {
+            enemy.attackKind = 'fear-inhale';
+            enemy.windupTimer = timer;
+            enemy.mechTimer = 0;
+          };
+          const setHungerWarning = (enemy: EnemyUnit, angle: number, timer = HUNGER_SHADOW_DASH_WINDUP * 0.5) => {
+            enemy.attackKind = 'hunger-warn';
+            enemy.attackAngle = angle;
+            enemy.windupTimer = timer;
+            enemy.mechTimer = 0;
+          };
+          const setHungerDash = (enemy: EnemyUnit, angle: number) => {
+            enemy.attackKind = 'hunger-dash';
+            enemy.attackAngle = angle;
+            enemy.dashTimer = HUNGER_SHADOW_DASH_DURATION;
+            enemy.dashHit = false;
+            enemy.mechTimer = 0;
+          };
+
+          if (variant === 'moth-warn-art' || variant === 'moth-hit') {
+            const moth = addEnemy('cry-moth', this.heroX + (variant === 'moth-hit' ? 42 : 76), this.heroY - 10);
+            setMothWarning(moth, variant === 'moth-hit' ? 0.02 : CRY_MOTH_POWDER_WINDUP * 0.52);
+          } else if (variant === 'fear-inhale-art' || variant === 'fear-pulse') {
+            const breath = addEnemy('fear', this.heroX - (variant === 'fear-pulse' ? 54 : 78), this.heroY - 8);
+            setBreathWarning(breath, variant === 'fear-pulse' ? 0.02 : FEAR_BREATH_WINDUP * 0.5);
+          } else if (variant === 'hunger-warn-art') {
+            const hunger = addEnemy('hunger-shadow', this.heroX - 112, this.heroY - 6);
+            setHungerWarning(hunger, 0);
+          } else if (variant === 'hunger-dash-art' || variant === 'hunger-hit' || variant === 'hunger-miss') {
+            const hunger = addEnemy(
+              'hunger-shadow',
+              this.heroX - (variant === 'hunger-hit' ? 74 : 92),
+              this.heroY - (variant === 'hunger-miss' ? 34 : 6),
+            );
+            setHungerDash(hunger, 0);
+          } else {
+            const mothLeft = addEnemy('cry-moth', this.heroX - 72, this.heroY - 42);
+            setMothWarning(mothLeft, CRY_MOTH_POWDER_WINDUP * 0.46);
+            const mothRight = addEnemy('cry-moth', this.heroX + 68, this.heroY + 38);
+            setMothWarning(mothRight, CRY_MOTH_POWDER_WINDUP * 0.7);
+            const breathTop = addEnemy('fear', this.heroX - 48, this.heroY - 88);
+            setBreathWarning(breathTop, FEAR_BREATH_WINDUP * 0.48);
+            const breathRight = addEnemy('fear', this.heroX + 82, this.heroY - 26);
+            setBreathWarning(breathRight, FEAR_BREATH_WINDUP * 0.76);
+            const hungerLeft = addEnemy('hunger-shadow', this.heroX - 132, this.heroY + 82);
+            setHungerWarning(hungerLeft, -0.34, HUNGER_SHADOW_DASH_WINDUP * 0.38);
+            const hungerRight = addEnemy('hunger-shadow', this.heroX + 126, this.heroY + 94);
+            setHungerDash(hungerRight, Math.PI + 0.28);
+            addEnemy('cry-moth', this.heroX + 138, this.heroY - 106);
+          }
+          this.shotTimer = 999;
+          this.spawnPause = 999;
+          this.projectiles = [];
+          this.pendingShots = [];
+          this.bursts = [];
+          this.coinDrops = [];
+          this.auditBossArtActive = variant === 'moth-warn-art'
+            || variant === 'fear-inhale-art'
+            || variant === 'hunger-warn-art'
+            || variant === 'hunger-dash-art'
+            || variant === 'horde-art';
+          this.auditEndurance = true;
+          this.auditDamageTaken = 0;
+          this.caption = '';
+          this.captionTime = 0;
+          this.eliteAlertName = '';
+          this.eliteAlertTime = 0;
+        }
+        if (action === 'adult-hazards') {
+          const payloadVariant = payload && typeof payload === 'object' && 'variant' in payload
+            ? (payload as { variant?: unknown }).variant
+            : undefined;
+          const variant = typeof payload === 'string'
+            ? payload
+            : typeof payloadVariant === 'string'
+              ? payloadVariant
+              : 'duo';
+          if (this.state === 'title') this.startRun(0x20260718, true);
+          this.initialItemReward = false;
+          this.hero.maxHp = 999;
+          this.hero.hp = 999;
+          this.encounterIndex = 3;
+          this.startStage(true);
+          this.screenTransition = undefined;
+          this.lastRenderedState = this.state;
+          this.heroX = W / 2;
+          this.heroY = HERO_SCREEN_Y;
+          this.resetMovementInput();
+          this.heroMoving = false;
+          this.enemies = [];
+          const addPair = (offsetX: number, offsetY: number, cold: boolean, lampOutside = false) => {
+            const lamp = this.createSeekingEnemy(
+              'desk-lamp',
+              this.heroX + offsetX + (lampOutside ? 142 : 64),
+              this.heroY + offsetY - 26,
+            );
+            const pot = this.createSeekingEnemy(
+              'reheated-pot',
+              this.heroX + offsetX - 42,
+              this.heroY + offsetY + 32,
+            );
+            lamp.speed = 0;
+            lamp.attackCooldown = 99;
+            pot.speed = 0;
+            pot.attackCooldown = 99;
+            pot.mechTimer = cold ? REHEATED_POT_COOL_DURATION + 0.05 : 1.2;
+            this.enemies.push(lamp, pot);
+            return { lamp, pot };
+          };
+          const addLegacyEnemy = (type: 'missed-call' | 'silence', x: number, y: number, cooldown?: number) => {
+            const enemy = this.createSeekingEnemy(type, x, y);
+            enemy.speed = 0;
+            enemy.attackCooldown = 99;
+            if (type === 'missed-call') enemy.auraCooldown = cooldown ?? MISSED_CALL_PULSE_INTERVAL;
+            this.enemies.push(enemy);
+            return enemy;
+          };
+          const addLegacyHorde = () => {
+            addLegacyEnemy('missed-call', this.heroX + 58, this.heroY - 16, 0.28);
+            addLegacyEnemy('missed-call', this.heroX - 72, this.heroY + 28, 0.54);
+            addLegacyEnemy('missed-call', this.heroX + 92, this.heroY + 52, 0.82);
+            addLegacyEnemy('silence', this.heroX - 72, this.heroY - 42);
+            addLegacyEnemy('silence', this.heroX + 70, this.heroY - 42);
+            addLegacyEnemy('silence', this.heroX - 16, this.heroY + 80);
+          };
+          if (variant === 'call-art' || variant === 'call-near' || variant === 'call-hit' || variant === 'call-out') {
+            addLegacyEnemy(
+              'missed-call',
+              this.heroX + (variant === 'call-out' ? 104 : 54),
+              this.heroY - 8,
+              variant === 'call-hit'
+                ? 0.02
+                : variant === 'call-art'
+                  ? MISSED_CALL_PULSE_INTERVAL * 0.42
+                  : MISSED_CALL_PULSE_INTERVAL,
+            );
+          } else if (variant === 'silence-art' || variant === 'silence-in' || variant === 'silence-out') {
+            addLegacyEnemy(
+              'silence',
+              this.heroX - (variant === 'silence-out' ? 118 : 68),
+              this.heroY - 8,
+            );
+          } else if (variant === 'legacy-horde' || variant === 'legacy-horde-art') {
+            addLegacyHorde();
+          } else if (variant === 'full-horde' || variant === 'full-horde-art') {
+            addPair(-98, -78, false);
+            addPair(96, -82, true, true);
+            addLegacyHorde();
+          } else if (variant === 'horde') {
+            addPair(0, 0, true);
+            addPair(-118, -74, false);
+            addPair(102, -92, true, true);
+          } else if (variant === 'lamp-out') {
+            addPair(0, 0, false, true);
+          } else if (variant === 'pot-cold' || variant === 'pot-reheat') {
+            const pair = addPair(0, 0, true, true);
+            if (variant === 'pot-cold') pair.pot.x = this.heroX - 88;
+          } else {
+            addPair(0, 0, false);
+          }
+          this.deskLampAuraActive = this.heroInDeskLampAura();
+          this.deskLampBurnTimer = DESK_LAMP_BURN_INTERVAL;
+          this.reheatedPotColdTimer = REHEATED_POT_COLD_INTERVAL;
+          this.silenceSlowTimer = variant === 'silence-art'
+            || variant === 'legacy-horde-art'
+            || variant === 'full-horde-art'
+            ? 0.18
+            : 0;
+          this.shotTimer = 999;
+          this.spawnPause = 999;
+          this.projectiles = [];
+          this.pendingShots = [];
+          this.bursts = [];
+          this.coinDrops = [];
+          this.auditBossArtActive = variant === 'call-art'
+            || variant === 'silence-art'
+            || variant === 'legacy-horde-art'
+            || variant === 'full-horde-art';
+          this.auditEndurance = true;
+          this.auditDamageTaken = 0;
+          this.caption = '';
+          this.captionTime = 0;
+          this.eliteAlertName = '';
+          this.eliteAlertTime = 0;
+        }
+        if (action === 'school-work-hazards') {
+          const payloadVariant = payload && typeof payload === 'object' && 'variant' in payload
+            ? (payload as { variant?: unknown }).variant
+            : undefined;
+          const variant = typeof payload === 'string'
+            ? payload
+            : typeof payloadVariant === 'string'
+              ? payloadVariant
+              : 'horde';
+          const scannerVariant = variant.startsWith('scanner-') || variant === 'horde';
+          if (this.state === 'title') this.startRun(0x20260718, true);
+          this.initialItemReward = false;
+          this.hero.maxHp = 999;
+          this.hero.hp = 999;
+          this.encounterIndex = scannerVariant ? 2 : 1;
+          this.startStage(true);
+          this.screenTransition = undefined;
+          this.lastRenderedState = this.state;
+          this.heroX = W / 2;
+          this.heroY = HERO_SCREEN_Y;
+          this.resetMovementInput();
+          this.heroMoving = false;
+          this.enemies = [];
+          const addEnemy = (type: EnemyType, x: number, y: number, speed = 0) => {
+            const enemy = this.createSeekingEnemy(type, x, y);
+            enemy.speed = speed;
+            enemy.attackCooldown = 99;
+            this.enemies.push(enemy);
+            return enemy;
+          };
+          const setRedState = (enemy: EnemyUnit, state: 'red-retreat' | 'red-pounce-warn' | 'red-pounce', angle: number, timer: number) => {
+            enemy.attackKind = state;
+            enemy.attackAngle = angle;
+            if (state === 'red-pounce') {
+              enemy.dashTimer = timer;
+              enemy.dashHit = false;
+            } else enemy.windupTimer = timer;
+          };
+          const addLegacyHorde = () => {
+            const retreat = addEnemy('red-mark', this.heroX - 72, this.heroY - 44);
+            setRedState(retreat, 'red-retreat', -2.58, RED_MARK_RETREAT_DURATION * 0.55);
+            const warning = addEnemy('red-mark', this.heroX + 86, this.heroY - 38);
+            setRedState(warning, 'red-pounce-warn', 2.73, RED_MARK_POUNCE_WINDUP * 0.5);
+            const pounce = addEnemy('red-mark', this.heroX - 94, this.heroY + 72);
+            setRedState(pounce, 'red-pounce', -0.55, RED_MARK_POUNCE_DURATION * 0.72);
+            const whisperA = addEnemy('whisper', this.heroX + 40, this.heroY + 10);
+            whisperA.attackAngle = 0.25;
+            whisperA.auraCooldown = 0.36;
+            const whisperB = addEnemy('whisper', this.heroX - 38, this.heroY - 12);
+            whisperB.attackAngle = -2.84;
+            whisperB.auraCooldown = 0.72;
+            const whisperC = addEnemy('whisper', this.heroX + 20, this.heroY - 35);
+            whisperC.attackAngle = -1.05;
+            whisperC.auraCooldown = 1.08;
+          };
+          if (variant === 'red-contact') {
+            const red = addEnemy('red-mark', this.heroX + 28, this.heroY - 4);
+            red.attackCooldown = 0;
+          } else if (variant === 'red-retreat-art') {
+            const red = addEnemy('red-mark', this.heroX + 42, this.heroY - 8);
+            setRedState(red, 'red-retreat', 0, RED_MARK_RETREAT_DURATION * 0.56);
+          } else if (variant === 'red-warn-art') {
+            const red = addEnemy('red-mark', this.heroX - 86, this.heroY - 6);
+            setRedState(red, 'red-pounce-warn', 0, RED_MARK_POUNCE_WINDUP * 0.5);
+          } else if (variant === 'red-pounce-art' || variant === 'red-pounce-hit' || variant === 'red-pounce-miss') {
+            const red = addEnemy('red-mark', this.heroX - (variant === 'red-pounce-hit' ? 70 : 88), this.heroY - (variant === 'red-pounce-miss' ? 30 : 6));
+            setRedState(red, 'red-pounce', 0, RED_MARK_POUNCE_DURATION);
+          } else if (variant === 'whisper-art' || variant === 'whisper-orbit' || variant === 'whisper-hit' || variant === 'whisper-out') {
+            const whisper = addEnemy(
+              'whisper',
+              this.heroX + (variant === 'whisper-orbit' ? 112 : variant === 'whisper-out' ? 70 : variant === 'whisper-hit' ? 38 : 40),
+              this.heroY - 8,
+              variant === 'whisper-orbit' ? 54 : 0,
+            );
+            whisper.attackAngle = 0;
+            whisper.auraCooldown = variant === 'whisper-hit' ? 0.02 : variant === 'whisper-art' ? 0.64 : WHISPER_PRESSURE_INTERVAL;
+          } else if (variant === 'school-legacy-horde' || variant === 'school-legacy-horde-art') {
+            addLegacyHorde();
+          } else if (variant === 'school-full-horde' || variant === 'school-full-horde-art') {
+            const runningHorde = variant === 'school-full-horde';
+            const paperOuter = addEnemy('others-paper', this.heroX - 116, this.heroY - 62);
+            paperOuter.auraCooldown = 0.7;
+            const paperInner = addEnemy('others-paper', this.heroX + 44, this.heroY + 12);
+            paperInner.auraCooldown = 0.38;
+            addEnemy('sign-here', this.heroX - 36, this.heroY + 7, runningHorde ? 46 : 0);
+            addEnemy('sign-here', this.heroX + 39, this.heroY - 9, runningHorde ? 46 : 0);
+            const redWarning = addEnemy('red-mark', this.heroX + 96, this.heroY - 74, runningHorde ? 36 : 0);
+            setRedState(redWarning, 'red-pounce-warn', 2.53, RED_MARK_POUNCE_WINDUP * 0.46);
+            const redPounce = addEnemy('red-mark', this.heroX - 102, this.heroY + 80, runningHorde ? 36 : 0);
+            setRedState(redPounce, 'red-pounce', -0.54, RED_MARK_POUNCE_DURATION * 0.7);
+            const whisperA = addEnemy('whisper', this.heroX + 36, this.heroY - 10, runningHorde ? 54 : 0);
+            whisperA.attackAngle = -0.27;
+            whisperA.auraCooldown = 0.42;
+            const whisperB = addEnemy('whisper', this.heroX - 34, this.heroY + 12, runningHorde ? 54 : 0);
+            whisperB.attackAngle = 2.8;
+            whisperB.auraCooldown = 0.88;
+          } else if (variant === 'paper-outer') {
+            addEnemy('others-paper', this.heroX + 124, this.heroY - 18);
+          } else if (variant === 'paper-inner') {
+            addEnemy('others-paper', this.heroX + 42, this.heroY - 8);
+          } else if (variant === 'sign') {
+            addEnemy('sign-here', this.heroX + 38, this.heroY - 8);
+          } else if (variant.startsWith('scanner-')) {
+            const scanner = addEnemy('id-scanner', this.heroX + 118, this.heroY - 84);
+            const frozenDodge = variant === 'scanner-dodge-art';
+            scanner.attackKind = frozenDodge ? 'id-scan-active' : 'id-scan-warn';
+            scanner.windupTimer = variant === 'scanner-warn'
+              ? ID_SCANNER_WINDUP
+              : variant === 'scanner-warn-art'
+                ? ID_SCANNER_WINDUP * 0.5
+                : frozenDodge
+                  ? ID_SCANNER_ACTIVE * 0.72
+                  : 0.08;
+            scanner.scanTargetY = variant === 'scanner-dodge' || frozenDodge ? this.heroY - 72 : this.heroY;
+            scanner.scanHit = false;
+            addEnemy('task-simple', this.heroX - 132, this.heroY - 72, 34);
+            addEnemy('task-revise', this.heroX + 122, this.heroY + 82, 26);
+            addEnemy('task-deadline', this.heroX - 116, this.heroY + 94, 24);
+          } else {
+            addEnemy('others-paper', this.heroX - 118, this.heroY - 54);
+            addEnemy('others-paper', this.heroX + 44, this.heroY + 8);
+            addEnemy('sign-here', this.heroX - 36, this.heroY + 5);
+            const scanner = addEnemy('id-scanner', this.heroX + 116, this.heroY - 92);
+            scanner.attackKind = 'id-scan-warn';
+            scanner.windupTimer = 0.16;
+            scanner.scanTargetY = this.heroY;
+            scanner.scanHit = false;
+            addEnemy('task-simple', this.heroX - 142, this.heroY + 88, 30);
+            addEnemy('task-revise', this.heroX + 130, this.heroY + 102, 24);
+          }
+          this.scannerLockTimer = 0;
+          this.heroSlowTimer = variant === 'school-full-horde-art' ? 0.18 : 0;
+          this.shotTimer = 999;
+          this.spawnPause = 999;
+          this.projectiles = [];
+          this.pendingShots = [];
+          this.bursts = [];
+          this.coinDrops = [];
+          this.auditBossArtActive = variant === 'scanner-warn-art'
+            || variant === 'scanner-dodge-art'
+            || variant === 'red-retreat-art'
+            || variant === 'red-warn-art'
+            || variant === 'red-pounce-art'
+            || variant === 'whisper-art'
+            || variant === 'school-legacy-horde-art'
+            || variant === 'school-full-horde-art';
+          this.auditEndurance = true;
+          this.auditDamageTaken = 0;
+          this.caption = '';
+          this.captionTime = 0;
+          this.eliteAlertName = '';
+          this.eliteAlertTime = 0;
+        }
+        if (action === 'youth-commute-hazards') {
+          const payloadVariant = payload && typeof payload === 'object' && 'variant' in payload
+            ? (payload as { variant?: unknown }).variant
+            : undefined;
+          const variant = typeof payload === 'string'
+            ? payload
+            : typeof payloadVariant === 'string'
+              ? payloadVariant
+              : 'commute-horde';
+          if (this.state === 'title') this.startRun(0x20260726, true);
+          this.initialItemReward = false;
+          this.hero.maxHp = 999;
+          this.hero.hp = 999;
+          this.hero.block = 0;
+          this.hurtCooldown = 0;
+          this.raincoatReady = false;
+          this.items = [];
+          this.encounterIndex = 2;
+          this.startStage(true);
+          this.screenTransition = undefined;
+          this.lastRenderedState = this.state;
+          this.heroX = W / 2;
+          this.heroY = HERO_SCREEN_Y;
+          this.resetMovementInput();
+          this.heroMoving = false;
+          this.enemies = [];
+          this.projectiles = [];
+          this.pendingShots = [];
+          this.bursts = [];
+          this.coinDrops = [];
+          const addBus = (type: 'missed-bus' | 'last-bus', x: number, y: number) => {
+            const enemy = this.createSeekingEnemy(type, x, y);
+            enemy.speed = 0;
+            enemy.attackCooldown = 99;
+            this.enemies.push(enemy);
+            return enemy;
+          };
+          const setWarn = (enemy: EnemyUnit, laneOffset: number, direction: 1 | -1, timer: number) => {
+            enemy.attackKind = 'missed-bus-warn';
+            enemy.phase = 1;
+            enemy.windupTimer = timer;
+            enemy.mechTimer = 0;
+            enemy.laneY = this.heroY + laneOffset;
+            enemy.y = enemy.laneY;
+            enemy.x = this.heroX - direction * MISSED_BUS_ENTRY_DISTANCE;
+            enemy.attackAngle = direction > 0 ? 0 : Math.PI;
+            enemy.angle = enemy.attackAngle;
+            enemy.lanePassIndex = 1;
+            enemy.dashHit = false;
+          };
+          const setPass = (
+            enemy: EnemyUnit,
+            laneOffset: number,
+            direction: 1 | -1,
+            xOffset: number,
+            timer: number,
+          ) => {
+            enemy.attackKind = 'missed-bus-pass';
+            enemy.phase = 2;
+            enemy.dashTimer = timer;
+            enemy.windupTimer = 0;
+            enemy.mechTimer = 0;
+            enemy.laneY = this.heroY + laneOffset;
+            enemy.y = enemy.laneY;
+            enemy.x = this.heroX + xOffset;
+            enemy.attackAngle = direction > 0 ? 0 : Math.PI;
+            enemy.angle = enemy.attackAngle;
+            enemy.lanePassIndex = 1;
+            enemy.dashHit = false;
+          };
+          const addCommuteHorde = () => {
+            const warnHigh = addBus('missed-bus', 0, 0);
+            setWarn(warnHigh, -126, 1, MISSED_BUS_WINDUP * 0.68);
+            const warnLow = addBus('missed-bus', 0, 0);
+            setWarn(warnLow, 114, -1, MISSED_BUS_WINDUP * 0.42);
+            const passA = addBus('missed-bus', 0, 0);
+            setPass(passA, -68, 1, -76, MISSED_BUS_PASS_DURATION * 0.78);
+            const passB = addBus('missed-bus', 0, 0);
+            setPass(passB, 4, -1, 92, MISSED_BUS_PASS_DURATION * 0.64);
+            const passC = addBus('missed-bus', 0, 0);
+            setPass(passC, 76, 1, 34, MISSED_BUS_PASS_DURATION * 0.48);
+            const queuedA = addBus('missed-bus', this.heroX - 252, this.heroY - 154);
+            queuedA.mechTimer = MISSED_BUS_REENTRY_DELAY * 0.76;
+            const queuedB = addBus('missed-bus', this.heroX + 252, this.heroY + 158);
+            queuedB.mechTimer = MISSED_BUS_REENTRY_DELAY * 0.48;
+          };
+
+          if (variant === 'missed-warn-art') {
+            const bus = addBus('missed-bus', 0, 0);
+            setWarn(bus, 0, 1, MISSED_BUS_WINDUP * 0.46);
+          } else if (variant === 'missed-pass-art') {
+            const bus = addBus('missed-bus', 0, 0);
+            setPass(bus, -10, 1, -26, MISSED_BUS_PASS_DURATION * 0.72);
+          } else if (variant === 'missed-hit') {
+            const bus = addBus('missed-bus', 0, 0);
+            setPass(bus, 0, 1, -104, MISSED_BUS_PASS_DURATION * 0.86);
+          } else if (variant === 'missed-dodge') {
+            const bus = addBus('missed-bus', 0, 0);
+            setPass(bus, -56, 1, -104, MISSED_BUS_PASS_DURATION * 0.86);
+          } else if (variant === 'missed-freeze') {
+            const bus = addBus('missed-bus', 0, 0);
+            setPass(bus, 0, 1, -104, MISSED_BUS_PASS_DURATION * 0.86);
+            bus.freezeTimer = 0.5;
+          } else if (variant === 'missed-slow') {
+            const bus = addBus('missed-bus', 0, 0);
+            setPass(bus, 0, 1, -104, MISSED_BUS_PASS_DURATION * 0.86);
+            bus.slowTimer = 2;
+          } else if (variant === 'identity-compare-art') {
+            const ordinary = addBus('missed-bus', 0, 0);
+            setPass(ordinary, -86, 1, -72, MISSED_BUS_PASS_DURATION * 0.7);
+            const elite = addBus('last-bus', this.heroX + 72, this.heroY + 66);
+            elite.phase = 3;
+            elite.mechTimer = 0.8;
+            elite.attackAngle = Math.PI;
+            elite.angle = Math.PI;
+          } else {
+            addCommuteHorde();
+          }
+
+          this.shotTimer = 999;
+          this.spawnPause = 999;
+          this.auditBossArtActive = variant === 'missed-warn-art'
+            || variant === 'missed-pass-art'
+            || variant === 'identity-compare-art'
+            || variant === 'commute-horde-art';
+          this.auditEndurance = variant === 'commute-horde';
+          this.auditDamageTaken = 0;
+          this.caption = '';
+          this.captionTime = 0;
+          this.eliteAlertName = '';
+          this.eliteAlertTime = 0;
+        }
+        if (action === 'youth-task-hazards') {
+          const payloadVariant = payload && typeof payload === 'object' && 'variant' in payload
+            ? (payload as { variant?: unknown }).variant
+            : undefined;
+          const variant = typeof payload === 'string'
+            ? payload
+            : typeof payloadVariant === 'string'
+              ? payloadVariant
+              : 'task-full-horde';
+          if (this.state === 'title') this.startRun(0x20260726, true);
+          this.initialItemReward = false;
+          this.hero.maxHp = 999;
+          this.hero.hp = 999;
+          this.hero.coins = 5;
+          this.encounterIndex = 2;
+          this.startStage(true);
+          this.screenTransition = undefined;
+          this.lastRenderedState = this.state;
+          this.heroX = W / 2;
+          this.heroY = HERO_SCREEN_Y;
+          this.resetMovementInput();
+          this.heroMoving = false;
+          this.enemies = [];
+          this.projectiles = [];
+          this.pendingShots = [];
+          this.bursts = [];
+          this.coinDrops = [];
+          this.coinKillProgress = 0;
+          const addTask = (type: EnemyType, x: number, y: number, speed = 0) => {
+            const enemy = this.createSeekingEnemy(type, x, y);
+            enemy.speed = speed;
+            enemy.attackCooldown = 99;
+            this.enemies.push(enemy);
+            return enemy;
+          };
+          const activateTask = (enemy: EnemyUnit, kind: string, duration: number) => {
+            enemy.attackKind = kind;
+            enemy.taskActionTimer = duration;
+            enemy.taskActionDuration = duration;
+          };
+          const addTaskHorde = (running: boolean) => {
+            addTask('task-simple', this.heroX - 126, this.heroY - 82, running ? 52 : 0);
+            const simpleChildA = addTask('task-simple', this.heroX - 76, this.heroY - 42, running ? 52 : 0);
+            simpleChildA.phase = 1;
+            simpleChildA.hp = TASK_SIMPLE_CHILD_HP;
+            simpleChildA.maxHp = TASK_SIMPLE_CHILD_HP;
+            activateTask(simpleChildA, 'task-simple-split', TASK_SIMPLE_SPLIT_ACTION_DURATION * 0.62);
+            const simpleChildB = addTask('task-simple', this.heroX - 42, this.heroY - 68, running ? 52 : 0);
+            simpleChildB.phase = 1;
+            simpleChildB.hp = TASK_SIMPLE_CHILD_HP;
+            simpleChildB.maxHp = TASK_SIMPLE_CHILD_HP;
+            activateTask(simpleChildB, 'task-simple-split', TASK_SIMPLE_SPLIT_ACTION_DURATION * 0.82);
+            addTask('task-simple', this.heroX + 132, this.heroY + 26, running ? 52 : 0);
+            addTask('task-revise', this.heroX + 122, this.heroY - 84, running ? 38 : 0);
+            const revised = addTask('task-revise', this.heroX + 76, this.heroY - 26, running ? 38 : 0);
+            revised.phase = 1;
+            revised.hp = revised.maxHp * TASK_REVISE_REVIVE_RATIO;
+            activateTask(revised, 'task-revise-reopen', TASK_REVISE_ACTION_DURATION * 0.7);
+            const deadlineA = addTask('task-deadline', this.heroX - 112, this.heroY + 92, running ? 34 : 0);
+            deadlineA.mechTimer = 6.2;
+            const deadlineB = addTask('task-deadline', this.heroX + 112, this.heroY + 94, running ? 34 : 0);
+            deadlineB.mechTimer = TASK_DEADLINE_DURATION - TASK_DEADLINE_WARNING_DURATION * 0.72;
+            deadlineB.phase = 1;
+            activateTask(deadlineB, 'task-deadline-expire', TASK_DEADLINE_WARNING_DURATION * 0.72);
+            const sync = addTask('task-sync', this.heroX + 4, this.heroY - 118, running ? 22 : 0);
+            sync.mechTimer = TASK_SYNC_INTERVAL - 0.28;
+            activateTask(sync, 'task-sync-pull', TASK_SYNC_ACTION_DURATION * 0.62);
+          };
+
+          if (variant === 'simple-split-live') {
+            const simple = addTask('task-simple', this.heroX, this.heroY - 84);
+            this.damageEnemy(simple, simple.maxHp, '#9db4c2');
+          } else if (variant === 'simple-split-art') {
+            const childA = addTask('task-simple', this.heroX - 24, this.heroY - 66);
+            childA.phase = 1;
+            childA.hp = TASK_SIMPLE_CHILD_HP;
+            childA.maxHp = TASK_SIMPLE_CHILD_HP;
+            activateTask(childA, 'task-simple-split', TASK_SIMPLE_SPLIT_ACTION_DURATION * 0.65);
+            const childB = addTask('task-simple', this.heroX + 24, this.heroY - 66);
+            childB.phase = 1;
+            childB.hp = TASK_SIMPLE_CHILD_HP;
+            childB.maxHp = TASK_SIMPLE_CHILD_HP;
+            activateTask(childB, 'task-simple-split', TASK_SIMPLE_SPLIT_ACTION_DURATION * 0.82);
+          } else if (variant === 'revise-live' || variant === 'revise-art') {
+            const revise = addTask('task-revise', this.heroX + 46, this.heroY - 72);
+            this.damageEnemy(revise, revise.maxHp, '#c3a4b7');
+            if (variant === 'revise-art') revise.taskActionTimer = TASK_REVISE_ACTION_DURATION * 0.62;
+          } else if (variant === 'deadline-live' || variant === 'deadline-art') {
+            const deadline = addTask('task-deadline', this.heroX + 48, this.heroY - 70);
+            deadline.mechTimer = TASK_DEADLINE_DURATION - (variant === 'deadline-art' ? 0.42 : 0.55);
+            if (variant === 'deadline-art') {
+              deadline.phase = 1;
+              activateTask(deadline, 'task-deadline-expire', 0.42);
+            }
+          } else if (variant === 'sync-live' || variant === 'sync-art') {
+            const sync = addTask('task-sync', this.heroX, this.heroY - 116);
+            sync.mechTimer = TASK_SYNC_INTERVAL - (variant === 'sync-art' ? 0.32 : 0.05);
+            if (variant === 'sync-art') activateTask(sync, 'task-sync-pull', 0.32);
+            addTask('task-simple', this.heroX - 128, this.heroY - 32);
+            addTask('task-revise', this.heroX + 132, this.heroY - 38);
+            addTask('task-deadline', this.heroX + 96, this.heroY + 92);
+          } else if (variant === 'task-horde-art') {
+            addTaskHorde(false);
+          } else {
+            addTaskHorde(true);
+          }
+
+          this.shotTimer = 999;
+          this.spawnPause = 999;
+          this.auditBossArtActive = variant === 'simple-split-art'
+            || variant === 'revise-art'
+            || variant === 'deadline-art'
+            || variant === 'sync-art'
+            || variant === 'task-horde-art';
+          this.auditEndurance = true;
+          this.auditDamageTaken = 0;
+          this.caption = '';
+          this.captionTime = 0;
+          this.eliteAlertName = '';
+          this.eliteAlertTime = 0;
+        }
+        if (action === 'middle-age-hazards') {
+          const variant = typeof payload === 'string' ? payload : 'horde';
+          if (this.state === 'title') this.startRun(0x20260718, true);
+          this.initialItemReward = false;
+          this.hero.maxHp = 999;
+          this.hero.hp = 999;
+          this.hero.coins = 25;
+          this.encounterIndex = 4;
+          this.startStage(true);
+          this.screenTransition = undefined;
+          this.lastRenderedState = this.state;
+          this.heroX = W / 2;
+          this.heroY = HERO_SCREEN_Y;
+          this.resetMovementInput();
+          this.heroMoving = false;
+          // 三件增益明显的正式道具，让“报告接触前后”能直接量化而不是只看特效。
+          this.items = ['nameless-tie', 'iphone-17-pro-max', 'white-bottle'];
+          this.enemies = [];
+          const addEnemy = (type: EnemyType, x: number, y: number, speed = 0) => {
+            const enemy = this.createSeekingEnemy(type, x, y);
+            enemy.speed = speed;
+            enemy.attackCooldown = type === 'checkup-report' ? 0 : 99;
+            this.enemies.push(enemy);
+            return enemy;
+          };
+          if (variant === 'door-outside') {
+            addEnemy('meeting-door', this.heroX + MEETING_DOOR_SLOW_RADIUS + 28, this.heroY - 10);
+          } else if (variant === 'door-inside') {
+            addEnemy('meeting-door', this.heroX + 82, this.heroY - 12);
+          } else if (variant === 'report-safe') {
+            addEnemy('checkup-report', this.heroX + 118, this.heroY - 12);
+          } else if (variant === 'report-contact') {
+            addEnemy('checkup-report', this.heroX + 22, this.heroY - 5);
+          } else if (variant === 'report-locked-art') {
+            addEnemy('checkup-report', this.heroX + 52, this.heroY - 22);
+            this.bonusSuppressionTimer = 2.4;
+          } else {
+            addEnemy('meeting-door', this.heroX - 104, this.heroY - 48);
+            addEnemy('meeting-door', this.heroX + 108, this.heroY + 36);
+            addEnemy('checkup-report', this.heroX + 24, this.heroY - 6, 34);
+            addEnemy('checkup-report', this.heroX - 118, this.heroY + 88, 38);
+            addEnemy('checkup-report', this.heroX + 126, this.heroY - 104, 42);
+            addEnemy('debt', this.heroX - 148, this.heroY - 118, 22);
+            addEnemy('whisper', this.heroX + 146, this.heroY + 110, 34);
+            if (variant === 'horde-art') this.bonusSuppressionTimer = 2.4;
+          }
+          this.meetingDoorSlowTimer = variant === 'horde-art' ? 0.18 : 0;
+          this.shotTimer = 999;
+          this.spawnPause = 999;
+          this.projectiles = [];
+          this.pendingShots = [];
+          this.bursts = [];
+          this.coinDrops = [];
+          this.auditBossArtActive = variant === 'report-locked-art' || variant === 'horde-art';
+          this.auditEndurance = true;
+          this.auditDamageTaken = 0;
+          this.caption = '';
+          this.captionTime = 0;
+          this.eliteAlertName = '';
+          this.eliteAlertTime = 0;
+        }
+        if (action === 'old-age-hazards') {
+          const variant = typeof payload === 'string' ? payload : 'horde';
+          if (this.state === 'title') this.startRun(0x20260718, true);
+          this.initialItemReward = false;
+          this.hero.maxHp = 999;
+          this.hero.hp = 999;
+          this.encounterIndex = 5;
+          this.startStage(true);
+          this.screenTransition = undefined;
+          this.lastRenderedState = this.state;
+          this.heroX = W / 2;
+          this.heroY = HERO_SCREEN_Y;
+          this.resetMovementInput();
+          this.heroMoving = false;
+          this.items = [];
+          this.enemies = [];
+          const addEnemy = (type: EnemyType, x: number, y: number, speed?: number) => {
+            const enemy = this.createSeekingEnemy(type, x, y);
+            if (speed !== undefined) enemy.speed = speed;
+            enemy.attackCooldown = 99;
+            this.enemies.push(enemy);
+            return enemy;
+          };
+          const setQueueCalled = (enemy: EnemyUnit) => {
+            enemy.queueCalled = true;
+            enemy.queueNumber = 42;
+            enemy.mechTimer = QUEUE_SCREEN_CALL_INTERVAL;
+          };
+          const setIvTier = (enemy: EnemyUnit, tier: number, progress = 0.1) => {
+            enemy.mechTimer = tier * IV_STAND_SPEED_INTERVAL + progress;
+            enemy.ivSpeedTier = tier;
+            enemy.speed = IV_STAND_BASE_SPEED + tier * IV_STAND_SPEED_STEP;
+          };
+
+          if (variant === 'queue-called' || variant === 'queue-wrong-way-art') {
+            const queue = addEnemy('queue-screen', this.heroX + 132, this.heroY - 16);
+            setQueueCalled(queue);
+            if (variant === 'queue-wrong-way-art') this.queueWrongWaySlowTimer = 0.18;
+          } else if (variant === 'queue-arrival') {
+            const queue = addEnemy('queue-screen', this.heroX + 34, this.heroY - 4);
+            setQueueCalled(queue);
+          } else if (variant === 'family-near' || variant === 'family-pass-art') {
+            const family = addEnemy('others-family', this.heroX - 52, this.heroY + 6, 46);
+            family.attackAngle = 0;
+            family.phase = 0;
+            if (variant === 'family-pass-art') this.familySlowTimer = 0.18;
+          } else if (variant === 'iv-zero' || variant === 'iv-ten' || variant === 'iv-thirty' || variant === 'iv-thirty-art') {
+            const tier = variant === 'iv-thirty' || variant === 'iv-thirty-art' ? 3 : variant === 'iv-ten' ? 1 : 0;
+            const ivStand = addEnemy('iv-stand', this.heroX + 76, this.heroY - 12);
+            setIvTier(ivStand, tier);
+          } else {
+            const queue = addEnemy('queue-screen', this.heroX + 132, this.heroY - 94);
+            setQueueCalled(queue);
+            const familyLeft = addEnemy('others-family', this.heroX - 54, this.heroY - 8, 48);
+            familyLeft.attackAngle = 0.12;
+            familyLeft.phase = 1;
+            const familyRight = addEnemy('others-family', this.heroX + 58, this.heroY + 12, 48);
+            familyRight.attackAngle = Math.PI + 0.12;
+            familyRight.phase = 1;
+            const ivSlow = addEnemy('iv-stand', this.heroX - 118, this.heroY + 94);
+            setIvTier(ivSlow, 1, 0.1);
+            const ivFast = addEnemy('iv-stand', this.heroX + 120, this.heroY + 104);
+            setIvTier(ivFast, 3, 0.1);
+            addEnemy('forgetter', this.heroX - 142, this.heroY - 114, 24);
+            addEnemy('debt', this.heroX + 146, this.heroY + 124, 26);
+            if (variant === 'horde-art') {
+              this.queueWrongWaySlowTimer = 0.18;
+              this.familySlowTimer = 0.18;
+            }
+          }
+          this.ivStandsSpawnedThisStage = this.enemies.filter((enemy) => enemy.type === 'iv-stand').length;
+          this.shotTimer = 999;
+          this.spawnPause = 999;
+          this.projectiles = [];
+          this.pendingShots = [];
+          this.bursts = [];
+          this.coinDrops = [];
+          this.auditBossArtActive = variant === 'queue-wrong-way-art'
+            || variant === 'family-pass-art'
+            || variant === 'iv-thirty-art'
+            || variant === 'horde-art';
+          this.auditEndurance = true;
+          this.auditDamageTaken = 0;
+          this.caption = '';
+          this.captionTime = 0;
+          this.eliteAlertName = '';
+          this.eliteAlertTime = 0;
+        }
         if (action === 'telegraph' && typeof payload === 'string') {
           const bossStages: Partial<Record<EnemyType, number>> = {
             'coat-rack': 0,
@@ -15440,12 +18854,21 @@ export class ZheYiShenGame {
               : telegraphVariant === 'uniform-answer-standard'
                 ? 0
                 : undefined;
+          const praiseTelegraphMove = telegraphVariant === 'praise-optimize'
+            ? 2
+            : telegraphVariant === 'praise-dismiss'
+              ? 3
+              : telegraphVariant === 'praise-one-seat'
+                ? 4
+                : undefined;
           const type = fatherTelegraphVariant
             ? 'silent-father'
             : coatTelegraphVariant
               ? 'coat-rack'
               : uniformTelegraphMove !== undefined
                 ? 'uniform-answer'
+                : praiseTelegraphMove !== undefined
+                  ? 'praise-chair'
                 : payload as EnemyType;
           const stageIndex = bossStages[type];
           if (stageIndex !== undefined) {
@@ -15502,8 +18925,22 @@ export class ZheYiShenGame {
               enemy.phase = 2;
               enemy.hp = enemy.maxHp * 0.49;
               enemy.radius = 58;
-              this.praiseMoveIndex = 0;
+              this.praiseMoveIndex = praiseTelegraphMove ?? 0;
               enemy.mechTimer = 3.9; // 审阅入口留 0.3 秒起跑缓冲，能稳定复核 230px 边界内外。
+              if (praiseTelegraphMove !== undefined) {
+                const taskTypes: EnemyType[] = ['task-simple', 'task-revise', 'task-sync'];
+                for (let index = 0; index < taskTypes.length; index += 1) {
+                  const angle = -Math.PI * 0.85 + index * Math.PI * 0.35;
+                  const task = this.createSeekingEnemy(
+                    taskTypes[index]!,
+                    this.heroX + Math.cos(angle) * 104,
+                    this.heroY - 48 + Math.sin(angle) * 104,
+                  );
+                  task.speed = 0;
+                  task.attackCooldown = 99;
+                  this.enemies.push(task);
+                }
+              }
             }
             if (type === 'wet-shoes') {
               this.standStillTime = 1.25;

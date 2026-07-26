@@ -6,6 +6,11 @@
       "rows": 2,
       "display": 128
     },
+    "closet-dark-extra-skills": {
+      "frame": 48,
+      "rows": 2,
+      "display": 128
+    },
     "silent-father-p1-skills": {
       "frame": 64,
       "rows": 3,
@@ -85,6 +90,16 @@
     },
     "closet-split": {
       "asset": "closet-dark-skills",
+      "row": 1,
+      "loop": false
+    },
+    "closet-hands": {
+      "asset": "closet-dark-extra-skills",
+      "row": 0,
+      "loop": false
+    },
+    "closet-slam": {
+      "asset": "closet-dark-extra-skills",
       "row": 1,
       "loop": false
     },

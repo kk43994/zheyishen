@@ -218,21 +218,27 @@ def do_proj() -> bool:
     return ok
 
 
+HIT_MATERIALS = ("mist", "water", "crit", "paper", "wood", "stone",
+                 "metal", "ice", "signal", "key", "glass")
+
+
 def do_hits() -> bool:
-    specs = [(f"hit-{material}", frame) for material in ("mist", "water", "crit", "paper") for frame in range(4)]
+    # v2：11 材质全部走生图底图，行序必须与 vfx-sprites.ts 的 HIT_ROW 一致
+    specs = [(f"hit-{material}-v2", frame) for material in HIT_MATERIALS for frame in range(4)]
     ok = build_grid_atlas(specs, cell=32, cols=4, out_png=ASSETS / "vfx/hits.png",
                           out_json=ASSETS / "vfx/hits.json", logical=30, colors=8, soft=True)
     if ok:
         manifest = json.loads((ASSETS / "vfx/hits.json").read_text())
-        manifest["materials"] = ["mist", "water", "crit", "paper"]
+        manifest["materials"] = list(HIT_MATERIALS)
         (ASSETS / "vfx/hits.json").write_text(json.dumps(manifest), encoding="utf-8")
         # 暴击首帧生图易塌成色块：用第 2 帧缩小 55% 重建"亮点初闪"
         atlas = Image.open(ASSETS / "vfx/hits.png").convert("RGBA")
-        star = atlas.crop((32, 64, 64, 96))
+        crit_row_y = HIT_MATERIALS.index("crit") * 32
+        star = atlas.crop((32, crit_row_y, 64, crit_row_y + 32))
         small = star.resize((18, 18), Image.Resampling.NEAREST)
         patch = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
         patch.paste(small, (7, 7), small)
-        atlas.paste(patch, (0, 64))
+        atlas.paste(patch, (0, crit_row_y))
         atlas.save(ASSETS / "vfx/hits.png", optimize=True)
     return ok
 
@@ -250,7 +256,7 @@ def do_saves() -> bool:
 
 
 def do_syn() -> bool:
-    specs = [("syn-overlays", quadrant) for quadrant in range(4)]
+    specs = [("syn-overlays-v2", quadrant) for quadrant in range(4)]
     ok = build_grid_atlas(specs, cell=26, cols=4, out_png=ASSETS / "vfx/synergy.png",
                           out_json=ASSETS / "vfx/synergy.json", logical=24, colors=8, soft=True)
     if ok:

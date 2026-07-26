@@ -27,7 +27,7 @@ for (const [token, message] of [
   ['this.computeProjectileVisual()', '标本没有复用运行时弹体视觉裁决'],
   ['this.drawBreathSpecimen(', '封卷页没有绘制静态标本'],
   ['this.drawBreathSpecimenSprite(', '标本缺少独立静态弹体绘制'],
-  ['projectileAtlas.tintedNamed(spriteName, visual.materialTint, tintStrength)', '标本没有复用正式弹体图集'],
+  ['projectileAtlas.outlinedTinted(spriteName, visual.materialTint, tintStrength)', '标本没有复用正式弹体图集'],
   ['PROJECTILE_FORM_DISPLAY_SIZE[visual.form]', '战斗弹体与标本没有共用尺寸曲线'],
   ['你这一辈子，最后攒成了这么一团气。', '封卷页缺少正典结算句'],
   ['PROJECTILE_FORM_LABELS[visual.form]', '标本缺少最终外形标签'],

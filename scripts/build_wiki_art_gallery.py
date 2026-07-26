@@ -199,6 +199,7 @@ ENEMIES = [
 
 BOSS_FORM_NAMES = {
     "closet-dark-skills": "童年《没人相信的怪物》",
+    "closet-dark-extra-skills": "童年《没人相信的怪物》· 追加招式",
     "silent-father-p1-skills": "少年《沉默的父亲》一阶段",
     "silent-father-p2-skills": "少年《沉默的父亲》二阶段",
     "praise-chair-p1-skills": "青年《你很优秀》一阶段",
@@ -217,6 +218,7 @@ BOSS_FORM_NAMES = {
 
 BOSS_SKILL_NAMES = {
     "closet-shadow": "被窝里的影子", "closet-split": "柜门裂开",
+    "closet-hands": "里面还有手", "closet-slam": "门要关了",
     "father-stomp": "进去", "father-stand": "站好", "father-brace": "外面冷",
     "father-charge": "不许看", "father-tantrum": "都怪你", "father-tears": "我没有哭",
     "praise-p1-praise": "我看好你", "praise-p1-delegate": "这个只有你能做",
@@ -397,8 +399,10 @@ def build_section() -> str:
     skills_by_asset: dict[str, list[tuple[int, str]]] = {}
     for skill_id, spec in skill_manifest["skills"].items():
         skills_by_asset.setdefault(spec["asset"], []).append((spec["row"], skill_id))
+    # 追加技能图（*-extra-skills）挂在既有形态名下，不计入阶段形态数。
+    form_count = sum(1 for a in skill_manifest["assets"] if not a.endswith("-extra-skills"))
     parts.append('<div class="stage-h"><h3>大小 Boss · 专属攻击动画逐帧审阅</h3>'
-                 f'<span class="cnt">{len(skill_manifest["assets"])} 个阶段形态 · '
+                 f'<span class="cnt">{form_count} 个阶段形态 · '
                  f'{len(skill_manifest["skills"])} 条独立动作 · {len(skill_manifest["skills"]) * 4} 帧</span></div>')
     parts.append(
         '<p class="lede">下列每一行都直接裁自运行时 <code>boss-skills-v1</code> 图集。'

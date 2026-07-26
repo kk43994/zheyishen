@@ -111,6 +111,41 @@ class SpriteAtlas {
     const index = this.manifest.index?.[name];
     return index === undefined ? null : this.tintedSlice(index, color, strength);
   }
+
+  /**
+   * 描边变体：silhouette 四向冲压出 1px 墨色描边再叠本体，整张缓存。
+   * 六章白天地板（米棕/灰蓝）上，灰白弹体没有描边就沉进地里——这一圈是弹体可读性的底线。
+   * 烘进缓存意味着每帧零额外开销。
+   */
+  outlinedTinted(name: string, color: string, strength = 0.45, outline = '#26221c'): HTMLCanvasElement | null {
+    const key = `o|${name}|${color}|${strength}|${outline}`;
+    const cached = this.tinted.get(key);
+    if (cached) return cached;
+    const base = this.tintedNamed(name, color, strength);
+    if (!base) return null;
+    const pad = 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = base.width + pad * 2;
+    canvas.height = base.height + pad * 2;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    const silhouette = document.createElement('canvas');
+    silhouette.width = base.width;
+    silhouette.height = base.height;
+    const silhouetteCtx = silhouette.getContext('2d');
+    if (!silhouetteCtx) return null;
+    silhouetteCtx.drawImage(base, 0, 0);
+    silhouetteCtx.globalCompositeOperation = 'source-in';
+    silhouetteCtx.fillStyle = outline;
+    silhouetteCtx.fillRect(0, 0, silhouette.width, silhouette.height);
+    ctx.imageSmoothingEnabled = false;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+      ctx.drawImage(silhouette, pad + dx, pad + dy);
+    }
+    ctx.drawImage(base, pad, pad);
+    this.tinted.set(key, canvas);
+    return canvas;
+  }
 }
 
 export const projectileAtlas = new SpriteAtlas(PROJECTILES_URL, projectilesManifest as GridManifest);

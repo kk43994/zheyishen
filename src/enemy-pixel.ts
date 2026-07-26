@@ -321,7 +321,8 @@ export class PixelEnemyRenderer {
     attackProgress: number,
     faceLeft: boolean,
   ): boolean {
-    const motion: EnemyPixelMotion = enemy.flash > 0 ? 'hurt' : attacking ? 'attack' : 'move';
+    const taskAction = enemy.type.startsWith('task-') && (enemy.taskActionTimer ?? 0) > 0;
+    const motion: EnemyPixelMotion = taskAction ? 'attack' : enemy.flash > 0 ? 'hurt' : attacking ? 'attack' : 'move';
     const frame = motion === 'hurt'
       ? (enemy.flash > 0.06 ? 0 : 1)
       : motion === 'attack'
