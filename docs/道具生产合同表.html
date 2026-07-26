@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="../src/assets/items/icons.png">
+<title>《这一身》· 77 件道具生产合同</title>
+<style>
+  :root {
+    --ground: #F3EFE7;
+    --panel: #FBF9F3;
+    --panel-2: #EFEAE0;
+    --ink: #221F1A;
+    --muted: #6B655A;
+    --faint: #A79F90;
+    --line: #DCD5C7;
+    --accent: #B9812F;
+    --accent-soft: #F0E2C6;
+    --altar: #64707E;
+    --lamp: #B9812F;
+    --inner: #9A4F47;
+    --inheritance: #9F3548;
+    --altar-soft: #E4E7EB;
+    --lamp-soft: #F2E4C6;
+    --inner-soft: #EFD9D5;
+    --inheritance-soft: #F2DDE1;
+    --shadow: 0 1px 2px rgba(40,34,24,.06), 0 8px 24px rgba(40,34,24,.05);
+    --serif: Georgia, "Songti SC", "STSong", "Noto Serif CJK SC", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #14131A;
+      --panel: #1C1B23;
+      --panel-2: #23222C;
+      --ink: #E8E3D8;
+      --muted: #9C9484;
+      --faint: #6A6455;
+      --line: #2E2C38;
+      --accent: #D2A24E;
+      --accent-soft: #3A3020;
+      --altar: #8C97A6;
+      --lamp: #D2A24E;
+      --inner: #C4726A;
+      --inheritance: #D66A78;
+      --altar-soft: #262B32;
+      --lamp-soft: #322916;
+      --inner-soft: #331F1C;
+      --inheritance-soft: #351E24;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="light"] {
+    --ground: #F3EFE7; --panel: #FBF9F3; --panel-2: #EFEAE0; --ink: #221F1A;
+    --muted: #6B655A; --faint: #A79F90; --line: #DCD5C7; --accent: #B9812F;
+    --accent-soft: #F0E2C6; --altar: #64707E; --lamp: #B9812F; --inner: #9A4F47; --inheritance: #9F3548;
+    --altar-soft: #E4E7EB; --lamp-soft: #F2E4C6; --inner-soft: #EFD9D5; --inheritance-soft: #F2DDE1;
+    --shadow: 0 1px 2px rgba(40,34,24,.06), 0 8px 24px rgba(40,34,24,.05);
+  }
+  :root[data-theme="dark"] {
+    --ground: #14131A; --panel: #1C1B23; --panel-2: #23222C; --ink: #E8E3D8;
+    --muted: #9C9484; --faint: #6A6455; --line: #2E2C38; --accent: #D2A24E;
+    --accent-soft: #3A3020; --altar: #8C97A6; --lamp: #D2A24E; --inner: #C4726A; --inheritance: #D66A78;
+    --altar-soft: #262B32; --lamp-soft: #322916; --inner-soft: #331F1C; --inheritance-soft: #351E24;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--sans); line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: clamp(24px, 5vw, 56px) clamp(16px, 4vw, 40px) 80px; }
+
+  header.masthead { margin-bottom: 32px; }
+  .kicker {
+    font-family: var(--sans); font-size: 12px; letter-spacing: .28em;
+    text-transform: uppercase; color: var(--faint); margin: 0 0 10px;
+  }
+  h1 {
+    font-family: var(--serif); font-weight: 600; font-size: clamp(28px, 5vw, 44px);
+    line-height: 1.1; margin: 0 0 8px; letter-spacing: .01em; text-wrap: balance;
+  }
+  h1 .oneword { color: var(--accent); }
+  .dek {
+    font-size: 15px; color: var(--muted); max-width: 60ch; margin: 0;
+  }
+  .dek em { color: var(--ink); font-style: normal; border-bottom: 1px solid var(--accent); }
+
+  .stats { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0 8px; }
+  .stat {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 16px; box-shadow: var(--shadow); flex: 1 1 auto; min-width: 120px;
+  }
+  .stat .n { font-family: var(--serif); font-size: 26px; font-variant-numeric: tabular-nums; line-height: 1; }
+  .stat .l { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .stat.altar .n { color: var(--altar); } .stat.lamp .n { color: var(--lamp); } .stat.inner .n { color: var(--inner); } .stat.inheritance .n { color: var(--inheritance); }
+
+  .toolbar {
+    position: sticky; top: 0; z-index: 5; background: var(--ground);
+    padding: 16px 0 12px; margin-bottom: 4px; border-bottom: 1px solid var(--line);
+  }
+  .filterrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .filterrow + .filterrow { margin-top: 10px; }
+  .flabel { font-size: 12px; letter-spacing: .12em; color: var(--faint); margin-right: 4px; text-transform: uppercase; }
+  .chip {
+    font-family: var(--sans); font-size: 13px; color: var(--muted);
+    background: var(--panel); border: 1px solid var(--line); border-radius: 999px;
+    padding: 5px 13px; cursor: pointer; transition: all .15s; white-space: nowrap;
+  }
+  .chip:hover { color: var(--ink); border-color: var(--faint); }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--ground); border-color: var(--ink); }
+  .chip.room-altar[aria-pressed="true"] { background: var(--altar); border-color: var(--altar); color: #fff; }
+  .chip.room-lamp[aria-pressed="true"] { background: var(--lamp); border-color: var(--lamp); color: #201a0c; }
+  .chip.room-inner[aria-pressed="true"] { background: var(--inner); border-color: var(--inner); color: #fff; }
+  .chip.room-inheritance[aria-pressed="true"] { background: var(--inheritance); border-color: var(--inheritance); color: #fff; }
+  .search {
+    margin-left: auto; font-family: var(--sans); font-size: 14px; color: var(--ink);
+    background: var(--panel); border: 1px solid var(--line); border-radius: 999px;
+    padding: 7px 15px; min-width: 180px; flex: 0 1 240px;
+  }
+  .search:focus-visible, .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .count { font-size: 13px; color: var(--faint); padding: 8px 2px 0; }
+
+  .list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .item {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    overflow: hidden; box-shadow: var(--shadow); position: relative;
+  }
+  .item::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--altar); }
+  .item[data-room="留灯间"]::before { background: var(--lamp); }
+  .item[data-room="里屋"]::before { background: var(--inner); }
+  .item[data-room="传承"]::before { background: var(--inheritance); }
+
+  .row {
+    display: grid; grid-template-columns: minmax(0,2.3fr) auto minmax(0,2.6fr) minmax(0,1.6fr) 24px;
+    gap: 14px; align-items: center; width: 100%; text-align: left;
+    background: none; border: 0; cursor: pointer; color: inherit; font: inherit;
+    padding: 14px 16px 14px 20px;
+  }
+  .row:hover { background: var(--panel-2); }
+  .name { min-width: 0; }
+  .name .t { display: block; font-family: var(--serif); font-size: 16px; font-weight: 600; line-height: 1.25; }
+  .name .id { display: block; overflow-wrap: anywhere; font-size: 11px; color: var(--faint); font-family: ui-monospace, "SF Mono", Menlo, monospace; letter-spacing: .02em; margin-top: 2px; }
+  .roomtag {
+    font-size: 12px; padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+    background: var(--altar-soft); color: var(--altar); font-weight: 600;
+  }
+  .item[data-room="留灯间"] .roomtag { background: var(--lamp-soft); color: var(--lamp); }
+  .item[data-room="里屋"] .roomtag { background: var(--inner-soft); color: var(--inner); }
+  .item[data-room="传承"] .roomtag { background: var(--inheritance-soft); color: var(--inheritance); }
+  .roles { display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; }
+  .roles .r { font-size: 12px; color: var(--muted); background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
+  .roles .r.stat { color: var(--accent); border-color: var(--accent); }
+  .layers { display: flex; flex-wrap: wrap; gap: 5px; font-size: 11px; color: var(--faint); }
+  .layers .l { border: 1px dashed var(--line); border-radius: 5px; padding: 1px 6px; font-family: ui-monospace, Menlo, monospace; }
+  .caret { color: var(--faint); transition: transform .2s; justify-self: center; }
+  .item.open .caret { transform: rotate(90deg); color: var(--accent); }
+
+  .detail { display: none; padding: 4px 20px 20px; border-top: 1px solid var(--line); background: var(--panel); }
+  .item.open .detail { display: block; }
+  .fields { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 2px 28px; margin-top: 14px; }
+  .field { padding: 9px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 68px 1fr; gap: 12px; align-items: baseline; }
+  .field .k { font-size: 12px; letter-spacing: .1em; color: var(--faint); }
+  .field .v { font-size: 14px; color: var(--ink); line-height: 1.55; }
+  .field.wide { grid-column: 1 / -1; }
+  .field.wide .k { color: var(--accent); }
+
+  footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 12px; color: var(--faint); line-height: 1.7; }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 10px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .legend .a { background: var(--altar); } .legend .l { background: var(--lamp); } .legend .n { background: var(--inner); } .legend .i { background: var(--inheritance); }
+
+  @media (max-width: 720px) {
+    .row { grid-template-columns: 1fr auto 20px; grid-template-areas: "name room caret" "roles roles roles" "layers layers layers"; row-gap: 8px; }
+    .name { grid-area: name; } .roomtag { grid-area: room; } .roles { grid-area: roles; } .layers { grid-area: layers; } .caret { grid-area: caret; }
+    .fields { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <p class="kicker">设计手册 · 也是百科 · v1</p>
+    <h1>《这一身》· 77 件道具<span class="oneword">生产合同</span></h1>
+    <p class="dek">每件道具不是一组带文艺名字的属性，而是一段<em>具体的人生片段</em>：它改什么数值、是否改规则、穿到角色哪里、怎样重塑那口《一口气》、命中与叠加如何裁决。点开任意一行查看完整合同。</p>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <div class="toolbar">
+    <div class="filterrow">
+      <span class="flabel">获取渠道</span>
+      <button class="chip room-all" data-room="all" aria-pressed="true">全部 77</button>
+      <button class="chip room-altar" data-room="回忆祭坛" aria-pressed="false">回忆祭坛 · 三选一</button>
+      <button class="chip room-lamp" data-room="留灯间" aria-pressed="false">留灯间 · 加成/接住</button>
+      <button class="chip room-inner" data-room="里屋" aria-pressed="false">里屋 · 代价交换</button>
+      <button class="chip room-inheritance" data-room="传承" aria-pressed="false">传承 · Boss 固定掉落</button>
+      <input class="search" id="search" type="search" placeholder="搜道具名 / 机制…" aria-label="搜索道具" />
+    </div>
+    <div class="filterrow" id="rolerow">
+      <span class="flabel">机制类别</span>
+    </div>
+    <div class="count" id="count"></div>
+  </div>
+
+  <ul class="list" id="list"></ul>
+
+  <footer>
+    <div class="legend">
+      <span><i class="a"></i>回忆祭坛：好坏皆有，负责主要构筑</span>
+      <span><i class="l"></i>留灯间：免费强力，修复 / 接住 / 转化伤痕</span>
+      <span><i class="n"></i>里屋：高强度交换，用生命 / 年龄 / 记忆 / 身份 / 身体支付代价</span>
+      <span><i class="i"></i>传承：大 Boss 固定掉落，不进随机池，不可拒绝</span>
+    </div>
+    数值与规则对齐运行时 <code>relics.ts</code>，弹体 / 角色 / 反馈对齐七层叙事 canon。全 77 件已通过生产合同门禁校验（0 error / 0 warning）：76 件具备四方向上身像素体现，《五个哈》按百科规范仅存在于弹体层；弹体与触发反馈继续按合同逐项复核。<a href="./这一身百科.html#wiki-item-archive">查看 77 件实时外观档案</a>。
+  </footer>
+</div>
+
+<script>
+  const DATA = [{"id":"loose-button","name":"校服上掉下来的纽扣","source":"回忆祭坛","roles":["召唤继承","规则触发"],"statOnly":false,"production":["rigid","projectile"],"numbers":"每第 3 轮攻击额外 +1 弹；无负面。","rule":"记下最近一次受伤而不立刻结算，第 3 轮攻击时把它作为额外弹从掌心弹出。","hero":"一颗小纽扣攥在近手掌心，不改体型；弹出时手指短暂张开。","projectile":"额外弹沿用当前《一口气》配方，携带被记下的那次伤害值。","feedback":"弹出瞬间掌心一个小圆印高光，落弹带轻微\"啪\"的脆响。","stack":"《小了一号的校服》让纽扣更快崩落；《母亲留在锅里的那碗饭》缝回纽扣、消除一次记账。"},{"id":"wooden-sword","name":"床底下的木剑","source":"回忆祭坛","roles":["弹体改造"],"statOnly":false,"production":["rigid","projectile"],"numbers":"伤害 +45% · 弹宽 +30%；射程 -35%。","rule":"无条件常驻，把《一口气》重塑为宽钝近距斩痕。","hero":"一截磨秃木剑握在近手，随攻击向前劈；不改体型。","projectile":"弹体压成又宽又短的斩痕，覆盖面变大、射程明显缩短。","feedback":"劈出时一道短促白刃残影，命中带闷响。","stack":"《装满石头的书包》把木剑变成重击；《雪花屏》让童年想象短暂成真。"},{"id":"red-workbook","name":"写满红叉的练习册","source":"回忆祭坛","roles":["弹体改造","规则触发"],"statOnly":false,"production":["rigid","projectile","decal"],"numbers":"弹道到终点折返并强化；基础伤害 -12%。","rule":"未命中的弹体在射程终点触发折返，沿原路返回并提升伤害。","hero":"一本卷边练习册夹在背后；不改体型。","projectile":"弹体到终点盖一个红叉印，掉头折返并强化，回程可再命中。","feedback":"折返点浮现红叉贴花，掉头时一声划纸音。","stack":"与《前桌的情书》组成《被退回的信》；《一直没有换的家门锁》把折返改为回家后重新出发。"},{"id":"stone-schoolbag","name":"装满石头的书包","source":"回忆祭坛","roles":["弹体改造","召唤继承"],"statOnly":false,"production":["rigid","morph","projectile"],"numbers":"伤害 +40% · 穿透 +2；弹速 -45% · 主角驼背。","rule":"常驻重量效果；背负时间持续换算成弹体重量（越背越沉）。","hero":"沉重书包压在背上，主角永久驼背、肩线下沉。","projectile":"弹体变沉变慢、穿透力大增，能压穿前排。","feedback":"出弹带下坠拖影，命中一声闷顿。","stack":"《断掉的脊梁骨》把所有负担转成强度；《父亲的雨衣》替书包挡雨却让它更重。"},{"id":"bleach-powder","name":"剩了半袋的漂粉","source":"回忆祭坛","roles":["位移节奏","规则触发"],"statOnly":false,"production":["decal"],"numbers":"射速 +22% · 暴击 +8%；敌人逼近速度 +15%。","rule":"常驻加速与暴击，同时抬高敌人逼近速度作为代价。","hero":"头发被漂成显眼的黄色，并持续掉色；不改体型。","projectile":"保持当前《一口气》配方，仅出弹频率变快。","feedback":"黄色发梢不断落下褪色像素，敌人加速时边缘微微发红。","stack":"与追求\"被看见\"的网络情绪系道具（如 momo 头像）叠加时反讽更浓，无机制冲突。"},{"id":"eyebrow-razor","name":"同桌的修眉刀","source":"回忆祭坛","roles":["弹体改造","生存防御"],"statOnly":false,"production":["decal","projectile"],"numbers":"伤害 +18% · 暴击 +25%；最大生命 -8 · 弹宽 -55%。","rule":"内心伤害转化为不会直接致命的\"浅痕\"：浅痕越多，弹体越细、暴击越高。","hero":"小臂内侧数道细浅疤痕（decal），夏天也从不卷袖；不改体型。","projectile":"弹体收得极细如刀锋，暴击时划出一道亮线。","feedback":"暴击命中划出细亮切口，受伤时浅痕短暂发红。","stack":"遇《没打出去的电话》或《凌晨两点朋友发来的\"在吗\"》，浅痕被接住转为护盾并慢慢消退。"},{"id":"od-pill","name":"OD妹给的小药丸","source":"回忆祭坛","roles":["弹体改造","规则触发"],"statOnly":false,"production":["decal","projectile"],"numbers":"每场随机大幅强化一项弹道，同时随机削弱另一项。","rule":"每阶段开场随机抽一项弹道属性大幅+、另一项大幅-，本场生效。","hero":"眼神涣散、黑眼圈加深（decal）；不改体型。","projectile":"被强化/削弱的那项让弹体每场形态都不一样（忽大忽快忽散）。","feedback":"开场一次药效恍惚的画面轻颤，强化项弹体泛微光。","stack":"与稳定型构筑冲突（波动大），但能赌出极端流派；不与任何件硬冲突。"},{"id":"front-desk-letter","name":"前桌的情书","source":"回忆祭坛","roles":["弹体改造"],"statOnly":false,"production":["rigid","projectile"],"numbers":"弹道强追踪；散射角增大 · 伤害 -8%。","rule":"常驻强追踪，代价是散射变宽、单发伤害略降。","hero":"一封没有名字的信塞在胸前口袋；不改体型。","projectile":"弹体强力咬住目标转向追踪，但出膛更散。","feedback":"追踪时弹尾拉出一条犹豫的弧线。","stack":"与《写满红叉的练习册》组成《被退回的信》；追踪×折返触发协同（回程强追踪）。"},{"id":"cracked-glasses","name":"裂了一边的眼镜","source":"回忆祭坛","roles":["弹体改造"],"statOnly":false,"production":["fitted","projectile"],"numbers":"射程 +55% · 暴击 +14%；弹宽 -35%。","rule":"常驻远视效果：看得清远方，看不清近处（弹体变细射程变长）。","hero":"一副裂了一边镜片的眼镜戴在脸上；不改体型。","projectile":"弹体拉长变细、飞得更远，命中远端暴击更高。","feedback":"裂痕镜片偶尔反一道光，远端命中有清脆暴击音。","stack":"与《一直在哭》等近距件互补（一远一近），无冲突。"},{"id":"small-uniform","name":"小了一号的校服","source":"回忆祭坛","roles":["位移节奏"],"statOnly":false,"production":["fitted","morph"],"numbers":"射速 +22%；最大生命 -6 · 弹宽 -15%。","rule":"常驻：身体被衣服勒住，动作更急促（射速上升，承受下降）。","hero":"偏紧偏小的校服绷在身上，姿态略显局促（morph 轻微收束）。","projectile":"出弹更快、弹体略细，配方不变。","feedback":"攻击时肩背衣料紧绷的细节，受伤时更显狼狈。","stack":"《校服上掉下来的纽扣》崩落更快；与承压流（书包/脊梁骨）方向相反，慎叠。"},{"id":"only-key","name":"出租屋唯一的钥匙","source":"回忆祭坛","roles":["弹体改造"],"statOnly":false,"production":["rigid","projectile"],"numbers":"弹道消失时产生小型爆炸；射程 -12%。","rule":"弹体生命耗尽/出界消失的瞬间，在原地触发一次小范围爆炸。","hero":"一把孤零零的钥匙挂在腰侧；不改体型。","projectile":"弹体末端炸开，把\"关门\"的孤独变成一圈冲击。","feedback":"消失点一声轻响与小范围光圈。","stack":"与《写满红叉的练习册》的折返改为\"回家后重新出发\"；范围类协同放大爆炸。"},{"id":"first-salary","name":"第一次工资的信封","source":"回忆祭坛","roles":["经济资源","规则触发"],"statOnly":false,"production":["rigid"],"numbers":"每 5 枚零钱使伤害 +6%；花钱会立刻失去该层加成。","rule":"按当前零钱数每满 5 枚叠一层伤害；一旦消费，对应层数即时消失。","hero":"一个鼓鼓的工资信封攥在近手；不改体型。","projectile":"保持当前《一口气》配方，仅整体伤害随存款浮动。","feedback":"攒够一档时信封微微一亮，花钱时黯下去。","stack":"与商城/扣费件（自动续费、网贷合同）天然拉扯，构成\"存与花\"的取舍。"},{"id":"nameless-tie","name":"没有商标的领带","source":"回忆祭坛","roles":["纯属性"],"statOnly":true,"production":["fitted"],"numbers":"伤害 +18% · 暴击 +18%；最大生命 -10。","rule":"无规则改造，纯数值常驻：拿命换一点被认真对待的分量。","hero":"一条没有商标的领带系在领口；不改体型。","projectile":"保持当前《一口气》配方，不改弹体形态。","feedback":"系紧领带的细节，受光面一点朴素反光。","stack":"与其他\"减命换强度\"件（修眉刀/木剑）叠加时生存压力累加，注意血线。"},{"id":"fathers-raincoat","name":"父亲的雨衣","source":"传承","roles":["生存防御","召唤继承"],"statOnly":false,"production":["fitted","projectile"],"numbers":"每场抵挡首次受伤并释放雨滴；射速 -18% · 身体变得沉重。","rule":"每阶段首次受伤被雨衣挡下，同时向四周释放一圈雨滴弹；隐藏代价是负重（射速降、体感变沉）。","hero":"一件宽大旧雨衣披在身上（fitted），肩背被压得略沉。","projectile":"触发时派生一圈雨滴弹，继承母弹机制并削弱。","feedback":"挡伤瞬间雨衣一沉、四周溅开雨滴，闷响一声。","stack":"替《装满石头的书包》挡雨却让它更沉；雨滴×范围/追踪触发协同。"},{"id":"unsent-phone","name":"没打出去的电话","source":"回忆祭坛","roles":["生存防御","规则触发"],"statOnly":false,"production":["rigid"],"numbers":"能量溢出时储存声波；每层\"来电\"使射速 -3%。","rule":"溢出的能量攒成声波储备（可接住浅痕转护盾）；未接来电层数累积拖慢射速。","hero":"一部亮着未拨号码的手机握在近手；不改体型。","projectile":"保持配方；储备释放时才化为声波，不常改弹体。","feedback":"每攒一层屏幕亮一下，来电层堆积时有静音震动感。","stack":"与《同桌的修眉刀》的浅痕构成\"被接住\"出口；与《领导撤回的六十秒语音》同属声波系。"},{"id":"baby-tooth","name":"女儿换下的乳牙","source":"留灯间","roles":["生存防御","规则触发"],"statOnly":false,"production":["rigid","aura"],"numbers":"每场首次致命伤保留 1 生命并爆发；基础伤害 -10%。","rule":"每阶段首次致命伤触发免死，保留 1 生命并释放一次护身爆发；平时基础伤害略降。","hero":"一颗乳牙用红绳挂在颈前（rigid），触发时身周一圈护光（aura）。","projectile":"爆发时向四周推出一圈冲击，配方保持。","feedback":"免死瞬间白光一闪、时间微顿，一声心跳。","stack":"与《遗照》《雪花屏》《关服那天》共用同局免死封顶 3 次，勿指望叠满。"},{"id":"revoked-badge","name":"已经注销的旧工牌","source":"传承","roles":["经济资源","规则触发"],"statOnly":false,"production":["fitted"],"numbers":"每件穿戴物使伤害 +5%；商城价格 +20%。","rule":"按当前穿戴道具数量线性叠伤；代价是全程商城涨价。","hero":"一张已注销的工牌别在胸前；不改体型。","projectile":"保持当前《一口气》配方，仅整体伤害随穿戴数上升。","feedback":"每多穿一件工牌微亮一下，进商城时价格标红。","stack":"堆穿戴数的构筑核心之一；与《第一次工资的信封》一起放大\"多穿多强\"。"},{"id":"slow-watch","name":"慢了七分钟的手表","source":"回忆祭坛","roles":["位移节奏","规则触发"],"statOnly":false,"production":["rigid","projectile"],"numbers":"每 7 秒冻结弹道 1 秒、恢复后加速；弹速 -15%。","rule":"每 7 秒把在场弹体定格 1 秒，解冻后集体加速；平时弹速偏慢。","hero":"一块慢了七分钟的手表戴在手腕；不改体型。","projectile":"弹体被定格时悬停，解冻瞬间齐射式加速。","feedback":"冻结时画面秒针停摆感，解冻一声\"咔哒\"。","stack":"与蓄力/储弹件（提前花掉的十年、领导撤回语音）节拍互动，注意时机。"},{"id":"missing-photo","name":"少了一个人的合照","source":"留灯间","roles":["召唤继承","规则触发"],"statOnly":false,"production":["rigid","projectile"],"numbers":"每第 4 轮额外发射两枚高伤弹道；生命低于一半时射速 -15%。","rule":"每第 4 轮补射两枚高伤弹；残血（<50%）时因失落而射速下降。","hero":"一张缺了一个人的合照攥在胸前；不改体型。","projectile":"补射的两枚更高伤，继承当前配方。","feedback":"补射时合照上空缺的位置一亮，两声更沉的击发。","stack":"与《一直空着的相框》同属\"等大家有空\"情绪系，可组协同奥义。"},{"id":"white-bottle","name":"药房最下面的白瓶子","source":"回忆祭坛","roles":["位移节奏","规则触发"],"statOnly":false,"production":["rigid"],"numbers":"射速 +30%；每场开始失去 2 生命 · 伤害 -10%。","rule":"常驻高射速；每阶段开场自动扣 2 生命，基础伤害略降。","hero":"一个没有标签的白瓶子揣在腰侧；不改体型。","projectile":"保持配方，仅出弹更密。","feedback":"开场吞服的一个小动作，扣血时画面短暂发白。","stack":"与其他开场掉血件（年度听歌报告）叠加时开局血线吃紧，谨慎。"},{"id":"empty-frame","name":"一直空着的相框","source":"回忆祭坛","roles":["弹体改造"],"statOnly":false,"production":["aura","projectile"],"numbers":"所有终点爆炸范围扩大；弹道存在时间 -25%。","rule":"放大一切终点爆炸半径，代价是弹体存在时间缩短（够不到就没了）。","hero":"一个空相框以影子形式悬在身侧（aura），不作大件跟随物、只留影廓。","projectile":"弹体到点炸得更开，但飞得不够久。","feedback":"爆炸圈更大更空，消散时一声轻叹。","stack":"与《等大家有空》组合复制合照弹道（越复制越褪色）；范围流核心件。"},{"id":"broken-spine","name":"断掉的脊梁骨","source":"里屋","roles":["规则触发","生存防御"],"statOnly":false,"production":["morph","decal"],"numbers":"每条负面词条 +12% 伤害 · 每 3 条负面穿透 +1；支付一口气 · 治疗 -30% · 永久弯腰。","rule":"把全身负面词条数换算成增伤与穿透；入手时支付一口气（生命上限），治疗永久打折。","hero":"脊背彻底佝偻（morph），后背一道旧伤痕（decal）。","projectile":"负面越多弹体越强越穿，配方随负面成长。","feedback":"每多一条负面身形更弯一分，命中更沉。","stack":"里屋招牌——负面越多越强，与全部\"减命/负面\"件正向协同；治疗系被压制。"},{"id":"spent-decade","name":"提前花掉的十年","source":"里屋","roles":["位移节奏","规则触发"],"statOnly":false,"production":["aura","projectile"],"numbers":"每 10 秒提前释放 5 轮攻击；爆发后停止呼吸 2 秒。","rule":"每 10 秒预支未来 5 轮火力一次性打出，爆发后 2 秒无法攻击（停止呼吸）。","hero":"身周浮起一层被提前消耗的年岁影（aura）；不改体型。","projectile":"爆发瞬间倾泻 5 轮弹幕，之后弹体归零 2 秒。","feedback":"爆发一片密集齐射，停息时画面与呼吸声一同停顿。","stack":"里屋高风险件——与储弹/蓄力件叠加爆发极高，但停息窗口致命，慎搭。"},{"id":"held-pee","name":"憋回去的那泡尿","source":"回忆祭坛","roles":["位移节奏","规则触发"],"statOnly":false,"production":["projectile"],"numbers":"站定时伤害持续积攒，最高 +60%；移速 -8%。","rule":"静止不动时伤害逐秒累积至 +60%，移动即清空；平时移速略降。","hero":"姿态略微夹紧忍耐（轻微 morph），不改体型主轮廓。","projectile":"蓄满时弹体更实更重，攻击一次泄压清空。","feedback":"蓄力时身周一圈憋忍的紧绷感，泄压一声痛快。","stack":"与站桩流（矿泉水对峙、慢表）协同；与走位流（课间十分钟）相斥。"},{"id":"flash-escape","name":"交掉的闪现","source":"回忆祭坛","roles":["生存防御","位移节奏"],"statOnly":false,"production":["event"],"numbers":"受击时自动闪现躲开这次伤害，冷却 9 秒；小概率闪向反方向。","rule":"受击瞬间触发一次瞬移免伤，9 秒冷却；有小概率闪错方向（撞墙）。","hero":"纯玩法道具，不上身：触发时只有一次瞬移残影（event），无实体挂件。","projectile":"保持当前《一口气》配方，不改弹体。","feedback":"闪现一道短促位移残影与\"嗖\"声，闪错方向时一声懊恼顿挫。","stack":"与其他免伤/免死件叠生存冗余；闪错概率不可消除，是它的反讽内核。"},{"id":"class-break","name":"课间十分钟","source":"回忆祭坛","roles":["位移节奏","规则触发"],"statOnly":false,"production":["aura"],"numbers":"每阶段前 10 秒移速 +35% · 射速 +25%；结束后疲惫 3 秒移速 -15%。","rule":"每阶段开场 10 秒进入亢奋（移速射速大增），随后 3 秒疲惫减速。","hero":"开场脚下一圈轻快的光（aura），不上身。","projectile":"保持配方，仅开场出弹更快。","feedback":"亢奋期脚步带残影，疲惫期动作明显放缓。","stack":"与开场爆发件（暑假最后一页反向、自动续费）拼开局节奏；与站桩流相斥。"},{"id":"last-page","name":"暑假作业最后一页","source":"回忆祭坛","roles":["规则触发"],"statOnly":false,"production":["rigid"],"numbers":"每阶段最后 10 秒伤害翻倍；阶段前 30 秒伤害 -10%。","rule":"阶段末 10 秒伤害×2，代价是前 30 秒伤害略降（拖到最后才爆发）。","hero":"一页没写完的作业攥在近手；不改体型。","projectile":"保持配方，末段整体伤害翻倍。","feedback":"进入末段时画面一紧、弹体泛红加重。","stack":"与《课间十分钟》一头一尾互补；与需要稳定输出的构筑节奏冲突。"},{"id":"five-ha","name":"五个哈","source":"回忆祭坛","roles":["召唤继承","弹体改造"],"statOnly":false,"production":["projectile"],"numbers":"攻击变为五连发，一发比一发轻（总量微升）；治疗 -15%。","rule":"每次攻击把当前胜出的弹体配方拆成五连发，逐发递减但总量略高于单发；治疗打折。","hero":"不上身，纯弹体行为改造。","projectile":"一次击发变五连；没有其他弹体替换时，每枚都是压在气息基底上的真正“哈”字；与弹珠、钥匙等弹体替换组合时，改为五份逐发缩小的当前弹体。","feedback":"五连发五声递弱的轻响，最后一发几乎无力；替换后沿用当前弹体的材质命中声。","stack":"召唤继承类，衍生弹继承并削弱；与弹珠组合射五颗弹珠，与钥匙组合射五把钥匙；与《对方正在输入…》组合时只作为十二向散射的当前载体，不额外乘五；穿透/范围/折返等机制继续叠加。"},{"id":"red-packet","name":"抢到的0.87元红包","source":"回忆祭坛","roles":["经济资源","规则触发"],"statOnly":false,"production":["rigid"],"numbers":"击杀 15% 概率掉一枚零钱；无负面。","rule":"每次击杀有 15% 概率掉落 1 枚零钱，无代价。","hero":"一个抢到的小红包揣在腰侧；不改体型。","projectile":"保持当前《一口气》配方，不改弹体。","feedback":"掉钱时一声轻快的\"叮\"，一枚零钱蹦出。","stack":"为存款流（第一次工资信封）供血；与扣费件（自动续费）对冲。"},{"id":"snow-screen","name":"雪花屏","source":"回忆祭坛","roles":["生存防御","规则触发"],"statOnly":false,"production":["event","decal"],"numbers":"每阶段一次：致命伤化为雪花，没有发生；画面偶尔闪过一帧雪花。","rule":"每阶段一次免死：把一次致命伤判定为\"没有信号、没有发生\"；平时偶发一帧雪花噪点。","hero":"不上身；触发时全屏一帧雪花噪点（event/decal）。","projectile":"保持配方，不改弹体。","feedback":"免死瞬间画面雪花闪断一帧、声音短暂失真。","stack":"与乳牙/遗照/关服共用同局免死封顶 3 次；《床底下的木剑》让童年想象短暂成真。"},{"id":"marble","name":"当年最强的那颗弹珠","source":"回忆祭坛","roles":["弹体改造","规则触发"],"statOnly":false,"production":["rigid","projectile"],"numbers":"命中 25% 概率弹向另一个敌人；无负面。","rule":"弹体命中后有 25% 概率折射弹向另一个敌人，无代价。","hero":"一颗玻璃弹珠捏在近手；不改体型。","projectile":"命中后弹体像弹珠一样折射改道，扑向下一个目标。","feedback":"折射时一声清脆玻璃碰撞、弹体划一道亮弧。","stack":"与穿透/分裂件铺满屏；折射×追踪叠加清场效率高。"},{"id":"always-crying","name":"我一直在哭","source":"回忆祭坛","roles":["召唤继承","规则触发"],"statOnly":false,"production":["decal","projectile"],"numbers":"受到伤害时发射 3 枚穿透眼泪；射程 -12%。","rule":"每次受伤反射 3 枚穿透\"眼泪\"弹（继承母弹并削弱）；平时射程略短。","hero":"面无表情的脸上挂着泪痕（decal），刷手机的姿态；不改体型。","projectile":"受伤派生 3 枚细长穿透泪弹，继承当前配方。","feedback":"受伤瞬间三道泪痕弹射出，与\"面无表情\"形成反差。","stack":"召唤继承类；与承伤流（脊梁骨/减命件）协同——越受伤越还击。"},{"id":"three-day-visible","name":"朋友圈仅三天可见","source":"回忆祭坛","roles":["召唤继承","规则触发"],"statOnly":false,"production":["aura","projectile"],"numbers":"拾取任何道具后，3 枚当前弹体绕身三圈，再向外释放；治疗 -5%。","rule":"每次拾取道具触发：3 枚当前弹体绕身三圈护体，圈满后向外释放继续攻击。","hero":"身侧三枚弹体环绕（aura），不作大件跟随。","projectile":"3 枚弹继承当前配方，先绕身三圈再放飞。","feedback":"环绕时身周一圈折叠光轨，释放时一声\"啪\"散开。","stack":"召唤继承类；拾取频繁的构筑（祭坛多拿）触发更频，与追踪/范围件协同。"},{"id":"read-3am","name":"凌晨三点的已读","source":"回忆祭坛","roles":["弹体改造","规则触发"],"statOnly":false,"production":["projectile"],"numbers":"命中不立即结算：5 秒后连本带利 ×1.3 一次爆出；目标提前倒下则挂账落空。","rule":"命中先挂账不结算，5 秒后 ×1.3 一次性爆发；若目标提前死亡则该笔挂账落空。","hero":"不上身，纯弹体延迟结算行为。","projectile":"命中留一个\"已读\"延迟标记，到点连本带利爆开。","feedback":"挂账时目标身上一个灰\"已读\"标，5 秒后一声延迟重击。","stack":"与高频命中件叠挂账多；与秒杀流冲突（目标死太快挂账落空）。"},{"id":"retracted-voice","name":"领导撤回的六十秒语音","source":"回忆祭坛","roles":["命运交互","召唤继承"],"statOnly":false,"production":["rigid","projectile"],"numbers":"咽下 +1 层；吐出时每层释放 6 点声波；每层射速 -2%。","rule":"命运牌选\"咽下\"叠 1 层；\"吐出\"时按层数释放声波弹；层数堆积拖慢射速。","hero":"一条撤回的语音条挂在颈前；不改体型。","projectile":"吐出时每层派生一道声波弹，继承配方。","feedback":"咽下时语音条变灰积压，吐出时逐层\"咻\"地放出声波。","stack":"命运交互核心件，与咽下/吐出流深度绑定；与《没打出去的电话》同属声波系。"},{"id":"takeout-3am","name":"凌晨三点的外卖袋","source":"回忆祭坛","roles":["生存防御","规则触发"],"statOnly":false,"production":["rigid"],"numbers":"生命 <40% 时每 2 秒回 1；主动治疗 -15%。","rule":"残血（<40%）时每 2 秒自动回 1 生命；作为代价，主动治疗效果打折。","hero":"一个凌晨外卖袋拎在腰侧；不改体型。","projectile":"保持当前《一口气》配方，不改弹体。","feedback":"低血自愈时身周一点微暖回血光。","stack":"与残血流（装满石头/白瓶子把血压低）协同触发；与主动治疗流相斥。"},{"id":"auto-renew","name":"自动续费到明年的会员","source":"回忆祭坛","roles":["经济资源","规则触发"],"statOnly":false,"production":["aura"],"numbers":"每阶段前 15 秒伤害 +10%；每阶段扣 1 零钱。","rule":"每阶段开场 15 秒伤害 +10%，代价是每阶段自动扣 1 零钱（取消入口藏得很深）。","hero":"不上身；开场一层会员金边光（aura）。","projectile":"保持配方，仅开场整体伤害提升。","feedback":"开场一声\"已为您自动续费\"的微光，扣费时零钱静静少 1。","stack":"与《健身房年卡》《共享充电宝》共用阶段扣费池；与红包/工资供血件对冲。"},{"id":"bargain-link","name":"全家帮砍仍差一刀的链接","source":"回忆祭坛","roles":["召唤继承","经济资源"],"statOnly":false,"production":["projectile","rigid"],"numbers":"每持有一件Ⅰ/Ⅱ级道具，本体伤害+3%；商城价格+10%。","rule":"命中后开枝散叶分裂成逐代衰减的助力弹，助力弹最低把目标压到1血，最后一刀必须由其他来源完成。","hero":"手机屏上那条永远差一刀的砍价链接，攥在手里当作还差一点的证据。","projectile":"《一口气》命中即分裂成多代弱助力弹，铺成一片\"就差一刀\"，但自己收不了尾。","feedback":"分裂时弹出砍价红字，目标被压到1血时描边闪红等人补刀。","stack":"《同桌的修眉刀》用极细暴击补最后一刀；《当年最强的那颗弹珠》把助力弹弹给下一个目标。"},{"id":"mineral-water","name":"相亲桌上没拆的矿泉水","source":"回忆祭坛","roles":["规则触发","位移节奏"],"statOnly":false,"production":["rigid"],"numbers":"每对峙满8秒无伤：最近的敌人先绷不住，重创+僵直；受伤则重新计时。","rule":"无伤计时累到8秒自动触发一次重创并短暂停住最近敌人，任意受伤把计时归零。","hero":"相亲桌上那瓶始终没拧开的矿泉水，攥在手里给沉默找个由头。","projectile":"保持当前《一口气》配方，触发是独立的重创判定，不改弹形。","feedback":"瓶盖显示对峙进度条，满槽时最近敌人被狠狠按住一下。","stack":"《慢了七分钟的手表》延长僵直窗口；《对方正在输入…》把这段等待积成一发大弹。"},{"id":"group-dad","name":"家长群里的“孩子他爸”","source":"回忆祭坛","roles":["召唤继承"],"statOnly":false,"production":["projectile","decal"],"numbers":"雨滴/分裂/弹跳等一切继承弹伤害+40%；本体伤害-10%。","rule":"提高所有继承弹与二级载体的伤害，本体伤害降低；昵称\"孩子他爸\"覆盖角色名牌。","hero":"本人退到附属身后，头顶名牌被\"孩子他爸\"这个称呼盖住。","projectile":"一切衍生/继承弹显著增伤，本体《一口气》反而被削弱，主力让给了\"他爸\"们。","feedback":"继承弹命中带群消息弹窗的红点感，本体命中声变闷。","stack":"《验孕棒》《女儿换下的乳牙》构成家庭召唤流；《父亲的雨衣》让附属体继承保护。"},{"id":"divorce-draft","name":"没有按下发送的离婚协议","source":"回忆祭坛","roles":["生存防御","规则触发"],"statOnly":false,"production":["fitted"],"numbers":"每阶段首次受伤一半立即结算、另一半阶段末补扣；治疗-15%。","rule":"每阶段第一次受伤只结算一半、余数延迟到阶段末结清；全程治疗降低。","hero":"揣在胸口那份始终没按下发送的协议，贴身却发不出去。","projectile":"保持当前《一口气》配方，效果只作用于受伤结算。","feedback":"首次受伤时半截数字变灰标\"待结算\"，阶段末悄悄补扣。","stack":"《没有痛觉的夜晚》继续推迟账单；《提前花掉的十年》把延迟伤交给未来的自己。"},{"id":"checkup-arrows","name":"体检报告上的向上箭头","source":"回忆祭坛","roles":["规则触发"],"statOnly":false,"production":["decal"],"numbers":"高于基准的属性再+8%，低于基准的再-8%；双向放大不可回头。","rule":"以1.00为基准双向放大当前所有属性偏移，好的更好、坏的更坏，且不可逆。","hero":"脸色被那排向上的红箭头压出一层病气，越看越回不去。","projectile":"保持当前《一口气》配方，只放大既有偏移，不新增弹形。","feedback":"触发时属性面板箭头集体上挑/下压，数字抖一下定死。","stack":"《断掉的脊梁骨》利用更多负面换强度；《她没说名字的第三颗药》制造最极端的周期波动。"},{"id":"shared-powerbank","name":"医院走廊的共享充电宝","source":"回忆祭坛","roles":["位移节奏","经济资源"],"statOnly":false,"production":["rigid"],"numbers":"最多租电6秒；恢复攻击时连射加速最多3秒；每累计租电8秒扣1零钱。","rule":"攻击空窗时开始租电累积电量，恢复攻击时消耗电量加速连射；按实际租用秒数扣零钱。","hero":"腰上挂着医院走廊借来的共享充电宝，线一直没拔。","projectile":"保持当前《一口气》配方，只改连射节奏。","feedback":"连射时充电宝亮蓝灯掉格，扣费时弹出小额账单。","stack":"《连续签到1847天》允许用电补签；《自动续费到明年的会员》把计费并成持续债务。"},{"id":"third-pill","name":"她没说名字的第三颗药","source":"里屋","roles":["规则触发","位移节奏"],"statOnly":false,"production":["morph","decal"],"numbers":"每20秒狂暴8秒（伤害×1.6 射速×1.4），随后3秒崩落（全属性×0.6）。","rule":"周期性在狂暴与崩落之间切换，角色体型与色相同步失真。","hero":"狂暴时身形绷胀发红、崩落时缩瘪发青，一颗没名字的药把人拉扯变形。","projectile":"狂暴期《一口气》又快又重，崩落期整体缩水发虚。","feedback":"相位切换时全屏色相偏移一下，角色轮廓抖动失真。","stack":"《OD妹给的小药丸》扩大随机失真；《没有痛觉的夜晚》延迟崩落但抬高最终结算。"},{"id":"loan-contract","name":"已经签好名字的网贷合同","source":"里屋","roles":["经济资源","规则触发"],"statOnly":false,"production":["rigid"],"numbers":"伤害+25%；每阶段先扣2零钱，不足仍扣现有零钱，再扣4生命。","rule":"获得即提高伤害；每阶段固定还款2零钱，先扣尽可用零钱，不足时再固定失去4点生命。","hero":"手里攥着已经签好名字的网贷合同，字迹是自己的。","projectile":"保持当前《一口气》配方，只常驻增伤。","feedback":"阶段结算时弹出还款单，零钱不够时血条被划走一截。","stack":"《第一次工资的信封》提高可预支额度；《提前花掉的十年》让债务同时向年龄结算。"},{"id":"name-sold","name":"把名字卖掉的合同","source":"里屋","roles":["弹体改造","命运交互"],"statOnly":false,"production":["projectile","rigid"],"numbers":"零散射、零波动，基础伤害+30%；永不暴击，无法再亲口回应命运。","rule":"消除随机散射与伤害波动并提高基础伤害；永久关闭暴击与\"亲口回应命运\"入口。","hero":"胸前挂着把名字卖掉的合同，签完就再没人叫得出他是谁。","projectile":"《一口气》被规整成毫无波动的制式弹，齐整、稳定、也再不会爆发。","feedback":"命中数字始终一模一样，命运牌上\"亲口回应\"的按钮变灰。","stack":"《已经注销的旧工牌》能恢复身份通行；《momo的头像》可在匿名时暂时取回暴击；与《五个哈》组合仍射五发且全部制式一致；《对方正在输入…》的十二向散射同样继承制式弹载体，但不会再乘五。"},{"id":"moms-bowl","name":"母亲留在锅里的那碗饭","source":"留灯间","roles":["生存防御"],"statOnly":false,"production":["aura"],"numbers":"溢出的治疗转为护盾；转化率每阶段-10%（会凉）。","rule":"过量治疗转成护盾，护盾释放的温热蒸汽继承当前攻击配方；转化率逐阶段递减。","hero":"身边浮着一碗留在锅里的饭的暖光，热气一阶段比一阶段淡。","projectile":"护盾破碎时喷出的蒸汽继承《一口气》配方，替你还一下手。","feedback":"溢疗时碗沿冒热气结成护盾，凉了则光晕转灰。","stack":"能真正兜住《外卖里吃出的头发》《凌晨三点的外卖袋》的恢复代价；与《父亲的雨衣》形成家庭保护流。"},{"id":"ruma-msg","name":"凌晨两点朋友发来的“在吗”","source":"留灯间","roles":["生存防御","命运交互"],"statOnly":false,"production":["aura"],"numbers":"咽下+1层；生命<35%时每层化为5点护盾；每层治疗-3%。","rule":"咽下时积层，生命低于三成半时把每层转为5点护盾并触发一次\"已接通\"；每层降低治疗。","hero":"影子旁悬着一条凌晨两点的\"在吗\"，一直亮着没敢回。","projectile":"保持当前《一口气》配方，层数只作用于护盾与接通。","feedback":"低血时消息弹出\"已接通\"，每层化成一小格护盾。","stack":"可清除《同桌的修眉刀》的浅痕；接通《没打出去的电话》，把未拨出的声波转成护盾与攻击。"},{"id":"held-elevator","name":"有人替你按住的电梯","source":"留灯间","roles":["弹体改造"],"statOnly":false,"production":["projectile","aura"],"numbers":"弹道消失时30%悬停后追向最近敌人；弹速-8%。","rule":"弹体寿命结束时有概率悬停一下，再重新索敌追出；基础弹速下降。","hero":"身后一道虚门始终替你按着，光标一样停在那里等你。","projectile":"《一口气》飞到尽头不散，被\"按住\"一下后重新追向最近的敌人。","feedback":"悬停瞬间弹体定住闪一下，再拐弯追出去。","stack":"《写满红叉的练习册》让等待后的弹折返；《一直没有换的家门锁》把悬停点变成家门。"},{"id":"old-door-lock","name":"一直没有换的家门锁","source":"留灯间","roles":["弹体改造"],"statOnly":false,"production":["projectile"],"numbers":"弹道折返；回程伤害+30%；射程-10%。","rule":"弹体在终点生成锁孔，返回主角根点后以更高伤害重新发射。","hero":"腰间挂着那把一直没换的旧门锁，钥匙孔磨得发亮。","projectile":"《一口气》到终点被锁住折返，回到身边再以更狠的力道打第二遍。","feedback":"终点浮出锁孔咔一声，回程弹描边加重。","stack":"《出租屋唯一的钥匙》连接两扇门；《有人替你按住的电梯》让回程弹在门口等下一轮。"},{"id":"drank-for-boss","name":"酒局上代喝的那杯","source":"回忆祭坛","roles":["生存防御","规则触发"],"statOnly":false,"production":["decal"],"numbers":"受伤25%概率攒1层代喝；3层释放累计范围反伤；每阶段开场1.2秒站不稳。","rule":"部分受伤转为\"代喝\"层数，满层释放一圈范围反伤；每阶段开场短暂摇晃。","hero":"脸颊泛着代喝上头的红，开场脚下有点飘。","projectile":"保持当前《一口气》配方，反伤是独立的范围回敬。","feedback":"攒够层数时周身晃出一圈酒气反伤，开场画面轻微摇。","stack":"《没有痛觉的夜晚》推迟醉意结算；《断掉的脊梁骨》把代喝层数视为负面词条换强度。"},{"id":"hair-in-takeout","name":"外卖里吃出的头发","source":"回忆祭坛","roles":["生存防御"],"statOnly":false,"production":["decal"],"numbers":"生命<30%时自动回8（每阶段一次）；所有治疗-10%。","rule":"每阶段一次，生命低于三成自动恢复8点；永久降低治疗效率。","hero":"嘴角挂着一根吃出来的头发，反胃的表情压着。","projectile":"保持当前《一口气》配方，只作用于自动回血。","feedback":"触发时干呕一下回一小口血，画面泛一层反胃绿。","stack":"《凌晨三点的外卖袋》提高触发频率；《母亲留在锅里的那碗饭》能清掉一次反胃。"},{"id":"unwashed-pillow","name":"没洗的枕套","source":"回忆祭坛","roles":["生存防御","位移节奏"],"statOnly":false,"production":["aura"],"numbers":"静止2秒后减伤50%；起身后1秒射速-20%。","rule":"原地静止蓄满后减伤五成；一移动就打断，并短暂降低射速。","hero":"影子摊成一片没洗的枕套，越不动陷得越深。","projectile":"保持当前《一口气》配方，只改减伤与起身节奏。","feedback":"静止满2秒时周身罩一层灰蒙护罩，起身时\"啪\"地散掉。","stack":"《憋回去的那泡尿》把静止变成重击构筑；《没有痛觉的夜晚》让躺平期间的伤延迟。"},{"id":"sock-cigs","name":"藏在袜子里的烟","source":"回忆祭坛","roles":["位移节奏"],"statOnly":false,"production":["decal"],"numbers":"受伤后2秒移速+25%；每45秒最大生命-1。","rule":"受伤后两秒内提高移速；每四十五秒扣一点最大生命。","hero":"袜筒里露出半根藏着的烟，走路带点满不在乎的劲。","projectile":"保持当前《一口气》配方，只改受伤后的走位。","feedback":"受伤瞬间脚下窜出一缕烟提速，扣血时最大血条悄悄缩一格。","stack":"《剩了半袋的漂粉》组成显眼叛逆外观；《没有痛觉的夜晚》让生命代价延后一起结算。"},{"id":"pregnancy-test","name":"验孕棒","source":"回忆祭坛","roles":["召唤继承"],"statOnly":false,"production":["projectile","morph"],"numbers":"每第3轮多1枚继承弹；商城价格+35%。","rule":"生成一个跟随剪影，每第三轮周期复制当前弹；提高商品价格，改变角色站姿。","hero":"手里攥着验孕棒，站姿不自觉护起了小腹。","projectile":"每第三轮由跟随剪影多打出一枚继承当前配方的弹。","feedback":"复制弹出膛时剪影亮一下两道杠，商城标价上浮。","stack":"《家长群里的\"孩子他爸\"》强化复制弹；《女儿换下的乳牙》让剪影替主角挡一次。"},{"id":"gym-card","name":"健身房年卡","source":"回忆祭坛","roles":["位移节奏","经济资源"],"statOnly":false,"production":["rigid"],"numbers":"移速+8%；每阶段扣1零钱。","rule":"连续移动叠加\"到店\"层数、停步快速衰减；每阶段自动扣一枚零钱。","hero":"腰上别着一张几乎没用过的健身房年卡。","projectile":"保持当前《一口气》配方，只改移速。","feedback":"持续移动时卡面亮\"到店\"层数，月初自动划走一枚零钱。","stack":"《练了一个暑假的跑法》加快热身；《课间十分钟》让开场直接拉满层。"},{"id":"funeral-photo","name":"遗照选用的那张","source":"回忆祭坛","roles":["生存防御"],"statOnly":false,"production":["decal"],"numbers":"致命伤时1血狂暴5秒（每局一次）；生效后治疗-20%。","rule":"每局一次，受致命伤时保留1血并狂暴五秒，期间一直保持笑脸；此后治疗降低。","hero":"脸上定格着遗照那张笑，越到最后越僵。","projectile":"狂暴五秒内《一口气》全面强化，像回光返照。","feedback":"触发时画面压成黑白定格一帧，随即1血带笑爆发。","stack":"《雪花屏》可先让一次死亡\"没有发生\"；《女儿换下的乳牙》决定谁先替谁留下。"},{"id":"typing-indicator","name":"对方正在输入…","source":"回忆祭坛","roles":["弹体改造","规则触发"],"statOnly":false,"production":["projectile","aura"],"numbers":"每0.5秒在头顶增加1个句号；第3个句号出现时释放12向全屏散射；取消普通连射。","rule":"有敌人时按0.5秒固定三拍计时；第三拍触发一次360度大范围散射并立即开始下一轮，普通自动攻击不再单独出膛。","hero":"不举手机、不挂气泡；只在头发正上方依次出现一、二、三个像素句号。","projectile":"第三个句号出现时，从主角位置向360度均匀散出12枚当前《一口气》，继承当前外形、材质、穿透、追踪、折返、分裂与爆炸。","feedback":"第三个句号停留0.5秒，并在出现瞬间触发一圈大范围扩散环；不再出现巨弹缩成\"嗯\"的旧演出。","stack":"《慢了七分钟的手表》可冻结已经散出的弹；《KTV里没人听的那首歌》保留自己的六秒声浪周期，两种全向攻击分别结算；《五个哈》只改变当前《一口气》的可读载体，不额外把十二向散射再乘五。"},{"id":"year-report","name":"年度听歌报告","source":"回忆祭坛","roles":["召唤继承"],"statOnly":false,"production":["projectile","aura"],"numbers":"每第4轮把上一轮弹道原样重放一遍（×0.6）；每阶段开场生命-2。","rule":"按固定节拍复制上一轮完整攻击配方，复制体伤害降低并改变一格颜色。","hero":"影子上滚动播放一份年度听歌报告，循环着同几首。","projectile":"每第四轮把上一轮的《一口气》弹道原样重放一遍，弱一点、偏一格色。","feedback":"重放那轮弹道泛出歌单配色，开场血条先掉两点。","stack":"《和AI聊到凌晨》让重放再产生回声；《朋友圈仅三天可见》保留最近三次循环。"},{"id":"momo-avatar","name":"momo的头像","source":"回忆祭坛","roles":["规则触发"],"statOnly":false,"production":["decal"],"numbers":"无敌人贴脸时暴击+25%；被贴脸时伤害-8%。","rule":"与最近敌人保持安全距离时提高暴击，敌人进入贴脸范围后降低伤害并让头像闪烁。","hero":"主角戴上圆头粉色小恐龙头套；只替换头部轮廓，身体和衣服仍是本人，却已经认不出是谁。","projectile":"保持当前《一口气》配方，距离只调暴击与伤害。","feedback":"拉开距离时暴击金光更亮，被贴脸时头像闪一下变怂。","stack":"《对方已开启朋友验证》让被拒绝的弹回到匿名状态；《抽象话十级》把匿名暴击换成嘲讽。"},{"id":"ai-chat","name":"和AI聊到凌晨","source":"回忆祭坛","roles":["召唤继承","命运交互"],"statOnly":false,"production":["projectile"],"numbers":"每轮攻击后0.4秒复读一轮回声弹（×0.35）；命运牌结算后回4血；亲口回应属性变化减半。","rule":"攻击后0.4秒复读一轮当前配方的弱回声弹；事件结算回血，但亲口回应命运的效果减半。","hero":"手机屏亮着和AI聊到凌晨的对话，回复永远秒到。","projectile":"每轮《一口气》打完，0.4秒后自动复读一轮更弱的回声弹。","feedback":"回声弹出膛带打字气泡感，命运结算后回一小口血。","stack":"《没打出去的电话》让回声替玩家拨出一次；《我一直在哭》会让自动回复变成追踪泪。"},{"id":"streak-1847","name":"连续签到1847天","source":"回忆祭坛","roles":["位移节奏","规则触发"],"statOnly":false,"production":["rigid"],"numbers":"每个整10秒的第一发必定暴击（准时）；受伤打断当期打卡。","rule":"每逢整十秒后的第一发必定暴击；受伤会打断当前十秒的打卡周期。","hero":"手里举着连续签到1847天的打卡页，一天不敢断。","projectile":"踩点整十秒时《一口气》首发必爆，其余照常。","feedback":"临近整十秒时打卡页高亮读秒，准点首发金光暴击。","stack":"《课间十分钟》提高准点爆发密度；《医院走廊的共享充电宝》允许补签一次但继续计费。"},{"id":"goodnight-2h","name":"晚安之后的两小时","source":"回忆祭坛","roles":["位移节奏"],"statOnly":false,"production":["aura"],"numbers":"生命<50%时射速+18%；每30秒最大生命-1。","rule":"生命低于一半时提高射速；每三十秒扣一点最大生命。","hero":"影子里透出说完晚安又醒着的手机冷光。","projectile":"保持当前《一口气》配方，只在残血时提速。","feedback":"低血时射速拉高、屏幕泛蓝光，每半分钟最大血条缩一格。","stack":"《藏在袜子里的烟》叠加短期亢奋；《没有痛觉的夜晚》把生命付款集中到后来。"},{"id":"friend-verify","name":"对方已开启朋友验证","source":"回忆祭坛","roles":["弹体改造"],"statOnly":false,"production":["projectile"],"numbers":"每次商城不买离开伤害+6%（可叠）；治疗-10%。","rule":"追踪弹首次命中只盖\"验证失败\"并折返，二次命中才结算；每次空手离开商城叠加伤害；治疗降低。","hero":"手机屏弹着\"对方已开启朋友验证\"，怎么发都先被退回。","projectile":"《一口气》首次命中不结算、盖章折返，回来再打一次才真正生效。","feedback":"首命中弹出\"验证失败\"红戳并折返，二次命中才出伤。","stack":"《momo的头像》让折返弹匿名后提高暴击；《前桌的情书》可以替它重新寻找收件人。"},{"id":"summer-run","name":"练了一个暑假的跑法","source":"回忆祭坛","roles":["位移节奏"],"statOnly":false,"production":["morph"],"numbers":"移速+12%；急停会滑半步。","rule":"改变跑姿并提高移速，连续移动叠加速度，急停保留短暂惯性滑一段。","hero":"换成练了一个暑假的中二跑姿，手臂朝后甩。","projectile":"保持当前《一口气》配方，只改跑动与惯性。","feedback":"连续跑动时身后拉出速度残影，急停时脚下滑半步。","stack":"《交掉的闪现》把滑步变成二段位移；《健身房年卡》让持续运动真正产生热身。"},{"id":"one-more-game","name":"再来一把就睡","source":"回忆祭坛","roles":["规则触发","经济资源"],"statOnly":false,"production":["aura"],"numbers":"章末选择继续：跳过6点回复并获得伤害+10%一层，最多5层；每层令下阶段开场停火0.5秒。选择睡下则正常回复并清空层数。","rule":"过渡时提供一次\"再来一把/真睡了\"选择；继续会立即进入下一流程并叠伤害与开场停火，睡下走正常过渡并清空熬夜层。","hero":"影子里亮着一句\"再来一把就睡\"的屏光，怎么都不肯关。","projectile":"保持当前《一口气》配方，只影响开场节奏与增伤。","feedback":"过渡时弹出两项抉择；继续后显示熬夜层数，下一阶段开场先沉默对应时长。","stack":"《暑假作业最后一页》把死线爆发带入下一局；《课间十分钟》抵消开场迟钝。"},{"id":"eye-exercise","name":"眼保健操","source":"回忆祭坛","roles":["生存防御","规则触发"],"statOnly":false,"production":["decal"],"numbers":"每12秒自动闭眼获得0.5秒无敌；睁眼后1.5秒敌人加速。","rule":"每十二秒自动闭眼获得半秒无敌；睁眼后一秒半内敌人加速。","hero":"人物常态不变；到点时原有双臂抬起，拇指与食指贴着双眼眼眶形成受压弧环，像轮刮、揉按眼眶，半秒后放下。","projectile":"保持当前《一口气》配方，闭眼只给无敌窗口。","feedback":"闭眼时画面轻微发暗+护罩，睁眼后敌人明显窜快一下。","stack":"《裂了一边的眼镜》在闭眼后修正一次近身盲区；《雪花屏》可延长\"没有发生\"的瞬间。"},{"id":"card-binder","name":"大扫除清掉的卡册","source":"回忆祭坛","roles":["召唤继承"],"statOnly":false,"production":["projectile","rigid"],"numbers":"每阶段随机+12%伤害/射速/射程；阶段结束即消失。","rule":"最多收录三件Ⅰ/Ⅱ级道具并复制其核心触发；获得第四件时最早一页被清掉。","hero":"背上背着一本大扫除时差点清掉的卡册，翻出旧卡。","projectile":"复制所收道具的核心触发，间接改写《一口气》的一部分打法。","feedback":"每阶段翻卡定格随机加成，阶段末整册合上消失。","stack":"《朋友圈仅三天可见》可保留被清掉效果三次；《抢到的0.87元红包》填补空白卡位。"},{"id":"abstract-lv10","name":"抽象话十级","source":"回忆祭坛","roles":["命运交互","规则触发"],"statOnly":false,"production":["decal"],"numbers":"每8秒嘲讽最近非Boss敌人：受伤+20%但冲向你；咽下效果-10%。","rule":"每八秒对最近的非Boss敌人施加嘲讽与易伤，提高仇恨；咽下/吐出的叙事收益略降。","hero":"脸上挂着一副抽象话十级的怪表情，专门招人。","projectile":"保持当前《一口气》配方，嘲讽只改敌人仇恨与易伤。","feedback":"嘲讽时最近敌人头顶冒抽象梗气泡并红着眼冲来。","stack":"《momo的头像》强化远距嘲讽；《五个哈》把一次嘲讽拆成五段轻飘回应。"},{"id":"shop-freezer","name":"小卖部的冰柜","source":"回忆祭坛","roles":["弹体改造","规则触发"],"statOnly":false,"production":["projectile"],"numbers":"命中20%冻结敌人1.2秒；射速-5%。","rule":"命中有概率冻结敌人一秒二，弹体带低像素冰雾；射速略降。","hero":"背后拖着一台小卖部旧冰柜，冒着白气。","projectile":"《一口气》裹上一层低像素冰雾，命中有概率把敌人冻住。","feedback":"冻结命中时敌人结一层冰壳定住，弹体拖冷雾。","stack":"《当年最强的那颗弹珠》变成冰弹珠；《父亲的雨衣》把融水拆成继承弹。"},{"id":"server-shutdown","name":"关服那天","source":"回忆祭坛","roles":["生存防御"],"statOnly":false,"production":["event","aura"],"numbers":"致命伤时小剪影替你挡下，然后永远消失；它消失后治疗-15%。","rule":"每局一次，受致命伤时一个小剪影替死，触发后删除该随从层并降低治疗。","hero":"影子边跟着一个有清楚头身的小伙伴剪影，动作慢半拍；不画成屏幕、终端或设备。","projectile":"保持当前《一口气》配方，替死是一次性事件。","feedback":"致命瞬间小伙伴依次出现、跃出、替挡、断线；结束后本局永久清空且不留地面残骸，此后治疗变弱。","stack":"《雪花屏》让消失前多停一帧；《女儿换下的乳牙》形成两种\"谁替谁留下\"的次序。"},{"id":"painless-night","name":"没有痛觉的夜晚","source":"里屋","roles":["规则触发","生存防御"],"statOnly":false,"production":["aura","decal"],"numbers":"未结算伤害持续提高攻击；8秒后全额结算，普通治疗失效。","rule":"受到的伤害进入延迟池并按数值增伤，倒计时结束统一扣除；常规治疗对延迟池无效。","hero":"影子泛着一层没有痛觉的夜色，身上的伤一时都不疼。","projectile":"延迟池越满，《一口气》越狠，代价是账迟早一起来。","feedback":"受伤时数字入池变暗并给攻击加成，8秒到点血条一次性掉空。","stack":"《断掉的脊梁骨》把延迟伤视为负面换强度；《她没说名字的第三颗药》《没有按下发送的离婚协议》能继续推迟但会放大总账。"},{"id":"ktv-song","name":"KTV里没人听的那首歌","source":"里屋","roles":["弹体改造","召唤继承"],"statOnly":false,"production":["projectile"],"numbers":"每6秒攒满一口，向四周吼出一圈声浪（继承全部形变）；常规攻击伤害-15%。","rule":"每六秒周期释放一圈全向声浪，继承当前全部弹体形变；常规攻击伤害降低。","hero":"脖子上还挂着KTV的麦，唱的那首始终没人听。","projectile":"常规《一口气》被压弱，攒够则向四周吼出一整圈继承全部形变的声浪。","feedback":"攒满时周身炸开一圈声波涟漪，常规命中偏闷。","stack":"《领导撤回的六十秒语音》把沉默层加入声浪；《对方正在输入…》保留独立的三拍十二向散射，两种全向攻击分别计时。"},{"id":"breath-on-glass","name":"冬天呵在玻璃上的字","source":"留灯间","roles":["弹体改造"],"statOnly":false,"production":["projectile"],"numbers":"弹体呵成宽雾锥：弹宽×2.2，穿透+2；射程×0.55。","rule":"弹宽乘2.2、穿透加二、射程乘0.55；弹体内部始终保留一点月白核心。","hero":"人物常态不挂雾、不变眼睛；攻击时弹体从嘴前直接呵成宽短雾锥。","projectile":"《一口气》被呵成一支又宽又短的雾锥，穿得更透、飞不太远。","feedback":"出膛时弹头散成白雾锥，命中在敌人身上留一层水汽。","stack":"《前桌的情书》让雾寻找名字；《同桌的修眉刀》把宽雾切成多条细线。"},{"id":"admission-notice","name":"入学通知书","source":"传承","roles":["规则触发"],"statOnly":false,"production":["rigid","event"],"numbers":"每章奖励从三选一变四选一；路边物证台不再熄灭，必须选走一件。","rule":"奖励界面固定生成四个候选；世界物证台的倒计时停止流逝，不选就一直亮着。","hero":"近手始终攥着一张薄薄的米白录取通知书；正面只保留学校徽记块、横向信息栏与醒目的旧红录取章，背面露出折痕，侧面必须薄到像纸，不出现可读文字。","projectile":"不碰《一口气》：弹体保持原样，它改的是选择本身。","feedback":"拾取时整屏落章「这一身 · 第五档」；此后每次奖励都多出第四格。","stack":"与任何构筑不冲突；它不改数值，只让你不能不选。"},{"id":"iphone-17-pro-max","name":"最新款的 iPhone 17 Pro Max","source":"传承","roles":["规则触发","经济资源"],"statOnly":false,"production":["rigid","event"],"numbers":"伤害+30%，攻速+10%；拾取当下零钱清零；每15秒弹一次消息，攻击中断0.4秒。","rule":"常驻乘区伤害×1.30、射击间隔÷1.10；入手瞬间零钱归零；15秒循环计时，弹消息的0.4秒内不开火，三拍散射的节拍同样停走。","hero":"近手始终握着一台深钛灰新机；背面用清楚的三镜头模组识别，正面只留冷白屏光与顶部深色岛形区域，不画品牌标志和可读文字；消息到来时屏光骤亮并在头顶弹出短气泡。","projectile":"不改弹形：还是那一口气，只是更狠、更快。","feedback":"零钱清零用金字浮词当场记账；每条新消息在头顶弹「手停了一下」。","stack":"与《已经注销的旧工牌》同乘区叠加；与《对方正在输入…》的互动只是节拍被消息打断，不叠不冲突。"},{"id":"fathers-chart","name":"父亲的病历本","source":"传承","roles":["规则触发"],"statOnly":false,"production":["rigid","event"],"numbers":"每累计永久损失10点最大生命，伤害+8%，无上限；治疗效果−40%。","rule":"只记 changeMaxHp 真实生效的永久损失（触底20的部分不算）；入手前的旧损耗照抄进症状栏，回溯累计。","hero":"腰侧别着一本翻旧的灰绿布脊病历本；米白封面露出旧红挂号条、医院章块和多层页签，纸角卷起，四方向都保持同一本册子的厚薄与腰带夹法，不出现可读文字。","projectile":"弹体不换形；透支掉的每一格都折成更重的伤害。","feedback":"每跨过一档十点，攻击浮词更沉一分；治疗时数字明显缩水。","stack":"与里屋交易同向——所有永久扣血都在替它记账；乳牙的免死不受治疗衰减影响。"}];
+  const ROOMS = ["回忆祭坛","留灯间","里屋","传承"];
+  const ROLE_ORDER = ["弹体改造","召唤继承","规则触发","生存防御","位移节奏","经济资源","命运交互","纯属性"];
+  const state = { room: "all", roles: new Set(), q: "" };
+
+  // stats
+  const stats = document.getElementById("stats");
+  const counts = ROOMS.map(r => DATA.filter(d => d.source === r).length);
+  const statDefs = [
+    { n: DATA.length, l: "道具总数", c: "" },
+    { n: counts[0], l: "回忆祭坛", c: "altar" },
+    { n: counts[1], l: "留灯间", c: "lamp" },
+    { n: counts[2], l: "里屋", c: "inner" },
+    { n: counts[3], l: "传承", c: "inheritance" },
+    { n: DATA.filter(d => d.production.includes("projectile")).length, l: "改写《一口气》弹体", c: "" },
+    { n: DATA.filter(d => d.statOnly).length, l: "纯属性（无规则）", c: "" },
+  ];
+  stats.innerHTML = statDefs.map(s => `<div class="stat ${s.c}"><div class="n">${s.n}</div><div class="l">${s.l}</div></div>`).join("");
+
+  // role chips
+  const rolerow = document.getElementById("rolerow");
+  ROLE_ORDER.forEach(role => {
+    const n = DATA.filter(d => d.roles.includes(role)).length;
+    const b = document.createElement("button");
+    b.className = "chip"; b.setAttribute("aria-pressed", "false"); b.dataset.role = role;
+    b.textContent = `${role} ${n}`;
+    b.onclick = () => { state.roles.has(role) ? state.roles.delete(role) : state.roles.add(role); b.setAttribute("aria-pressed", state.roles.has(role)); render(); };
+    rolerow.appendChild(b);
+  });
+
+  // room chips
+  document.querySelectorAll("[data-room]").forEach(btn => {
+    btn.onclick = () => {
+      state.room = btn.dataset.room;
+      document.querySelectorAll("[data-room]").forEach(b => b.setAttribute("aria-pressed", b === btn));
+      render();
+    };
+  });
+  document.getElementById("search").oninput = e => { state.q = e.target.value.trim(); render(); };
+
+  const esc = s => String(s).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  const list = document.getElementById("list");
+  const countEl = document.getElementById("count");
+
+  function matches(d) {
+    if (state.room !== "all" && d.source !== state.room) return false;
+    if (state.roles.size && ![...state.roles].every(r => d.roles.includes(r))) return false;
+    if (state.q) {
+      const hay = [d.name, d.id, d.roles.join(""), d.numbers, d.rule, d.projectile, d.hero].join(" ");
+      if (!hay.includes(state.q)) return false;
+    }
+    return true;
+  }
+
+  function render() {
+    const rows = DATA.filter(matches);
+    countEl.textContent = `显示 ${rows.length} / ${DATA.length} 件`;
+    list.innerHTML = rows.map(d => {
+      const roles = d.roles.map(r => `<span class="r ${r === "纯属性" ? "stat" : ""}">${r}</span>`).join("");
+      const layers = d.production.map(l => `<span class="l">${l}</span>`).join("");
+      const F = (k, v, wide) => `<div class="field ${wide ? "wide" : ""}"><span class="k">${k}</span><span class="v">${esc(v)}</span></div>`;
+      return `<li class="item" data-room="${d.source}">
+        <button class="row" aria-expanded="false">
+          <span class="name"><span class="t">${esc(d.name)}</span><span class="id">${d.id}</span></span>
+          <span class="roomtag">${d.source}</span>
+          <span class="roles">${roles}</span>
+          <span class="layers">${layers}</span>
+          <span class="caret" aria-hidden="true">›</span>
+        </button>
+        <div class="detail">
+          <div class="fields">
+            ${F("数值", d.numbers)}
+            ${F("规则", d.rule)}
+            ${F("角色层", d.hero)}
+            ${F("弹体层", d.projectile)}
+            ${F("触发反馈", d.feedback)}
+            ${F("叠加裁决", d.stack, true)}
+          </div>
+        </div>
+      </li>`;
+    }).join("");
+    list.querySelectorAll(".item").forEach(li => {
+      const btn = li.querySelector(".row");
+      btn.onclick = () => { const o = li.classList.toggle("open"); btn.setAttribute("aria-expanded", o); };
+    });
+  }
+  render();
+</script>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-// 《这一身》74 件道具生产合同 · A 组（01-37）
+// 《这一身》77 件道具生产合同 · A 组（01-37）
 // 实现向合同：每件对齐 relics.ts 的真实 pos/neg 与 canon 的 m 机制字段。
 // source 为死规定（回忆祭坛/留灯间/里屋），不可自选。
 window.RELIC_PRODUCTION_SPEC_A = {
@@ -62,9 +62,9 @@ window.RELIC_PRODUCTION_SPEC_A = {
     production: ['decal'],
     numbers: '射速 +22% · 暴击 +8%；敌人逼近速度 +15%。',
     rule: '常驻加速与暴击，同时抬高敌人逼近速度作为代价。',
-    hero: '发色被漂成惨白一截，肤色偏冷；不改体型。',
+    hero: '头发被漂成显眼的黄色，并持续掉色；不改体型。',
     projectile: '保持当前《一口气》配方，仅出弹频率变快。',
-    feedback: '漂白发梢在受光面泛冷光，敌人加速时边缘微微发红。',
+    feedback: '黄色发梢不断落下褪色像素，敌人加速时边缘微微发红。',
     stack: '与追求"被看见"的网络情绪系道具（如 momo 头像）叠加时反讽更浓，无机制冲突。',
   },
   'eyebrow-razor': {
@@ -173,7 +173,7 @@ window.RELIC_PRODUCTION_SPEC_A = {
   },
   'fathers-raincoat': {
     name: '父亲的雨衣',
-    source: '留灯间',
+    source: '传承',
     roles: ['生存防御', '召唤继承'],
     statOnly: false,
     production: ['fitted', 'projectile'],
@@ -212,7 +212,7 @@ window.RELIC_PRODUCTION_SPEC_A = {
   },
   'revoked-badge': {
     name: '已经注销的旧工牌',
-    source: '回忆祭坛',
+    source: '传承',
     roles: ['经济资源', '规则触发'],
     statOnly: false,
     production: ['fitted'],
@@ -360,11 +360,11 @@ window.RELIC_PRODUCTION_SPEC_A = {
     statOnly: false,
     production: ['projectile'],
     numbers: '攻击变为五连发，一发比一发轻（总量微升）；治疗 -15%。',
-    rule: '每次攻击拆成五连发，逐发递减但总量略高于单发；治疗打折。',
+    rule: '每次攻击把当前胜出的弹体配方拆成五连发，逐发递减但总量略高于单发；治疗打折。',
     hero: '不上身，纯弹体行为改造。',
-    projectile: '一次击发变五连、依次变轻变小，像敷衍的"哈哈哈哈哈"。',
-    feedback: '五连发五声递弱的轻响，最后一发几乎无力。',
-    stack: '召唤继承类，衍生弹继承并削弱；与穿透/范围件叠加铺场面。',
+    projectile: '一次击发变五连；没有其他弹体替换时，每枚都是压在气息基底上的真正“哈”字；与弹珠、钥匙等弹体替换组合时，改为五份逐发缩小的当前弹体。',
+    feedback: '五连发五声递弱的轻响，最后一发几乎无力；替换后沿用当前弹体的材质命中声。',
+    stack: '召唤继承类，衍生弹继承并削弱；与弹珠组合射五颗弹珠，与钥匙组合射五把钥匙；与《对方正在输入…》组合时只作为十二向散射的当前载体，不额外乘五；穿透/范围/折返等机制继续叠加。',
   },
   'red-packet': {
     name: '抢到的0.87元红包',
