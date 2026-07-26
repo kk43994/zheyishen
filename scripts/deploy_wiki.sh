@@ -24,6 +24,7 @@ echo "② wiki-public 运行时文件与图集"
 ssh "$HOST" "set -e; cd $ROOT
   cp docs/*-v1.js wiki-public/
   mkdir -p wiki-public/assets
+  rsync -a docs/assets/ wiki-public/assets/
   rsync -a --delete docs/enemy-portraits-v1/ wiki-public/enemy-portraits-v1/
   rsync -a --delete docs/item-manifestations-v1/ wiki-public/item-manifestations-v1/"
 

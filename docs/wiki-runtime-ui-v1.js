@@ -254,9 +254,9 @@
       var fx = document.createElement('div');
       fx.className = 'wt-fx';
       fx.append(
-        tipRow('b-pos', '正', item.positive),
-        tipRow('b-neg', '负', item.negative),
-        tipRow('b-sum', '摘', item.summary)
+        tipRow('b-pos', '得到', item.positive),
+        tipRow('b-neg', '留下', item.negative),
+        tipRow('b-sum', '一句话', item.summary)
       );
       var foot = document.createElement('div');
       foot.className = 'wt-foot';

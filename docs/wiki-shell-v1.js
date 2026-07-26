@@ -7,7 +7,7 @@
   function currentTheme() {
     var t = root.getAttribute('data-theme');
     if (t === 'dark' || t === 'light') return t;
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return 'dark'; // v3 夜桌版：无记忆时默认熄灯（与游戏一致）
   }
   function paintToggle() {
     if (toggle) toggle.textContent = currentTheme() === 'dark' ? '☀' : '☾';
@@ -313,4 +313,197 @@
       close();
     }
   });
+})();
+
+/* ══════════ v3 夜桌版 · 交互与彩蛋 ══════════ */
+(function () {
+  'use strict';
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ── 控制台留一句 ── */
+  try {
+    console.log('%c事情是改不了的，怎么做是可以选择的。', 'color:#9F3548;font-size:14px;font-family:"Songti SC",serif;font-weight:700;');
+    console.log('%c——《这一身》百科。你打开了控制台，这也算一种「怎么做」。', 'color:#AAA297;font-size:11px;');
+  } catch (e) {}
+
+  /* ── 人生进度线：这一生翻到哪了 ── */
+  var AGES = ['童年', '少年', '青年', '成年', '中年', '暮年'];
+  var topbar = document.getElementById('wiki-topbar');
+  if (topbar) {
+    var rail = document.createElement('div');
+    rail.className = 'life-progress';
+    rail.setAttribute('aria-hidden', 'true');
+    var head = document.createElement('span');
+    head.className = 'lp-label';
+    head.textContent = '这一生';
+    var track = document.createElement('span');
+    track.className = 'lp-track';
+    var fill = document.createElement('span');
+    fill.className = 'lp-fill';
+    track.appendChild(fill);
+    var dots = AGES.map(function (age, i) {
+      var dot = document.createElement('span');
+      dot.className = 'lp-age';
+      dot.style.left = ((i + 1) / (AGES.length + 1) * 100) + '%';
+      dot.title = age;
+      track.appendChild(dot);
+      return dot;
+    });
+    var tail = document.createElement('span');
+    tail.className = 'lp-end';
+    tail.textContent = '合卷';
+    rail.append(head, track, tail);
+    topbar.insertAdjacentElement('afterend', rail);
+    var ticking = false;
+    var syncProgress = function () {
+      ticking = false;
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      var ratio = max > 0 ? Math.min(1, window.scrollY / max) : 0;
+      fill.style.width = (ratio * 100) + '%';
+      dots.forEach(function (dot, i) {
+        dot.classList.toggle('lit', ratio >= (i + 1) / (AGES.length + 1));
+      });
+      tail.classList.toggle('lit', ratio > 0.985);
+      head.textContent = ratio > 0.985 ? '最后都穿成了' : '这一生';
+    };
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(syncProgress); }
+    }, { passive: true });
+    syncProgress();
+  }
+
+  /* ── 试穿悬浮：图鉴卡上看主角实机体现 ── */
+  var fitTip = document.createElement('div');
+  fitTip.className = 'fit-tip';
+  fitTip.hidden = true;
+  var fitImg = document.createElement('img');
+  fitImg.alt = '';
+  var fitLabel = document.createElement('span');
+  fitLabel.textContent = '主角实机体现 · 试穿';
+  fitTip.append(fitImg, fitLabel);
+  document.body.appendChild(fitTip);
+  var itemsById = {};
+  (window.WIKI_RUNTIME_STATUS_V1 && window.WIKI_RUNTIME_STATUS_V1.items || []).forEach(function (item) { itemsById[item.id] = item; });
+  function moveFitTip(x, y) {
+    var w = 264; var h = 170;
+    var left = Math.min(Math.max(x + 18, 8), window.innerWidth - w - 8);
+    var top = y + 20 + h > window.innerHeight - 8 ? y - h - 14 : y + 20;
+    fitTip.style.left = left + 'px';
+    fitTip.style.top = Math.max(8, top) + 'px';
+  }
+  document.addEventListener('mouseover', function (event) {
+    var card = event.target.closest && event.target.closest('.item-catalog-card');
+    if (!card || !card.dataset.itemId) return;
+    var item = itemsById[card.dataset.itemId];
+    if (!item) return;
+    fitImg.src = 'item-manifestations-v1/' + String(item.index).padStart(2, '0') + '-' + item.id + '.png';
+    fitLabel.textContent = '主角实机体现 · ' + item.name;
+    fitTip.hidden = false;
+    moveFitTip(event.clientX, event.clientY);
+  });
+  document.addEventListener('mousemove', function (event) {
+    if (!fitTip.hidden) moveFitTip(event.clientX, event.clientY);
+  }, { passive: true });
+  document.addEventListener('mouseout', function (event) {
+    if (event.target.closest && event.target.closest('.item-catalog-card')) fitTip.hidden = true;
+  });
+  window.addEventListener('scroll', function () { fitTip.hidden = true; }, { passive: true });
+
+  /* ── 组合名鉴：悬浮浮现奥义插画（集齐时战场上那 3.4 秒） ── */
+  var COMBO_ART = {
+    '那天雨太大，我没有听见': ['rain-letter', '信纸被浸湿，变慢、变重、穿透'],
+    '被退回的信': ['returned-letter', '未命中的信被红笔批改后折返，二次命中更疼'],
+    '大人说这都是为你好': ['for-your-own-good', '冻结解除后，一口气一次性压穿敌群'],
+    '被当成风格的求救': ['cry-for-help-as-style', '受伤时涌出点赞与爱心，不提供任何治疗'],
+    '我只在有用时被看见': ['seen-only-when-useful', '刚证明过有用的两秒里，他格外锋利'],
+    '那年他觉得自己很酷': ['thought-he-was-cool', '掉色的雨滴标记敌人，被标记者受伤更多'],
+    '这一次有人接了': ['someone-answered', '攒下的假点赞在吐出时化为真实护盾'],
+    '后来我也成了他': ['became-him', '乳牙碎的那一刻，雨衣自动罩住孩子'],
+    '等大家有空': ['when-everyone-is-free', '空相框复制合照的弹道，每次复制更褪色'],
+    '这点重量不算什么': ['this-weight-is-nothing', '弹道停留越久越重，压得越深'],
+    '能屈能伸': ['bend-and-stretch', '弯腰的程度化为暴击，暴击时他说「收到」'],
+    '他当年也是这样站着的': ['stood-the-same-way', '身后浮现同样弯腰的轮廓，雨下得更密'],
+  };
+  var COMBO_KEYS = ['rain-letter', 'for-your-own-good', 'returned-letter', 'thought-he-was-cool', 'cry-for-help-as-style', 'someone-answered', 'became-him', 'when-everyone-is-free', 'this-weight-is-nothing', 'bend-and-stretch', 'stood-the-same-way', 'seen-only-when-useful'];
+  var comboSection = document.getElementById('combos');
+  if (comboSection) {
+    var comboTip = document.createElement('div');
+    comboTip.className = 'combo-tip';
+    comboTip.hidden = true;
+    var comboArt = document.createElement('div');
+    comboArt.className = 'ct-art';
+    var comboLine = document.createElement('div');
+    comboLine.className = 'ct-line';
+    comboTip.append(comboArt, comboLine);
+    document.body.appendChild(comboTip);
+    comboSection.addEventListener('mouseover', function (event) {
+      var row = event.target.closest && event.target.closest('tbody tr');
+      if (!row) return;
+      var name = null;
+      row.querySelectorAll('td').forEach(function (td) {
+        var text = td.textContent.replace(/[《》\s]/g, '');
+        Object.keys(COMBO_ART).forEach(function (combo) {
+          if (text === combo.replace(/\s/g, '')) name = combo;
+        });
+      });
+      if (!name) { comboTip.hidden = true; return; }
+      var key = COMBO_ART[name][0];
+      var index = COMBO_KEYS.indexOf(key);
+      if (index < 0) { comboTip.hidden = true; return; }
+      comboArt.style.backgroundPosition = (-(index % 2) * 288) + 'px ' + (-Math.floor(index / 2) * 162) + 'px';
+      comboLine.textContent = '「' + COMBO_ART[name][1] + '」';
+      comboTip.hidden = false;
+      var rect = row.getBoundingClientRect();
+      var left = Math.min(Math.max(event.clientX + 16, 8), window.innerWidth - 306 - 16);
+      var top = rect.bottom + 210 > window.innerHeight ? rect.top - 218 : rect.bottom + 8;
+      comboTip.style.left = left + 'px';
+      comboTip.style.top = Math.max(8, top) + 'px';
+    });
+    comboSection.addEventListener('mouseleave', function () { comboTip.hidden = true; });
+    window.addEventListener('scroll', function () { comboTip.hidden = true; }, { passive: true });
+  }
+
+  /* ── 彩蛋：站住六秒，会想起一件事 ── */
+  var recall = document.createElement('div');
+  recall.className = 'wiki-recall';
+  document.body.appendChild(recall);
+  var recallTimer = null;
+  var recallCooldownUntil = 0;
+  var recalledSeen = [];
+  function scheduleRecall() {
+    if (recallTimer) clearTimeout(recallTimer);
+    recall.classList.remove('show');
+    recallTimer = setTimeout(function () {
+      if (Date.now() < recallCooldownUntil) return;
+      var items = (window.WIKI_RUNTIME_STATUS_V1 && window.WIKI_RUNTIME_STATUS_V1.items || []).filter(function (item) {
+        return item.flavor && recalledSeen.indexOf(item.id) === -1;
+      });
+      if (!items.length) return;
+      var item = items[Math.floor(Math.random() * items.length)];
+      recalledSeen.push(item.id);
+      recall.replaceChildren(document.createTextNode('“' + item.flavor + '”'));
+      var src = document.createElement('small');
+      src.textContent = '站住太久，想起了《' + item.name + '》';
+      recall.appendChild(src);
+      recall.classList.add('show');
+      recallCooldownUntil = Date.now() + 45000;
+      setTimeout(function () { recall.classList.remove('show'); }, 4600);
+    }, 6000);
+  }
+  ['scroll', 'mousemove', 'keydown', 'pointerdown'].forEach(function (kind) {
+    window.addEventListener(kind, scheduleRecall, { passive: true });
+  });
+  scheduleRecall();
+
+  /* ── 彩蛋：留灯 / 熄灯的黑暗收拢过场 ── */
+  var lampToggle = document.getElementById('wiki-theme-toggle');
+  if (lampToggle && !reduced) {
+    lampToggle.addEventListener('click', function () {
+      var dark = document.documentElement.getAttribute('data-theme') !== 'light';
+      var veil = document.createElement('div');
+      veil.className = 'lamp-veil ' + (dark ? 'to-dark' : 'to-light');
+      document.body.appendChild(veil);
+      setTimeout(function () { veil.remove(); }, 1000);
+    });
+  }
 })();
