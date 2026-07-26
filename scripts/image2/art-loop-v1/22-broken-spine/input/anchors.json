@@ -1,0 +1,235 @@
+{
+  "logicalCell": [
+    40,
+    56
+  ],
+  "rows": [
+    "idle",
+    "walk",
+    "attack",
+    "hurt"
+  ],
+  "columns": [
+    "front",
+    "left",
+    "back",
+    "right"
+  ],
+  "selectedFrames": {
+    "idle": 0,
+    "walk": 0,
+    "attack": 1,
+    "hurt": 0
+  },
+  "bodyMidAnchors": {
+    "idle": {
+      "front": [
+        20,
+        33
+      ],
+      "left": [
+        22,
+        33
+      ],
+      "back": [
+        20,
+        33
+      ],
+      "right": [
+        18,
+        33
+      ]
+    },
+    "walk": {
+      "front": [
+        20,
+        33
+      ],
+      "left": [
+        22,
+        33
+      ],
+      "back": [
+        20,
+        33
+      ],
+      "right": [
+        18,
+        33
+      ]
+    },
+    "attack": {
+      "front": [
+        20,
+        32
+      ],
+      "left": [
+        22,
+        32
+      ],
+      "back": [
+        20,
+        32
+      ],
+      "right": [
+        18,
+        32
+      ]
+    },
+    "hurt": {
+      "front": [
+        20,
+        34
+      ],
+      "left": [
+        22,
+        34
+      ],
+      "back": [
+        20,
+        34
+      ],
+      "right": [
+        18,
+        34
+      ]
+    }
+  },
+  "partTransforms": {
+    "front": {
+      "head": [
+        0,
+        2,
+        1.0
+      ],
+      "upper": [
+        0,
+        1,
+        0.94
+      ],
+      "leftArm": [
+        0,
+        2,
+        1.0
+      ],
+      "rightArm": [
+        0,
+        2,
+        1.0
+      ],
+      "leftLeg": [
+        0,
+        0,
+        1.0
+      ],
+      "rightLeg": [
+        0,
+        0,
+        1.0
+      ]
+    },
+    "left": {
+      "head": [
+        -3,
+        2,
+        1.0
+      ],
+      "upper": [
+        -2,
+        1,
+        0.94
+      ],
+      "leftArm": [
+        -1,
+        2,
+        1.0
+      ],
+      "rightArm": [
+        -1,
+        2,
+        1.0
+      ],
+      "leftLeg": [
+        0,
+        0,
+        1.0
+      ],
+      "rightLeg": [
+        0,
+        0,
+        1.0
+      ]
+    },
+    "back": {
+      "head": [
+        0,
+        2,
+        1.0
+      ],
+      "upper": [
+        0,
+        1,
+        0.94
+      ],
+      "leftArm": [
+        0,
+        2,
+        1.0
+      ],
+      "rightArm": [
+        0,
+        2,
+        1.0
+      ],
+      "leftLeg": [
+        0,
+        0,
+        1.0
+      ],
+      "rightLeg": [
+        0,
+        0,
+        1.0
+      ]
+    },
+    "right": {
+      "head": [
+        3,
+        2,
+        1.0
+      ],
+      "upper": [
+        2,
+        1,
+        0.94
+      ],
+      "leftArm": [
+        1,
+        2,
+        1.0
+      ],
+      "rightArm": [
+        1,
+        2,
+        1.0
+      ],
+      "leftLeg": [
+        0,
+        0,
+        1.0
+      ],
+      "rightLeg": [
+        0,
+        0,
+        1.0
+      ]
+    }
+  },
+  "footRoot": [
+    20,
+    49
+  ],
+  "shadowPolicy": "preserve ordinary ground shadow; add no shadow attachment",
+  "hardConstraint": "decal pixels must remain inside the approved hero torso silhouette",
+  "formalAssetsModified": false
+}

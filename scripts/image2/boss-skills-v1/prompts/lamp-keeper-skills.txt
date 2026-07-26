@@ -1,0 +1,7 @@
+Use case: stylized-concept
+Asset type: 2x2 pixel-art boss skill pose sheet for an action game
+Primary request: Preserve the exact hooded lamp keeper and old hand lantern. Four poses in reading order: raising the lantern high to illuminate two choices; extending the empty hand to point and name a target; pulling a narrow ribbon of light from an unseen object into the lantern; pinching the lantern flame until it becomes almost dark.
+Style: crisp high-detail pixel art matching the references, solemn final-boss silhouette, readable at 64px.
+Layout: exact 2x2 grid, one complete hooded keeper per cell, same cloak and lantern, generous gutters.
+Background: perfectly flat solid #00ff00 chroma key, no floor, scenery, additional objects, labels, borders, or text.
+Avoid: visible face, scythe, weapon, horror gore, extra people, smooth painting, blur.

@@ -1,0 +1,22 @@
+Use case: stylized-concept
+Asset type: production source sheet for one item in the Chinese pixel-art action game 《这一身》, targeting a 40x56 logical hero sprite
+Primary request: design the complete item-specific art layers for “最新款的 iPhone 17 Pro Max” as a strict four-direction 2x2 source sheet
+Input images:
+Image 1 is the canonical palette, pixel density and outline reference.
+Image 2 is the approved front/left/back/right hero proportion and direction reference; do not redraw the hero.
+Image 3 is the approved torso/head anatomy-part reference.
+Image 4 is the approved near/far arm anatomy-part reference.
+Canon appearance: 近手握着深钛灰新机，背面三镜头模组、正面冷白屏光与顶部岛形区域负责识别；不画品牌标志、挂绳或可读界面
+Canon hero manifestation: 近手始终握着一台深钛灰新机；背面用清楚的三镜头模组识别，正面只留冷白屏光与顶部深色岛形区域，不画品牌标志和可读文字；消息到来时屏光骤亮并在头顶弹出短气泡。
+Canon irony/event: 买得起最贵的联系工具，还是没有一条消息能等
+Runtime production channels: rigid, event
+Item-specific disambiguation: For this source sheet, render only the permanent rigid prop; its message event is composed in runtime and must not add a separate sprite. Draw exactly one premium current-generation deep titanium-grey smartphone in each quadrant, designed to fit a near-hand grip. Back: one clearly separated three-lens camera cluster with a small sensor. Front: cold-white active screen and a dark pill-shaped top island, no app grid. Side views: thin metal rails and camera bump. No strap, case, holster, cable, floating message panel, logo, readable text, extra phone or fifth object.
+Production requirements:
+Produce a compact rigid prop with its real attachment hardware, strap, cord or fold. Its facing and overlap must make physical sense at the canon body anchor; do not invent floating support bars.
+Produce a short event-effect source in four directional variants. It must read as a momentary game event and must not look like a permanent wearable object.
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background, with no shadow, gradient, texture, floor or lighting variation
+Style/medium: restrained Chinese indie-game pixel art, hard 1-pixel-equivalent edges, deliberate clusters, muted lived-in materials, up to 8 subject colors plus outline
+Composition/framing: strict 2x2 layout; top-left front, top-right left, bottom-left back, bottom-right right; equal scale and generous cell padding; no labels, separators or grid lines
+Semantic direction: translate the specific irony into physical wear, tension, placement, material, absence or repetition. Do not draw a generic collectible icon and do not add unrelated melodrama.
+Constraints: show only item-specific garment parts, props, decals, silhouette guides and effects; keep every component disconnected only where it is a real anatomy or rig part; preserve identical identity, palette and scale across directions; reserve blank pixel blocks where runtime text is required
+Avoid: hero body, head, skin, hands, legs, complete character, UI frame, Chinese or Latin text, watermark, fantasy armor, magical ornament, photorealism, smooth vector edges, floating rods, unexplained bars, duplicate limbs, decorative clutter

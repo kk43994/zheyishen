@@ -1,0 +1,24 @@
+{
+  "logicalHeroSize": [40, 56],
+  "sourceLayout": {
+    "quadrants": ["front", "left", "back", "right"],
+    "framesInsideEachQuadrant": ["standby", "appear", "leap", "guard", "disconnect"]
+  },
+  "anchors": {
+    "front": [[30, 48], [30, 47], [25, 42], [21, 35], [20, 33]],
+    "left": [[9, 48], [9, 47], [13, 42], [17, 35], [19, 33]],
+    "back": [[10, 48], [10, 47], [15, 42], [19, 35], [20, 33]],
+    "right": [[31, 48], [31, 47], [27, 42], [23, 35], [21, 33]]
+  },
+  "limits": [[7, 9], [7, 9], [8, 10], [14, 16], [12, 12]],
+  "gates": {
+    "persistentAssetUntilTriggered": true,
+    "removedAfterTrigger": true,
+    "standbyBottomY": [50, 52],
+    "rectangularScreenAllowed": false,
+    "groundRemnantAllowed": false,
+    "disconnectPixelCountLessThanGuard": true,
+    "transparentRgbNonzero": 0,
+    "exactGreenPixels": 0
+  }
+}

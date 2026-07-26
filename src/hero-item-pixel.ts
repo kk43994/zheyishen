@@ -8,6 +8,7 @@ import {
   type ItemAppearanceDefinition,
 } from './item-appearance';
 import { getHeroMotionOffset } from './hero-animation-rig';
+import { ITEM_EQUIPMENT_CELL, itemEquipmentAtlas } from './item-equipment-atlas';
 import {
   allocateHeroItemSlots,
   type HeroItemSlotAllocation,
@@ -85,6 +86,7 @@ class PixelBrush {
       if (doubled <= dx) { error += dx; y += sy; }
     }
   }
+
 }
 
 const CANONICAL_ANCHORS: Readonly<Record<BodyAnchor, RigAnchor>> = {
@@ -332,9 +334,9 @@ function drawProp(
       break;
     case 'red-packet':
       if (isSideFacing(facing)) {
-        drawSideSlab(brush, x, y - 3, 7, INK, '#a73743', facing);
+        drawSideSlab(brush, x, y - 2, 5, INK, '#a73743', facing);
       } else {
-        brush.rect(x - 3, y - 3, 7, 7, '#a73743');
+        brush.rect(x - 2, y - 2, 5, 5, '#a73743');
         if (facing === 'front') brush.pixel(x, y, '#d5b458');
       }
       break;
@@ -343,6 +345,168 @@ function drawProp(
     case 'numb-shadow':
       brush.rect(x - 9, y, 19, 2, '#5b5672'); brush.rect(x - 5, y + 2, 11, 1, '#3e3a51'); break;
   }
+}
+
+function drawBespokeRigid(
+  brush: PixelBrush,
+  id: ItemId,
+  x: number,
+  y: number,
+  facing: HeroFacing,
+): boolean {
+  const side = facing === 'left' ? -1 : 1;
+  if (id === 'loose-button') {
+    brush.line(x - side * 2, y - 2, x + side * 2, y + 2, '#9b7a6d');
+    brush.rect(x - 1, y, 3, 3, INK);
+    brush.pixel(x, y + 1, '#8e4b55');
+    return true;
+  }
+  if (id === 'marble') {
+    brush.rect(x - 2, y - 2, 5, 5, INK);
+    brush.rect(x - 1, y - 1, 3, 3, '#648e9a');
+    brush.pixel(x - 1, y - 1, '#d3e1dc');
+    brush.pixel(x + 1, y, '#8c6f9f');
+    return true;
+  }
+  if (id === 'read-3am') {
+    brush.rect(x - 3, y - 5, 7, 11, INK);
+    brush.rect(x - 2, y - 4, 5, 8, '#596b76');
+    brush.line(x - 1, y - 1, x + 2, y - 1, '#d4d8d2');
+    brush.pixel(x + 2, y + 1, '#a8b8c2');
+    brush.pixel(x + 2, y + 3, '#a64049');
+    return true;
+  }
+  if (id === 'name-sold') {
+    brush.rect(x - 7, y - 3, 15, 7, INK);
+    brush.rect(x - 6, y - 2, 13, 5, '#9c8d75');
+    brush.rect(x - 4, y - 1, 2, 3, '#3a3439');
+    brush.line(x, y - 1, x, y + 1, '#6b2632');
+    brush.line(x + 2, y - 1, x + 2, y + 1, '#6b2632');
+    brush.line(x + 4, y - 1, x + 4, y + 1, '#6b2632');
+    brush.pixel(x - 6, y + 3, '#d2c6ac');
+    return true;
+  }
+  if (id === 'takeout-3am') {
+    brush.line(x - 3, y - 5, x, y - 8, '#9a8465');
+    brush.line(x + 3, y - 5, x, y - 8, '#9a8465');
+    brush.rect(x - 5, y - 5, 11, 11, INK);
+    brush.rect(x - 4, y - 4, 9, 9, '#80705b');
+    brush.pixel(x - 2, y - 1, '#44383a');
+    brush.pixel(x + 3, y + 2, '#4d3f37');
+    return true;
+  }
+  if (id === 'mineral-water') {
+    brush.rect(x - 2, y - 6, 5, 11, INK);
+    brush.rect(x - 1, y - 5, 3, 9, '#86aeb6');
+    brush.rect(x - 1, y - 7, 3, 2, '#b8d1d2');
+    brush.rect(x - 1, y - 1, 3, 3, '#4f8293');
+    brush.pixel(x + 1, y - 4, '#d3e3df');
+    return true;
+  }
+  if (id === 'divorce-draft') {
+    if (isSideFacing(facing)) {
+      drawSideSlab(brush, x, y - 5, 11, INK, PAPER, facing);
+    } else {
+      brush.rect(x - 4, y - 5, 9, 11, INK);
+      brush.rect(x - 3, y - 4, 7, 9, PAPER);
+      brush.line(x - 2, y - 2, x + 2, y - 2, '#776c62');
+      brush.line(x - 2, y + 1, x + 1, y + 1, RED);
+    }
+    return true;
+  }
+  if (id === 'shared-powerbank') {
+    brush.rect(x - 3, y - 5, 7, 10, INK);
+    brush.rect(x - 2, y - 4, 5, 8, '#506c70');
+    brush.line(x - 1, y - 2, x + 1, y - 2, '#9bb8b3');
+    brush.pixel(x + 2, y + 2, '#b4d2c7');
+    return true;
+  }
+  if (id === 'old-door-lock') {
+    brush.frame(x - 3, y - 7, 7, 7, '#9b8046');
+    brush.rect(x - 5, y - 1, 11, 9, INK);
+    brush.rect(x - 4, y, 9, 7, '#886b37');
+    brush.pixel(x, y + 2, '#d4b45f');
+    brush.line(x, y + 3, x, y + 5, '#3a3025');
+    return true;
+  }
+  if (id === 'pregnancy-test') {
+    brush.line(x - side * 5, y + 2, x + side * 5, y - 3, INK, 3);
+    brush.line(x - side * 5, y + 2, x + side * 5, y - 3, '#dedbd2');
+    brush.rect(x + side * 1 - 1, y - 2, 3, 3, '#d99aa4');
+    brush.pixel(x + side, y - 1, '#a64049');
+    return true;
+  }
+  if (id === 'gym-card') {
+    if (isSideFacing(facing)) {
+      drawSideSlab(brush, x, y - 3, 7, INK, '#536b7d', facing);
+    } else {
+      brush.rect(x - 5, y - 3, 11, 7, INK);
+      brush.rect(x - 4, y - 2, 9, 5, '#536b7d');
+      brush.line(x - 2, y, x + 3, y, '#c2b891');
+      brush.pixel(x + 3, y + 2, RED);
+    }
+    return true;
+  }
+  if (id === 'ai-chat' || id === 'friend-verify') {
+    brush.rect(x - 3, y - 6, 7, 12, INK);
+    brush.rect(x - 2, y - 5, 5, 9, '#365467');
+    if (id === 'ai-chat') {
+      brush.rect(x - 1, y - 3, 3, 2, '#75b7c2');
+      brush.rect(x, y, 2, 2, '#b3d0d0');
+      brush.pixel(x - 1, y + 3, '#73a59f');
+    } else {
+      brush.rect(x - 1, y - 3, 3, 3, '#c7d6d0');
+      brush.pixel(x, y - 2, '#59706b');
+      brush.line(x - 1, y + 2, x, y + 3, '#75a477');
+      brush.line(x, y + 3, x + 2, y + 1, '#75a477');
+    }
+    return true;
+  }
+  if (id === 'streak-1847') {
+    if (isSideFacing(facing)) {
+      drawSideSlab(brush, x, y - 5, 11, INK, PAPER, facing);
+    } else {
+      brush.rect(x - 5, y - 5, 11, 11, INK);
+      brush.rect(x - 4, y - 4, 9, 9, PAPER);
+      brush.rect(x - 4, y - 4, 9, 2, '#758267');
+      brush.pixel(x - 2, y, '#758267');
+      brush.pixel(x + 1, y, '#758267');
+      brush.pixel(x + 3, y + 3, RED);
+    }
+    return true;
+  }
+  if (id === 'card-binder') {
+    if (isSideFacing(facing)) {
+      brush.rect(x - 2, y - 10, 5, 22, INK);
+      brush.rect(x - 1, y - 9, 3, 20, '#765747');
+      brush.line(x + side, y - 7, x + side, y + 9, '#b79262');
+    } else {
+      brush.rect(x - 8, y - 11, 17, 23, INK);
+      brush.rect(x - 7, y - 10, 15, 21, '#765747');
+      brush.line(x, y - 10, x, y + 10, '#b79262');
+      for (let row = -7; row <= 5; row += 6) {
+        brush.frame(x - 5, y + row, 4, 5, '#c49a63');
+        brush.frame(x + 2, y + row, 4, 5, '#c49a63');
+      }
+    }
+    return true;
+  }
+  if (id === 'shop-freezer') {
+    if (isSideFacing(facing)) {
+      brush.rect(x - 3, y - 15, 7, 30, INK);
+      brush.rect(x - 2, y - 14, 5, 28, '#7d8f91');
+      brush.line(x + side, y - 11, x + side, y + 9, '#bdd2d3');
+    } else {
+      brush.rect(x - 8, y - 15, 17, 30, INK);
+      brush.rect(x - 7, y - 14, 15, 28, '#63777d');
+      brush.frame(x - 5, y - 11, 5, 18, '#aac0c2');
+      brush.frame(x + 1, y - 11, 5, 18, '#aac0c2');
+      brush.line(x, y - 12, x, y + 10, '#c8dcda');
+      brush.rect(x - 5, y + 9, 11, 3, '#87999b');
+    }
+    return true;
+  }
+  return false;
 }
 
 function overflowColor(visual: AppearancePropKey): string {
@@ -370,6 +534,23 @@ function drawOverflowGlyph(
   brush.rect(x - 1, y - 1, 3, 3, INK);
   brush.pixel(x, y, color);
   brush.pixel(x + 1, y, color);
+}
+
+function drawImage2Equipment(
+  context: CanvasRenderingContext2D,
+  id: ItemId,
+  facing: HeroFacing,
+  x: number,
+  y: number,
+): boolean {
+  const sprite = itemEquipmentAtlas.slice(id, facing);
+  if (!sprite) return false;
+  context.drawImage(
+    sprite,
+    Math.round(x - ITEM_EQUIPMENT_CELL.width / 2),
+    Math.round(y - ITEM_EQUIPMENT_CELL.height / 2),
+  );
+  return true;
 }
 
 export function drawHeroItemPixelPass(
@@ -402,9 +583,29 @@ export function drawHeroItemPixelPass(
   for (const record of records) {
     const allocation = allocations.get(record.definition.id);
     if (allocation?.claim.kind === 'rigid') {
+      if (
+        record.definition.id === 'pregnancy-test'
+        || record.definition.id === 'cracked-glasses'
+        || record.definition.id === 'divorce-draft'
+      ) continue;
       if (allocation.pose && allocation.pose.pass === pass) {
         const anchor = slottedAnchor(allocation.pose, state, morph);
         const [animationX, animationY] = animationOffset(record.definition, state);
+        if (drawImage2Equipment(
+          context,
+          record.definition.id,
+          state.facing,
+          anchor.x + animationX,
+          anchor.y + animationY,
+        )) continue;
+        if (drawBespokeRigid(
+          brush,
+          record.definition.id,
+          anchor.x + animationX,
+          anchor.y + animationY,
+          state.facing,
+        )) continue;
+        let drewProp = false;
         for (const mutation of record.definition.mutations) {
           if (mutation.kind !== 'prop') continue;
           // Slot poses own placement. Registry offsets belong to the legacy
@@ -417,7 +618,9 @@ export function drawHeroItemPixelPass(
             state.facing,
             state.frame,
           );
+          drewProp = true;
         }
+        if (drewProp || record.definition.id === 'ktv-song') continue;
       } else if (!allocation.pose && pass === 'front' && allocation.overflow !== 'hide-prop') {
         const overflowIndex = overflowItems.indexOf(record.definition.id);
         const root = animatedAnchor('feet', state, morph);
@@ -430,6 +633,10 @@ export function drawHeroItemPixelPass(
       }
       continue;
     }
+    // The production contract decides whether the physical object is worn.
+    // Mutation/aura-only items keep their body consequence without pinning the
+    // inventory icon onto the character.
+    if (allocation?.claim.kind === 'mutation' || allocation?.claim.kind === 'effect') continue;
     if (!shouldDrawInPass(record, state.facing, pass) || hiddenByFacing(record, state.facing)) continue;
     if (record.definition.id === 'fathers-raincoat') {
       continue;

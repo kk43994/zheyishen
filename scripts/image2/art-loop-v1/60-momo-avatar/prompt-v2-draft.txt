@@ -1,0 +1,34 @@
+Use case: stylized-concept
+Asset type: anatomy-aware wearable dinosaur-head costume overlays for a 40x56 logical pixel hero, with safe-distance and threatened states
+
+Primary request: create only one oversized dusty-pink little-dinosaur HEADPIECE worn over the protagonist's entire original head for item 60, “momo的头像”. The round mascot headpiece replaces the visible head silhouette, while the protagonist's existing body, clothes, arms, hands, legs, pose and proportions remain completely unchanged. This is headwear only, never a full-body costume.
+
+Canon event and irony: “换上粉色小恐龙之后，他终于敢说话了” / “只有没有名字的时候才敢做自己.” Many anonymous accounts hide behind the same pink round dinosaur avatar. Translate that standardized avatar into a wearable head shell: the person dares to speak only after their individual face and hair disappear inside the same cute borrowed identity.
+
+Reference identity: a pink, very round large dinosaur head/face, with two tiny paws appearing to hold the big head. Preserve the approved icon's dusty gray-pink family, blank dark eye, short dinosaur muzzle and soft round silhouette, but adapt it into a physical headpiece rather than copying a circular avatar badge.
+
+Input images:
+Image 1: approved front/left/back/right protagonist heads. Match head center, baseline and camera only. Output no original human hair, face, skin, ear or neck; the generated headpiece will cover that area at runtime.
+Image 2: approved pink dinosaur icon. Use its identity and color, not its circular icon frame.
+Image 3: rejected ordinary-human-head source. Negative reference only; never redraw a human head.
+Image 4: canonical hard-pixel palette and density reference.
+
+Layout: strict 4 columns x 2 rows on equal cells. Columns FRONT, LEFT, BACK, RIGHT. Top row SAFE DISTANCE; bottom row THREATENED / ENEMY TOO CLOSE. No labels, borders, separators or extra variants.
+
+SAFE front: one large round dusty-pink dinosaur head shell, slightly larger than the original human head. It has a short blunt muzzle/nose-mouth structure, tiny dark eyes, a restrained tooth or mouth-notch cue, and one or two tiny bumps/horns on top. Two small pink paw/cheek flaps may hold the lower sides of the large head; they are attached to the headpiece and do not extend toward the torso as new arms.
+SAFE left/right: the same round shell in profile, exactly one visible eye, short 1-2-logical-pixel blunt muzzle, one top bump and the near paw/cheek flap. The rear half remains a round helmet shell. Do not expose a human face.
+SAFE back: the rear of the same round pink shell with the same top bumps, lower neck opening and subtle seam. Zero eyes, zero mouth, zero second face.
+
+THREATENED front: the same physical headpiece sits one logical pixel lower and tilts slightly down; eyes and mouth cues are dimmer and the two attached cheek-paws squeeze closer to the shell. It still covers the whole original head.
+THREATENED left/right: same one-pixel downward/forward tilt and dimmed eye. Do not shrink into a face mask or slide aside.
+THREATENED back: same rear shell one pixel lower, with no facial features.
+
+Runtime geometry after reduction: front <=22x20 logical pixels; sides <=21x20; back <=20x19. The overlay occupies only the original head/neck opening area and ends at or above logical y29 on the 40x56 hero. It must cover the old head but never overlap the torso, clothes, arms or hands. Keep the silhouette visibly rounded and stepped; a filled rectangle fails.
+
+Backdrop: perfectly flat solid #00ff00, no floor, shadow, gradient, texture, lighting variation or green spill.
+Style: restrained Chinese indie-game pixel art; crisp square clusters; hard stepped outline; charcoal-plum edge; muted gray-pink shadow; dusty rose shell; one pale pink highlight; at most six subject colors; no antialiasing, gradients or blur.
+
+Constraints: headpiece pieces only; no protagonist body, clothing, arms, hands, legs or full character; no circular avatar frame; no text, logo, UI or watermark.
+Avoid: simple whole-head pink recolor, rectangular face frame, visor, screen, paper mask, flat avatar card, exposed human face, normal pink-haired person, full-body dinosaur suit, mascot costume covering the torso, kigurumi body, plush toy held in hand, animal ears pasted onto original hair, helmet with human face opening, long crocodile snout, bird beak, rear-facing eyes, extra limbs, photorealism, smooth vector rendering.
+
+Final gate: at exact 40x56 scale the hero clearly wears one round pink little-dinosaur headpiece with muzzle/top-bump/paw-cheek structure; the original body and clothing are pixel-identical; safe and threatened states differ only through a one-pixel lower guarded posture and dimmer headpiece expression; all four directions are the same shell in space.

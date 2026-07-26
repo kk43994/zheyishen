@@ -1,0 +1,25 @@
+{
+  "name": "67-eye-exercise-v1",
+  "model": "gpt-image-2",
+  "quality": "high",
+  "size": "1024x1024",
+  "outputFormat": "png",
+  "background": "opaque",
+  "prompt": "prompt-v1.txt",
+  "images": [
+    "input/01-canonical-style-board.png",
+    "input/02-approved-arm-hand-parts.png",
+    "input/03-approved-head-torso-parts.png",
+    "input/04-current-failed-floating-eye-source.png",
+    "input/05-current-failed-long-skin-rods.png",
+    "input/06-approved-hero-4action-4dir.png",
+    "input/07-face-shoulder-anchor-guide.png"
+  ],
+  "output": "v1/67-eye-exercise-v1.png",
+  "remoteNode": "dmitkelao",
+  "status": "generated-v1-approved-local-exact",
+  "integrationAllowed": true,
+  "inventoryIconModified": false,
+  "runtimeModified": false,
+  "wikiModified": false
+}

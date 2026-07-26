@@ -1,4 +1,5 @@
-// 道具实物图标：image2 基底 + scripts/process_item_icons.py 规整产物。
+// 道具实物图标：独立的 Image2 图标源 + scripts/process_item_icons.py 规整产物。
+// 四方向上身源图只供 equipment-sprites 使用，不能回写这套 36px 图标。
 // icons.json 的 index 映射以 relics.ts 声明顺序为准；tiny 尺寸（物证栏）不走贴图。
 import iconManifest from './assets/items/icons.json';
 import type { ItemId } from './types';
@@ -14,6 +15,7 @@ class ItemIconAtlas {
   private image: HTMLImageElement | null = null;
   private frames = new Map<number, HTMLCanvasElement>();
   private loaded = false;
+  private readyPromise: Promise<void> | null = null;
 
   load(): void {
     if (this.image) return;
@@ -35,6 +37,22 @@ class ItemIconAtlas {
     };
     image.src = ICONS_URL;
     this.image = image;
+  }
+
+  whenReady(): Promise<void> {
+    if (this.loaded) return Promise.resolve();
+    this.load();
+    if (this.readyPromise) return this.readyPromise;
+    this.readyPromise = new Promise((resolve, reject) => {
+      const image = this.image;
+      if (!image) {
+        reject(new Error('道具图集尚未初始化'));
+        return;
+      }
+      image.addEventListener('load', () => resolve(), { once: true });
+      image.addEventListener('error', () => reject(new Error('道具图集加载失败')), { once: true });
+    });
+    return this.readyPromise;
   }
 
   slice(id: ItemId): HTMLCanvasElement | null {

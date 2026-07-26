@@ -1,0 +1,21 @@
+{
+  "name": "41-divorce-draft-v1",
+  "model": "gpt-image-2",
+  "quality": "high",
+  "size": "1024x1024",
+  "outputFormat": "png",
+  "background": "opaque",
+  "prompt": "prompt-v1.txt",
+  "images": [
+    "input/01-canonical-style-board.png",
+    "input/02-approved-hero-4dir-front-back-left-right.png",
+    "input/03-approved-head-torso-parts.png",
+    "input/04-approved-icon-material-cue.png",
+    "input/05-current-failed-runtime-review-negative.png",
+    "input/06-current-failed-large-paper-negative.png"
+  ],
+  "output": "v1/41-divorce-draft-v1.png",
+  "remoteNode": "dmitkelao",
+  "remoteAddress": "179.255.108.248",
+  "status": "generated-v1-source-accepted-v1.1-local-selected"
+}

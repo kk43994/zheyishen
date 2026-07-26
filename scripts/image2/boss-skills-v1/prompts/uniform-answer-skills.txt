@@ -1,0 +1,7 @@
+Use case: stylized-concept
+Asset type: 2x2 pixel-art small-boss skill pose sheet for an action game
+Primary request: Preserve the exact floating school-exam paper-mask identity from the runtime reference, with red crosses as eyes and one red grading bar as a mouth. Four strongly different poses in reading order: compact quiet paper mask; mask spread wide behind exactly three bold horizontal red grading bars; mask trailing a short curved path of discrete red cross stamps; several exam sheets aligned in one advancing row with one obvious empty gap while the original mask remains central. No readable writing is needed.
+Style: crisp high-detail pixel art matching the references, readable at 48px, oppressive school-paper small boss.
+Layout: exact 2x2 grid, one complete composition per cell, same mask identity, consistent scale, generous gutters.
+Background: perfectly flat solid #00ff00 chroma key, no classroom, desk, floor, labels, borders, letters, or numbers.
+Avoid: human teacher, generic ghost, summoning students, continuous laser beams, full written sentences, four similar paper masks, smooth painting, blur.

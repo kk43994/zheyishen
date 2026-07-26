@@ -1,0 +1,1471 @@
+{
+  "version": 1,
+  "model": "gpt-image-2",
+  "route": "DMIT sub2 owner pool",
+  "itemCount": 77,
+  "items": {
+    "loose-button": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/01-loose-button.png",
+      "sourceSha256": "096b18c59ae6eaa58f80700a847cff12fa7d080839f604ebfa53a434f09785b9",
+      "ink": "#261a22",
+      "dark": "#443b3e",
+      "dominant": "#5e5557",
+      "accent": "#c0b5af",
+      "light": "#d2c8c0",
+      "colors": [
+        "#261a22",
+        "#5e5557",
+        "#827a79",
+        "#443b3e",
+        "#b5a9a3",
+        "#736464",
+        "#c0b5af",
+        "#7c7170"
+      ]
+    },
+    "wooden-sword": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/02-wooden-sword.png",
+      "sourceSha256": "2ab94eb4df252f9b6fe69d964941fd779abfc319a444512b8cb7619f655b27d9",
+      "ink": "#020301",
+      "dark": "#a0684b",
+      "dominant": "#aa7456",
+      "accent": "#d9aa8c",
+      "light": "#d9aa8c",
+      "colors": [
+        "#020301",
+        "#aa7456",
+        "#683a2c",
+        "#744836",
+        "#965e44",
+        "#150d08",
+        "#825744",
+        "#a0684b"
+      ]
+    },
+    "red-workbook": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/03-red-workbook.png",
+      "sourceSha256": "d1a84e2e7a964abe9263027b2d42bdb264c0074ad6dcd12e0367bbb66735b982",
+      "ink": "#1b111b",
+      "dark": "#3f3a3d",
+      "dominant": "#423b3e",
+      "accent": "#dabea3",
+      "light": "#e3c9af",
+      "colors": [
+        "#423b3e",
+        "#1b111b",
+        "#3f3a3d",
+        "#31292c",
+        "#822b2d",
+        "#dabea3",
+        "#423438",
+        "#aa8670"
+      ]
+    },
+    "stone-schoolbag": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/04-stone-schoolbag.png",
+      "sourceSha256": "e3f55ffaac6950471079e724bdad36ebfb5f9f0779257490871de6cc3a70f5ef",
+      "ink": "#0a090a",
+      "dark": "#40312e",
+      "dominant": "#483934",
+      "accent": "#af997d",
+      "light": "#af997d",
+      "colors": [
+        "#221d1e",
+        "#0a090a",
+        "#312b2a",
+        "#483934",
+        "#9e8669",
+        "#50433e",
+        "#5e473d",
+        "#40312e"
+      ]
+    },
+    "bleach-powder": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/05-bleach-powder.png",
+      "sourceSha256": "5814f35fd271476da8f2a31ee21fbfdf3b84f4fd2376976e5bf26dbfd308395c",
+      "ink": "#110c18",
+      "dark": "#221a26",
+      "dominant": "#443941",
+      "accent": "#c4ac79",
+      "light": "#c4ac79",
+      "colors": [
+        "#1d1623",
+        "#1c1622",
+        "#1c1522",
+        "#110c18",
+        "#443941",
+        "#1b1521",
+        "#c4ac79",
+        "#221a26"
+      ]
+    },
+    "eyebrow-razor": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/06-eyebrow-razor.png",
+      "sourceSha256": "d945736a9fdf0dc4d8ed1a2c711b4c20c3d8fda3d96b98a959bc9342e60e7003",
+      "ink": "#301e2d",
+      "dark": "#9d9287",
+      "dominant": "#b39395",
+      "accent": "#c8b2a2",
+      "light": "#cdc2ac",
+      "colors": [
+        "#b39395",
+        "#301e2d",
+        "#a69e8b",
+        "#c8b2a2",
+        "#9d9287",
+        "#b79f96",
+        "#9f3a52",
+        "#bfaa9c"
+      ]
+    },
+    "od-pill": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/07-od-pill.png",
+      "sourceSha256": "01d86da72a3936cb8c649dda627ee755dbc877ef212f63c26ad28b46b4955860",
+      "ink": "#1a0512",
+      "dark": "#2b2b28",
+      "dominant": "#483641",
+      "accent": "#cdada8",
+      "light": "#f3e4da",
+      "colors": [
+        "#483641",
+        "#a27978",
+        "#1a0512",
+        "#cdada8",
+        "#1f1018",
+        "#dec6bd",
+        "#e5cbc3",
+        "#e9d3cb"
+      ]
+    },
+    "front-desk-letter": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/08-front-desk-letter.png",
+      "sourceSha256": "36dbda3d04b25f8e949a9019f68411c4a132c93a261358a9a921c17216fe39ec",
+      "ink": "#2b1c1c",
+      "dark": "#e6d1b7",
+      "dominant": "#e7d2b9",
+      "accent": "#d3bba2",
+      "light": "#ecd8bf",
+      "colors": [
+        "#e7d2b9",
+        "#2b1c1c",
+        "#e6d1b7",
+        "#e2ccb2",
+        "#d3bba2",
+        "#dac4ab",
+        "#9b8471",
+        "#c7ae97"
+      ]
+    },
+    "cracked-glasses": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/09-cracked-glasses.png",
+      "sourceSha256": "bff0dcd79a3fe875328f7dd8af1e3ba9d8ddca104bf4dcf1dc581a77748de74c",
+      "ink": "#1b131f",
+      "dark": "#aeaaac",
+      "dominant": "#c9c5c5",
+      "accent": "#c9c5c5",
+      "light": "#dcd9d8",
+      "colors": [
+        "#c9c5c5",
+        "#241d27",
+        "#49444c",
+        "#1d1b22",
+        "#413b45",
+        "#514c54",
+        "#3c353f",
+        "#1b131f"
+      ]
+    },
+    "small-uniform": {
+      "source": "output/imagegen/zhe-yi-shen-uniform-image2-v1/raw/small-uniform-anatomy-source.png",
+      "sourceSha256": "0b673d363268c2ca583b53ba48199d0e119767abed941ddc818d937fdc344baf",
+      "ink": "#0d0e13",
+      "dark": "#3b5e89",
+      "dominant": "#3d5e8a",
+      "accent": "#3b5e89",
+      "light": "#f4ece6",
+      "colors": [
+        "#3d5e8a",
+        "#3b5e89",
+        "#0d0e13",
+        "#f0e5df",
+        "#273a56",
+        "#1c1926",
+        "#3e5f8a",
+        "#3f618b"
+      ]
+    },
+    "only-key": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/11-only-key.png",
+      "sourceSha256": "6c0004e957f27046614172f4c6de895f8080a9cb01ffc42fb4c9fc23f2b20ac4",
+      "ink": "#0e080c",
+      "dark": "#7f5f54",
+      "dominant": "#9b7a6a",
+      "accent": "#e2c5aa",
+      "light": "#e2c5aa",
+      "colors": [
+        "#9b7a6a",
+        "#614a46",
+        "#7f5f54",
+        "#0e080c",
+        "#190c14",
+        "#513937",
+        "#1f1618",
+        "#bb9983"
+      ]
+    },
+    "first-salary": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/12-first-salary.png",
+      "sourceSha256": "83785814ee28bffb691c1ca6877cb3444f622300f74df3c8b204a598a890125b",
+      "ink": "#2b1715",
+      "dark": "#d09260",
+      "dominant": "#d29260",
+      "accent": "#d99d6b",
+      "light": "#e8b78d",
+      "colors": [
+        "#2b1715",
+        "#d29260",
+        "#b77951",
+        "#d99d6b",
+        "#d49663",
+        "#d09260",
+        "#854f39",
+        "#c78558"
+      ]
+    },
+    "nameless-tie": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/13-nameless-tie.png",
+      "sourceSha256": "468bc8d339961f646f53a11fbbb2e4c6feef98e1f3c1498496b4b00a1e22ab28",
+      "ink": "#170c12",
+      "dark": "#2a2021",
+      "dominant": "#5a4f4a",
+      "accent": "#c7b2ab",
+      "light": "#e0cfc9",
+      "colors": [
+        "#5a4f4a",
+        "#98847c",
+        "#170c12",
+        "#deccc6",
+        "#cbb6af",
+        "#1a1a16",
+        "#b29c95",
+        "#e0cfc9"
+      ]
+    },
+    "fathers-raincoat": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/14-fathers-raincoat.png",
+      "sourceSha256": "e629cf4f0d3f1cb1012fc67518d9d1c6f23b8bb4f5bf29cc028a757aca9e9f82",
+      "ink": "#1d1319",
+      "dark": "#c28f46",
+      "dominant": "#c69247",
+      "accent": "#cc9951",
+      "light": "#cc9951",
+      "colors": [
+        "#1d1319",
+        "#c69247",
+        "#7b5738",
+        "#4a372c",
+        "#94683d",
+        "#c28f46",
+        "#b28144",
+        "#b78745"
+      ]
+    },
+    "unsent-phone": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/15-unsent-phone.png",
+      "sourceSha256": "6565840102c3d7593389c6409b6084657ad7c4b18fbd2ccb6901d13a234c08d9",
+      "ink": "#050303",
+      "dark": "#35343b",
+      "dominant": "#38363d",
+      "accent": "#977d70",
+      "light": "#977d70",
+      "colors": [
+        "#050303",
+        "#1b1c24",
+        "#38363d",
+        "#110f0e",
+        "#6e5142",
+        "#624332",
+        "#35343b",
+        "#47342f"
+      ]
+    },
+    "baby-tooth": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/16-baby-tooth.png",
+      "sourceSha256": "d1bf501569c58c86f0b4c14e75f8381d17be23078d074e7eb177f2697d901bdb",
+      "ink": "#310914",
+      "dark": "#bc9d7d",
+      "dominant": "#dacaaa",
+      "accent": "#bc9d7d",
+      "light": "#ece3be",
+      "colors": [
+        "#ece3be",
+        "#501b1e",
+        "#dacaaa",
+        "#231c17",
+        "#b05648",
+        "#b02834",
+        "#6d0c21",
+        "#931f2b"
+      ]
+    },
+    "revoked-badge": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/17-revoked-badge.png",
+      "sourceSha256": "e486e753ccd775eec42f7e0925ae1a85c2143f6f480fd8ba58e6f3afe05e8e7f",
+      "ink": "#0c0710",
+      "dark": "#453740",
+      "dominant": "#443c45",
+      "accent": "#c7af99",
+      "light": "#c7af99",
+      "colors": [
+        "#443c45",
+        "#0c0710",
+        "#171720",
+        "#27222f",
+        "#5a494b",
+        "#7c665e",
+        "#362e38",
+        "#4d4248"
+      ]
+    },
+    "slow-watch": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/18-slow-watch.png",
+      "sourceSha256": "341c5dfd05fadf92f81f3a954fa8d7ed78bfa91e47676b000b7b9a7667c0e5d4",
+      "ink": "#030303",
+      "dark": "#362623",
+      "dominant": "#39312b",
+      "accent": "#d9c1a8",
+      "light": "#d9c1a8",
+      "colors": [
+        "#030303",
+        "#211c1a",
+        "#39312b",
+        "#2b2220",
+        "#0d100c",
+        "#d9c1a8",
+        "#483a34",
+        "#362623"
+      ]
+    },
+    "missing-photo": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/19-missing-photo.png",
+      "sourceSha256": "4eeb29c1cc07a249ca89df6e6b5b1368531ab50908ac0f711ba3dcb56cdc79db",
+      "ink": "#201b1a",
+      "dark": "#bfa086",
+      "dominant": "#c5a88d",
+      "accent": "#d3b599",
+      "light": "#ead2b6",
+      "colors": [
+        "#c5a88d",
+        "#967964",
+        "#493f3b",
+        "#201b1a",
+        "#bfa086",
+        "#3c302e",
+        "#61493f",
+        "#caab8f"
+      ]
+    },
+    "white-bottle": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/20-white-bottle.png",
+      "sourceSha256": "0dfc778115f9638c2da7886313cfe0e78e054ec5890c83ec2faa3b12ba90feec",
+      "ink": "#190e13",
+      "dark": "#a28074",
+      "dominant": "#b0938a",
+      "accent": "#caaea4",
+      "light": "#f4e1da",
+      "colors": [
+        "#b0938a",
+        "#190e13",
+        "#caaea4",
+        "#907571",
+        "#7c5c53",
+        "#5c3e35",
+        "#d8c0b9",
+        "#e8d3cc"
+      ]
+    },
+    "empty-frame": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/21-empty-frame.png",
+      "sourceSha256": "8c37c65164deb218a5a87dbc9a29d77b32da66aabf3399a11c6c8608ba56a5e2",
+      "ink": "#160d22",
+      "dark": "#302a33",
+      "dominant": "#3a2938",
+      "accent": "#a9785f",
+      "light": "#a9785f",
+      "colors": [
+        "#1d1828",
+        "#3a2938",
+        "#382537",
+        "#160d22",
+        "#2f1c32",
+        "#734b4c",
+        "#633d46",
+        "#422b3c"
+      ]
+    },
+    "broken-spine": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/22-broken-spine.png",
+      "sourceSha256": "9b55d63266925073e7515838755095d11e0167e1a1df346da962f3bb6fed5e87",
+      "ink": "#1a0921",
+      "dark": "#39203a",
+      "dominant": "#4a2743",
+      "accent": "#e8bfa7",
+      "light": "#f5d8bb",
+      "colors": [
+        "#4a2743",
+        "#211226",
+        "#39203a",
+        "#1a0921",
+        "#944a4f",
+        "#e8bfa7",
+        "#a36d68",
+        "#c89789"
+      ]
+    },
+    "spent-decade": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/23-spent-decade.png",
+      "sourceSha256": "85024f7f5fdf57444933e666fe0a78b5002577d9695b2393b8c8e521803707fa",
+      "ink": "#383146",
+      "dark": "#55585e",
+      "dominant": "#746c75",
+      "accent": "#cac0b8",
+      "light": "#f8f1e6",
+      "colors": [
+        "#746c75",
+        "#55585e",
+        "#383146",
+        "#cac0b8",
+        "#4e4557",
+        "#3c424a",
+        "#ada5a4",
+        "#828082"
+      ]
+    },
+    "held-pee": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/24-held-pee.png",
+      "sourceSha256": "f6d5a6de83106f7ca10c33e68d02d9aff6549af0b5c9575aeb7ff85da4d17196",
+      "ink": "#2e1b35",
+      "dark": "#38263c",
+      "dominant": "#372d3b",
+      "accent": "#c6ad7c",
+      "light": "#f2e3c1",
+      "colors": [
+        "#372d3b",
+        "#2d2434",
+        "#5f4950",
+        "#4c3e46",
+        "#483244",
+        "#38263c",
+        "#5d3f51",
+        "#dac89c"
+      ]
+    },
+    "flash-escape": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/25-flash-escape.png",
+      "sourceSha256": "04760f448375135757a7ada2bc66fa73fb91a049b1a3c941021ab3d01748b6f1",
+      "ink": "#462b39",
+      "dark": "#462b39",
+      "dominant": "#462b39",
+      "accent": "#d5d0c6",
+      "light": "#fdf7eb",
+      "colors": [
+        "#462b39",
+        "#d5d0c6",
+        "#706873",
+        "#fbf1e1",
+        "#f4eadc",
+        "#64505c",
+        "#fcf2e2",
+        "#8a8389"
+      ]
+    },
+    "class-break": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/26-class-break.png",
+      "sourceSha256": "955da127071ec49eaea2055005e362026f595d92262018f54048e8d0dae96ddc",
+      "ink": "#cec343",
+      "dark": "#cec343",
+      "dominant": "#e8d650",
+      "accent": "#cec343",
+      "light": "#fbf696",
+      "colors": [
+        "#faf283",
+        "#e8d650",
+        "#efe257",
+        "#f8ec76",
+        "#cec343",
+        "#fbf696",
+        "#faf291",
+        "#fbef90"
+      ]
+    },
+    "last-page": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/27-last-page.png",
+      "sourceSha256": "9dd96b3c968fb334e1ca8379c270a006436d977a20a8028e78b6ab65e0618307",
+      "ink": "#2c1d15",
+      "dark": "#997c68",
+      "dominant": "#c5ad97",
+      "accent": "#d2b69e",
+      "light": "#efdec7",
+      "colors": [
+        "#2c1d15",
+        "#c5ad97",
+        "#dac2aa",
+        "#d6bca4",
+        "#997c68",
+        "#e7d1b8",
+        "#e9d4bc",
+        "#d2b69e"
+      ]
+    },
+    "five-ha": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/28-five-ha.png",
+      "sourceSha256": "be05a1edf01818753e3c6b897ed0062580ec0dbb52e4f803514469bb491eee4d",
+      "ink": "#030405",
+      "dark": "#edd6c3",
+      "dominant": "#eed8c5",
+      "accent": "#cda090",
+      "light": "#f3e0cc",
+      "colors": [
+        "#eed8c5",
+        "#edd6c3",
+        "#0a060c",
+        "#030405",
+        "#edd3bf",
+        "#703b3f",
+        "#946059",
+        "#cda090"
+      ]
+    },
+    "red-packet": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/29-red-packet.png",
+      "sourceSha256": "7425bae8a176aec5fb4fbf42e361b36eeb16a52e7ed9d4ab14289c75550ba7c9",
+      "ink": "#060202",
+      "dark": "#7c3434",
+      "dominant": "#982e2e",
+      "accent": "#982e2e",
+      "light": "#935846",
+      "colors": [
+        "#982e2e",
+        "#393234",
+        "#060202",
+        "#2e1e21",
+        "#1b181d",
+        "#591514",
+        "#0d0c0c",
+        "#4c2e30"
+      ]
+    },
+    "snow-screen": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/30-snow-screen.png",
+      "sourceSha256": "fa03f27a6f2cc941b1cd97d4a469ab93f6f2ab455132a94553f53df1ea07125f",
+      "ink": "#2d2a30",
+      "dark": "#c3c5c3",
+      "dominant": "#cbd1cc",
+      "accent": "#cbd1cc",
+      "light": "#fbfdfb",
+      "colors": [
+        "#2d2a30",
+        "#cbd1cc",
+        "#a6ada8",
+        "#e2e0e1",
+        "#fbfdfb",
+        "#c3c5c3",
+        "#bbbbb9",
+        "#f4f8f4"
+      ]
+    },
+    "marble": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/31-marble.png",
+      "sourceSha256": "6ef00b8b0f875b07bbc142b5237723a70b6d638c6e3a2426fee8468c00636ca8",
+      "ink": "#343133",
+      "dark": "#343133",
+      "dominant": "#343133",
+      "accent": "#a0c69e",
+      "light": "#e3ecdb",
+      "colors": [
+        "#343133",
+        "#91b195",
+        "#cadec1",
+        "#4c8788",
+        "#2f5c63",
+        "#768f87",
+        "#9fbe9d",
+        "#bccfb6"
+      ]
+    },
+    "always-crying": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/32-always-crying.png",
+      "sourceSha256": "e0597915ce5a8c387d9758f62e25a2a534d0ce5ef1a875341c994d808d683e5d",
+      "ink": "#150912",
+      "dark": "#483c52",
+      "dominant": "#605567",
+      "accent": "#91c8f2",
+      "light": "#d7effa",
+      "colors": [
+        "#605567",
+        "#150912",
+        "#271324",
+        "#87b4e9",
+        "#483c52",
+        "#212123",
+        "#aecff4",
+        "#342336"
+      ]
+    },
+    "three-day-visible": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/33-three-day-visible.png",
+      "sourceSha256": "5767b772cb7645d291f1db69179f24569644b1a1d0101d4f03ba67f659633027",
+      "ink": "#180b12",
+      "dark": "#443534",
+      "dominant": "#5b3d3f",
+      "accent": "#e7c59f",
+      "light": "#e7c59f",
+      "colors": [
+        "#2f1c26",
+        "#180b12",
+        "#221b1f",
+        "#5b3d3f",
+        "#443534",
+        "#34252d",
+        "#3e2930",
+        "#bd977e"
+      ]
+    },
+    "read-3am": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/34-read-3am.png",
+      "sourceSha256": "54cb8c9f7661968d72664b500630eb9377e9745f2f4045a12ec4f8657be26ba6",
+      "ink": "#040404",
+      "dark": "#3a343f",
+      "dominant": "#3d3842",
+      "accent": "#e3d7cf",
+      "light": "#f9ede6",
+      "colors": [
+        "#3d3842",
+        "#3e3942",
+        "#040404",
+        "#16141a",
+        "#29272f",
+        "#3a343f",
+        "#e3d7cf",
+        "#534b54"
+      ]
+    },
+    "retracted-voice": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/35-retracted-voice.png",
+      "sourceSha256": "054694fb2697b668a46ac6974be7ef3175564461320985e795e7ebfa7f5492e0",
+      "ink": "#08060a",
+      "dark": "#a3867c",
+      "dominant": "#c9ac9e",
+      "accent": "#c9ac9e",
+      "light": "#c9ac9e",
+      "colors": [
+        "#2b2734",
+        "#08060a",
+        "#15121b",
+        "#292432",
+        "#c9ac9e",
+        "#6e514e",
+        "#4f4247",
+        "#352c37"
+      ]
+    },
+    "takeout-3am": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/36-takeout-3am.png",
+      "sourceSha256": "750b2b64d4eca7a3345fe91b857559e2171803c4fbd5062a4d5c0af816df58ad",
+      "ink": "#1a1311",
+      "dark": "#ba9770",
+      "dominant": "#c4a37c",
+      "accent": "#ceac85",
+      "light": "#d2b28c",
+      "colors": [
+        "#1a1311",
+        "#c4a37c",
+        "#a88461",
+        "#ba9770",
+        "#d2b28c",
+        "#ceac85",
+        "#946f50",
+        "#6d5039"
+      ]
+    },
+    "auto-renew": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/37-auto-renew.png",
+      "sourceSha256": "ab1b15d266b080341d11000298bbeb2e1072f8f571c569760d37081051bafd34",
+      "ink": "#493d36",
+      "dark": "#c6a068",
+      "dominant": "#d1b8a4",
+      "accent": "#c5852c",
+      "light": "#fbf69d",
+      "colors": [
+        "#d1b8a4",
+        "#e9d5c8",
+        "#54433f",
+        "#9c8463",
+        "#c5852c",
+        "#493d36",
+        "#faf487",
+        "#ddc2a5"
+      ]
+    },
+    "bargain-link": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/38-bargain-link.png",
+      "sourceSha256": "35693a41121ecb52640e72640f74b3e7ec8172d4f8bdc9d25f36e0ca41ff7ca2",
+      "ink": "#040305",
+      "dark": "#42282c",
+      "dominant": "#343231",
+      "accent": "#88413f",
+      "light": "#82655b",
+      "colors": [
+        "#18171f",
+        "#2b272d",
+        "#040305",
+        "#343231",
+        "#0f1114",
+        "#1f1a20",
+        "#26252a",
+        "#6e3737"
+      ]
+    },
+    "mineral-water": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/39-mineral-water.png",
+      "sourceSha256": "2bf75c98543b562c68f5b8649f3df2e96e5205745ed61c6f5d72479bd59402e6",
+      "ink": "#4d505d",
+      "dark": "#4d505d",
+      "dominant": "#768694",
+      "accent": "#cebfb7",
+      "light": "#f8f6f4",
+      "colors": [
+        "#768694",
+        "#4d505d",
+        "#ebe4df",
+        "#a5b0b9",
+        "#b1bcc6",
+        "#cbc9cb",
+        "#91a4b3",
+        "#8697a6"
+      ]
+    },
+    "group-dad": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/40-group-dad.png",
+      "sourceSha256": "11d4f5b10d0c1ec3c335c344e6cc0aabcb9c9ab8ea5deb072fcff84c662dfd0f",
+      "ink": "#1e1214",
+      "dark": "#ebd8c6",
+      "dominant": "#efdbca",
+      "accent": "#d1bea9",
+      "light": "#f2e0ce",
+      "colors": [
+        "#efdbca",
+        "#705e55",
+        "#d4c2ae",
+        "#271a1c",
+        "#1e1214",
+        "#d1bea9",
+        "#85756b",
+        "#dfccba"
+      ]
+    },
+    "divorce-draft": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/41-divorce-draft.png",
+      "sourceSha256": "0ad6a1c864d04f243ae0890a071b40d4adfa5780aa4a2d9fee089f2efcf544e7",
+      "ink": "#18121a",
+      "dark": "#e4cbad",
+      "dominant": "#e5cdb0",
+      "accent": "#d9bb9c",
+      "light": "#ebd6ba",
+      "colors": [
+        "#e5cdb0",
+        "#2c242d",
+        "#2b232d",
+        "#18121a",
+        "#77443c",
+        "#e4cbad",
+        "#423b3b",
+        "#262128"
+      ]
+    },
+    "checkup-arrows": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/42-checkup-arrows.png",
+      "sourceSha256": "8d92724d93e935b2ec9d0db868d1de7e53d3e31d59ee20d250a2472cf68dc1d4",
+      "ink": "#6d0a10",
+      "dark": "#d5caa6",
+      "dominant": "#d7cca8",
+      "accent": "#d4c5a3",
+      "light": "#d9d1ad",
+      "colors": [
+        "#d7cca8",
+        "#6d0a10",
+        "#bd2934",
+        "#d4c5a3",
+        "#d5caa6",
+        "#c5be99",
+        "#bdaf8f",
+        "#a39e7b"
+      ]
+    },
+    "shared-powerbank": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/43-shared-powerbank.png",
+      "sourceSha256": "51101cdb7b952761f5182dd6ad5509cb3e478611fa062c7bd40bb68bee4bb02f",
+      "ink": "#241925",
+      "dark": "#cdb9a3",
+      "dominant": "#d1bca4",
+      "accent": "#d1bca4",
+      "light": "#dbc9b2",
+      "colors": [
+        "#d1bca4",
+        "#cdb9a3",
+        "#736f77",
+        "#241925",
+        "#2d272f",
+        "#7c8387",
+        "#b7a496",
+        "#576672"
+      ]
+    },
+    "third-pill": {
+      "source": "output/imagegen/zhe-yi-shen-art-loop-v1/44-third-pill/v1/44-third-pill-v1.png",
+      "sourceSha256": "1ca93bf07f889e2ea9569dd02fbcf9f5a9709a13c5c0c3040619a0e7e677066b",
+      "ink": "#1b0e27",
+      "dark": "#970f2a",
+      "dominant": "#2c2e3a",
+      "accent": "#b51030",
+      "light": "#b2c0b5",
+      "colors": [
+        "#2c2e3a",
+        "#420b1b",
+        "#1b0e27",
+        "#970f2a",
+        "#c02c3a",
+        "#73726c",
+        "#6f1121",
+        "#b51030"
+      ]
+    },
+    "loan-contract": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/45-loan-contract.png",
+      "sourceSha256": "1c11b0928e2624f23933f7a8e2ccfabf902f978c0172088075c7162bdea13109",
+      "ink": "#1b1114",
+      "dark": "#c8a98d",
+      "dominant": "#d0b398",
+      "accent": "#d0b398",
+      "light": "#d9c1a8",
+      "colors": [
+        "#d0b398",
+        "#1b1114",
+        "#5c3b36",
+        "#816053",
+        "#977a67",
+        "#c8a98d",
+        "#b08e75",
+        "#3a302c"
+      ]
+    },
+    "name-sold": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/46-name-sold.png",
+      "sourceSha256": "d81ee06c12c23987e6642c7fda13a5ec79ea91cdbedb831e8d95147ec5c3e4eb",
+      "ink": "#161312",
+      "dark": "#3d2b29",
+      "dominant": "#5f4a41",
+      "accent": "#ceb194",
+      "light": "#d5b99c",
+      "colors": [
+        "#161312",
+        "#5f4a41",
+        "#3d2b29",
+        "#aa886e",
+        "#ceb194",
+        "#9a7a64",
+        "#b69376",
+        "#896656"
+      ]
+    },
+    "moms-bowl": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/47-moms-bowl.png",
+      "sourceSha256": "1caa2b4299f20aef7db828e572f506221338f363865a2d6224cd47ad0a8979e8",
+      "ink": "#312124",
+      "dark": "#312124",
+      "dominant": "#604a45",
+      "accent": "#cfb3a3",
+      "light": "#f1e2d4",
+      "colors": [
+        "#312124",
+        "#604a45",
+        "#98796d",
+        "#dbc7b8",
+        "#bb9d8d",
+        "#cfb3a3",
+        "#d1b9aa",
+        "#af9384"
+      ]
+    },
+    "ruma-msg": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/48-ruma-msg.png",
+      "sourceSha256": "3bdd36e0f9935c4bea6312057115d7cbb410991c0dd567381bf1ac418ae63b57",
+      "ink": "#190b19",
+      "dark": "#714759",
+      "dominant": "#6c5569",
+      "accent": "#bbaa91",
+      "light": "#f3ebcb",
+      "colors": [
+        "#6c5569",
+        "#453344",
+        "#1f111d",
+        "#2b182b",
+        "#f3ebcb",
+        "#341a36",
+        "#190b19",
+        "#503b4d"
+      ]
+    },
+    "held-elevator": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/49-held-elevator.png",
+      "sourceSha256": "0cbb598bfd711c91a39b7ea8f012b2344a3411cf4392ca853ae0ecf3db95ea15",
+      "ink": "#171020",
+      "dark": "#595356",
+      "dominant": "#625e5e",
+      "accent": "#cbbc9c",
+      "light": "#cbbc9c",
+      "colors": [
+        "#1d1d29",
+        "#171020",
+        "#625e5e",
+        "#595356",
+        "#33313d",
+        "#2a2836",
+        "#887e75",
+        "#3d3541"
+      ]
+    },
+    "old-door-lock": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/50-old-door-lock.png",
+      "sourceSha256": "14826622806f904ff3a0d2a223200fc6e0b50bafb452db536dd7daba65013277",
+      "ink": "#1b1416",
+      "dark": "#483c3e",
+      "dominant": "#4d3f41",
+      "accent": "#9e7a6b",
+      "light": "#9e7a6b",
+      "colors": [
+        "#251b1d",
+        "#1b1416",
+        "#2e2525",
+        "#4d3f41",
+        "#504647",
+        "#6a524e",
+        "#483c3e",
+        "#3a2e2e"
+      ]
+    },
+    "drank-for-boss": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/51-drank-for-boss.png",
+      "sourceSha256": "f3025e6282ebc9d75fe7400dab610b839427ba5f8bd1a44ecc2d647e4a72c464",
+      "ink": "#1d0b1f",
+      "dark": "#734f51",
+      "dominant": "#b43e49",
+      "accent": "#d1817a",
+      "light": "#d1c3b2",
+      "colors": [
+        "#241926",
+        "#1d0b1f",
+        "#b43e49",
+        "#734f51",
+        "#d1817a",
+        "#411f34",
+        "#800e2c",
+        "#bc9c80"
+      ]
+    },
+    "hair-in-takeout": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/52-hair-in-takeout.png",
+      "sourceSha256": "8baf48fbaea0cc769daf79d60eb38afd1476eac0ea712ed9b6f6c3b3aa0315e3",
+      "ink": "#25121e",
+      "dark": "#4a2f37",
+      "dominant": "#533a3b",
+      "accent": "#c9ae9a",
+      "light": "#e5cbb7",
+      "colors": [
+        "#25121e",
+        "#331728",
+        "#533a3b",
+        "#322328",
+        "#462734",
+        "#72514e",
+        "#e5cbb7",
+        "#4a2f37"
+      ]
+    },
+    "unwashed-pillow": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/53-unwashed-pillow.png",
+      "sourceSha256": "eb13858d736d3af36d0a6d54467486555cc9a19c98b9ae3b733eee246ddf1f31",
+      "ink": "#362833",
+      "dark": "#362833",
+      "dominant": "#4e3f44",
+      "accent": "#d1b1a2",
+      "light": "#d4b5a6",
+      "colors": [
+        "#4e3f44",
+        "#362833",
+        "#d1b1a2",
+        "#bb988b",
+        "#997c76",
+        "#6c5657",
+        "#8c6c64",
+        "#af8f84"
+      ]
+    },
+    "sock-cigs": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/54-sock-cigs.png",
+      "sourceSha256": "b9f181afbaf5cbc883fcf47fec79d02039887ceb47d4fb446d2b47dc4a908be2",
+      "ink": "#1e100c",
+      "dark": "#735d4c",
+      "dominant": "#826d5c",
+      "accent": "#bba593",
+      "light": "#bba593",
+      "colors": [
+        "#1e100c",
+        "#826d5c",
+        "#a18b78",
+        "#584539",
+        "#99806b",
+        "#635244",
+        "#42362b",
+        "#735d4c"
+      ]
+    },
+    "pregnancy-test": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/55-pregnancy-test.png",
+      "sourceSha256": "65737ff27feaf5cf38001228e29a5d6e2848bf011a84a849e9f4466791fcc167",
+      "ink": "#360e13",
+      "dark": "#e3d5d0",
+      "dominant": "#e4d5d0",
+      "accent": "#cfb2b0",
+      "light": "#f3eae6",
+      "colors": [
+        "#360e13",
+        "#e4d5d0",
+        "#e2d1cd",
+        "#bd828e",
+        "#e6d7d2",
+        "#c18994",
+        "#cfb2b0",
+        "#a5797e"
+      ]
+    },
+    "gym-card": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/56-gym-card.png",
+      "sourceSha256": "0c86c333986190f1b3b67bcb5c6f4ffe914c65093b5c47d912cb4df772eeff57",
+      "ink": "#1a0f1f",
+      "dark": "#e1cfb9",
+      "dominant": "#e2d1bc",
+      "accent": "#ccac96",
+      "light": "#e4d5c1",
+      "colors": [
+        "#1a0f1f",
+        "#e2d1bc",
+        "#d9c4b4",
+        "#e1cfb9",
+        "#4d3440",
+        "#d5c0b1",
+        "#d3b9a6",
+        "#8d615d"
+      ]
+    },
+    "funeral-photo": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/57-funeral-photo.png",
+      "sourceSha256": "a62c5bab47d313cae13fac3e18632b5e30603a1e2262e40b754657f8d8a15f37",
+      "ink": "#1f1a1b",
+      "dark": "#373032",
+      "dominant": "#383334",
+      "accent": "#cab298",
+      "light": "#d8c5ad",
+      "colors": [
+        "#2e282b",
+        "#383334",
+        "#312d2f",
+        "#3c3637",
+        "#423a3a",
+        "#352f31",
+        "#cab298",
+        "#1f1a1b"
+      ]
+    },
+    "typing-indicator": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/58-typing-indicator.png",
+      "sourceSha256": "cbd0d4c2d626156f52d4563c7b9f1517f0d91f0f520e0f470d5d811618d28775",
+      "ink": "#0e0816",
+      "dark": "#322a3b",
+      "dominant": "#4e3c46",
+      "accent": "#a99089",
+      "light": "#a99089",
+      "colors": [
+        "#1d1a29",
+        "#2d2738",
+        "#2b2637",
+        "#0e0816",
+        "#2c2738",
+        "#4e3c46",
+        "#322a3b",
+        "#a99089"
+      ]
+    },
+    "year-report": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/59-year-report.png",
+      "sourceSha256": "18739bc74212157e638f40ff5489bc9155c3437474ffd504a00c9c814618e32f",
+      "ink": "#040604",
+      "dark": "#b89789",
+      "dominant": "#c0a192",
+      "accent": "#dcc0b0",
+      "light": "#e2c9b9",
+      "colors": [
+        "#040604",
+        "#c0a192",
+        "#574445",
+        "#2e262c",
+        "#b89789",
+        "#dcc0b0",
+        "#21191e",
+        "#48363b"
+      ]
+    },
+    "momo-avatar": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/60-momo-avatar.png",
+      "sourceSha256": "281d0d690d3f3e92417a3771097ab1fa2988e832c0ae7e2f54470addafe21237",
+      "ink": "#150f15",
+      "dark": "#584e4f",
+      "dominant": "#f3dec9",
+      "accent": "#f3dec9",
+      "light": "#f3dec9",
+      "colors": [
+        "#f3dec9",
+        "#150f15",
+        "#27212a",
+        "#27222a",
+        "#28222b",
+        "#262129",
+        "#26222a",
+        "#27222b"
+      ]
+    },
+    "ai-chat": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/61-ai-chat.png",
+      "sourceSha256": "534d892622e936df2f1954b8ab73fc31794a9f7aaa3690da6b627313a3df7ace",
+      "ink": "#17121c",
+      "dark": "#3c3942",
+      "dominant": "#423944",
+      "accent": "#9ca6bf",
+      "light": "#dde2ef",
+      "colors": [
+        "#423944",
+        "#17121c",
+        "#38303a",
+        "#322f39",
+        "#2a2531",
+        "#9ca6bf",
+        "#4b3f48",
+        "#7c7b8b"
+      ]
+    },
+    "streak-1847": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/62-streak-1847.png",
+      "sourceSha256": "c2ca3152c87b078e4f1fbf7e16e5365a3841f537176c98831ead08cd9b534457",
+      "ink": "#272127",
+      "dark": "#e7c8ae",
+      "dominant": "#e8cbb1",
+      "accent": "#e3c4a9",
+      "light": "#edd2b8",
+      "colors": [
+        "#272127",
+        "#e8cbb1",
+        "#45353a",
+        "#e7c8ae",
+        "#d4b49f",
+        "#896563",
+        "#ae8e82",
+        "#dcbba4"
+      ]
+    },
+    "goodnight-2h": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/63-goodnight-2h.png",
+      "sourceSha256": "4e6859d19645e4803e1136079797d8671e6a6cce1e13198d938b7fb2247e6a6f",
+      "ink": "#15297f",
+      "dark": "#5488e5",
+      "dominant": "#669df6",
+      "accent": "#7ab5fa",
+      "light": "#bfe9fa",
+      "colors": [
+        "#669df6",
+        "#1e398b",
+        "#7ab5fa",
+        "#416dc2",
+        "#153881",
+        "#4971c8",
+        "#5488e5",
+        "#b0defb"
+      ]
+    },
+    "friend-verify": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/64-friend-verify.png",
+      "sourceSha256": "df4f6a906bc0b4184cbe4767e0a4e53b301f388e2d92f66634ec65586d289380",
+      "ink": "#160f13",
+      "dark": "#3a3034",
+      "dominant": "#37353b",
+      "accent": "#d8c9bb",
+      "light": "#dfd2c4",
+      "colors": [
+        "#37353b",
+        "#160f13",
+        "#d8c9bb",
+        "#2a282f",
+        "#302e35",
+        "#604845",
+        "#2d2d34",
+        "#232327"
+      ]
+    },
+    "summer-run": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/65-summer-run.png",
+      "sourceSha256": "f3f59ae3dc155d348c0efe46cf2311abdf46b6b3336e1d40bd62e8bc326ee482",
+      "ink": "#110b0d",
+      "dark": "#322e3d",
+      "dominant": "#34303f",
+      "accent": "#8c7f79",
+      "light": "#8c7f79",
+      "colors": [
+        "#110b0d",
+        "#34303f",
+        "#47434e",
+        "#322e3d",
+        "#47444f",
+        "#48454f",
+        "#46424d",
+        "#242229"
+      ]
+    },
+    "one-more-game": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/66-one-more-game.png",
+      "sourceSha256": "39b55a7856feeb047b27fe77d17d1fc9eb13bdec2c39d2a198e4cb2e18c4605c",
+      "ink": "#250f2a",
+      "dark": "#4a3748",
+      "dominant": "#613e55",
+      "accent": "#e9daa0",
+      "light": "#e9daa0",
+      "colors": [
+        "#613e55",
+        "#3c293e",
+        "#4a3748",
+        "#2a172f",
+        "#5c4b56",
+        "#250f2a",
+        "#3b1f3c",
+        "#2d1f33"
+      ]
+    },
+    "eye-exercise": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/67-eye-exercise.png",
+      "sourceSha256": "0018ad79235bf7bca2a12e04e846cd178136cfb517b3593f501686ea01ec227f",
+      "ink": "#271a27",
+      "dark": "#675854",
+      "dominant": "#7c705a",
+      "accent": "#b0a696",
+      "light": "#b0a696",
+      "colors": [
+        "#271a27",
+        "#7c705a",
+        "#443943",
+        "#3f333e",
+        "#423441",
+        "#a7a68d",
+        "#b0a696",
+        "#403340"
+      ]
+    },
+    "card-binder": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/68-card-binder.png",
+      "sourceSha256": "7bc9bc348dc74c7313ad5d60dbdd26772916b706b966852d7bd98cd0d8f3ebff",
+      "ink": "#060507",
+      "dark": "#1f1d20",
+      "dominant": "#302d31",
+      "accent": "#c8a37d",
+      "light": "#c8a37d",
+      "colors": [
+        "#060507",
+        "#302d31",
+        "#353336",
+        "#1f1d20",
+        "#3c3438",
+        "#6b4f45",
+        "#483938",
+        "#5a4843"
+      ]
+    },
+    "abstract-lv10": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/69-abstract-lv10.png",
+      "sourceSha256": "1a425e60fbf10fcc22a479708e61dba58f359ad11a650e33cb808b50cd6d4cfa",
+      "ink": "#22172a",
+      "dark": "#9ae4d9",
+      "dominant": "#ecdac9",
+      "accent": "#9ae4d9",
+      "light": "#eedecd",
+      "colors": [
+        "#ecdac9",
+        "#221e29",
+        "#2b2331",
+        "#924e44",
+        "#27222d",
+        "#271e2c",
+        "#24222b",
+        "#46393f"
+      ]
+    },
+    "shop-freezer": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/70-shop-freezer.png",
+      "sourceSha256": "58c769866bb17c75e771e77b1c1d3db591395b2ad00709f28f4e87e556b3cb83",
+      "ink": "#111117",
+      "dark": "#bcb6ae",
+      "dominant": "#bfb7ae",
+      "accent": "#bfb7ae",
+      "light": "#d5cec4",
+      "colors": [
+        "#bfb7ae",
+        "#736c6b",
+        "#111117",
+        "#4f494c",
+        "#bcb6ae",
+        "#8b807b",
+        "#3d3336",
+        "#28242a"
+      ]
+    },
+    "server-shutdown": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/71-server-shutdown.png",
+      "sourceSha256": "1e5c532e0eef236ead47337d18eec5f8a0665ab03639e401884c0181217bba1d",
+      "ink": "#2d202b",
+      "dark": "#332e33",
+      "dominant": "#3c3339",
+      "accent": "#d5b8a3",
+      "light": "#dec6af",
+      "colors": [
+        "#3c3339",
+        "#332e33",
+        "#d5b8a3",
+        "#3b2b37",
+        "#c7a591",
+        "#45343d",
+        "#2d202b",
+        "#9d7266"
+      ]
+    },
+    "painless-night": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/72-painless-night.png",
+      "sourceSha256": "aa0613d4b5fae2d4f3c0f542a5b765b2f71b31cda0260934ceb214a9e04f1198",
+      "ink": "#170d1b",
+      "dark": "#392d3c",
+      "dominant": "#433045",
+      "accent": "#856f71",
+      "light": "#856f71",
+      "colors": [
+        "#433045",
+        "#1a111d",
+        "#2c212f",
+        "#5b445c",
+        "#1a141e",
+        "#392d3c",
+        "#241427",
+        "#503851"
+      ]
+    },
+    "ktv-song": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/73-ktv-song.png",
+      "sourceSha256": "febe2d7d9eaa6edc90bb0a8e316b3dea44e9bdab64e66e1cb87248c621a488b5",
+      "ink": "#100811",
+      "dark": "#322a32",
+      "dominant": "#3c2e39",
+      "accent": "#a5887c",
+      "light": "#a5887c",
+      "colors": [
+        "#151117",
+        "#1e1521",
+        "#3c2e39",
+        "#100811",
+        "#5e464d",
+        "#322a32",
+        "#32222f",
+        "#6b545a"
+      ]
+    },
+    "breath-on-glass": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/74-breath-on-glass.png",
+      "sourceSha256": "be066ed665d31e9fe5cc7ac2b1dbb76dbde8dd1a7716239c8c874bd67715760e",
+      "ink": "#63999c",
+      "dark": "#7da8b3",
+      "dominant": "#68b1a3",
+      "accent": "#68b1a3",
+      "light": "#e8e5e6",
+      "colors": [
+        "#68b1a3",
+        "#cbd1d1",
+        "#63999c",
+        "#b5c5c5",
+        "#a0c2be",
+        "#e8e5e6",
+        "#7da8b3",
+        "#d6d8d8"
+      ]
+    },
+    "admission-notice": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/75-admission-notice.png",
+      "sourceSha256": "51290aad857989ca1454054ec26d0a542a36b19f3b1f588061efdc20ba4f6fb5",
+      "ink": "#947464",
+      "dark": "#947464",
+      "dominant": "#d6c0ae",
+      "accent": "#d6c0ae",
+      "light": "#ebdcca",
+      "colors": [
+        "#d6c0ae",
+        "#e8d8c5",
+        "#e1cfbc",
+        "#e4d2c0",
+        "#e6d4c2",
+        "#947464",
+        "#e7d6c4",
+        "#e4d3c1"
+      ]
+    },
+    "iphone-17-pro-max": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/76-iphone-17-pro-max.png",
+      "sourceSha256": "a08b705beacc71b76ad29f15fc568e1dd9b664e0dd85219462a2f338f41c1e65",
+      "ink": "#191116",
+      "dark": "#332e30",
+      "dominant": "#4c474b",
+      "accent": "#e3dedc",
+      "light": "#f2eeea",
+      "colors": [
+        "#191116",
+        "#4c474b",
+        "#555154",
+        "#f1edea",
+        "#f2edea",
+        "#514c4f",
+        "#4f4a4d",
+        "#332e30"
+      ]
+    },
+    "fathers-chart": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/77-fathers-chart.png",
+      "sourceSha256": "91f2e490a38c41791980f13ff692e1a50cee482203326b6249a2988535019e35",
+      "ink": "#281d18",
+      "dark": "#cab097",
+      "dominant": "#cbb198",
+      "accent": "#c9ad93",
+      "light": "#d3baa1",
+      "colors": [
+        "#cbb198",
+        "#50362c",
+        "#281d18",
+        "#c3a78c",
+        "#565441",
+        "#cab097",
+        "#b59476",
+        "#834c3f"
+      ]
+    }
+  }
+}

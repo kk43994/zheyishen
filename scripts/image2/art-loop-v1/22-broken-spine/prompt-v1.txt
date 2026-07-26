@@ -1,0 +1,27 @@
+Use case: stylized-concept
+Asset type: anatomy-aware body-mid fold and old-scar decal source sheet for the Chinese pixel-art action game 《这一身》, targeting exact 40x56 logical hero cells
+Item: 22 broken-spine, 《断掉的脊梁骨》
+Canon event and irony: everyone said a man must be the pillar holding up the family. He kept supporting the roof until bending became his normal posture and a break was no longer accepted as a reason to rest. Only after breaking was he praised as hard enough.
+Primary request: create only one tiny body-mid compression fold or interrupted old-scar shadow per cell. Do not draw a physical spine object. Do not redraw the hero, inventory icon, clothing or full body.
+Input images:
+Image 1 is the canonical project style board. Match its restrained hard-pixel clusters, muted paper/plum/red palette, one-pixel outline logic and top-left light.
+Image 2 is the approved hero reference grid. Rows are IDLE, WALK, ATTACK, HURT. Columns are FRONT, LEFT, BACK, RIGHT. Preserve its real 40x56 foot root, proportions and body silhouette.
+Image 3 repeats the hero grid with cyan/magenta body-mid anchor guides. These marks identify the waist/ribcage hinge only and must not appear in the output.
+Image 4 is a rejected negative example. Its large floating vertebrae, full external spine columns, shoulder-height bone slabs and bone-sword silhouette are specifically forbidden. Do not imitate them.
+Output layout: strict 4x4 equal-cell sheet with the same order as Image 2: rows idle/walk/attack/hurt and columns front/left/back/right. Keep each mark near the matching body-mid coordinate. No labels, borders, separators, UI or extra variants.
+Overlay construction: every cell contains one coherent, very short 3-7 logical-pixel decal fragment: mostly deep gray-plum compression shadow, one muted old-red break point, and at most two dull ivory pixels suggesting an old injury under clothing. It must read as the torso folding at a damaged hinge, never as visible anatomy hanging outside the body.
+Direction behavior:
+- front: weakest read, a short asymmetrical diagonal clothing-compression crease at the ribcage/waist hinge; no exposed bone
+- back: two or three interrupted dull marks inside the back silhouette with one old-red gap at the break; no complete vertical chain
+- left: one inward dogleg at the posterior torso edge, showing the upper torso pitched forward over the waist; keep the entire mark inside the body
+- right: true mirror of left, with the same inward hinge and no outward plate
+Action behavior:
+- idle: the compact hinge is settled and quiet
+- walk: the crease shifts by one logical pixel with the torso, without a trail
+- attack: the hinge compresses slightly harder but remains a local mark
+- hurt: the old-red break point is clearest, still no blood spray and no expanded anatomy
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background in all empty space. No floor shadow, gradient, glow, texture, reflection or green spill. Do not use #00ff00 in authored pixels.
+Style: restrained Chinese indie-game hard pixel art, sparse deliberate clusters, maximum 5 subject colors, no soft blur, no antialiasing, no painterly shading
+Must preserve: generous green separation between all 16 marks; action/direction identity; short interrupted geometry; body-mid hinge semantics; quiet and painful rather than monstrous
+Avoid: full vertebra, complete spine, ribcage, skeleton, X-ray, external bone plate, floating bone column, bone sword, third limb, duplicate arm, giant red X, speed line, motion trail, gore, text, UI, watermark
+Final gate: when the local pipeline fits the fragment inside the approved torso, the first read is “his body folds at an old break.” It must never read as “he carries a spine on his back,” an extra limb, a weapon or an X-ray.

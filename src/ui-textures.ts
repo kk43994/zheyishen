@@ -7,6 +7,7 @@ const SEAL_URL = new URL('./assets/ui/seal-ornament.png', import.meta.url).href;
 const STATIC_URL = new URL('./assets/ui/static-texture.png', import.meta.url).href;
 const RECORD_FRAMES_URL = new URL('./assets/ui/record-frames.png', import.meta.url).href;
 const BUTTON_FRAME_URL = new URL('./assets/ui/button-frame.png', import.meta.url).href;
+const BUTTON_STAMP_STATES_URL = new URL('./assets/ui/button-stamp-states.png', import.meta.url).href;
 const PANEL_FRAME_URL = new URL('./assets/ui/panel-frame.png', import.meta.url).href;
 const TORN_EDGE_URL = new URL('./assets/ui/torn-edge.png', import.meta.url).href;
 const RECEIPT_EDGE_URL = new URL('./assets/ui/receipt-edge.png', import.meta.url).href;
@@ -14,7 +15,14 @@ const ARCHIVE_DECO_URL = new URL('./assets/ui/archive-deco.png', import.meta.url
 const DESK_URL = new URL('./assets/ui/desk-texture.png', import.meta.url).href;
 
 type ArchiveDecoration = 'tape' | 'clip' | 'postmark' | 'seal';
+export type StampButtonState = 'normal' | 'hover' | 'pressed' | 'disabled';
 const ARCHIVE_DECORATION_INDEX = (archiveDecoManifest as { index: Record<ArchiveDecoration, number> }).index;
+const STAMP_BUTTON_INDEX: Record<StampButtonState, number> = {
+  normal: 0,
+  hover: 1,
+  pressed: 2,
+  disabled: 3,
+};
 
 function loadImage(url: string, onload: (image: HTMLImageElement) => void): void {
   const image = new Image();
@@ -31,6 +39,7 @@ class UiTextures {
   seal: HTMLImageElement | null = null;
   recordFrames: HTMLImageElement | null = null;
   buttonFrame: HTMLImageElement | null = null;
+  buttonStampStates: HTMLImageElement | null = null;
   panelFrame: HTMLImageElement | null = null;
   tornEdge: HTMLImageElement | null = null;
   receiptEdge: HTMLImageElement | null = null;
@@ -49,6 +58,7 @@ class UiTextures {
     loadImage(STATIC_URL, (image) => { this.static_ = image; });
     loadImage(RECORD_FRAMES_URL, (image) => { this.recordFrames = image; });
     loadImage(BUTTON_FRAME_URL, (image) => { this.buttonFrame = image; });
+    loadImage(BUTTON_STAMP_STATES_URL, (image) => { this.buttonStampStates = image; });
     loadImage(PANEL_FRAME_URL, (image) => { this.panelFrame = image; });
     loadImage(TORN_EDGE_URL, (image) => { this.tornEdge = image; });
     loadImage(RECEIPT_EDGE_URL, (image) => { this.receiptEdge = image; });
@@ -64,6 +74,47 @@ class UiTextures {
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(this.buttonFrame, x, y, width, height);
     ctx.restore();
+  }
+
+  /** Image2 红章按钮框：四态逐行存放，以九宫格保持角落断墨与校准记号。 */
+  drawStampButtonFrame(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    state: StampButtonState,
+    alpha = 1,
+  ): boolean {
+    const image = this.buttonStampStates;
+    if (!image || image.naturalWidth !== 384 || image.naturalHeight !== 480) return false;
+    const sourceY = STAMP_BUTTON_INDEX[state] * 120;
+    const sourceCornerX = 48;
+    const sourceCornerY = 36;
+    const destCornerX = Math.min(12, Math.floor(width / 3));
+    const destCornerY = Math.min(9, Math.floor(height / 3));
+    const sourceXs = [0, sourceCornerX, 384 - sourceCornerX] as const;
+    const sourceYs = [sourceY, sourceY + sourceCornerY, sourceY + 120 - sourceCornerY] as const;
+    const sourceWidths = [sourceCornerX, 384 - sourceCornerX * 2, sourceCornerX] as const;
+    const sourceHeights = [sourceCornerY, 120 - sourceCornerY * 2, sourceCornerY] as const;
+    const destXs = [x, x + destCornerX, x + width - destCornerX] as const;
+    const destYs = [y, y + destCornerY, y + height - destCornerY] as const;
+    const destWidths = [destCornerX, width - destCornerX * 2, destCornerX] as const;
+    const destHeights = [destCornerY, height - destCornerY * 2, destCornerY] as const;
+    ctx.save();
+    ctx.globalAlpha *= alpha;
+    ctx.imageSmoothingEnabled = true;
+    for (let row = 0; row < 3; row += 1) {
+      for (let col = 0; col < 3; col += 1) {
+        ctx.drawImage(
+          image,
+          sourceXs[col]!, sourceYs[row]!, sourceWidths[col]!, sourceHeights[row]!,
+          destXs[col]!, destYs[row]!, destWidths[col]!, destHeights[row]!,
+        );
+      }
+    }
+    ctx.restore();
+    return true;
   }
 
   drawPanelFrame(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, alpha = 0.72): void {

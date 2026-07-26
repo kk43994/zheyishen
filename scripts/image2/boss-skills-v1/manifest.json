@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "status": "approved-and-promoted",
+  "assets": [
+    {
+      "id": "closet-dark-skills",
+      "name": "Nobody-believes monster",
+      "reference": "closet-dark-hd.png",
+      "frame": 48,
+      "display": 128,
+      "key": "green",
+      "poses": ["shadow-windup", "shadow-release", "split-open", "recover"],
+      "skills": [
+        {"id": "closet-shadow", "sequence": [0, 0, 1, 3]},
+        {"id": "closet-split", "sequence": [2, 2, 3, 3], "onsetPose": 2}
+      ]
+    },
+    {
+      "id": "silent-father-p1-skills",
+      "name": "Silent father phase one",
+      "reference": "silent-father-hd.png",
+      "frame": 64,
+      "display": 144,
+      "key": "green",
+      "poses": ["drive-inside", "stand-straight", "brace-rain", "recover"],
+      "skills": [
+        {"id": "father-stomp", "sequence": [3, 0, 0, 3]},
+        {"id": "father-stand", "sequence": [3, 1, 1, 3]},
+        {"id": "father-brace", "sequence": [3, 2, 2, 3]}
+      ]
+    },
+    {
+      "id": "silent-father-p2-skills",
+      "name": "Silent father phase two",
+      "reference": "silent-father-p2-hd.png",
+      "frame": 64,
+      "display": 96,
+      "key": "green",
+      "poses": ["cover-face", "two-step-charge", "tantrum-stomp", "tear-volley"],
+      "skills": [
+        {"id": "father-charge", "sequence": [0, 0, 1, 0]},
+        {"id": "father-tantrum", "sequence": [0, 2, 2, 0]},
+        {"id": "father-tears", "sequence": [0, 3, 3, 0]}
+      ]
+    },
+    {
+      "id": "praise-chair-p1-skills",
+      "name": "You-are-excellent phase one",
+      "reference": "praise-chair-p1.png",
+      "frame": 64,
+      "display": 128,
+      "key": "green",
+      "poses": ["praise-gesture", "delegate-task", "roll-away", "recover"],
+      "skills": [
+        {"id": "praise-p1-praise", "sequence": [0, 0, 3, 3], "onsetPose": 0},
+        {"id": "praise-p1-delegate", "sequence": [1, 1, 2, 3], "onsetPose": 1},
+        {"id": "praise-p1-retreat", "sequence": [2, 2, 3, 3], "onsetPose": 2},
+        {"id": "praise-p1-consult", "sequence": [0, 0, 1, 3], "onsetPose": 0}
+      ]
+    },
+    {
+      "id": "praise-chair-p2-skills",
+      "name": "You-are-excellent phase two",
+      "reference": "praise-chair-p2.png",
+      "frame": 96,
+      "display": 192,
+      "key": "green",
+      "poses": ["desk-slam", "paper-throw", "consume-task", "dismiss-shout"],
+      "skills": [
+        {"id": "praise-p2-slam", "sequence": [3, 0, 0, 3]},
+        {"id": "praise-p2-paper", "sequence": [3, 1, 1, 3]},
+        {"id": "praise-p2-optimize", "sequence": [2, 2, 3, 3], "onsetPose": 2},
+        {"id": "praise-p2-dismiss", "sequence": [0, 3, 3, 3]},
+        {"id": "praise-p2-one-seat", "sequence": [3, 2, 1, 3]}
+      ]
+    },
+    {
+      "id": "ringing-phone-p1-skills",
+      "name": "Keeps-ringing phase one",
+      "reference": "ringing-phone-p1.png",
+      "frame": 64,
+      "display": 128,
+      "key": "magenta",
+      "poses": ["ring-left", "ring-right", "answered", "missed-red"],
+      "skills": [
+        {"id": "phone-p1-ring", "sequence": [0, 1, 0, 1], "loop": true},
+        {"id": "phone-p1-answer", "sequence": [0, 2, 2, 0]},
+        {"id": "phone-p1-missed", "sequence": [3, 3, 0, 0], "onsetPose": 3}
+      ]
+    },
+    {
+      "id": "ringing-phone-p2-skills",
+      "name": "Keeps-ringing phase two",
+      "reference": "ringing-phone-p2.png",
+      "frame": 64,
+      "display": 128,
+      "key": "magenta",
+      "poses": ["async-ring-a", "async-ring-b", "answered-cluster", "missed-red-cluster"],
+      "skills": [
+        {"id": "phone-p2-ring", "sequence": [0, 1, 0, 1], "loop": true},
+        {"id": "phone-p2-answer", "sequence": [0, 2, 2, 0]},
+        {"id": "phone-p2-missed", "sequence": [3, 3, 0, 0], "onsetPose": 3}
+      ]
+    },
+    {
+      "id": "debt-collector-skills",
+      "version": "v2",
+      "name": "Doorstep collector",
+      "reference": "debt-collector-hd.png",
+      "frame": 48,
+      "display": 128,
+      "key": "green",
+      "poses": ["present-bill", "drag-chain", "change-door", "recover"],
+      "skills": [
+        {"id": "collector-bill", "sequence": [3, 0, 0, 3]},
+        {"id": "collector-drag", "sequence": [3, 1, 1, 3]},
+        {"id": "collector-relocate", "sequence": [2, 2, 3, 3], "onsetPose": 2}
+      ]
+    },
+    {
+      "id": "lamp-keeper-skills",
+      "name": "Lamp keeper",
+      "reference": "lamp-keeper-hd.png",
+      "frame": 64,
+      "display": 160,
+      "key": "green",
+      "poses": ["raise-lantern", "point-name", "strip-light", "snuff-lantern"],
+      "skills": [
+        {"id": "keeper-name", "sequence": [0, 1, 1, 0]},
+        {"id": "keeper-strip", "sequence": [2, 2, 0, 0], "onsetPose": 2},
+        {"id": "keeper-dim", "sequence": [0, 3, 3, 0]}
+      ]
+    },
+    {
+      "id": "coat-rack-skills",
+      "name": "Corner coat rack elite",
+      "reference": "coat-rack.png",
+      "frame": 48,
+      "display": 96,
+      "key": "green",
+      "poses": ["quiet-rack", "single-sleeve-shadow", "double-sleeve-shadow", "recover"],
+      "skills": [
+        {"id": "coat-sleeve", "sequence": [0, 1, 1, 3]},
+        {"id": "coat-double-sleeve", "sequence": [0, 2, 2, 3]}
+      ]
+    },
+    {
+      "id": "uniform-answer-skills",
+      "name": "Uniform answer elite",
+      "reference": "uniform-answer-hd.png",
+      "frame": 48,
+      "display": 112,
+      "key": "green",
+      "poses": ["quiet-paper-mask", "three-answer-bars", "path-cross-replay", "passing-row-gap"],
+      "skills": [
+        {"id": "uniform-standard", "sequence": [0, 1, 1, 0]},
+        {"id": "uniform-process", "sequence": [0, 2, 2, 0]},
+        {"id": "uniform-pass", "sequence": [0, 3, 3, 0]}
+      ]
+    },
+    {
+      "id": "last-bus-skills",
+      "name": "Last bus elite",
+      "reference": "last-bus-hd.png",
+      "frame": 64,
+      "display": 144,
+      "key": "green",
+      "poses": ["waiting-bus", "doors-closing", "departing-lunge", "tail-lights"],
+      "skills": [
+        {"id": "bus-depart", "sequence": [0, 1, 2, 3]}
+      ]
+    },
+    {
+      "id": "wet-shoes-skills",
+      "name": "Wet shoes elite",
+      "reference": "wet-shoes.png",
+      "frame": 48,
+      "display": 72,
+      "key": "green",
+      "poses": ["still-pair", "water-shudder", "first-step", "fast-step"],
+      "skills": [
+        {"id": "wet-shoes-hurry", "sequence": [1, 1, 2, 3], "onsetPose": 1}
+      ]
+    },
+    {
+      "id": "whose-box-skills",
+      "version": "v2",
+      "name": "Whose box elite",
+      "reference": "whose-box.png",
+      "frame": 48,
+      "display": 80,
+      "key": "green",
+      "poses": ["closed-box", "label-raised", "stamp-down", "sealed-box"],
+      "skills": [
+        {"id": "box-count", "sequence": [0, 1, 2, 3]}
+      ]
+    },
+    {
+      "id": "revolving-lantern-skills",
+      "version": "v2",
+      "name": "Revolving lantern elite",
+      "reference": "revolving-lantern.png",
+      "frame": 48,
+      "display": 96,
+      "key": "green",
+      "poses": ["quiet-lantern", "slow-age-shadows", "fast-age-shadows", "dim-recover"],
+      "skills": [
+        {"id": "lantern-summon", "sequence": [1, 1, 3, 3], "onsetPose": 1},
+        {"id": "lantern-summon-fast", "sequence": [2, 2, 3, 3], "onsetPose": 2}
+      ]
+    }
+  ]
+}

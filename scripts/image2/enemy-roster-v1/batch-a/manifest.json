@@ -1,0 +1,118 @@
+{
+  "version": "enemy-roster-v1-batch-a",
+  "date": "2026-07-25",
+  "scope": "Image2 concept and motion foundations only; no runtime integration",
+  "remote": "landing001",
+  "method": "edit",
+  "model": "gpt-image-2",
+  "quality": "high",
+  "requestedSize": "1024x1024",
+  "sourceReturnedSize": "1254x1254",
+  "selectedSize": "1254x1254",
+  "selectedProcessing": "none; each selected file is byte-identical to the accepted raw candidate",
+  "background": "#00ff00 opaque chroma key",
+  "layout": {
+    "grid": "2x2",
+    "topLeft": "idle",
+    "topRight": "move or hover",
+    "bottomLeft": "attack or hazard active",
+    "bottomRight": "hurt or death"
+  },
+  "references": [
+    "output/art-style-reference-v1/canonical-style-board.png",
+    "output/imagegen/zhe-yi-shen-enemies-v1/enemy-motion-contact.png"
+  ],
+  "outputDirectory": "output/imagegen/zhe-yi-shen-enemy-roster-v1/raw/batch-a",
+  "assets": [
+    {
+      "id": "coat-rack",
+      "name": "立在墙角的衣架",
+      "chapter": "童年",
+      "role": "small-boss",
+      "logicalSize": "48x48",
+      "prompt": "coat-rack.txt",
+      "candidate": "coat-rack-v1.png",
+      "selected": "coat-rack-selected.png",
+      "selectedFrom": "coat-rack-v1.png",
+      "sha256": "9c269181461a9034fb550fbcc5c66ae68ae328707d167ce47ff7300a285998d7",
+      "status": "approved"
+    },
+    {
+      "id": "others-paper",
+      "name": "别人的那张",
+      "chapter": "少年",
+      "role": "enemy",
+      "logicalSize": "32x32",
+      "prompt": "others-paper.txt",
+      "candidate": "others-paper-v2.png",
+      "selected": "others-paper-selected.png",
+      "selectedFrom": "others-paper-v2.png",
+      "sha256": "e511303dcebffa46aeadce8ded5a091c3bad349fdaeef7d02c6ff7e2e13051fe",
+      "status": "approved",
+      "rejected": [
+        {
+          "file": "others-paper-v1.png",
+          "reason": "The red mark read as a circled low score or digit rather than the intended comparison-pressure merit seal."
+        }
+      ]
+    },
+    {
+      "id": "sign-here",
+      "name": "要签字的那一栏",
+      "chapter": "少年",
+      "role": "enemy",
+      "logicalSize": "32x32",
+      "prompt": "sign-here.txt",
+      "candidate": "sign-here-v1.png",
+      "selected": "sign-here-selected.png",
+      "selectedFrom": "sign-here-v1.png",
+      "sha256": "92219f4748ecf2ea748350e3abcf9195d01364d8ba58f8e5e6ef3f64fe4cb7b2",
+      "status": "approved"
+    },
+    {
+      "id": "wet-shoes",
+      "name": "还没干的那双鞋",
+      "chapter": "成年",
+      "role": "small-boss",
+      "logicalSize": "48x48",
+      "prompt": "wet-shoes.txt",
+      "candidate": "wet-shoes-v2.png",
+      "selected": "wet-shoes-selected.png",
+      "selectedFrom": "wet-shoes-v2.png",
+      "sha256": "f763ee5fcb21aba44234d028968beee6762a301164e76f7d126ae82bc838edb7",
+      "status": "approved",
+      "rejected": [
+        {
+          "file": "wet-shoes-v1.png",
+          "reason": "Several quadrants appeared to contain three or four shoes; the canon requires exactly one wet pair."
+        }
+      ]
+    },
+    {
+      "id": "desk-lamp",
+      "name": "没关的台灯",
+      "chapter": "成年",
+      "role": "enemy",
+      "logicalSize": "32x32",
+      "prompt": "desk-lamp.txt",
+      "candidate": "desk-lamp-v1.png",
+      "selected": "desk-lamp-selected.png",
+      "selectedFrom": "desk-lamp-v1.png",
+      "sha256": "bdc22ba9668b10c264ef1db396a9b61df1a557b101b084860213354d5efb1516",
+      "status": "approved"
+    },
+    {
+      "id": "reheated-pot",
+      "name": "热过两遍的那锅",
+      "chapter": "成年",
+      "role": "enemy",
+      "logicalSize": "32x32",
+      "prompt": "reheated-pot.txt",
+      "candidate": "reheated-pot-v1.png",
+      "selected": "reheated-pot-selected.png",
+      "selectedFrom": "reheated-pot-v1.png",
+      "sha256": "eb533618b8b87e9859a6f1af0aca09501275140532b38a6b381a8c6da63a2e3a",
+      "status": "approved"
+    }
+  ]
+}

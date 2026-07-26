@@ -1,0 +1,35 @@
+Use case: stylized-concept
+Asset type: corrected anatomy-aware wearable dinosaur-head costume overlays for a 40x56 logical pixel hero, with safe-distance and threatened states
+
+Primary request: correct the previous candidate into an unmistakable dusty-pink LITTLE DINOSAUR HEADPIECE worn over the protagonist's entire original head. Preserve the successful round oversized shell, attached cheek-paws, four-direction consistency, flat green background and safe/threatened layout. Do not redraw the protagonist or extend the costume below the neck.
+
+Canon irony: many anonymous accounts hide behind the same pink round dinosaur avatar; the protagonist dares to speak only after wearing that borrowed identity over the whole head.
+
+Inputs:
+Image 1: approved front/left/back/right protagonist heads, for head center and scale only.
+Image 2: approved pink dinosaur icon, the identity/color anchor.
+Image 3: rejected ordinary human heads, negative only.
+Image 4: canonical pixel density and palette.
+Image 5: previous v2 headpiece candidate. Preserve its good large round silhouette, body separation, four-view rotation, attached lower cheek-paws and two-state consistency, but fix its species readability. It currently risks reading as a pig, capybara or generic pink blob because the side jaw has no mouth/teeth and the top bumps resemble ears.
+
+Layout: strict 4 columns x 2 rows. Columns FRONT, LEFT, BACK, RIGHT. Top row SAFE DISTANCE; bottom row THREATENED. Equal cells, no labels, separators or extra variants.
+
+Required correction:
+- Replace ear-like top bumps with two low rounded dinosaur crown knobs/spines integrated into the shell, not mammal ears and not long horns.
+- Give front view a clearly stepped short upper-jaw/mouth notch and exactly two tiny pale triangular tooth pixels at the mouth corners. Keep the muzzle short and broad.
+- Give left/right profiles one clear horizontal jaw seam and exactly one small downward pale tooth under the near upper jaw. The snout projects only 2-3 logical pixels beyond the round cranium; no pig nostril disk, no long capybara muzzle, no beak.
+- Keep one tiny dark eye per side view and two tiny dark eyes in front. Back has zero eyes, zero mouth and zero teeth.
+- Keep the two small paw/cheek flaps visibly attached to the lower sides of the headpiece. They never become protagonist arms.
+- Keep the lower neck opening dark and open so this reads as worn headgear, not the character's naturally pink head.
+
+SAFE: eyes open and slightly brighter. THREATENED: same shell one logical pixel lower, eyes compressed/dimmer, jaw still readable. Do not change scale or species between states.
+
+Runtime limits after reduction: front <=22x20, sides <=21x20, back <=20x19; bottom at or above y29 on the 40x56 hero. No costume pixels on torso, clothing, arms, hands or legs.
+
+Backdrop: perfectly flat #00ff00 with no floor, shadow, gradient, texture or green spill.
+Style: restrained Chinese indie-game pixel art, hard stepped square clusters, charcoal-plum outline, dusty muted pink shell, pale pink highlight/teeth, at most six subject colors, no antialiasing, gradients or blur.
+
+Constraints: headpiece only; no human head, skin, hair, face, neck or body; no text, logo, UI or watermark.
+Avoid: pig, piglet, capybara, hamster, hippo, generic pink blob, mammal ears, round pig snout disk, long muzzle, bird beak, simple head recolor, rectangular face frame, visor, screen, paper mask, flat avatar card, exposed human face, full-body dinosaur suit, torso costume, mascot body, kigurumi body, plush toy, extra limbs, rear-facing eyes.
+
+Final gate: exact 40x56 front/side views read first as a worn round pink dinosaur headpiece because crown knobs, short stepped jaw and tiny teeth remain visible; the back is a matching blank shell; the original body and clothing remain pixel-identical.

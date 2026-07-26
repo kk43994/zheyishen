@@ -68,14 +68,14 @@ def mix(
 def parse_items() -> list[Item]:
     source = SOURCE.read_text(encoding="utf-8")
     pattern = re.compile(
-        r"id:\s*'([^']+)',\s*name:\s*'([^']+)',\s*quality:\s*([1-4])"
+        r"id:\s*'([^']+)',\s*name:\s*'([^']+)',\s*quality:\s*([1-5])"
         r".*?color:\s*'(#[0-9a-fA-F]{6})'",
         re.DOTALL,
     )
     items = [Item(match[1], match[2], int(match[3]), match[4]) for match in pattern.finditer(source)]
     ids = [item.id for item in items]
-    if len(items) != 72 or len(set(ids)) != len(ids):
-        raise AssertionError(f"expected 72 unique items, got {len(items)} / {len(set(ids))}")
+    if not items or len(set(ids)) != len(ids):
+        raise AssertionError(f"expected a non-empty unique item set, got {len(items)} / {len(set(ids))}")
     return items
 
 
@@ -609,6 +609,23 @@ def draw_item(item: Item) -> Image.Image:
         shadow_icon(draw, accent, "moon")
         draw.polygon([(7, 17), (10, 12), (13, 17), (16, 12), (19, 17), (22, 12), (25, 17)], fill=RED_DARK)
         line(draw, [(5, 18), (27, 18)], PAPER_DARK, 2)
+    elif item_id == "ktv-song":
+        draw.ellipse((9, 3, 23, 17), fill=INK)
+        draw.ellipse((11, 5, 21, 15), fill=accent)
+        for y in (8, 11):
+            line(draw, [(12, y), (20, y)], light)
+        line(draw, [(16, 16), (16, 25)], INK, 4)
+        line(draw, [(16, 16), (16, 25)], dark, 2)
+        line(draw, [(10, 28), (22, 28)], INK, 3)
+        for radius in (3, 6):
+            draw.arc((23 - radius, 10 - radius, 23 + radius, 10 + radius), 285, 75, fill=light, width=1)
+    elif item_id == "breath-on-glass":
+        frame(draw, (4, 3, 28, 29), INK, 2)
+        draw.rectangle((7, 6, 25, 26), fill=accent)
+        for x, y in ((9, 9), (14, 7), (21, 10), (11, 20), (22, 23)):
+            draw.rectangle((x, y, x + 2, y + 1), fill=light)
+        line(draw, [(10, 18), (13, 13), (16, 18), (19, 12), (22, 17)], PAPER, 2)
+        line(draw, [(8, 24), (13, 22), (18, 24), (24, 21)], light)
     else:
         raise AssertionError(f"missing icon drawing: {item_id}")
 
@@ -643,7 +660,7 @@ def make_contact(items: list[Item], icons: dict[str, Image.Image], page: int) ->
     draw = ImageDraw.Draw(canvas)
     title_font = font(18)
     id_font = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial Unicode.ttf", 13)
-    quality_colors = {1: (117, 115, 119), 2: (104, 132, 146), 3: (166, 82, 100), 4: (200, 176, 90)}
+    quality_colors = {1: (117, 115, 119), 2: (104, 132, 146), 3: (166, 82, 100), 4: (200, 176, 90), 5: (166, 54, 73)}
     scale = 5
     for local_index, item in enumerate(page_items):
         column = local_index % COLS
@@ -690,7 +707,7 @@ def main() -> None:
         })
 
     atlas = make_atlas(items, icons)
-    atlas.save(OUTPUT_DIR / "item-icons-72-atlas.png", optimize=True)
+    atlas.save(OUTPUT_DIR / "item-icons-atlas.png", optimize=True)
     page_count = (len(items) + PER_PAGE - 1) // PER_PAGE
     for page in range(page_count):
         make_contact(items, icons, page).save(

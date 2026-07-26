@@ -1,0 +1,14 @@
+Use case: stylized-concept
+Asset type: boss phase 1, 2x2 action-concept source for later pixel-atlas derivation.
+
+Create one canonical old smartphone shown exactly once in each of four clean 2x2 cells: top-left dormant, top-right screen wakes, bottom-left active ringing vibration, bottom-right impact tilt. Exactly one phone per cell. Do not draw grid lines, labels, captions, UI borders, or explanatory text.
+
+The enemy is a physically old early-generation smartphone: thick black bezel, scuffed dark casing, small round home button, slightly scratched glass, screen always facing the viewer. It is not a modern edge-to-edge slab and not a rotary phone. Keep the same dents, proportions, bezel, and home button in all four cells. Ringing is shown with sparse solid pixel vibration marks immediately beside the phone, not with a colored fog or glow. The lit screen may use a simple abstract incoming-call symbol but no names, words, numbers, or readable app UI.
+
+The first reference is the authoritative style board. The second reference is only a runtime pixel-scale, outline, and muted-palette reference. Do not copy multiple phones or any existing incorrect silhouette from it.
+
+Pixel art only: chunky logical pixels, crisp nearest-neighbor edges, hard one-logical-pixel dark outline, top-left lighting, restrained 10-16 color palette, no anti-aliasing, no painterly rendering, no soft bloom. Keep each phone fully contained and easy to isolate.
+
+Background must be a perfectly flat, uniform, exact #00ff00 in every unused pixel. No hand, no table, no floor, no charger, no cable, no contact shadow, no cast shadow, no vignette, no gradient, no texture, no glow spill, no green variation. Leave generous green gutters between all four phones.
+
+Avoid: more than one phone per cell, phone pile, modern bezel-less phone, flip phone, landline handset, visible brand logo, text, digits, chat bubbles, notification cards, photorealism, 3D render, smooth vector art, watermark.

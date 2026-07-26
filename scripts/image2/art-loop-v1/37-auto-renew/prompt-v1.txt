@@ -1,0 +1,17 @@
+Use case: stylized-concept
+Asset type: production 4-frame near-ground VFX source strip for the Chinese pixel-art action game 《这一身》, aligned to a 40x56 logical hero footprint
+Primary request: redesign “自动续费到明年的会员” as a narrow thermal-receipt ticker that grows by exactly one short segment per frame behind the hero's feet
+Input images:
+Image 1 is the canonical palette, pixel density, restrained item, hero, world, and VFX style reference. Match its worn Chinese indie-game art language.
+Image 2 is the current failed 37-auto-renew source. It is a NEGATIVE REFERENCE ONLY: do not repeat its full-height receipt wall, paper panels around the body, person-shaped gold outline, printed lines, red numbers, or contract-like sheets.
+Image 3 is the approved front/back/left/right hero anchor reference. Use only to understand the 40x56 body scale, feet baseline, rear shadow area, and the empty center that must remain clear. Do not draw or include the hero.
+Canon appearance: 身后挂着不断增长的账单条
+Canon hero manifestation: 不上身；账单只从脚后和影子处延伸，开场短暂出现一层暗金会员边
+Canon irony/event: 被遗忘的小额持续剥夺；每次只多一点，但一直自动发生
+Subject: one narrow, worn thermal-paper receipt tail lying behind the invisible hero's heels and extending backward along the shadow. Frame 1 has one very short receipt stub plus a restrained dark-gold membership rim around only that stub. Frame 2 has two joined perforated receipt segments and no gold rim. Frame 3 has three joined segments, slightly greyer at the oldest end. Frame 4 has four joined segments, with the farthest segment more faded and curled by one pixel-equivalent corner. The growth must be literal and countable: 1, 2, 3, 4 segments.
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background for removal, one uniform color with no shadows, gradients, floor, texture, reflections, or lighting variation
+Style/medium: restrained Chinese indie-game pixel art, hard square pixels, deliberate compact clusters, dark warm outline, muted thermal-paper cream and grey, one dark-gold accent only in frame 1, maximum 7 subject colors, no antialiasing
+Composition/framing: exact horizontal 1-row x 4-column animation strip. Frames run left to right. Every cell uses the same invisible 40x56 hero-sized alignment box, same scale, same feet baseline, and generous padding. Keep the entire center and upper 75 percent of each cell empty for the unchanged hero. Place the receipt only in the bottom quarter, starting just behind the heel and growing horizontally backward close to the shadow. No labels, separators, borders, or grid lines.
+Readability: at final 40x56 scale, frame 1 must read as a tiny receipt stub, then each following frame must visibly add one short perforated section. The shape should look like thin thermal receipt paper, never like a large document.
+Constraints: output ONLY the four near-ground receipt VFX frames. Use #00ff00 nowhere in the subject. No people, body outline, text, numbers, currency symbols, barcodes, logos, UI, or watermark. Keep every frame below 12 logical pixels tall and below 30 logical pixels wide after reduction to 40x56.
+Avoid: giant paper board, parchment, contract, hanging banner, receipt wall, full-height sheet, character, complete person, person-shaped outline, gold body aura, paper around torso or legs, writing, printed lines, digits, random red marks, calculator, credit card, coins, magic circle, floor shadow, labels, grid lines, smooth vector edges

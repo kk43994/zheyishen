@@ -23,6 +23,7 @@ class SpriteAtlas {
   private frames = new Map<number, HTMLCanvasElement>();
   private tinted = new Map<string, HTMLCanvasElement>();
   private loaded = false;
+  private readyPromise: Promise<void> | null = null;
 
   constructor(private url: string, private manifest: GridManifest) {}
 
@@ -38,8 +39,28 @@ class SpriteAtlas {
       }
       this.loaded = true;
     };
+    image.onerror = () => {
+      console.warn(`VFX 图集加载失败: ${this.url}`);
+      this.image = null;
+    };
     image.src = this.url;
     this.image = image;
+  }
+
+  whenReady(): Promise<void> {
+    if (this.loaded) return Promise.resolve();
+    this.load();
+    if (this.readyPromise) return this.readyPromise;
+    this.readyPromise = new Promise((resolve, reject) => {
+      const image = this.image;
+      if (!image) {
+        reject(new Error(`VFX 图集尚未初始化: ${this.url}`));
+        return;
+      }
+      image.addEventListener('load', () => resolve(), { once: true });
+      image.addEventListener('error', () => reject(new Error(`VFX 图集加载失败: ${this.url}`)), { once: true });
+    });
+    return this.readyPromise;
   }
 
   get ready(): boolean { return this.loaded; }
@@ -67,7 +88,7 @@ class SpriteAtlas {
 
   /** 颜色偏移变体：保留贴图明暗，向目标色调靠拢。按 (索引|颜色) 缓存。 */
   tintedSlice(index: number, color: string, strength = 0.45): HTMLCanvasElement | null {
-    const key = `${index}|${color}`;
+    const key = `${index}|${color}|${strength}`;
     const cached = this.tinted.get(key);
     if (cached) return cached;
     const base = this.slice(index);
@@ -109,10 +130,15 @@ export function saveFrame(kind: SaveKind, progress: number): HTMLCanvasElement |
   return saveAtlas.slice(SAVE_ROW[kind] * 4 + frame);
 }
 
-export type HitMaterial = 'mist' | 'water' | 'crit' | 'paper';
-const HIT_ROW: Record<HitMaterial, number> = { mist: 0, water: 1, crit: 2, paper: 3 };
+export type HitMaterial =
+  | 'mist' | 'water' | 'crit' | 'paper' | 'wood' | 'stone'
+  | 'metal' | 'ice' | 'signal' | 'key' | 'glass';
+const HIT_ROW: Record<HitMaterial, number> = {
+  mist: 0, water: 1, crit: 2, paper: 3, wood: 4, stone: 5,
+  metal: 6, ice: 7, signal: 8, key: 9, glass: 10,
+};
 
-/** 命中动画：material 行 × 4 帧，progress ∈ [0,1)。 */
+/** 命中动画：每种 material 一行 × 4 帧，progress ∈ [0,1)。 */
 export function hitFrame(material: HitMaterial, progress: number): HTMLCanvasElement | null {
   const frame = Math.min(3, Math.floor(progress * 4));
   return hitAtlas.slice(HIT_ROW[material] * 4 + frame);

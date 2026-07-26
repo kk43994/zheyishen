@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render 72 deterministic item manifestation review assets.
+"""Render deterministic manifestation review assets for every source item.
 
 This pipeline is intentionally review-only. It consumes the approved 40x56
 style-1 mother, the 12-profile morph system, and the semantic item spec. It
@@ -150,7 +150,7 @@ RULES: dict[str, VisualRule] = {
     "snow-screen": vr(palette="static", mark="static", aura="static", shadow="static", projectile="static", material="noise", trail="static", impact="reassemble", cutout="noise-bites"),
     "marble": vr(prop="marble", aura="glass-star", shadow="childhood", projectile="marble", material="glass", trail="ricochet", impact="glass-star"),
     "always-crying": vr(palette="wet", mark="tears", aura="tears", shadow="wet", projectile="tear", material="water", trail="tear", impact="wet-streak"),
-    "three-day-visible": vr(palette="faded", aura="fade", shadow="fading-frames", projectile="fade-tail", material="memory", trail="fade", impact="delete-tail", cutout="edge-fade"),
+    "three-day-visible": vr(projectile="breath", material="moon", trail="fade", impact="release-ring"),
     "read-3am": vr(posture="phone", palette="blue-face", prop="phone", mark="blue-check", aura="blue-check", projectile="receipt", material="glass", trail="check", impact="check-shatter"),
     "retracted-voice": vr("short-sturdy", "tight-neck", prop="voice-scarf", aura="waveform", projectile="voice-ring", material="signal", trail="wave", impact="mute-cut"),
     "takeout-3am": vr("average-soft", "soft-slouch", palette="oil", prop="takeout", mark="oil", aura="steam", shadow="soft", projectile="steam-core", material="oil", trail="steam", impact="oil-film"),
@@ -190,6 +190,8 @@ RULES: dict[str, VisualRule] = {
     "shop-freezer": vr("average-sturdy", "heavy", palette="frost", prop="freezer", mark="frost", aura="cold-breath", projectile="ice-core", material="ice", trail="frost", impact="ice-block"),
     "server-shutdown": vr(prop="device-link", aura="offline", shadow="pet", projectile="pet-copy", material="pixel", trail="offline", impact="offline-shield"),
     "painless-night": vr(posture="numb", palette="numb-gray", mark="wounds", aura="numb", shadow="gray-pool", projectile="dark-ring", material="numb", trail="heavy", impact="returning-pain"),
+    "ktv-song": vr(posture="tight-neck", palette="blue-face", prop="voice-scarf", aura="waveform", projectile="voice-ring", material="signal", trail="wave", impact="sound-ring"),
+    "breath-on-glass": vr(posture="forward", palette="frost", prop="glasses", aura="cold-breath", projectile="steam-core", material="glass-water", trail="condensation", impact="water-shatter"),
 }
 
 
@@ -241,7 +243,7 @@ def sha256(path: Path) -> str:
 def parse_source_items() -> list[dict[str, object]]:
     source = SOURCE_ITEMS.read_text(encoding="utf-8")
     pattern = re.compile(
-        r"id:\s*'([^']+)',\s*name:\s*'([^']+)',\s*quality:\s*([1-4])"
+        r"id:\s*'([^']+)',\s*name:\s*'([^']+)',\s*quality:\s*([1-5])"
         r".*?slot:\s*'([^']+)'.*?color:\s*'(#[0-9a-fA-F]{6})'",
         re.DOTALL,
     )
@@ -251,8 +253,8 @@ def parse_source_items() -> list[dict[str, object]]:
             "id": match[1], "name": match[2], "quality": int(match[3]),
             "slot": match[4], "color": match[5],
         })
-    if len(result) != 72:
-        raise AssertionError(f"expected 72 source items, got {len(result)}")
+    if not result or len({entry["id"] for entry in result}) != len(result):
+        raise AssertionError(f"expected a non-empty unique source item set, got {len(result)}")
     return result
 
 
@@ -491,7 +493,7 @@ def draw_shadow(layer: Image.Image, shadow: str, direction: str, body: Image.Ima
         safe_line(draw, [(31, 49), (35, 45), (36, 42)], (123, 92, 72, 255), 2)
     elif shadow in {"bubble", "dialog"}:
         frame(draw, (9, 48, 31, 53), (65, 91, 88, 255))
-        draw.polygon([(14, 53), (17, 53), (15, 55)], fill=(65, 91, 88, 255))
+        draw.polygon([(14, 52), (17, 52), (15, 54)], fill=(65, 91, 88, 255))
     elif shadow == "door-rails":
         draw.rectangle((10, 45, 11, 54), fill=(92, 108, 119, 255))
         draw.rectangle((29, 45, 30, 54), fill=(92, 108, 119, 255))
@@ -802,8 +804,8 @@ def draw_aura(layer: Image.Image, aura: str, direction: str, profile: Profile) -
         draw.arc((6, hand_y - 7, 18, hand_y + 5), 250, 70, fill=BLUE)
     elif aura in {"photo-fade", "fade"}:
         for index, x in enumerate((7, 11, 29, 33)):
-            color = mix(GRAY, TRANSPARENT, index * 0.2)
-            if color[3]: draw.rectangle((x, 21 + index * 5, x + 1, 23 + index * 5), fill=color)
+            color = mix(GRAY, INK, index * 0.2)
+            draw.rectangle((x, 21 + index * 5, x + 1, 23 + index * 5), fill=color)
     elif aura == "inward":
         for x0, y0, x1, y1 in ((7, 18, 12, 21), (33, 22, 28, 25), (9, 42, 14, 39)):
             safe_line(draw, [(x0, y0), (x1, y1)], PURPLE)
@@ -842,7 +844,10 @@ def draw_aura(layer: Image.Image, aura: str, direction: str, profile: Profile) -
         color = CYAN if aura == "hospital" else RED
         for x, y in ((7, 20), (31, 16), (9, 40), (29, 38)): draw.rectangle((x, y, x + 2, y + 2), outline=color)
     elif aura == "interest":
-        for x, y in ((6, 18), (31, 23), (8, 39)): draw.text((x, y), "%", fill=GOLD, font=ImageFont.load_default())
+        for x, y in ((6, 18), (31, 23), (8, 39)):
+            draw.point((x, y), fill=GOLD)
+            draw.point((x + 3, y + 4), fill=GOLD)
+            safe_line(draw, [(x + 3, y), (x, y + 4)], GOLD)
     elif aura in {"warmth", "warm-steam"}:
         for x, y in ((8, 23), (31, 28), (11, 42)): draw.point((x, y), fill=GOLD)
     elif aura == "elevator":
@@ -875,7 +880,7 @@ def render_projectile(rule: VisualRule, accent: tuple[int, int, int, int]) -> Im
     cx, cy = 23, 8
 
     if rule.trail not in {"none", "pause"}:
-        trail_color = mix(accent, TRANSPARENT, 0.2)
+        trail_color = mix(accent, INK, 0.2)
         if rule.trail in {"broken", "glitch", "lag", "offline", "isolated"}:
             for x in (3, 8, 14): draw.rectangle((x, cy - (x % 2), x + 2, cy), fill=trail_color)
         elif rule.trail in {"wave", "laugh", "beat", "zigzag"}:
@@ -1303,7 +1308,7 @@ def main() -> None:
             "fingerprint": fingerprint,
         }
 
-    if len(set(fingerprints.values())) != 72:
+    if len(set(fingerprints.values())) != len(source_ids):
         duplicates: dict[str, list[str]] = {}
         for item_id, fingerprint in fingerprints.items(): duplicates.setdefault(fingerprint, []).append(item_id)
         raise AssertionError(f"duplicate manifestations: {[ids for ids in duplicates.values() if len(ids) > 1]}")
@@ -1336,8 +1341,8 @@ def main() -> None:
         make_atlas(rows, "", FRAME_W, FRAME_H).save(path, optimize=True)
         artifacts[name] = path
 
-    projectile_atlas = blank((32, 16 * 72))
-    impact_atlas = blank((24, 24 * 72))
+    projectile_atlas = blank((32, 16 * len(source_ids)))
+    impact_atlas = blank((24, 24 * len(source_ids)))
     for row, (projectile, impact) in enumerate(zip(projectile_rows, impact_rows)):
         projectile_atlas.alpha_composite(projectile, (0, row * 16))
         impact_atlas.alpha_composite(impact, (0, row * 24))
@@ -1363,10 +1368,11 @@ def main() -> None:
     # Initial clarity audit: time/state-dependent meanings are marked for
     # special review because a single static frame cannot prove their timing.
     review_flags = {
-        "slow-watch": "静态图只能表现延迟影子，需确认手部慢一帧是否足够清楚。",
+        "slow-watch": "常态只保留腕表；冻结瞬间允许腕侧短亮点，主体仍需以弹体悬停和解冻齐射验收。",
+        "three-day-visible": "静态人物不变化；需以拾取后当前配方三弹绕身三圈、第三圈淡轨、随后径向释放验收。",
         "auto-renew": "闭合扣费环清楚，但阶段扣款语义仍依赖后续动画。",
         "held-elevator": "门轨与伸手姿态可读，重新选敌逻辑只能由弹体示意。",
-        "typing-indicator": "三点与手机可读，来袭前预兆仍需要动效确认。",
+        "typing-indicator": "头顶三点直接可读，第三点与十二向散射的同步仍需要动效确认。",
         "streak-1847": "勾链可读，闭环/断链两状态需要后续成对帧。",
         "painless-night": "灰化与伤块清楚，延迟伤害回撞需要后续动效确认。",
     }
@@ -1383,10 +1389,10 @@ def main() -> None:
         "source_hero": str(SOURCE_HERO.relative_to(REPO)),
         "profile_system": str(PROFILE_MANIFEST.relative_to(REPO)),
         "frame": {"width": FRAME_W, "height": FRAME_H, "root": [ROOT_X, ROOT_Y]},
-        "item_count": 72,
+        "item_count": len(source_ids),
         "direction_order": list(DIRECTIONS),
         "item_order": source_ids,
-        "atlas_layout": {"columns": "front/back/left/right", "rows": "72 source-order items"},
+        "atlas_layout": {"columns": "front/back/left/right", "rows": f"{len(source_ids)} source-order items"},
         "layer_contract": ["behind-overlay", "body-with-cutout", "front-overlay"],
         "cutout_mask_contract": "white pixels delete body pixels before front overlay",
         "projectile_frame": [32, 16],
@@ -1400,7 +1406,7 @@ def main() -> None:
             "fixed_root_all_body_frames": [ROOT_X, ROOT_Y],
             "no_frame_edge_clipping": True,
             "max_composite_palette_colors": 32,
-            "unique_manifestation_fingerprints": 72,
+            "unique_manifestation_fingerprints": len(source_ids),
             "items": validations,
         },
         "pickup_icon_status": {
@@ -1418,7 +1424,7 @@ def main() -> None:
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"wrote {len(source_ids)} item manifestations to {OUTPUT_DIR}")
     print(f"cards: {len(cards)}, review pages: {len(page_paths)}, unique fingerprints: {len(set(fingerprints.values()))}")
-    print(f"approved A/C pickup icons: {manifest['pickup_icon_status']['approved_ac_count']} / 72")
+    print(f"approved A/C pickup icons: {manifest['pickup_icon_status']['approved_ac_count']} / {len(source_ids)}")
 
 
 if __name__ == "__main__":

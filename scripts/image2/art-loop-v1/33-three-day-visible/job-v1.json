@@ -1,0 +1,23 @@
+{
+  "name": "33-three-day-visible-v1",
+  "model": "gpt-image-2",
+  "quality": "high",
+  "size": "1024x1024",
+  "outputFormat": "png",
+  "background": "opaque",
+  "prompt": "prompt-v1.txt",
+  "images": [
+    "input/01-canonical-style-board.png",
+    "input/02-approved-hero-4dir-anchor.png",
+    "input/03-current-failed-multi-frame-orbit.png",
+    "input/04-target-behind-frame-progression.png",
+    "input/05-current-failed-runtime-review-negative.png"
+  ],
+  "output": "v1/33-three-day-visible-v1.png",
+  "remoteNode": null,
+  "status": "local-prepared-old-source-smoke-only",
+  "integrationAllowed": false,
+  "inventoryIconModified": false,
+  "runtimeModified": false,
+  "wikiModified": false
+}

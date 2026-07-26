@@ -1,0 +1,34 @@
+Use case: stylized-concept
+Asset type: four-direction, four-action hunched-body posture concept sheet for the Chinese pixel-art action game 《这一身》, targeting exact 40x56 logical hero cells
+Item: 22 broken-spine, 《断掉的脊梁骨》
+Canon event and irony: everyone expected him to be the family pillar until bending became his permanent posture. The main visual result is that the whole person is visibly hunched and still keeps moving, not that he carries a spine object.
+Primary request: redraw the approved hero in sixteen complete full-body cells with a clear but restrained broken-back posture: shoulders collapsed, head pushed forward, upper torso bent at the ribcage/waist hinge, legs still supporting him, feet on the original baseline. The body posture is primary; any old scar is tiny and secondary.
+Input images:
+Image 1 is the canonical project style board. Match its hard-pixel syntax, restrained muted palette, one-pixel outline logic and top-left light.
+Image 2 is the approved upright hero grid. Rows are IDLE, WALK, ATTACK, HURT. Columns are FRONT, LEFT, BACK, RIGHT. Preserve the exact identity, clothing, directions, action order and foot root.
+Image 3 is the locally part-rigged posture target. It shows the intended complete hunch using the real separated head/upper/arm/leg parts. The cyan/magenta body-mid markers are guides only and must not appear. Preserve the planted feet and ordinary silhouette while making the shoulder drop and forward head read more naturally.
+Image 4 is a rejected giant external-spine example. Never draw vertebrae, a spine column, bone plates, an X-ray or a bone weapon.
+Image 5 is rejected v1. Its short red-brown clothing marks are acceptable only as a tiny secondary old injury, but the upright body, weak hunch and head-only fourth row are wrong. Every v2 cell must contain the complete hero from head through feet.
+Output layout: strict 4x4 equal-cell full-body sheet. Rows are IDLE, WALK, ATTACK, HURT. Columns are FRONT, LEFT, BACK, RIGHT. Every one of the sixteen cells contains exactly one complete hero, with generous solid green separation. No missing torsos, cropped limbs, labels, borders, separators or extra variants.
+Posture construction:
+- shoulder line drops 1-2 logical pixels relative to the approved hero
+- head moves forward 2-3 logical pixels in left/right profile and down 2 pixels in every direction
+- upper torso pitches forward around one compact body-mid hinge; hips, knees and feet remain stable
+- arms hang from the collapsed shoulders and follow each original action without becoming extra limbs
+- overall height compresses modestly, but body width, face, hair and clothing identity stay approved
+Direction behavior:
+- front: lowered uneven shoulders, neck shortened, head slightly down; no visible bone object
+- back: bowed shoulder arc and compressed upper back; at most one tiny dull-red clothing scar inside the back silhouette
+- left: strongest readable hunch, head and chest pitch toward screen-left while hips and feet remain planted
+- right: true mirror of left, pitching toward screen-right with identical weight and no rear plate
+Action behavior:
+- idle: settled permanent hunch, not a temporary recoil
+- walk: bent body continues moving; foot contact remains stable and no sliding root
+- attack: breath and arms follow the approved attack, but the torso cannot fully straighten
+- hurt: hinge compresses further for one frame, without breaking the silhouette or losing the lower body
+Shadow policy: preserve only an ordinary compact ground shadow if visible in the approved reference. Do not add shadow creatures, shadow forks, support stands, crutches, extra floor branches, bone fragments or foot-side attachments.
+Old injury policy: optional, tiny, attached to the clothing at body mid, maximum one muted red/dull paper cluster. It may never become a visible spine, ribs or external prop.
+Backdrop: perfectly flat solid #00ff00 in all empty space. No gradient, glow, texture, reflection or green spill. Do not use #00ff00 in authored pixels.
+Style: restrained Chinese indie-game hard pixel art, sparse deliberate clusters, approved character palette, no soft blur, no antialiasing, no painterly shading
+Avoid: upright posture, head-only cell, missing torso, floating object, external spine, vertebra, skeleton, X-ray, bone plate, bone sword, third limb, duplicate arm, support frame, forked floor line, giant X, text, UI, watermark
+Final gate: the first read is “this whole person has been forced into a permanent hunch, but still stands and acts.” It must never read as “two unknown things behind him,” a backpack, a weapon, a skeleton or a broken animation frame.

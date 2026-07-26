@@ -6,13 +6,46 @@ import {
 } from './hero-morph';
 import { drawHeroItemMutationPass } from './hero-item-mutations';
 import { drawHeroItemPixelPass } from './hero-item-pixel';
+import { getOrderedItemAppearances, type AppearanceMutation } from './item-appearance';
+import { itemEquipmentAtlas } from './item-equipment-atlas';
+import { sourceDerivedMutationColor } from './item-source-art';
 import { heroStyle1Atlas } from './hero-style1-atlas';
+import { itemIconAtlas } from './item-icons';
+import {
+  itemStateOverlayAtlas,
+  type AutoRenewOverlayPhase,
+  type ItemStateOverlayPhase,
+} from './item-state-overlay-atlas';
 
 const SURFACE_W = 40;
 const SURFACE_H = 56;
 const PIVOT_X = 20;
 const PIVOT_Y = 49;
 const CACHE_LIMIT = 64;
+
+type PaletteMutation = Extract<AppearanceMutation, { kind: 'palette' }>;
+type RGB = readonly [number, number, number];
+
+function hexRgb(color: string): RGB {
+  const value = Number.parseInt(color.slice(1), 16);
+  return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
+}
+
+function blendRgb(
+  base: RGB,
+  color: RGB,
+  weight: number,
+): RGB {
+  return base.map((channel, index) => (
+    Math.round(channel * (1 - weight) + color[index]! * weight)
+  )) as unknown as RGB;
+}
+
+function mutationWeight(coverage: PaletteMutation['coverage']): number {
+  if (coverage === 'full') return 1;
+  if (coverage === 'partial') return 0.62;
+  return 0.3;
+}
 
 type Point = readonly [number, number];
 
@@ -24,6 +57,13 @@ export interface PixelHeroState {
   motion: 'idle' | 'walk' | 'attack' | 'hurt';
   frame: 0 | 1 | 2 | 3;
   hurt?: boolean;
+  thirdPillPhase?: ItemStateOverlayPhase | 'neutral';
+  autoRenewPhase?: AutoRenewOverlayPhase | 'neutral';
+  slowWatchFreeze?: boolean;
+  momoHeadpieceState?: 'safe' | 'threatened';
+  eyeExerciseActive?: boolean;
+  typingIndicatorDots?: 0 | 1 | 2 | 3;
+  serverShutdownPhase?: 'standby' | 'appear' | 'leap' | 'guard' | 'disconnect';
 }
 
 interface HeroPose {
@@ -40,6 +80,27 @@ interface HeroPose {
   footY: number;
   lean: number;
 }
+
+type AnatomyPart = 'head' | 'upper' | 'leftArm' | 'rightArm' | 'leftLeg' | 'rightLeg';
+
+interface PartTransform {
+  dx: number;
+  dy: number;
+  scaleX: number;
+}
+
+const PART_COLORS: Readonly<Record<AnatomyPart, RGB>> = {
+  head: [255, 64, 64],
+  upper: [64, 255, 64],
+  leftArm: [64, 64, 255],
+  rightArm: [255, 255, 64],
+  leftLeg: [255, 64, 255],
+  rightLeg: [64, 255, 255],
+};
+
+const PART_DRAW_ORDER = [
+  'rightLeg', 'leftLeg', 'upper', 'rightArm', 'leftArm', 'head',
+] as const satisfies readonly AnatomyPart[];
 
 const SKIN: Record<AppearanceDNA['skinTone'], string> = {
   paper: '#cbbba5',
@@ -144,7 +205,6 @@ class PixelSurface {
 
 export class PixelHeroRenderer {
   private cache = new Map<string, HTMLCanvasElement>();
-  private outlineCache = new WeakMap<HTMLCanvasElement, HTMLCanvasElement>();
 
   constructor() {
     void heroStyle1Atlas.whenReady()
@@ -152,11 +212,25 @@ export class PixelHeroRenderer {
       .catch((error: unknown) => {
         console.warn('主角像素图集加载失败，继续使用程序化角色。', error);
       });
+    void itemIconAtlas.whenReady()
+      .then(() => this.clear())
+      .catch((error: unknown) => {
+        console.warn('主角道具贴图加载失败，继续使用程序化道具。', error);
+      });
+    void itemEquipmentAtlas.whenReady()
+      .then(() => this.clear())
+      .catch((error: unknown) => {
+        console.warn('Image2 道具图集加载失败，继续使用程序化回退。', error);
+      });
+    void itemStateOverlayAtlas.whenReady()
+      .then(() => this.clear())
+      .catch((error: unknown) => {
+        console.warn('Image2 状态层图集加载失败，继续使用程序化回退。', error);
+      });
   }
 
   clear(): void {
     this.cache.clear();
-    this.outlineCache = new WeakMap<HTMLCanvasElement, HTMLCanvasElement>();
   }
 
   draw(
@@ -173,44 +247,20 @@ export class PixelHeroRenderer {
     const destinationY = Math.round(groundY - PIVOT_Y * pixelScale);
     const previousSmoothing = target.imageSmoothingEnabled;
     target.imageSmoothingEnabled = false;
-    const outline = this.getOutlineFrame(frame);
-    target.save();
-    target.globalAlpha *= state.motion === 'hurt' ? 0.72 : 0.58;
-    target.drawImage(
-      outline,
-      destinationX - pixelScale,
-      destinationY - pixelScale,
-      (SURFACE_W + 2) * pixelScale,
-      (SURFACE_H + 2) * pixelScale,
-    );
-    target.restore();
     target.drawImage(frame, destinationX, destinationY, SURFACE_W * pixelScale, SURFACE_H * pixelScale);
-    target.imageSmoothingEnabled = previousSmoothing;
-  }
-
-  private getOutlineFrame(frame: HTMLCanvasElement): HTMLCanvasElement {
-    const cached = this.outlineCache.get(frame);
-    if (cached) return cached;
-    const canvas = document.createElement('canvas');
-    canvas.width = SURFACE_W + 2;
-    canvas.height = SURFACE_H + 2;
-    const context = canvas.getContext('2d', { alpha: true });
-    if (!context) throw new Error('无法创建主角像素轮廓画布');
-    context.imageSmoothingEnabled = false;
-    for (let y = 0; y <= 2; y += 1) {
-      for (let x = 0; x <= 2; x += 1) {
-        if (x === 1 && y === 1) continue;
-        context.drawImage(frame, x, y);
+    const typingDots = state.typingIndicatorDots ?? 0;
+    if (typingDots > 0) {
+      target.fillStyle = '#ded7ca';
+      for (let index = 0; index < typingDots; index += 1) {
+        target.fillRect(
+          destinationX + (14 + index * 5) * pixelScale,
+          destinationY + 10 * pixelScale,
+          2 * pixelScale,
+          2 * pixelScale,
+        );
       }
     }
-    context.globalCompositeOperation = 'source-in';
-    context.fillStyle = '#d8cbb5';
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.globalCompositeOperation = 'destination-out';
-    context.drawImage(frame, 1, 1);
-    context.globalCompositeOperation = 'source-over';
-    this.outlineCache.set(frame, canvas);
-    return canvas;
+    target.imageSmoothingEnabled = previousSmoothing;
   }
 
   private getFrame(state: PixelHeroState): HTMLCanvasElement {
@@ -255,7 +305,7 @@ export class PixelHeroRenderer {
       dna.skinTone, dna.faceShape, dna.eyeShape, dna.hairStyle, dna.hairColor,
       dna.stature, dna.bodyBuild, dna.posture, dna.outfit, dna.feature,
     ].join(':');
-    return `${appearance}|${state.facing}|${state.motion}|${state.ageStep}|${[...state.items].sort().join(',')}|${state.frame}|${state.hurt ? 1 : 0}`;
+    return `${appearance}|${state.facing}|${state.motion}|${state.ageStep}|${[...state.items].sort().join(',')}|${state.frame}|${state.hurt ? 1 : 0}|${state.thirdPillPhase ?? ''}|${state.autoRenewPhase ?? ''}|${state.slowWatchFreeze ? 1 : 0}|${state.momoHeadpieceState ?? ''}|${state.eyeExerciseActive ? 1 : 0}|${state.serverShutdownPhase ?? ''}`;
   }
 
   private paintAtlasFrame(
@@ -273,7 +323,17 @@ export class PixelHeroRenderer {
       state.appearance.stature,
       state.appearance.bodyBuild,
     );
+    const partMask = heroStyle1Atlas.slicePartMask(
+      state.motion,
+      state.facing,
+      state.frame,
+      state.appearance.stature,
+      state.appearance.bodyBuild,
+    );
     this.recolorAtlasFrame(sourceImage, state, hairMask);
+    if (state.eyeExerciseActive) this.eraseAnatomyArms(sourceImage, partMask);
+    this.applyItemPartMorph(sourceImage, state, partMask);
+    this.applyBrokenSpineWarp(sourceImage, state);
     const assembledCanvas = document.createElement('canvas');
     assembledCanvas.width = HERO_FRAME_WIDTH;
     assembledCanvas.height = HERO_FRAME_HEIGHT;
@@ -282,7 +342,49 @@ export class PixelHeroRenderer {
     assembled.imageSmoothingEnabled = false;
     drawHeroItemMutationPass(assembled, state, 'behind');
     drawHeroItemPixelPass(assembled, state, 'behind');
-    assembled.putImageData(sourceImage, 0, 0);
+    if (state.items.includes('auto-renew')) {
+      const phase = state.autoRenewPhase ?? (['stub', 'two', 'three', 'four'] as const)[state.frame];
+      if (phase !== 'neutral') {
+        const overlay = itemStateOverlayAtlas.slice('auto-renew', phase, state.facing);
+        if (overlay) assembled.drawImage(overlay, 0, 0);
+      }
+    }
+    if (state.items.includes('shop-freezer')) {
+      const overlay = itemStateOverlayAtlas.slice('shop-freezer', 'drag', state.facing);
+      if (overlay) assembled.drawImage(overlay, 0, 0);
+    }
+    if (state.items.includes('pregnancy-test')) {
+      const shadowOverlay = itemStateOverlayAtlas.slice('pregnancy-test', 'shadow', state.facing);
+      if (shadowOverlay) assembled.drawImage(shadowOverlay, 0, 0);
+    }
+    if (state.items.includes('goodnight-2h')) {
+      const phoneOverlay = itemStateOverlayAtlas.slice('goodnight-2h', 'shadow', state.facing);
+      if (phoneOverlay) assembled.drawImage(phoneOverlay, 0, 0);
+    }
+    const bodyCanvas = document.createElement('canvas');
+    bodyCanvas.width = HERO_FRAME_WIDTH;
+    bodyCanvas.height = HERO_FRAME_HEIGHT;
+    const bodyContext = bodyCanvas.getContext('2d', { alpha: true });
+    if (!bodyContext) throw new Error('无法合成主角身体帧');
+    bodyContext.putImageData(sourceImage, 0, 0);
+    // drawImage preserves the already-painted behind pass. putImageData would
+    // replace transparent pixels too and erase every shadow/aura behind him.
+    assembled.drawImage(bodyCanvas, 0, 0);
+    if (state.items.includes('small-uniform')) {
+      const uniform = heroStyle1Atlas.sliceUniform(
+        state.motion,
+        state.facing,
+        state.frame,
+        state.appearance.stature,
+        state.appearance.bodyBuild,
+      );
+      if (uniform) this.drawAnatomyLayer(assembled, uniform, state, partMask);
+    }
+    if (state.items.includes('broken-spine') && !state.items.includes('fathers-raincoat')) {
+      const phase = `scar-${state.motion}` as ItemStateOverlayPhase;
+      const scarOverlay = itemStateOverlayAtlas.slice('broken-spine', phase, state.facing);
+      if (scarOverlay) assembled.drawImage(scarOverlay, 0, 0);
+    }
     if (state.items.includes('fathers-raincoat')) {
       const raincoat = heroStyle1Atlas.sliceRaincoat(
         state.motion,
@@ -291,7 +393,52 @@ export class PixelHeroRenderer {
         state.appearance.stature,
         state.appearance.bodyBuild,
       );
-      if (raincoat) assembled.drawImage(raincoat, 0, 0);
+      if (raincoat) this.drawAnatomyLayer(assembled, raincoat, state, partMask);
+    }
+    if (state.items.includes('cracked-glasses')) {
+      const glassesOverlay = itemStateOverlayAtlas.slice('cracked-glasses', 'fitted', state.facing);
+      if (glassesOverlay) assembled.drawImage(glassesOverlay, 0, 0);
+    }
+    if (state.items.includes('divorce-draft')) {
+      const agreementOverlay = itemStateOverlayAtlas.slice('divorce-draft', 'fitted', state.facing);
+      if (agreementOverlay) assembled.drawImage(agreementOverlay, 0, 0);
+    }
+    if (state.items.includes('pregnancy-test')) {
+      const propOverlay = itemStateOverlayAtlas.slice('pregnancy-test', 'prop', state.facing);
+      if (propOverlay) assembled.drawImage(propOverlay, 0, 0);
+    }
+    if (state.items.includes('third-pill')) {
+      const phase = state.thirdPillPhase ?? (state.frame % 2 === 0 ? 'rage' : 'crash');
+      if (phase !== 'neutral') {
+        const overlay = itemStateOverlayAtlas.slice('third-pill', phase, state.facing);
+        if (overlay) assembled.drawImage(overlay, 0, 0);
+      }
+    }
+    if (state.items.includes('slow-watch') && state.slowWatchFreeze) {
+      const phase = `freeze-${state.motion}` as ItemStateOverlayPhase;
+      const freezeOverlay = itemStateOverlayAtlas.slice('slow-watch', phase, state.facing);
+      if (freezeOverlay) assembled.drawImage(freezeOverlay, 0, 0);
+    }
+    if (state.items.includes('momo-avatar')) {
+      const momoOverlay = itemStateOverlayAtlas.slice(
+        'momo-avatar',
+        state.momoHeadpieceState ?? 'safe',
+        state.facing,
+      );
+      if (momoOverlay) assembled.drawImage(momoOverlay, 0, 0);
+    }
+    if (state.items.includes('eye-exercise') && state.eyeExerciseActive) {
+      const phase = `press-${state.motion}` as ItemStateOverlayPhase;
+      const eyeExerciseOverlay = itemStateOverlayAtlas.slice('eye-exercise', phase, state.facing);
+      if (eyeExerciseOverlay) assembled.drawImage(eyeExerciseOverlay, 0, 0);
+    }
+    if (state.items.includes('server-shutdown')) {
+      const serverOverlay = itemStateOverlayAtlas.slice(
+        'server-shutdown',
+        state.serverShutdownPhase ?? 'standby',
+        state.facing,
+      );
+      if (serverOverlay) assembled.drawImage(serverOverlay, 0, 0);
     }
     drawHeroItemPixelPass(assembled, state, 'front');
     drawHeroItemMutationPass(assembled, state, 'front');
@@ -299,6 +446,186 @@ export class PixelHeroRenderer {
     this.applyAgeMorph(assembledImage, state);
     target.clearRect(0, 0, HERO_FRAME_WIDTH, HERO_FRAME_HEIGHT);
     target.putImageData(assembledImage, 0, 0);
+  }
+
+  private applyItemPartMorph(
+    image: ImageData,
+    state: PixelHeroState,
+    partMask: HTMLCanvasElement | null,
+  ): void {
+    if (!partMask) return;
+    const morphItems = state.items.filter((id) => (
+      id === 'stone-schoolbag'
+      || id === 'small-uniform'
+      || id === 'third-pill'
+      || id === 'held-pee'
+      || id === 'pregnancy-test'
+      || id === 'summer-run'
+    ));
+    if (!morphItems.length) return;
+    const maskContext = partMask.getContext('2d', { alpha: true, willReadFrequently: true });
+    if (!maskContext) return;
+    const mask = maskContext.getImageData(0, 0, HERO_FRAME_WIDTH, HERO_FRAME_HEIGHT).data;
+    const source = new Uint8ClampedArray(image.data);
+    const output = new Uint8ClampedArray(image.data.length);
+    const forward = state.facing === 'left' ? -1 : state.facing === 'right' ? 1 : 0;
+
+    const transforms = Object.fromEntries(PART_DRAW_ORDER.map((part) => [part, {
+      dx: 0, dy: 0, scaleX: 1,
+    }])) as unknown as Record<AnatomyPart, PartTransform>;
+    const move = (part: AnatomyPart, dx: number, dy: number, scaleX = 0): void => {
+      transforms[part].dx += dx;
+      transforms[part].dy += dy;
+      transforms[part].scaleX += scaleX;
+    };
+
+    for (const id of morphItems) {
+      if (id === 'stone-schoolbag') {
+        move('head', forward, 1);
+        move('upper', forward, 1);
+        move('leftArm', forward, 1);
+        move('rightArm', forward, 1);
+      } else if (id === 'small-uniform') {
+        move('upper', 0, 0, -0.08);
+        move('leftArm', 1, 0);
+        move('rightArm', -1, 0);
+      } else if (id === 'third-pill') {
+        const phase = state.thirdPillPhase ?? (state.frame % 2 === 0 ? 'rage' : 'crash');
+        const pulse = phase === 'rage' ? 1 : phase === 'crash' ? -1 : 0;
+        if (pulse !== 0) {
+          move('upper', 0, 0, pulse > 0 ? 0.14 : -0.12);
+          move('leftArm', -pulse, 0);
+          move('rightArm', pulse, 0);
+        }
+      } else if (id === 'held-pee') {
+        move('leftLeg', 1, 0);
+        move('rightLeg', -1, 0);
+      } else if (id === 'pregnancy-test') {
+        move('leftArm', 2, 1);
+        move('rightArm', -2, 1);
+      } else if (id === 'summer-run' && state.motion === 'walk') {
+        const behind = forward === 0 ? 0 : -forward * 2;
+        move('leftArm', behind || -1, -1);
+        move('rightArm', behind || 1, -1);
+        move('upper', forward, 0);
+        move('head', forward, 0);
+      }
+    }
+
+    const partAt = (offset: number): AnatomyPart | null => {
+      if (mask[offset + 3] !== 255) return null;
+      for (const part of PART_DRAW_ORDER) {
+        const color = PART_COLORS[part];
+        if (mask[offset] === color[0] && mask[offset + 1] === color[1] && mask[offset + 2] === color[2]) {
+          return part;
+        }
+      }
+      return null;
+    };
+    const write = (sourceOffset: number, x: number, y: number): void => {
+      if (x < 0 || x >= HERO_FRAME_WIDTH || y < 0 || y >= HERO_FRAME_HEIGHT) return;
+      const destinationOffset = (y * HERO_FRAME_WIDTH + x) * 4;
+      output[destinationOffset] = source[sourceOffset]!;
+      output[destinationOffset + 1] = source[sourceOffset + 1]!;
+      output[destinationOffset + 2] = source[sourceOffset + 2]!;
+      output[destinationOffset + 3] = source[sourceOffset + 3]!;
+    };
+
+    // Preserve non-body particles and shadow pixels before moving anatomy.
+    for (let y = 0; y < HERO_FRAME_HEIGHT; y += 1) {
+      for (let x = 0; x < HERO_FRAME_WIDTH; x += 1) {
+        const offset = (y * HERO_FRAME_WIDTH + x) * 4;
+        if (source[offset + 3] && !partAt(offset)) write(offset, x, y);
+      }
+    }
+    for (const part of PART_DRAW_ORDER) {
+      const transform = transforms[part];
+      for (let y = 0; y < HERO_FRAME_HEIGHT; y += 1) {
+        for (let x = 0; x < HERO_FRAME_WIDTH; x += 1) {
+          const offset = (y * HERO_FRAME_WIDTH + x) * 4;
+          if (!source[offset + 3] || partAt(offset) !== part) continue;
+          const targetX = Math.round(20 + (x - 20) * transform.scaleX) + transform.dx;
+          write(offset, targetX, y + transform.dy);
+        }
+      }
+    }
+    image.data.set(output);
+  }
+
+  private eraseAnatomyArms(image: ImageData, partMask: HTMLCanvasElement | null): void {
+    if (!partMask) return;
+    const maskContext = partMask.getContext('2d', { alpha: true, willReadFrequently: true });
+    if (!maskContext) return;
+    const mask = maskContext.getImageData(0, 0, HERO_FRAME_WIDTH, HERO_FRAME_HEIGHT).data;
+    const armColors = [PART_COLORS.leftArm, PART_COLORS.rightArm];
+    for (let offset = 0; offset < mask.length; offset += 4) {
+      if (mask[offset + 3] !== 255) continue;
+      const isArm = armColors.some((color) => (
+        mask[offset] === color[0]
+        && mask[offset + 1] === color[1]
+        && mask[offset + 2] === color[2]
+      ));
+      if (!isArm) continue;
+      image.data[offset] = 0;
+      image.data[offset + 1] = 0;
+      image.data[offset + 2] = 0;
+      image.data[offset + 3] = 0;
+    }
+  }
+
+  private drawAnatomyLayer(
+    target: CanvasRenderingContext2D,
+    layer: HTMLCanvasElement,
+    state: PixelHeroState,
+    partMask: HTMLCanvasElement | null,
+  ): void {
+    if (!state.eyeExerciseActive || !partMask) {
+      target.drawImage(layer, 0, 0);
+      return;
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = HERO_FRAME_WIDTH;
+    canvas.height = HERO_FRAME_HEIGHT;
+    const context = canvas.getContext('2d', { alpha: true, willReadFrequently: true });
+    if (!context) return;
+    context.drawImage(layer, 0, 0);
+    const image = context.getImageData(0, 0, HERO_FRAME_WIDTH, HERO_FRAME_HEIGHT);
+    this.eraseAnatomyArms(image, partMask);
+    context.clearRect(0, 0, HERO_FRAME_WIDTH, HERO_FRAME_HEIGHT);
+    context.putImageData(image, 0, 0);
+    target.drawImage(canvas, 0, 0);
+  }
+
+  private applyBrokenSpineWarp(image: ImageData, state: PixelHeroState): void {
+    if (!state.items.includes('broken-spine')) return;
+    const source = new Uint8ClampedArray(image.data);
+    const forward = state.facing === 'left' ? -1 : state.facing === 'right' ? 1 : 0;
+    image.data.fill(0);
+    for (let y = 0; y < HERO_FRAME_HEIGHT; y += 1) {
+      const headBand = y < 24;
+      const shoulderBand = y >= 24 && y < 34;
+      const waistBand = y >= 34 && y < 42;
+      const dx = headBand
+        ? forward * 4 + (state.facing === 'front' ? 1 : 0)
+        : shoulderBand
+          ? forward * 3
+          : waistBand
+            ? forward
+            : 0;
+      const dy = headBand ? 3 : shoulderBand ? 2 : waistBand ? 1 : 0;
+      for (let x = 0; x < HERO_FRAME_WIDTH; x += 1) {
+        const targetX = x + dx;
+        const targetY = y + dy;
+        if (targetX < 0 || targetX >= HERO_FRAME_WIDTH || targetY >= HERO_FRAME_HEIGHT) continue;
+        const sourceOffset = (y * HERO_FRAME_WIDTH + x) * 4;
+        if (source[sourceOffset + 3] === 0) continue;
+        const targetOffset = (targetY * HERO_FRAME_WIDTH + targetX) * 4;
+        image.data[targetOffset] = source[sourceOffset]!;
+        image.data[targetOffset + 1] = source[sourceOffset + 1]!;
+        image.data[targetOffset + 2] = source[sourceOffset + 2]!;
+        image.data[targetOffset + 3] = source[sourceOffset + 3]!;
+      }
+    }
   }
 
   /** Keeps the approved atlas identity while making later life chapters visibly older. */
@@ -345,7 +672,7 @@ export class PixelHeroRenderer {
     state: PixelHeroState,
     hairMask: HTMLCanvasElement | null,
   ): void {
-    const skinPalettes: Record<AppearanceDNA['skinTone'], readonly [number, number, number][]> = {
+    const skinPalettes: Record<AppearanceDNA['skinTone'], readonly RGB[]> = {
       // "warm" is the selected mother sprite's exact palette.
       warm: [[218, 208, 186], [199, 181, 158], [146, 119, 100]],
       paper: [[226, 218, 202], [207, 196, 178], [156, 137, 122]],
@@ -353,7 +680,7 @@ export class PixelHeroRenderer {
       brown: [[167, 132, 105], [143, 105, 83], [99, 72, 63]],
       deep: [[126, 91, 76], [104, 72, 63], [72, 51, 49]],
     };
-    const outfitPalettes: Record<AppearanceDNA['outfit'], readonly [number, number, number][]> = {
+    const outfitPalettes: Record<AppearanceDNA['outfit'], readonly RGB[]> = {
       // "old_sweater" is the selected mother sprite's exact palette.
       old_sweater: [[55, 52, 58], [103, 98, 98]],
       undershirt: [[132, 122, 111], [181, 168, 151]],
@@ -361,12 +688,43 @@ export class PixelHeroRenderer {
       plain_shirt: [[108, 99, 91], [153, 142, 132]],
     };
     const sourceSkin = [[218, 208, 186], [199, 181, 158], [146, 119, 100]] as const;
-    const targetSkin = state.items.includes('painless-night')
-      ? [[151, 151, 157], [126, 126, 133], [90, 88, 98]] as const
-      : skinPalettes[state.appearance.skinTone];
-    const targetOutfit = state.items.includes('small-uniform')
+    let targetSkin: readonly RGB[] = skinPalettes[state.appearance.skinTone];
+    let targetOutfit: readonly RGB[] = state.items.includes('small-uniform')
       ? [[64, 89, 105], [111, 137, 148]] as const
       : outfitPalettes[state.appearance.outfit];
+
+    const paletteMutations = getOrderedItemAppearances(state.items).flatMap((definition) => (
+      definition.mutations
+        .filter((mutation): mutation is PaletteMutation => mutation.kind === 'palette')
+        .map((mutation) => ({ id: definition.id, mutation }))
+    ));
+    const latest = (target: PaletteMutation['target']) => {
+      for (let index = paletteMutations.length - 1; index >= 0; index -= 1) {
+        const record = paletteMutations[index];
+        if (record?.mutation.target === target) return record;
+      }
+      return undefined;
+    };
+    const skinMutation = latest('skin');
+    if (skinMutation) {
+      const color = hexRgb(sourceDerivedMutationColor(
+        skinMutation.id,
+        'skin',
+        skinMutation.mutation.color,
+      ));
+      const weight = mutationWeight(skinMutation.mutation.coverage);
+      targetSkin = targetSkin.map((shade) => blendRgb(shade, color, weight));
+    }
+    const outfitMutation = latest('outfit');
+    if (outfitMutation) {
+      const color = hexRgb(sourceDerivedMutationColor(
+        outfitMutation.id,
+        'outfit',
+        outfitMutation.mutation.color,
+      ));
+      const weight = mutationWeight(outfitMutation.mutation.coverage);
+      targetOutfit = targetOutfit.map((shade) => blendRgb(shade, color, weight));
+    }
 
     const matches = (offset: number, color: readonly number[]) => (
       image.data[offset] === color[0]
@@ -395,23 +753,33 @@ export class PixelHeroRenderer {
       }
     }
 
-    this.recolorHairFromMask(image, hairMask, state);
+    this.recolorHairFromMask(image, hairMask, state, latest('hair'));
   }
 
   private recolorHairFromMask(
     image: ImageData,
     hairMask: HTMLCanvasElement | null,
     state: PixelHeroState,
+    paletteMutation?: { readonly id: ItemId; readonly mutation: PaletteMutation },
   ): void {
-    const target = state.items.includes('bleach-powder')
-      ? [215, 200, 79]
-      : state.ageStep >= 4
+    const base: RGB = state.ageStep >= 4
         ? [103, 98, 98]
       : state.appearance.hairColor === 'brown'
         ? [68, 52, 47]
         : state.appearance.hairColor === 'soft_black'
           ? [44, 42, 46]
           : [23, 21, 27];
+    const target = paletteMutation
+      ? blendRgb(
+          base,
+          hexRgb(sourceDerivedMutationColor(
+            paletteMutation.id,
+            'hair',
+            paletteMutation.mutation.color,
+          )),
+          mutationWeight(paletteMutation.mutation.coverage),
+        )
+      : base;
     if (target[0] === 23 && target[1] === 21 && target[2] === 27) return;
     if (!hairMask) return;
     const maskContext = hairMask.getContext('2d', { alpha: true, willReadFrequently: true });
@@ -474,11 +842,6 @@ export class PixelHeroRenderer {
     this.paintHead(surface, pose, state.appearance, skin, outline, owns, state.ageStep);
     this.paintFrontItems(surface, pose, owns, outline);
 
-    if (owns('broken-spine')) {
-      const spineX = pose.centerX + 1;
-      surface.line(spineX, pose.torsoTop + 2, spineX + 2, pose.torsoTop + 7, '#e2d5b6', 2);
-      surface.line(spineX + 2, pose.torsoTop + 8, spineX - 1, pose.torsoTop + 12, '#b74a52', 1);
-    }
     if (owns('spent-decade')) {
       surface.pixel(pose.headX - 3, pose.headY + 1, '#ded8ca');
       surface.pixel(pose.headX + 4, pose.headY, '#ded8ca');
@@ -654,10 +1017,19 @@ export class PixelHeroRenderer {
       surface.line(pose.headX + 2, pose.headY - 3, pose.headX + 4, pose.headY - 1, outline);
     }
     if (owns('cracked-glasses')) {
-      surface.rect(pose.headX - 5, pose.headY - 2, 4, 4, '#91adb0');
-      surface.rect(pose.headX + 2, pose.headY - 2, 4, 4, '#91adb0');
-      surface.line(pose.headX - 1, pose.headY, pose.headX + 2, pose.headY, '#91adb0');
-      surface.line(pose.headX + 2, pose.headY - 2, pose.headX + 5, pose.headY + 2, '#d9e3df');
+      const frame = '#605664';
+      const lensPoints = [-4, 3].flatMap((center) => [
+        [center - 1, -1], [center, -2], [center + 2, -2], [center + 3, -1],
+        [center + 3, 1], [center + 2, 2], [center, 2], [center - 1, 1],
+      ] as const);
+      for (const [offsetX, offsetY] of lensPoints) {
+        surface.pixel(pose.headX + offsetX, pose.headY + offsetY, frame);
+      }
+      surface.pixel(pose.headX, pose.headY, frame);
+      surface.pixel(pose.headX + 1, pose.headY, frame);
+      surface.pixel(pose.headX + 4, pose.headY - 1, '#a0a4ac');
+      surface.pixel(pose.headX + 3, pose.headY, '#a0a4ac');
+      surface.pixel(pose.headX + 5, pose.headY + 1, '#a0a4ac');
     }
     if (owns('od-pill')) {
       surface.pixel(pose.headX - eyeGap, eyeY, '#d57bb0');

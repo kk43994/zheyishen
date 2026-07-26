@@ -1,0 +1,16 @@
+Use case: stylized-concept
+Asset type: 48x48 elite enemy action concept source
+Input images: Image 1 is the authoritative Zhe Yi Shen canonical style board for palette, outline, top-left light, and pixel density. Image 2 is the authoritative runtime enemy motion sheet for compact silhouettes and readable action changes. Preserve that visual language; do not copy any existing creature.
+
+Create one strict 2x2 action sheet of the exact same enemy: "The Coat Rack Standing in the Corner". It is a tall, old wooden coat rack wearing one oversized adult charcoal-brown overcoat and a worn hat. The collar is completely empty and black; there is no head, no face, no eyes, no human body, and no visible hands. The horror comes from a child mistaking the hanging sleeves for a person.
+
+Quadrants, fixed order:
+- top-left IDLE: coat rack upright and still, both sleeves hanging naturally, empty collar unmistakable.
+- top-right MOVE: same rack shuffling slightly on its wooden base, coat hem lagging by a few pixels; no added legs.
+- bottom-left ATTACK: one sleeve extends toward one side and produces a broad dark cone telegraph from the sleeve opening. The cone is a deliberate combat effect, not a floor shadow. Keep the rack itself fully visible.
+- bottom-right HURT/DEATH: coat slumps off the rack, hat knocked aside, empty wooden hooks exposed; no gore.
+
+Scene/backdrop: perfectly uniform solid pure #00ff00 chroma-key background in every pixel outside the sprites. No floor plane, no contact shadow, no cast shadow, no glow on the background, no gradient, no texture.
+Style/medium: crisp chunky low-resolution pixel art designed to survive reduction into a 48x48 elite enemy frame; hard integer-like pixel clusters; 10-16 visible subject colors; one-logical-pixel deep ink outline; weaker internal lines; top-left light and lower-right shadow. The coat rack body and empty collar must remain unmistakable inside 48 pixels even when the attack cone is present. Use mostly #111116, #1b1a20, #3e3a3d, #786f69, worn brown, #aaa297, and restrained #9f3548 only for the attack warning.
+Composition/framing: four equal quadrants, same three-quarter-front camera, same scale and construction, each sprite centered independently with generous green padding and a stable bottom-center foot/base anchor. No cropping and no overlap across quadrants.
+Constraints: the four poses must clearly be the same enemy; readable in 300 ms; no grid lines, quadrant borders, labels, captions, text, letters, numbers, watermark, UI, scenery, extra props, extra creatures, antialiasing, blur, gradients, semi-transparent edges, or #00ff00 inside the subject.

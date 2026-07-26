@@ -1,0 +1,7 @@
+Use case: stylized-concept
+Asset type: 2x2 pixel-art boss skill pose sheet for an action game
+Primary request: Preserve the exact back-facing manager hidden behind the cracked black office chair. Four poses in reading order: one restrained hand rising beside the chair in a false praising gesture; one hand sliding a thick task folder out from behind the chair toward the viewer; chair rolling sharply backward while still facing away; returning to motionless seated posture.
+Style: crisp high-detail pixel art matching the references, ominous office boss, readable at 64px.
+Layout: exact 2x2 grid, one complete chair-and-manager in each cell, same crack map and scale, generous gutters.
+Background: perfectly flat solid #00ff00 chroma key, no desk, room, floor, labels, borders, or text.
+Avoid: visible face, thumbs-up icon, readable writing, extra people, monster transformation, smooth painting.

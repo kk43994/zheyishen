@@ -1,0 +1,19 @@
+Create one 2x2 game-VFX sprite source sheet using the supplied references.
+
+Reference order:
+1. Canonical project style board: match its dark fairytale pixel-art language, restrained palette, hard pixels and exact-size readability.
+2. Approved breath projectile family: match its moon-white breath carrier, scale and silhouette density.
+3. Wooden sword equipment sheet: use only its worn wood color and blunt emotional character.
+4. Eyebrow razor equipment sheet: use only its thin silver edge and cold highlight.
+5. Marble equipment sheet: use its childhood glass-marble identity.
+6. Shop freezer equipment sheet: use its square frost rim and low-pixel ice fog.
+
+Output layout: exactly four isolated sprites in a clean 2x2 grid on solid pure chroma green #00FF00. No grid lines. Each sprite is centered in its quadrant, faces right, occupies about 72 percent of the quadrant, and has a strong silhouette that remains distinct after reduction to 28x28 pixels.
+
+Quadrants, left-to-right then top-to-bottom:
+1. WOODEN SWORD EFFECT: a wide, blunt, short moon-white breath slash. Add one restrained worn-brown underside and two tiny wood chips. It is an exhaled slash, not a sword. No blade object, no handle, no hilt.
+2. EYEBROW RAZOR EFFECT: an extremely thin silver-white breath edge, long and clean, with one cold highlight pixel cluster. It is sharpened breath, not a razor. No handle, no tool silhouette.
+3. MARBLE PROJECTILE: one literal old glass marble, round and immediately recognizable, cold blue-grey glass with one bold curved pale highlight and a tiny dark inner swirl. No jewel, no planet, no bubble.
+4. FREEZER EFFECT: the approved moon-white breath core clearly visible inside a square low-pixel frost rim, with two tiny frost motes. No snowflake, no ice crystal, no freezer appliance.
+
+Chunky low-resolution pixel art, crisp hard pixel clusters, no anti-aliasing, no gradients, no glow haze, no shadows cast onto the green, no scenery, no border, no UI, no text, no letters, no numbers, no faces.

@@ -1,0 +1,16 @@
+Use case: stylized-concept
+Asset type: 32x32 game enemy action concept source
+Input images: Image 1 is the authoritative Zhe Yi Shen canonical style board for palette, outline, top-left light, and pixel density. Image 2 is the authoritative runtime enemy motion sheet for compact 32x32 silhouettes and readable action changes. Preserve that visual language; do not copy any existing creature.
+
+Create one strict 2x2 action sheet of the exact same enemy: "The Desk Lamp Left On". It is one cheap, battered articulated metal desk lamp from a late-night family home: weighted round base, two-joint arm, plain conical shade, small warm bulb. No face, eyes, mouth, hands, feet, or creature anatomy. It stands in place and tempts the player into its light: inside the light the player gains attack power but continuously loses health.
+
+Quadrants, fixed order:
+- top-left IDLE: lamp standing still, shade angled down, bulb dim, silhouette compact and stable.
+- top-right HOVER/PULSE: same lamp bends one joint and turns its shade slightly as if following the player, bulb beginning to warm; base does not walk.
+- bottom-left ATTACK/HAZARD ACTIVE: bulb brightens and projects one clear warm cone of light downward and outward. The cone is a deliberate gameplay zone, not a floor shadow; use raincoat yellow at the center with an old-red thin danger edge. Keep the lamp fully visible.
+- bottom-right HURT/DEATH: arm buckles at one joint, shade knocked sideways, bulb flickering with two tiny pixels; no shattered glass spray.
+
+Scene/backdrop: perfectly uniform solid pure #00ff00 chroma-key background in every pixel outside the sprites and the deliberate attack cone. No floor plane, no contact shadow, no cast shadow outside the attack cone, no reflection, no background glow, no gradient, no texture.
+Style/medium: crisp chunky low-resolution pixel art designed to survive reduction into a 32x32 enemy frame; hard integer-like pixel clusters; 10-16 visible subject colors; one-logical-pixel deep ink outline; weaker internal lines; top-left light and lower-right shadow. Use deep ink, soft ink, hospital blue-grey metal, paper-shadow wear, raincoat yellow light, and restrained old-red danger trim.
+Composition/framing: four equal quadrants, same three-quarter-front camera, same scale and construction, each sprite centered independently with generous green padding and a stable bottom-center base anchor. No cropping and no overlap across quadrants.
+Constraints: same lamp in all four poses; readable in 300 ms and distinct from the Lamp Keeper; no lantern, cloak, human, face, limbs, furniture, room, grid lines, quadrant borders, labels, captions, text, letters, numbers, watermark, UI, scenery, extra props, antialiasing, blur, gradients, semi-transparent edges, or #00ff00 inside the subject.

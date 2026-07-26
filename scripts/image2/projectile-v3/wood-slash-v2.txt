@@ -1,0 +1,15 @@
+Create one 2x2 candidate sheet for a single game projectile effect, using the supplied references.
+
+Reference order:
+1. Canonical project style board: match its restrained dark-fairytale pixel language and hard logical pixels.
+2. Approved breath projectiles: keep their moon-white breath material and compact game scale.
+3. Approved wooden sword equipment: borrow only its worn warm-brown wood color and blunt childhood character.
+4. Previous projectile sheet: its top-left wooden effect is rejected because it becomes a tall round beige cloud at runtime. Do not repeat that silhouette.
+
+Output layout: exactly four isolated variations in a clean 2x2 grid on solid pure chroma green #00FF00. No grid lines. Every variation faces right and shows the same approved concept with small silhouette differences.
+
+The effect is a WIDE, SHORT, BLUNT WOODEN BREATH SLASH. It must read first as a horizontal attack stroke, not as a cloud or orb. Keep its visible silhouette about 2.8 to 3.4 times wider than tall. Use a mostly straight upper edge, a shallow tapered leading tip on the right, a clearly concave broken trailing edge on the left, and one narrow worn-brown underside. Add exactly two detached tiny wood chips below the trailing half. Keep a moon-white breath core visible above the brown underside. Add at most two short dark-brown grain notches inside the stroke so the material survives reduction to 28x28.
+
+It is an exhaled slash shaped by a wooden sword, not the sword itself. No handle, hilt, crossguard, full blade object, axe, feather, wing, flame, cloud ball, round puff, magic crescent, scenery, shadow, UI, text, letters, numbers or faces.
+
+Chunky low-resolution pixel art, crisp hard pixel clusters, no anti-aliasing, no gradients, no glow haze. Each sprite centered in its quadrant, occupying about 72 percent of quadrant width but no more than 28 percent of quadrant height. Strong silhouette that stays recognizable after nearest-neighbor reduction to 28x28 pixels.

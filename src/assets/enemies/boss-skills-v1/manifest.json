@@ -1,0 +1,277 @@
+{
+  "schemaVersion": 1,
+  "assets": {
+    "closet-dark-skills": {
+      "frame": 48,
+      "rows": 2,
+      "display": 128
+    },
+    "silent-father-p1-skills": {
+      "frame": 64,
+      "rows": 3,
+      "display": 144
+    },
+    "silent-father-p2-skills": {
+      "frame": 64,
+      "rows": 3,
+      "display": 96
+    },
+    "praise-chair-p1-skills": {
+      "frame": 64,
+      "rows": 4,
+      "display": 128
+    },
+    "praise-chair-p2-skills": {
+      "frame": 96,
+      "rows": 5,
+      "display": 192
+    },
+    "ringing-phone-p1-skills": {
+      "frame": 64,
+      "rows": 3,
+      "display": 128
+    },
+    "ringing-phone-p2-skills": {
+      "frame": 64,
+      "rows": 3,
+      "display": 128
+    },
+    "debt-collector-skills": {
+      "frame": 48,
+      "rows": 3,
+      "display": 128
+    },
+    "lamp-keeper-skills": {
+      "frame": 64,
+      "rows": 3,
+      "display": 160
+    },
+    "coat-rack-skills": {
+      "frame": 48,
+      "rows": 2,
+      "display": 96
+    },
+    "uniform-answer-skills": {
+      "frame": 48,
+      "rows": 3,
+      "display": 112
+    },
+    "last-bus-skills": {
+      "frame": 64,
+      "rows": 1,
+      "display": 144
+    },
+    "wet-shoes-skills": {
+      "frame": 48,
+      "rows": 1,
+      "display": 72
+    },
+    "whose-box-skills": {
+      "frame": 48,
+      "rows": 1,
+      "display": 80
+    },
+    "revolving-lantern-skills": {
+      "frame": 48,
+      "rows": 2,
+      "display": 96
+    }
+  },
+  "skills": {
+    "closet-shadow": {
+      "asset": "closet-dark-skills",
+      "row": 0,
+      "loop": false
+    },
+    "closet-split": {
+      "asset": "closet-dark-skills",
+      "row": 1,
+      "loop": false
+    },
+    "father-stomp": {
+      "asset": "silent-father-p1-skills",
+      "row": 0,
+      "loop": false
+    },
+    "father-stand": {
+      "asset": "silent-father-p1-skills",
+      "row": 1,
+      "loop": false
+    },
+    "father-brace": {
+      "asset": "silent-father-p1-skills",
+      "row": 2,
+      "loop": false
+    },
+    "father-charge": {
+      "asset": "silent-father-p2-skills",
+      "row": 0,
+      "loop": false
+    },
+    "father-tantrum": {
+      "asset": "silent-father-p2-skills",
+      "row": 1,
+      "loop": false
+    },
+    "father-tears": {
+      "asset": "silent-father-p2-skills",
+      "row": 2,
+      "loop": false
+    },
+    "praise-p1-praise": {
+      "asset": "praise-chair-p1-skills",
+      "row": 0,
+      "loop": false
+    },
+    "praise-p1-delegate": {
+      "asset": "praise-chair-p1-skills",
+      "row": 1,
+      "loop": false
+    },
+    "praise-p1-retreat": {
+      "asset": "praise-chair-p1-skills",
+      "row": 2,
+      "loop": false
+    },
+    "praise-p1-consult": {
+      "asset": "praise-chair-p1-skills",
+      "row": 3,
+      "loop": false
+    },
+    "praise-p2-slam": {
+      "asset": "praise-chair-p2-skills",
+      "row": 0,
+      "loop": false
+    },
+    "praise-p2-paper": {
+      "asset": "praise-chair-p2-skills",
+      "row": 1,
+      "loop": false
+    },
+    "praise-p2-optimize": {
+      "asset": "praise-chair-p2-skills",
+      "row": 2,
+      "loop": false
+    },
+    "praise-p2-dismiss": {
+      "asset": "praise-chair-p2-skills",
+      "row": 3,
+      "loop": false
+    },
+    "praise-p2-one-seat": {
+      "asset": "praise-chair-p2-skills",
+      "row": 4,
+      "loop": false
+    },
+    "phone-p1-ring": {
+      "asset": "ringing-phone-p1-skills",
+      "row": 0,
+      "loop": true
+    },
+    "phone-p1-answer": {
+      "asset": "ringing-phone-p1-skills",
+      "row": 1,
+      "loop": false
+    },
+    "phone-p1-missed": {
+      "asset": "ringing-phone-p1-skills",
+      "row": 2,
+      "loop": false
+    },
+    "phone-p2-ring": {
+      "asset": "ringing-phone-p2-skills",
+      "row": 0,
+      "loop": true
+    },
+    "phone-p2-answer": {
+      "asset": "ringing-phone-p2-skills",
+      "row": 1,
+      "loop": false
+    },
+    "phone-p2-missed": {
+      "asset": "ringing-phone-p2-skills",
+      "row": 2,
+      "loop": false
+    },
+    "collector-bill": {
+      "asset": "debt-collector-skills",
+      "row": 0,
+      "loop": false
+    },
+    "collector-drag": {
+      "asset": "debt-collector-skills",
+      "row": 1,
+      "loop": false
+    },
+    "collector-relocate": {
+      "asset": "debt-collector-skills",
+      "row": 2,
+      "loop": false
+    },
+    "keeper-name": {
+      "asset": "lamp-keeper-skills",
+      "row": 0,
+      "loop": false
+    },
+    "keeper-strip": {
+      "asset": "lamp-keeper-skills",
+      "row": 1,
+      "loop": false
+    },
+    "keeper-dim": {
+      "asset": "lamp-keeper-skills",
+      "row": 2,
+      "loop": false
+    },
+    "coat-sleeve": {
+      "asset": "coat-rack-skills",
+      "row": 0,
+      "loop": false
+    },
+    "coat-double-sleeve": {
+      "asset": "coat-rack-skills",
+      "row": 1,
+      "loop": false
+    },
+    "uniform-standard": {
+      "asset": "uniform-answer-skills",
+      "row": 0,
+      "loop": false
+    },
+    "uniform-process": {
+      "asset": "uniform-answer-skills",
+      "row": 1,
+      "loop": false
+    },
+    "uniform-pass": {
+      "asset": "uniform-answer-skills",
+      "row": 2,
+      "loop": false
+    },
+    "bus-depart": {
+      "asset": "last-bus-skills",
+      "row": 0,
+      "loop": false
+    },
+    "wet-shoes-hurry": {
+      "asset": "wet-shoes-skills",
+      "row": 0,
+      "loop": false
+    },
+    "box-count": {
+      "asset": "whose-box-skills",
+      "row": 0,
+      "loop": false
+    },
+    "lantern-summon": {
+      "asset": "revolving-lantern-skills",
+      "row": 0,
+      "loop": false
+    },
+    "lantern-summon-fast": {
+      "asset": "revolving-lantern-skills",
+      "row": 1,
+      "loop": false
+    }
+  }
+}

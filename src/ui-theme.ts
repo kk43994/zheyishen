@@ -33,10 +33,10 @@ export type UiPaletteColor = (typeof UI_PALETTE)[UiPaletteKey];
 
 /** Browser/system fallbacks are ordered from bitmap-first to conservative CJK. */
 export const UI_FONT_STACK =
-  '"Fusion Pixel 12px Proportional zh_hans", "Ark Pixel 12px zh_cn", "Noto Sans Mono CJK SC", "PingFang SC", monospace';
+  '"PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif';
 
 export const UI_ARCHIVE_FONT_STACK =
-  '"Fusion Pixel 12px Proportional zh_hans", "Noto Serif CJK SC", "Songti SC", serif';
+  '"Songti SC", "Noto Serif CJK SC", "STSong", serif';
 
 export const UI_FONT = {
   tiny: `8px ${UI_FONT_STACK}`,
@@ -254,6 +254,7 @@ export function drawRedStamp(
   color: string = UI_PALETTE.oldRed,
   labelColor: string = color,
   wearColor: string = UI_PALETTE.paper,
+  fontSize?: number,
 ): void {
   const sx = snap(x);
   const sy = snap(y);
@@ -277,7 +278,7 @@ export function drawRedStamp(
   // readable label while their frame still looks rubbed and uneven.
   drawDeterministicWear(ctx, sx + 2, sy + 2, sw - 4, sh - 4, seed, 9, wearColor, 1);
   ctx.fillStyle = labelColor;
-  ctx.font = UI_FONT.stamp;
+  ctx.font = fontSize ? `bold ${fontSize}px ${UI_ARCHIVE_FONT_STACK}` : UI_FONT.stamp;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(label, sx + Math.floor(sw / 2), sy + Math.floor(sh / 2));

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "status": "approved-and-promoted",
+  "promotionAllowed": true,
+  "approval": {
+    "approvedAt": "2026-07-25T03:30:00-07:00",
+    "approvedBy": "user",
+    "evidence": "User reviewed the complete local confirmation page and replied: 可以啊这些可以确认替换"
+  },
+  "heroDisplay": [35, 49],
+  "entries": [
+    { "assetId": "coat-rack", "runtimeType": "coat-rack", "phase": null, "stage": 0, "frame": 48, "display": 96, "radius": 26, "currentProxy": "closet-clothes", "runtimePath": "src/assets/enemies/coat-rack.png" },
+    { "assetId": "others-paper", "runtimeType": "others-paper", "phase": null, "stage": 1, "frame": 32, "display": 48, "radius": 16, "currentProxy": "wall-ranking", "runtimePath": "src/assets/enemies/others-paper.png" },
+    { "assetId": "sign-here", "runtimeType": "sign-here", "phase": null, "stage": 1, "frame": 32, "display": 40, "radius": 12, "currentProxy": "red-mark", "runtimePath": "src/assets/enemies/sign-here.png" },
+    { "assetId": "id-scanner", "runtimeType": "id-scanner", "phase": null, "stage": 2, "frame": 32, "display": 64, "radius": 20, "currentProxy": "clockwork", "runtimePath": "src/assets/enemies/id-scanner.png" },
+    { "assetId": "task-simple", "runtimeType": "task-simple", "phase": null, "stage": 2, "frame": 32, "display": 40, "radius": 11, "currentProxy": "whisper", "runtimePath": "src/assets/enemies/task-simple.png" },
+    { "assetId": "task-revise", "runtimeType": "task-revise", "phase": null, "stage": 2, "frame": 32, "display": 40, "radius": 13, "currentProxy": "whisper", "runtimePath": "src/assets/enemies/task-revise.png" },
+    { "assetId": "task-deadline", "runtimeType": "task-deadline", "phase": null, "stage": 2, "frame": 32, "display": 40, "radius": 13, "currentProxy": "whisper", "runtimePath": "src/assets/enemies/task-deadline.png" },
+    { "assetId": "task-sync", "runtimeType": "task-sync", "phase": null, "stage": 2, "frame": 32, "display": 40, "radius": 14, "currentProxy": "whisper", "runtimePath": "src/assets/enemies/task-sync.png" },
+    { "assetId": "wet-shoes", "runtimeType": "wet-shoes", "phase": null, "stage": 3, "frame": 48, "display": 72, "radius": 22, "currentProxy": "empty-chair", "runtimePath": "src/assets/enemies/wet-shoes.png" },
+    { "assetId": "desk-lamp", "runtimeType": "desk-lamp", "phase": null, "stage": 3, "frame": 32, "display": 40, "radius": 19, "currentProxy": "empty-chair", "runtimePath": "src/assets/enemies/desk-lamp.png" },
+    { "assetId": "reheated-pot", "runtimeType": "reheated-pot", "phase": null, "stage": 3, "frame": 32, "display": 48, "radius": 20, "currentProxy": "father-silence", "runtimePath": "src/assets/enemies/reheated-pot.png" },
+    { "assetId": "meeting-door", "runtimeType": "meeting-door", "phase": null, "stage": 4, "frame": 32, "display": 80, "radius": 26, "currentProxy": "debt-collector", "runtimePath": "src/assets/enemies/meeting-door.png" },
+    { "assetId": "checkup-report", "runtimeType": "checkup-report", "phase": null, "stage": 4, "frame": 32, "display": 40, "radius": 14, "currentProxy": "red-mark", "runtimePath": "src/assets/enemies/checkup-report.png" },
+    { "assetId": "queue-screen", "runtimeType": "queue-screen", "phase": null, "stage": 5, "frame": 32, "display": 48, "radius": 19, "currentProxy": "clockwork", "runtimePath": "src/assets/enemies/queue-screen.png" },
+    { "assetId": "others-family", "runtimeType": "others-family", "phase": null, "stage": 5, "frame": 32, "display": 48, "radius": 18, "currentProxy": "forgetter", "runtimePath": "src/assets/enemies/others-family.png" },
+    { "assetId": "revolving-lantern", "runtimeType": "revolving-lantern", "phase": null, "stage": 5, "frame": 48, "display": 96, "radius": 34, "currentProxy": "lamp-keeper", "runtimePath": "src/assets/enemies/revolving-lantern.png" },
+    { "assetId": "praise-chair-p1", "runtimeType": "praise-chair", "phase": 1, "stage": 2, "frame": 64, "display": 128, "radius": 30, "currentProxy": "window-desk", "runtimePath": "src/assets/enemies/praise-chair-p1.png" },
+    { "assetId": "praise-chair-p2", "runtimeType": "praise-chair", "phase": 2, "stage": 2, "frame": 96, "display": 192, "radius": 58, "currentProxy": "window-desk", "runtimePath": "src/assets/enemies/praise-chair-p2.png" },
+    { "assetId": "ringing-phone-p1", "runtimeType": "ringing-phone", "phase": 1, "stage": 3, "frame": 64, "display": 128, "radius": 30, "currentProxy": "missed-call", "runtimePath": "src/assets/enemies/ringing-phone-p1.png" },
+    { "assetId": "ringing-phone-p2", "runtimeType": "ringing-phone", "phase": 2, "stage": 3, "frame": 64, "display": 128, "radius": 30, "currentProxy": "missed-call", "runtimePath": "src/assets/enemies/ringing-phone-p2.png" }
+  ],
+  "promotionContract": [
+    "add all 20 asset keys and URLs to src/enemy-pixel.ts",
+    "resolve praise-chair and ringing-phone by EnemyUnit.phase",
+    "replace every currentProxy mapping with the dedicated candidate",
+    "remove all 14 ids from PLACEHOLDER_ENEMY_TYPES",
+    "preserve procedural drawing only as load-failure fallback",
+    "export 18 identity portraits plus two phase detail portraits to the wiki",
+    "replace temporary/proxy wording in the encyclopedia only after runtime promotion"
+  ]
+}

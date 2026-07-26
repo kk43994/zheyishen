@@ -1,0 +1,41 @@
+{
+  "version": 2,
+  "items": [
+    {
+      "id": "bleach-powder",
+      "source": "output/imagegen/zhe-yi-shen-item-icons-v2/raw/v1/05-bleach-powder.png",
+      "prompt": "scripts/image2/icons-v2/prompts/05-bleach-powder.txt",
+      "reviewStatus": "source-approved-v1"
+    },
+    {
+      "id": "eyebrow-razor",
+      "source": "scripts/image2/icons-v2/input/razor-physical-ref-v4.png",
+      "prompt": "scripts/image2/icons-v2/prompts/06-eyebrow-razor.txt",
+      "reviewStatus": "approved-body-source-isolated-after-v1-v5-icon-review"
+    },
+    {
+      "id": "flash-escape",
+      "source": "output/imagegen/zhe-yi-shen-item-icons-v2/raw/v1/25-flash-escape.png",
+      "prompt": "scripts/image2/icons-v2/prompts/25-flash-escape.txt",
+      "reviewStatus": "source-approved-v1"
+    },
+    {
+      "id": "hair-in-takeout",
+      "source": "output/imagegen/zhe-yi-shen-item-icons-v2/raw/v1/52-hair-in-takeout.png",
+      "prompt": "scripts/image2/icons-v2/prompts/52-hair-in-takeout.txt",
+      "reviewStatus": "source-approved-v1"
+    },
+    {
+      "id": "first-salary",
+      "source": "output/imagegen/zhe-yi-shen-art-loop-v1/12-first-salary/v2/icon-36.png",
+      "prompt": "scripts/image2/art-loop-v1/12-first-salary/prompt-v2.txt",
+      "reviewStatus": "approved-v2-after-36px-and-10x9-size-gates"
+    },
+    {
+      "id": "stone-schoolbag",
+      "source": "output/imagegen/zhe-yi-shen-art-loop-v1/04-stone-schoolbag/v1/source-front.png",
+      "prompt": "scripts/image2/art-loop-v1/04-stone-schoolbag/prompt-source-note.txt",
+      "reviewStatus": "approved-existing-image2-front-recrop-after-36px-dark-ui-gate"
+    }
+  ]
+}

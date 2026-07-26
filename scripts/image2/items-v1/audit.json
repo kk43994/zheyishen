@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "reviewedThrough": 76,
+  "redo": {},
+  "resolvedV2": {
+    "loose-button": "ordinary four-hole school-uniform button was misread as a pendant",
+    "wooden-sword": "child's wooden sword was misread as a bound plank without a clear crossguard",
+    "front-desk-letter": "love letter was incorrectly placed inside a large black case",
+    "spent-decade": "premature aging was replaced by a generic magic ring",
+    "held-pee": "posture guide became a detached pants pouch",
+    "class-break": "light foot-ring reads as a liquid puddle",
+    "five-ha": "five chat/laugh units read as flower petals or balls",
+    "marble": "glass marble was misread as a metal pendant or bomb",
+    "retracted-voice": "voice-message bar was misread as a hanging access badge",
+    "group-dad": "group nickname plate was misread as a physical name badge",
+    "divorce-draft": "folded inner-pocket paper became an entire sweater",
+    "name-sold": "flat identity contract strip became a handled document bag",
+    "moms-bowl": "the saved bowl of rice was replaced by a whole cooking pot",
+    "drank-for-boss": "cheek-flush decal incorrectly included solid hair and head shapes",
+    "funeral-photo": "the selected portrait evidence was reduced to an unreadable smile line",
+    "goodnight-2h": "cold phone glow was replaced by a body-shaped black cave",
+    "one-more-game": "game-screen shadow effect incorrectly included a full person silhouette",
+    "abstract-lv10": "facial meme marks are too sparse to survive runtime downscaling",
+    "ktv-song": "the ignored microphone cable became a romantic heart shape"
+  },
+  "resolvedArtLoopV1": {
+    "first-salary": "v1 red vertical pouch rejected; v2 approved as a horizontal kraft wage envelope with banknote edge and pinched corner",
+    "third-pill": "approved two-phase Image2 state overlay preserves red expansion, cyan contraction, pupil displacement and projectile lead/lag at 40x56",
+    "auto-renew": "approved four-phase Image2 ground overlay grows a countable 1/2/3/4-section thermal receipt behind the hero during the 15-second opening benefit",
+    "shop-freezer": "approved postprocess of the existing Image2 source keeps a grounded chest freezer two transparent pixels behind the hero in all four directions",
+    "breath-on-glass": "persistent hero fog overlay rejected as the wrong channel; the approved manifestation is the Image2 projectile cone with mist trail",
+    "stone-schoolbag": "approved icon-only recrop of the existing Image2 front source reads as a worn school backpack first and excessive stone weight second on the dark 36px UI",
+    "pregnancy-test": "approved Image2 v1 split into a near-hand positive-test foreground and a subordinate child-shadow background after three exact 40x56 postprocess gates",
+    "cracked-glasses": "v1 and the first v2 mapping were rejected as visor-like bands; approved v2.1 directly consumes two open-corner lens loops, a two-pixel bridge, one three-pixel crack and short profile temples at exact 40x56 scale",
+    "divorce-draft": "approved Image2 v1 source with v1.1 exact mapping: a folded paper corner pressed under the inner-pocket lip, transparent from the back and reduced to two chest-adjacent pixels in profile",
+    "goodnight-2h": "approved Image2 v1 source with v1.4 exact mapping: a grounded 7x3 horizontal phone, 4x1 cold-white screen, four-sided bezel and only two adjacent blue-gray light pixels in every direction",
+    "slow-watch": "full-arm Image2 motion echoes rejected; approved v1.1 freeze-only exact mapping keeps a 6-7 pixel wrist-adjacent tick in every action and direction while projectiles remain the primary freeze behavior"
+  },
+  "resolvedBatch19": {
+    "admission-notice": "approved strict four-direction Image2 source and 12x18 runtime reduction: one paper-thin notice keeps its old-red admission stamp and blank information bars without becoming an envelope or scroll",
+    "iphone-17-pro-max": "approved strict four-direction Image2 source and 10x18 runtime reduction: the cold front screen keeps its top island, while the rear keeps a separate three-lens cluster and both profiles remain thin",
+    "fathers-chart": "v1 rejected at 36px because the protruding rear clip read as a clipboard handle; v2 approved at 12x16 only after a flat top silhouette, red registration block, cloth spine, strap and low-profile back loops survived the runtime-scale gate"
+  },
+  "resolvedProjectileV3": {
+    "wooden-sword": "the first readable projectile sheet was rejected at runtime because the slash collapsed into a tall beige blob; the dedicated gpt-image-2 v2 sheet quadrant 1 was approved only after its blunt 3:1 wooden breath silhouette survived the 28px atlas and live-canvas gates",
+    "only-key": "the literal brass-key carrier passed the live-canvas gate; its endpoint burst was revised from a closed moving rectangle to a high-contrast keyhole with two outward opening light wedges, while collision exhaustion remains visually distinct",
+    "five-ha": "the bare recipe passed as five separately readable Chinese ha glyphs; the five-ha plus marble composition correctly yields the carrier to five literal marbles",
+    "marble": "the literal glass-marble carrier passed the live-canvas gate and the mechanic audit visibly redirects the same inherited projectile exactly once"
+  }
+}

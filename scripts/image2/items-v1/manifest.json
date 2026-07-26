@@ -1,0 +1,980 @@
+{
+  "version": 1,
+  "model": "gpt-image-2",
+  "route": "DMIT sub2 owner pool",
+  "intent": "edit-with-four-project-references",
+  "size": "1024x1024",
+  "quality": "high",
+  "background": "#00ff00 chroma key",
+  "panelOrder": [
+    "front",
+    "left",
+    "back",
+    "right"
+  ],
+  "itemCount": 77,
+  "items": [
+    {
+      "index": 0,
+      "id": "loose-button",
+      "name": "校服上掉下来的纽扣",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "prompt": "prompts/01-loose-button.txt",
+      "promptSha256": "405debc0bc057fd7ae36fa468509e8ec41556112c1724aa8d01fe0e9d4e2b28a",
+      "output": "raw/01-loose-button.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 1,
+      "id": "wooden-sword",
+      "name": "床底下的木剑",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "prompt": "prompts/02-wooden-sword.txt",
+      "promptSha256": "74d1ff8c6f1f4478606683e576e1dab4ae108e9680124ac99e8a06e1bb383bbe",
+      "output": "raw/02-wooden-sword.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 2,
+      "id": "red-workbook",
+      "name": "写满红叉的练习册",
+      "production": [
+        "rigid",
+        "projectile",
+        "decal"
+      ],
+      "prompt": "prompts/03-red-workbook.txt",
+      "promptSha256": "3f6480c95b1eea2da5b761e3b330cf7322306251aeb733d4f9f3409546d482d1",
+      "output": "raw/03-red-workbook.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 3,
+      "id": "stone-schoolbag",
+      "name": "装满石头的书包",
+      "production": [
+        "rigid",
+        "morph",
+        "projectile"
+      ],
+      "prompt": "prompts/04-stone-schoolbag.txt",
+      "promptSha256": "af7a567c41408a7eb55b51feb88958647bee2fb08996c8572670cd0ffd4ea0e0",
+      "output": "raw/04-stone-schoolbag.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 4,
+      "id": "bleach-powder",
+      "name": "剩了半袋的漂粉",
+      "production": [
+        "decal"
+      ],
+      "prompt": "prompts/05-bleach-powder.txt",
+      "promptSha256": "75952f76edb9d35be5e1c5087688eea84f18d80b6f39057129ecd52ea5b7c164",
+      "output": "raw/05-bleach-powder.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 5,
+      "id": "eyebrow-razor",
+      "name": "同桌的修眉刀",
+      "production": [
+        "decal",
+        "projectile"
+      ],
+      "prompt": "prompts/06-eyebrow-razor.txt",
+      "promptSha256": "578a8688be4095724bab7d4aa34c30b10cac973989d17e74570c0df961a72bc2",
+      "output": "raw/06-eyebrow-razor.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 6,
+      "id": "od-pill",
+      "name": "OD妹给的小药丸",
+      "production": [
+        "decal",
+        "projectile"
+      ],
+      "prompt": "prompts/07-od-pill.txt",
+      "promptSha256": "caf4ad8016e5b57fb612e74572d7787b6fffe17d1ec9a9d017ccc10b489649b9",
+      "output": "raw/07-od-pill.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 7,
+      "id": "front-desk-letter",
+      "name": "前桌的情书",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "prompt": "prompts/08-front-desk-letter.txt",
+      "promptSha256": "882d9149ed6b488fda74017f2dca98d1cd1ddfbf77ff5fc9bf0896d7856468ee",
+      "output": "raw/08-front-desk-letter.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 8,
+      "id": "cracked-glasses",
+      "name": "裂了一边的眼镜",
+      "production": [
+        "fitted",
+        "projectile"
+      ],
+      "prompt": "prompts/09-cracked-glasses.txt",
+      "promptSha256": "671b05010c228351b1599204364ad8ad5310b1a28253f29365671b45ecd0066b",
+      "output": "raw/09-cracked-glasses.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 9,
+      "id": "small-uniform",
+      "name": "小了一号的校服",
+      "production": [
+        "fitted",
+        "morph"
+      ],
+      "prompt": "prompts/10-small-uniform.txt",
+      "promptSha256": "cd3f8132ffae70a1ec178c25490d7a8ece9ca8a3b22195e66a7bc9da33c6931b",
+      "output": "raw/10-small-uniform.png",
+      "status": "superseded-by-uniform-v1"
+    },
+    {
+      "index": 10,
+      "id": "only-key",
+      "name": "出租屋唯一的钥匙",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "prompt": "prompts/11-only-key.txt",
+      "promptSha256": "e205ac2ceef9cfc7eb0b222ac7e729f87474c842176d4d7acb83a5fb347c270c",
+      "output": "raw/11-only-key.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 11,
+      "id": "first-salary",
+      "name": "第一次工资的信封",
+      "production": [
+        "rigid"
+      ],
+      "prompt": "prompts/12-first-salary.txt",
+      "promptSha256": "0c0258c3f94d0b3c8d3786a84ed68184684425ebcf9fa9444c39d3edb834dfba",
+      "output": "raw/12-first-salary.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 12,
+      "id": "nameless-tie",
+      "name": "没有商标的领带",
+      "production": [
+        "fitted"
+      ],
+      "prompt": "prompts/13-nameless-tie.txt",
+      "promptSha256": "6461e2d18661bbcaff11ec4f7c4a50a3e72cb2d6ede16df34453a5b177c1034f",
+      "output": "raw/13-nameless-tie.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 13,
+      "id": "fathers-raincoat",
+      "name": "父亲的雨衣",
+      "production": [
+        "fitted",
+        "projectile"
+      ],
+      "prompt": "prompts/14-fathers-raincoat.txt",
+      "promptSha256": "9d73519e805ac43e39674f03b8963a3ab2c6924854ebcad6082391a10b06d46d",
+      "output": "raw/14-fathers-raincoat.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 14,
+      "id": "unsent-phone",
+      "name": "没打出去的电话",
+      "production": [
+        "rigid"
+      ],
+      "prompt": "prompts/15-unsent-phone.txt",
+      "promptSha256": "4bc18378daa5f3f1c011964a41e34523494d6b21ae387c0a7ee843ff994087b4",
+      "output": "raw/15-unsent-phone.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 15,
+      "id": "baby-tooth",
+      "name": "女儿换下的乳牙",
+      "production": [
+        "rigid",
+        "aura"
+      ],
+      "prompt": "prompts/16-baby-tooth.txt",
+      "promptSha256": "cc7177f01eb1a934704b02e7fe3aaa9157d580825b3247f80dd08af61d275a53",
+      "output": "raw/16-baby-tooth.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 16,
+      "id": "revoked-badge",
+      "name": "已经注销的旧工牌",
+      "production": [
+        "fitted"
+      ],
+      "prompt": "prompts/17-revoked-badge.txt",
+      "promptSha256": "4fd65abb1389a3b99d989b723eeeb2af482d7524e2ed55e4ce15a5915084f6a0",
+      "output": "raw/17-revoked-badge.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 17,
+      "id": "slow-watch",
+      "name": "慢了七分钟的手表",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "prompt": "prompts/18-slow-watch.txt",
+      "promptSha256": "eeab4f83d200d9efa5e0466ed38b0aade0b5d21b849cd8f5186d2d548f420db0",
+      "output": "raw/18-slow-watch.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 18,
+      "id": "missing-photo",
+      "name": "少了一个人的合照",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "prompt": "prompts/19-missing-photo.txt",
+      "promptSha256": "9da7a36c5b726401bc3f5267e984cb53336d5d5fa1f087177afa988b9144962c",
+      "output": "raw/19-missing-photo.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 19,
+      "id": "white-bottle",
+      "name": "药房最下面的白瓶子",
+      "production": [
+        "rigid"
+      ],
+      "prompt": "prompts/20-white-bottle.txt",
+      "promptSha256": "28fd616a48f14c1b956b7a4b9a7a48429bb034454a199b5d6018bf52b00bc958",
+      "output": "raw/20-white-bottle.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 20,
+      "id": "empty-frame",
+      "name": "一直空着的相框",
+      "production": [
+        "aura",
+        "projectile"
+      ],
+      "prompt": "prompts/21-empty-frame.txt",
+      "promptSha256": "c4b049cd61fe9fb795e87f2f3373bb29a0ae6eb8f822b8e869d72715a0b2fd37",
+      "output": "raw/21-empty-frame.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 21,
+      "id": "broken-spine",
+      "name": "断掉的脊梁骨",
+      "production": [
+        "morph",
+        "decal"
+      ],
+      "prompt": "prompts/22-broken-spine.txt",
+      "promptSha256": "a692db1b4589b79667b1323a4f10fb1313b27d9c4fc79e534ca38fefcdf8c9ce",
+      "output": "raw/22-broken-spine.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 22,
+      "id": "spent-decade",
+      "name": "提前花掉的十年",
+      "production": [
+        "aura",
+        "projectile"
+      ],
+      "prompt": "prompts/23-spent-decade.txt",
+      "promptSha256": "233525a05aee888b0dc3592c9e5f15b97777090286a846babd3f96c3113caf2e",
+      "output": "raw/23-spent-decade.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 23,
+      "id": "held-pee",
+      "name": "憋回去的那泡尿",
+      "production": [
+        "projectile"
+      ],
+      "prompt": "prompts/24-held-pee.txt",
+      "promptSha256": "b16a47318dec978440c58ed50ed439a573731aebfca0b016b673703553a4a587",
+      "output": "raw/24-held-pee.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 24,
+      "id": "flash-escape",
+      "name": "交掉的闪现",
+      "production": [
+        "event"
+      ],
+      "prompt": "prompts/25-flash-escape.txt",
+      "promptSha256": "9f88e7a77986902d9d01ca70d6611ef8b0030deff8e00250cc12f5cf0188cfef",
+      "output": "raw/25-flash-escape.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 25,
+      "id": "class-break",
+      "name": "课间十分钟",
+      "production": [
+        "aura"
+      ],
+      "prompt": "prompts/26-class-break.txt",
+      "promptSha256": "2ec099714632087b3003dbdf0d891de3da8addb38670a2a07d2cfbd0ca1597de",
+      "output": "raw/26-class-break.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 26,
+      "id": "last-page",
+      "name": "暑假作业最后一页",
+      "production": [
+        "rigid"
+      ],
+      "prompt": "prompts/27-last-page.txt",
+      "promptSha256": "59b6dad78802ce53364e53be416de3cc41779ac9c2baad268100890eb283b3d7",
+      "output": "raw/27-last-page.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 27,
+      "id": "five-ha",
+      "name": "五个哈",
+      "production": [
+        "projectile"
+      ],
+      "prompt": "prompts/28-five-ha.txt",
+      "promptSha256": "700537fb5f76d5b6f9c8d32a7599a32748d767dac5e0e12fed608ca68201c1ec",
+      "output": "raw/28-five-ha.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 28,
+      "id": "red-packet",
+      "name": "抢到的0.87元红包",
+      "production": [
+        "rigid"
+      ],
+      "prompt": "prompts/29-red-packet.txt",
+      "promptSha256": "3e245ae3ad8a3b0041a9f4656a935b256ac6d3f60448c7ff5ea199095e1af070",
+      "output": "raw/29-red-packet.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 29,
+      "id": "snow-screen",
+      "name": "雪花屏",
+      "production": [
+        "event",
+        "decal"
+      ],
+      "prompt": "prompts/30-snow-screen.txt",
+      "promptSha256": "6fd379cac9253f36a170df3be8b71167a8678d5a07bcf1f38d7f36ae945dc28f",
+      "output": "raw/30-snow-screen.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 30,
+      "id": "marble",
+      "name": "当年最强的那颗弹珠",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "prompt": "prompts/31-marble.txt",
+      "promptSha256": "72b069ae7ea57b79393df6d1fd49f77dc44781dac1322a47daf9be6ca235835c",
+      "output": "raw/31-marble.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 31,
+      "id": "always-crying",
+      "name": "我一直在哭",
+      "production": [
+        "decal",
+        "projectile"
+      ],
+      "prompt": "prompts/32-always-crying.txt",
+      "promptSha256": "b461eb7d39b191acab2f92a93ed2021f7b4205670a870f61a5b9232520e20061",
+      "output": "raw/32-always-crying.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 32,
+      "id": "three-day-visible",
+      "name": "朋友圈仅三天可见",
+      "production": [
+        "aura",
+        "projectile"
+      ],
+      "prompt": "prompts/33-three-day-visible.txt",
+      "promptSha256": "b534c1457962c4d4e723876324960910870eec9d82ce483cc1cb3dcc6b027986",
+      "output": "raw/33-three-day-visible.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 33,
+      "id": "read-3am",
+      "name": "凌晨三点的已读",
+      "production": [
+        "projectile"
+      ],
+      "prompt": "prompts/34-read-3am.txt",
+      "promptSha256": "b3e49fa215099a06c36b8fc9160e264625f276b00a52631c503ac04e0728f2c1",
+      "output": "raw/34-read-3am.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 34,
+      "id": "retracted-voice",
+      "name": "领导撤回的六十秒语音",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "prompt": "prompts/35-retracted-voice.txt",
+      "promptSha256": "54a9b23a0931ca29dea67f8a7b08c8c30c3a58d76181f5dd982887fb599a76ea",
+      "output": "raw/35-retracted-voice.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 35,
+      "id": "takeout-3am",
+      "name": "凌晨三点的外卖袋",
+      "production": [
+        "rigid"
+      ],
+      "prompt": "prompts/36-takeout-3am.txt",
+      "promptSha256": "38e09225ea8b359a15704e777abb95b042b6eeed3cbb4c9ad73f5c04ccc841f2",
+      "output": "raw/36-takeout-3am.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 36,
+      "id": "auto-renew",
+      "name": "自动续费到明年的会员",
+      "production": [
+        "aura"
+      ],
+      "prompt": "prompts/37-auto-renew.txt",
+      "promptSha256": "0f5ac94d4c7f2b0007478b82dc20b2250c57b54b321f793d8ec9eadaaab8ad2f",
+      "output": "raw/37-auto-renew.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 37,
+      "id": "bargain-link",
+      "name": "全家帮砍仍差一刀的链接",
+      "production": [
+        "projectile",
+        "rigid"
+      ],
+      "prompt": "prompts/38-bargain-link.txt",
+      "promptSha256": "241afb41fe310b50dbf5fd6d4846e6c637a149b0c56decc9140ffa69e9b0d120",
+      "output": "raw/38-bargain-link.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 38,
+      "id": "mineral-water",
+      "name": "相亲桌上没拆的矿泉水",
+      "production": [
+        "rigid"
+      ],
+      "prompt": "prompts/39-mineral-water.txt",
+      "promptSha256": "2625721c0ba732390f2fd894430bc2769ed4cc3a57febbd0c7c34d35026fe5af",
+      "output": "raw/39-mineral-water.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 39,
+      "id": "group-dad",
+      "name": "家长群里的“孩子他爸”",
+      "production": [
+        "projectile",
+        "decal"
+      ],
+      "prompt": "prompts/40-group-dad.txt",
+      "promptSha256": "8b0938759337c280b8c245a36c0ad2ea3f9dd2cfaf7054ded775a8362043fa88",
+      "output": "raw/40-group-dad.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 40,
+      "id": "divorce-draft",
+      "name": "没有按下发送的离婚协议",
+      "production": [
+        "fitted"
+      ],
+      "prompt": "prompts/41-divorce-draft.txt",
+      "promptSha256": "d43ac50c156f368ff65152df10f7f2e73d805a6733baaf44b56e23326de0ed36",
+      "output": "raw/41-divorce-draft.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 41,
+      "id": "checkup-arrows",
+      "name": "体检报告上的向上箭头",
+      "production": [
+        "decal"
+      ],
+      "prompt": "prompts/42-checkup-arrows.txt",
+      "promptSha256": "2819d4088e1542619037df0cf23097dad163b84df8d6e532efb9fc420546d292",
+      "output": "raw/42-checkup-arrows.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 42,
+      "id": "shared-powerbank",
+      "name": "医院走廊的共享充电宝",
+      "production": [
+        "rigid"
+      ],
+      "prompt": "prompts/43-shared-powerbank.txt",
+      "promptSha256": "1075191463c96357e9f2a86b13c06a4bc53e26608e1d7af6da0fe88eeb2781d4",
+      "output": "raw/43-shared-powerbank.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 43,
+      "id": "third-pill",
+      "name": "她没说名字的第三颗药",
+      "production": [
+        "morph",
+        "decal"
+      ],
+      "prompt": "prompts/44-third-pill.txt",
+      "promptSha256": "e6a08d22bb6f459bb903ba2469667a992502e5876290317a71f1948081acfb28",
+      "output": "raw/44-third-pill.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 44,
+      "id": "loan-contract",
+      "name": "已经签好名字的网贷合同",
+      "production": [
+        "rigid"
+      ],
+      "prompt": "prompts/45-loan-contract.txt",
+      "promptSha256": "904792edb3cf89b6929f1af6b3cb43c39555df32ace59798609de88c58e5372a",
+      "output": "raw/45-loan-contract.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 45,
+      "id": "name-sold",
+      "name": "把名字卖掉的合同",
+      "production": [
+        "projectile",
+        "rigid"
+      ],
+      "prompt": "prompts/46-name-sold.txt",
+      "promptSha256": "2219823fcd95e24f81e72e7a568bfd4bfb625420fedab3f8e8880488d0fb6b55",
+      "output": "raw/46-name-sold.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 46,
+      "id": "moms-bowl",
+      "name": "母亲留在锅里的那碗饭",
+      "production": [
+        "aura"
+      ],
+      "prompt": "prompts/47-moms-bowl.txt",
+      "promptSha256": "7bee6b3b4caa6471db013abaa318539d4f89e10034efbd493a1a4225db34943e",
+      "output": "raw/47-moms-bowl.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 47,
+      "id": "ruma-msg",
+      "name": "凌晨两点朋友发来的“在吗”",
+      "production": [
+        "aura"
+      ],
+      "prompt": "prompts/48-ruma-msg.txt",
+      "promptSha256": "508361bf440b81bf1302a2e290548376af888d0c750a8436e7a965296bad516e",
+      "output": "raw/48-ruma-msg.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 48,
+      "id": "held-elevator",
+      "name": "有人替你按住的电梯",
+      "production": [
+        "projectile",
+        "aura"
+      ],
+      "prompt": "prompts/49-held-elevator.txt",
+      "promptSha256": "3fcea2bd9a7d0bf50c383e403e701ac574e880b70906b8c954b9008c0aa435d9",
+      "output": "raw/49-held-elevator.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 49,
+      "id": "old-door-lock",
+      "name": "一直没有换的家门锁",
+      "production": [
+        "projectile"
+      ],
+      "prompt": "prompts/50-old-door-lock.txt",
+      "promptSha256": "680b2bf51ffc050829c7ca23300488d7f500b5662e63ac8d94945bcdefc1d81d",
+      "output": "raw/50-old-door-lock.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 50,
+      "id": "drank-for-boss",
+      "name": "酒局上代喝的那杯",
+      "production": [
+        "decal"
+      ],
+      "prompt": "prompts/51-drank-for-boss.txt",
+      "promptSha256": "686d69d0ade8c3eaf6b12266b9185b422bd087e7b3bc222598a8530cb03aea44",
+      "output": "raw/51-drank-for-boss.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 51,
+      "id": "hair-in-takeout",
+      "name": "外卖里吃出的头发",
+      "production": [
+        "decal"
+      ],
+      "prompt": "prompts/52-hair-in-takeout.txt",
+      "promptSha256": "40d879e07d4595066db33a94793f2f75ee1614bc95549c061c10bbc82f59729d",
+      "output": "raw/52-hair-in-takeout.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 52,
+      "id": "unwashed-pillow",
+      "name": "没洗的枕套",
+      "production": [
+        "aura"
+      ],
+      "prompt": "prompts/53-unwashed-pillow.txt",
+      "promptSha256": "28c19bcdad9b5a08db8500a5aa0d47dfc90a45758b801f7db00b9b3c3fd9d739",
+      "output": "raw/53-unwashed-pillow.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 53,
+      "id": "sock-cigs",
+      "name": "藏在袜子里的烟",
+      "production": [
+        "decal"
+      ],
+      "prompt": "prompts/54-sock-cigs.txt",
+      "promptSha256": "ea7a6d0986a0eacb30ff04210f732639e2d55957fa3c4cca6b66b9b12f056cd8",
+      "output": "raw/54-sock-cigs.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 54,
+      "id": "pregnancy-test",
+      "name": "验孕棒",
+      "production": [
+        "projectile",
+        "morph"
+      ],
+      "prompt": "prompts/55-pregnancy-test.txt",
+      "promptSha256": "3b58974d17208bb4ec34b9388997eaf869973c297684b8999ea61884cdf73990",
+      "output": "raw/55-pregnancy-test.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 55,
+      "id": "gym-card",
+      "name": "健身房年卡",
+      "production": [
+        "rigid"
+      ],
+      "prompt": "prompts/56-gym-card.txt",
+      "promptSha256": "072a7b5b9cb7456d5dda0b0c8763e7996e94c9ab25fd7b810d1f8396d81d562e",
+      "output": "raw/56-gym-card.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 56,
+      "id": "funeral-photo",
+      "name": "遗照选用的那张",
+      "production": [
+        "decal"
+      ],
+      "prompt": "prompts/57-funeral-photo.txt",
+      "promptSha256": "99193bf82162df78bc5b47bbc4df7470a56cac1e280c760988a894773b86c6d5",
+      "output": "raw/57-funeral-photo.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 57,
+      "id": "typing-indicator",
+      "name": "对方正在输入…",
+      "production": [
+        "projectile",
+        "aura"
+      ],
+      "prompt": "prompts/58-typing-indicator.txt",
+      "promptSha256": "cd9392c290224c51c9c6b8cdf96680762e74dd7a3ae29f4979c7e42ddc8edb1f",
+      "output": "raw/58-typing-indicator.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 58,
+      "id": "year-report",
+      "name": "年度听歌报告",
+      "production": [
+        "projectile",
+        "aura"
+      ],
+      "prompt": "prompts/59-year-report.txt",
+      "promptSha256": "6720c80733c15bd5d8041718468af9272501eae441c2d34d5a9eaf2d0edf85f9",
+      "output": "raw/59-year-report.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 59,
+      "id": "momo-avatar",
+      "name": "momo的头像",
+      "production": [
+        "decal"
+      ],
+      "prompt": "prompts/60-momo-avatar.txt",
+      "promptSha256": "b21bd595a80ecc6f70e46307fcd443b01422dc479f441f3d4e5183e8859fd417",
+      "output": "raw/60-momo-avatar.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 60,
+      "id": "ai-chat",
+      "name": "和AI聊到凌晨",
+      "production": [
+        "projectile"
+      ],
+      "prompt": "prompts/61-ai-chat.txt",
+      "promptSha256": "6cc6dea9b1eae31771d2ffab81c88e833a9cb91bd14311ae87eebb467c882c5c",
+      "output": "raw/61-ai-chat.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 61,
+      "id": "streak-1847",
+      "name": "连续签到1847天",
+      "production": [
+        "rigid"
+      ],
+      "prompt": "prompts/62-streak-1847.txt",
+      "promptSha256": "1ec3f4282ca43f6140b304eaf40c90cd08b21bd97c576d52693e43f530414917",
+      "output": "raw/62-streak-1847.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 62,
+      "id": "goodnight-2h",
+      "name": "晚安之后的两小时",
+      "production": [
+        "aura"
+      ],
+      "prompt": "prompts/63-goodnight-2h.txt",
+      "promptSha256": "9344d46b8dc575c15b5abc6a8611b4f3d4e512f4ddd070ab48fdfcdd0887d857",
+      "output": "raw/63-goodnight-2h.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 63,
+      "id": "friend-verify",
+      "name": "对方已开启朋友验证",
+      "production": [
+        "projectile"
+      ],
+      "prompt": "prompts/64-friend-verify.txt",
+      "promptSha256": "0fae80e4b153f81efe08986effc74310bdb7e4d107e63a7ed7704aae241b0e4f",
+      "output": "raw/64-friend-verify.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 64,
+      "id": "summer-run",
+      "name": "练了一个暑假的跑法",
+      "production": [
+        "morph"
+      ],
+      "prompt": "prompts/65-summer-run.txt",
+      "promptSha256": "681ee72b919937972a0c3f4f55c4d156bfb964a98a3b75e7bd77b7f433e97d1f",
+      "output": "raw/65-summer-run.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 65,
+      "id": "one-more-game",
+      "name": "再来一把就睡",
+      "production": [
+        "aura"
+      ],
+      "prompt": "prompts/66-one-more-game.txt",
+      "promptSha256": "b5e507e3468ce508d140608c40af591125a1a7783ba8108b9053b22850eed7bb",
+      "output": "raw/66-one-more-game.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 66,
+      "id": "eye-exercise",
+      "name": "眼保健操",
+      "production": [
+        "decal"
+      ],
+      "prompt": "prompts/67-eye-exercise.txt",
+      "promptSha256": "bd94459d19d39a65974c69bd95fc858bbf07e8b3c9bea01a3b2cab18423aa3d0",
+      "output": "raw/67-eye-exercise.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 67,
+      "id": "card-binder",
+      "name": "大扫除清掉的卡册",
+      "production": [
+        "projectile",
+        "rigid"
+      ],
+      "prompt": "prompts/68-card-binder.txt",
+      "promptSha256": "fd5d02a78b9b81e554f7a73d4202114ece27ae73be389f0e481bb5d234217d87",
+      "output": "raw/68-card-binder.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 68,
+      "id": "abstract-lv10",
+      "name": "抽象话十级",
+      "production": [
+        "decal"
+      ],
+      "prompt": "prompts/69-abstract-lv10.txt",
+      "promptSha256": "9f2d002a83cf1d608a2a0ca316a9d717123cdd85845338f1f9d72f8e0f857f46",
+      "output": "raw/69-abstract-lv10.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 69,
+      "id": "shop-freezer",
+      "name": "小卖部的冰柜",
+      "production": [
+        "projectile"
+      ],
+      "prompt": "prompts/70-shop-freezer.txt",
+      "promptSha256": "f7d68799bd2227b5af9f96089a69443db4209dd55c57ceba7c2aaa542027d710",
+      "output": "raw/70-shop-freezer.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 70,
+      "id": "server-shutdown",
+      "name": "关服那天",
+      "production": [
+        "event",
+        "aura"
+      ],
+      "prompt": "prompts/71-server-shutdown.txt",
+      "promptSha256": "a37a487cbb92fe25a00ab06c67eb31376a73b2ea64bb63527aa7c0795b1e4f69",
+      "output": "raw/71-server-shutdown.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 71,
+      "id": "painless-night",
+      "name": "没有痛觉的夜晚",
+      "production": [
+        "aura",
+        "decal"
+      ],
+      "prompt": "prompts/72-painless-night.txt",
+      "promptSha256": "111b1270a38bac69e95e7bf8935fa5c802fc75171bd6aaa16e75320d62c616d2",
+      "output": "raw/72-painless-night.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 72,
+      "id": "ktv-song",
+      "name": "KTV里没人听的那首歌",
+      "production": [
+        "projectile"
+      ],
+      "prompt": "prompts/73-ktv-song.txt",
+      "promptSha256": "f63340726515d5f4442b6cdbfcfd4552a84351fa7867e67661df82a8be5c6f4f",
+      "output": "raw/73-ktv-song.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 73,
+      "id": "breath-on-glass",
+      "name": "冬天呵在玻璃上的字",
+      "production": [
+        "projectile"
+      ],
+      "prompt": "prompts/74-breath-on-glass.txt",
+      "promptSha256": "ba86fb1c29287f545fbaccba339fda1788841b19cdaa21f621512399d23ff73c",
+      "output": "raw/74-breath-on-glass.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 74,
+      "id": "admission-notice",
+      "name": "入学通知书",
+      "production": [
+        "rigid",
+        "event"
+      ],
+      "prompt": "prompts/75-admission-notice.txt",
+      "promptSha256": "e8c595271189b67d61243f60567c8137d32bfcdb0ed683bd35a86a8d7f9c64a7",
+      "output": "raw/75-admission-notice.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 75,
+      "id": "iphone-17-pro-max",
+      "name": "最新款的 iPhone 17 Pro Max",
+      "production": [
+        "rigid",
+        "event"
+      ],
+      "prompt": "prompts/76-iphone-17-pro-max.txt",
+      "promptSha256": "76301120d1581b9603b2ea2e0061cbb12804b67fbbf14a5209ed1b2dd068f78f",
+      "output": "raw/76-iphone-17-pro-max.png",
+      "status": "source-approved"
+    },
+    {
+      "index": 76,
+      "id": "fathers-chart",
+      "name": "父亲的病历本",
+      "production": [
+        "rigid",
+        "event"
+      ],
+      "prompt": "prompts/77-fathers-chart.txt",
+      "promptSha256": "a74ab7b102ec6a648905055494aa153073362f7482b0f498dfb17126c0f84f79",
+      "output": "raw/77-fathers-chart.png",
+      "status": "source-approved"
+    }
+  ]
+}

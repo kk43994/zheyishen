@@ -1,0 +1,139 @@
+{
+  "pipeline": "Image2 reference edit -> chroma key -> crop -> 28px quantization",
+  "sourceStatus": "image2-edit-recorded",
+  "designContract": "src/projectile-item-signatures.ts",
+  "jobFile": "scripts/image2/projectile-v3/jobs.jsonl",
+  "sources": {
+    "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-breath.png": {
+      "sha256": "2a9e281a83b5f2a1325c5db23b511280aaf9183a2d619aaab46442ac7425941b",
+      "size": [
+        1254,
+        1254
+      ],
+      "greenRatio": 0.8409
+    },
+    "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-forms.png": {
+      "sha256": "7a3f3f7be03138adfe1f4c4033a92b589104bb5782bd516c9f3e7084e55e45ea",
+      "size": [
+        1254,
+        1254
+      ],
+      "greenRatio": 0.9412
+    },
+    "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-special.png": {
+      "sha256": "c55e20ca8152c8bc30a9f97e4f1923ef4221bcfa74c04e3d4c6515147ca00822",
+      "size": [
+        1254,
+        1254
+      ],
+      "greenRatio": 0.8733
+    },
+    "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-readable-a.png": {
+      "sha256": "c775b5e0914ff3eb60d8c9fad9d77f6e368ce97843e857b42c6725c7495f5a38",
+      "size": [
+        1254,
+        1254
+      ],
+      "greenRatio": 0.8417
+    },
+    "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-readable-b.png": {
+      "sha256": "a256d66faac8816c5239bc0b2d0b885923f3ff82fed87f2057b5d65eda977d98",
+      "size": [
+        1254,
+        1254
+      ],
+      "greenRatio": 0.8192
+    },
+    "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-readable-c.png": {
+      "sha256": "44b4007e91bb87532dd7e8323d8f67a96b07aca177353c042aefe87bad74f862",
+      "size": [
+        1254,
+        1254
+      ],
+      "greenRatio": 0.9058
+    },
+    "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-wood-slash-v2.png": {
+      "sha256": "17c2d24b74c33cd87ad848708991333ef5ca7e39d30eeb2e8dbb944cf1ebf4cc",
+      "size": [
+        1254,
+        1254
+      ],
+      "greenRatio": 0.8874
+    }
+  },
+  "referenceJobs": {
+    "proj-readable-a": {
+      "model": "gpt-image-2",
+      "prompt": "scripts/image2/projectile-v3/readable-a.txt",
+      "references": [
+        "output/art-style-reference-v1/canonical-style-board.png",
+        "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-breath.png",
+        "docs/item-equipment-v1/items/02-wooden-sword.png",
+        "docs/item-equipment-v1/items/06-eyebrow-razor.png",
+        "docs/item-equipment-v1/items/31-marble.png",
+        "docs/item-equipment-v1/items/70-shop-freezer.png"
+      ],
+      "forms": [
+        "razor",
+        "marble",
+        "ice"
+      ]
+    },
+    "proj-readable-b": {
+      "model": "gpt-image-2",
+      "prompt": "scripts/image2/projectile-v3/readable-b.txt",
+      "references": [
+        "output/art-style-reference-v1/canonical-style-board.png",
+        "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-breath.png",
+        "docs/item-equipment-v1/items/46-name-sold.png",
+        "docs/item-equipment-v1/items/58-typing-indicator.png",
+        "docs/item-equipment-v1/items/01-loose-button.png",
+        "docs/item-equipment-v1/items/38-bargain-link.png"
+      ],
+      "forms": [
+        "serial",
+        "typing",
+        "button",
+        "link"
+      ]
+    },
+    "proj-readable-c": {
+      "model": "gpt-image-2",
+      "prompt": "scripts/image2/projectile-v3/readable-c.txt",
+      "references": [
+        "output/art-style-reference-v1/canonical-style-board.png",
+        "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-breath.png",
+        "docs/item-equipment-v1/items/64-friend-verify.png",
+        "docs/item-equipment-v1/items/04-stone-schoolbag.png",
+        "docs/item-equipment-v1/items/09-cracked-glasses.png",
+        "docs/item-equipment-v1/items/28-five-ha.png"
+      ],
+      "forms": [
+        "stamp",
+        "stone",
+        "lens",
+        "laugh"
+      ]
+    },
+    "proj-wood-slash-v2": {
+      "model": "gpt-image-2",
+      "prompt": "scripts/image2/projectile-v3/wood-slash-v2.txt",
+      "references": [
+        "output/art-style-reference-v1/canonical-style-board.png",
+        "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-breath.png",
+        "docs/item-equipment-v1/items/02-wooden-sword.png",
+        "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/proj-readable-a.png"
+      ],
+      "forms": [
+        "slash"
+      ]
+    }
+  },
+  "selections": {
+    "slash": {
+      "sheet": "proj-wood-slash-v2",
+      "quadrant": 1,
+      "reason": "runtime-scale review kept the 3:1 horizontal blunt slash; rejected taller blobs, detached streaks and green-fringed variants"
+    }
+  }
+}

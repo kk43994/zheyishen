@@ -1,0 +1,18 @@
+Create one 2x2 game-status sprite source sheet using the supplied references.
+
+Reference order:
+1. Canonical project style board: match its restrained dark-fairytale pixel language, hard clusters and worn archive palette.
+2. Existing approved status sheet: preserve its tiny centered symbol scale, outline weight and mobile readability.
+3. Father-raincoat equipment sheet: use only its rain/wet material language.
+4. Red-workbook and eyebrow-razor sheets: use their restrained red correction/crack language, never gore.
+5. Stone-schoolbag sheet: use its downward weight and compressed posture, not the bag object.
+
+Output exactly four isolated status symbols in a clean 2x2 grid on perfectly flat pure chroma green #00FF00. No grid lines. Center each symbol in its quadrant with generous green separation. Each symbol must remain recognizable after reduction to 12x12 pixels, so use one bold silhouette, at most three interior marks and no fine decoration.
+
+Quadrants, left-to-right then top-to-bottom:
+1. WET: one blue-grey droplet above one short broken ripple. No rain cloud, no umbrella.
+2. RAW OLD WOUND: one muted old-red diagonal crack with two short branches. Restrained, symbolic, non-graphic, no blood drop, no body part.
+3. HEAVY: one grey downward chevron pressing a short horizontal baseline. No backpack, no rock, no weightlifting icon.
+4. CONTROL FATIGUE: one pale broken restraint ring fading on its right side. No chain, no clock, no text.
+
+Chunky low-resolution pixel art, crisp hard pixel clusters, no anti-aliasing, no gradients, no glow haze, no cast shadow, no scenery, no border, no UI panel, no letters, no numbers, no faces, no watermark.

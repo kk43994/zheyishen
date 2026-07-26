@@ -1,0 +1,22 @@
+Use case: precise-object-edit
+Asset type: 48x48 elite enemy action concept source, targeted v2 correction
+Input images: Image 1 is the authoritative Zhe Yi Shen canonical style board. Image 2 is the authoritative runtime enemy motion sheet. Image 3 is the rejected v1 candidate: preserve its successful damp brown leather material, blue-grey moisture accents, four-pose layout, scale, damage pose, and pure green background, but completely correct the shoe count and silhouette separation.
+
+Create one strict 2x2 action sheet of the exact same elite enemy, "The Pair of Shoes That Never Dried".
+
+Non-negotiable count rule:
+- EVERY quadrant contains EXACTLY TWO shoes total: one left shoe and one matching right shoe, one matched pair, countable at a glance.
+- NEVER draw a third shoe, fourth shoe, spare shoe, ghost shoe, duplicated opening, duplicated toe, motion afterimage shaped like a shoe, detached upper, or extra sole.
+- Keep the two silhouettes visibly separated enough that both complete shoes can be counted. Do not stack one shoe directly behind the other.
+- Each complete shoe has exactly one toe, one opening, one heel, and one sole.
+
+Quadrants, fixed order:
+- top-left IDLE: exactly two shoes side by side with a small green gap between their silhouettes, damp sheen and one droplet total.
+- top-right MOVE: exactly two shoes in an uneven walking step, one left shoe forward and one right shoe behind but still visibly separate; two tiny wet footprint nicks may trail, but no shoe-shaped afterimage.
+- bottom-left ATTACK: exactly two shoes lunging toe-first together, both complete silhouettes visible; only short abstract motion nicks behind.
+- bottom-right HURT/DEATH: exactly two shoes total, one rolled onto its side and one collapsed at the heel, clearly separated; no detached third piece shaped like footwear.
+
+Scene/backdrop: perfectly uniform solid pure #00ff00 chroma-key background in every pixel outside the sprites. No floor plane, contact shadow, cast shadow, reflection, glow, gradient, texture, grid lines, or borders.
+Style/medium: crisp chunky low-resolution pixel art for reduction into a 48x48 elite frame; hard pixel clusters; 10-16 subject colors; deep ink one-logical-pixel outline; top-left light; worn brown leather and restrained hospital blue-grey moisture.
+Composition/framing: four equal quadrants, same low three-quarter-front camera, same scale and construction, each matched pair centered with green padding and stable bottom-center sole anchor; no crop or overlap.
+Constraints: preserve v1's material quality but correct the count; no socks, legs, person, face, anatomy, puddle, extra props, UI, text, letters, numbers, watermark, antialiasing, blur, gradients, semi-transparent edges, or #00ff00 inside the subject.

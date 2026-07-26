@@ -1,0 +1,27 @@
+Use case: stylized-concept
+Asset type: anatomy-aware face-mask overlay source sheet for one wearable item in the Chinese pixel-art action game 《这一身》, targeting a 40x56 logical hero sprite and a maximum 12x12 logical face region
+Primary request: create only four detachable face-mask overlays for item 60, “momo的头像”; the visible human face is replaced by the same dusty gray-pink little dinosaur identity shown in the approved item icon, while the protagonist's existing black hair silhouette remains untouched
+
+Input images:
+Image 1 is the approved production head reference in exact direction order: front, left profile, back, right profile. Match its face placement, eye line, nose direction, hair overlap, head size and camera. Do not redraw or include the hair, head, ears, neck or body.
+Image 2 is the approved item icon and the exact identity/color anchor. Preserve its small charcoal eye, short blunt muzzle, tiny nostril, dusty gray-pink body colors and mildly blank anonymous expression. Translate only the dinosaur face identity into a mask; do not redraw the circular icon frame or full dinosaur.
+Image 3 is the rejected previous source and a negative reference only. It failed because it generated four ordinary black-haired human heads and left the recognizable human face intact. Do not preserve any head, hair, human skin, human eye placement or round human face from it.
+Image 4 is the canonical palette, pixel density and hard-outline reference.
+
+Canon event and irony: “只有没有名字的时候才敢做自己.” The standardized default avatar lets the person speak only after their own identity has disappeared. The result should look cute for half a second and then slightly unsettling because the same anonymous avatar has swallowed the recognizable face.
+
+Direction layout: strict 2x2 equal quadrants with generous empty green padding. Top-left front, top-right left profile, bottom-left back, bottom-right right profile. Identical head scale and face baseline in all quadrants. No labels, separators, grid lines or extra variants.
+
+Front overlay: one compact, nearly square dinosaur-avatar face mask fitted only to the exposed 12x12 face area. It must fully hide the original human identity. Use the icon's dusty gray-pink flat planes, charcoal stepped rim, a short broad muzzle, one tiny nostril, and at most two minimal dark dot eyes. No human skin or human facial features may remain visible through holes.
+Left profile overlay: one compact gray-pink mask fitted to the exposed side face, with exactly one visible dark dot eye and a short blunt muzzle pointing left. The muzzle is only one or two logical pixels beyond the cheek, never a long beak or tube.
+Back overlay: almost empty. Show only two tiny dusty-pink cheek-edge hints low at the sides where the mask might wrap under the hair. The back remains overwhelmingly black hair. Absolutely no eye, nostril, mouth, face, pink disk or complete mask on the back of the head.
+Right profile overlay: mirror the left-view construction with exactly one visible dot eye and a short blunt muzzle pointing right. Preserve the same identity and scale.
+
+Runtime geometry: front source must survive reduction to at most 12x12 logical pixels; side sources to at most 9x12; back source must reduce to two tiny edge hints within a 12x3 strip. Keep all important dark facial marks thick enough to survive nearest-neighbor reduction. The mask is solid over the face, not a frame with transparent eye holes.
+
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background, one uniform color with no shadow, gradient, texture, floor, reflection or lighting variation. Use #00ff00 nowhere in the authored overlays.
+Style/medium: restrained Chinese indie-game pixel art, crisp square clusters, hard stepped edges, charcoal-plum outline, muted gray-pink shadow, dusty rose base and one pale pink highlight, maximum 5 subject colors, no antialiasing, no gradients, no subpixel blur
+Composition/framing: overlay pieces only, centered in their quadrants at consistent scale, large clean green gaps between directions
+Constraints: no complete head, no hair pixels, no human face, no human skin, no eyes on the back, no neck, no torso, no hands, no full character, no circular icon frame, no text, no logo, no UI and no watermark
+Avoid: ordinary person, generic smiling boy, recognizable human identity, full dinosaur body, dinosaur head replacing the whole human head, mascot costume, plush mascot, kigurumi hood, animal ears attached to hair, helmet, emoji, sticker frame, pink circle, long crocodile snout, bird beak, two side eyes, rear-facing eye, extra eye, transparent face holes, photorealism, smooth vector rendering, soft glow, green spill
+Final gate: at exact 40x56 hero scale, the original hair contour is unchanged; the front face is no longer identifiable as the protagonist; each side reads as the approved little gray-pink dinosaur through one dot eye and a short blunt muzzle; the back remains hair with only tiny pink edge hints and zero eyes.

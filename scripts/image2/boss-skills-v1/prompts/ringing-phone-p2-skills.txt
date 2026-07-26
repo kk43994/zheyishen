@@ -1,0 +1,7 @@
+Use case: stylized-concept
+Asset type: 2x2 pixel-art boss skill pose sheet for an action game
+Primary request: Preserve the exact group of three to four separate worn early smartphones. Four poses in reading order: asynchronous left-heavy ringing arrangement; asynchronous right-heavy ringing arrangement; phones converging around one steady green answered screen without touching; all phones recoiling outward with urgent dark red missed-call screens.
+Style: crisp high-detail pixel art matching the references, readable multi-object boss at 64px.
+Layout: exact 2x2 grid, exactly three or four complete separate phones per cell, consistent identities, generous gutters.
+Background: perfectly flat solid #ff00ff chroma key, no floor, shadows, scenery, labels, borders, or readable text.
+Avoid: merged pile, hand, person, cables, green background, smooth painting, blur.

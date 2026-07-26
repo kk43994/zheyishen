@@ -1,0 +1,9 @@
+Use case: stylized-concept
+Asset type: one standalone game inventory icon source, designed to remain unmistakable at 36x36 pixels
+Primary request: create a centered icon for "交掉的闪现" as one short left-to-right displacement event: a dim purple starting afterimage dissolves into square pixels, a clean empty jump gap follows, and a brighter moon-white landing afterimage appears one body-width ahead with a short violet speed streak
+Input images: Image 1 is the canonical project pixel palette and edge-density reference; Image 2 is the previous inventory icon and is a failure reference because it reads as an ordinary lightning bolt; Image 3 shows the approved four-direction displacement tear and is context for the momentary motion only
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background with no shadow, floor, gradient, texture or lighting variation
+Style/medium: restrained Chinese indie-game pixel art, hard square pixel clusters, deep ink-purple shadows, muted violet motion and one moon-white landing accent, no antialiasing and no smooth vector edges
+Composition/framing: one compact horizontal displacement glyph, centered, occupying about 78% of the square; the start, empty gap and landing must read as three beats after downscaling; keep all fragments visually connected by direction but never by a solid rod
+Constraints: one displacement event only; no complete person; at most 8 subject colors; no text, number, logo, watermark or frame; do not use #00ff00 in the subject
+Avoid: lightning bolt, thunder symbol, portal, magic circle, vertical crack, sword slash, arrow, solid bar, human character, game logo, neon vector glow, photographic effects, soft smoke

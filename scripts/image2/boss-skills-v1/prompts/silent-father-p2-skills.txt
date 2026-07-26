@@ -1,0 +1,7 @@
+Use case: stylized-concept
+Asset type: 2x2 pixel-art boss skill pose sheet for an action game
+Primary request: Preserve the exact small crying boy revealed inside the fallen raincoat, not the adult shell. Four poses in reading order: covering his face with both hands; lunging forward in a two-step shoulder charge while still hiding his face; stamping both feet in a furious tantrum; wiping his face and flinging a fan of heavy tears.
+Style: crisp high-detail pixel art matching the references, vulnerable child scale, readable at 64px without becoming cute.
+Layout: exact 2x2 grid, one complete boy in each cell, same identity and clothing, generous gutters.
+Background: perfectly flat solid #00ff00 chroma key, no floor, scenery, labels, borders, or text.
+Avoid: adult proportions, raincoat hood covering the whole body, weapon, gore, smile, smooth painting, blur.

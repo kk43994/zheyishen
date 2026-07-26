@@ -48,6 +48,8 @@ export const QUALITY_VISUAL_BUDGETS: Readonly<
   2: { maxOpaquePixels: 72, maxPaletteColors: 3, maxLayerPasses: 2, maxAnimatedPixels: 16, silhouetteAllowancePx: 2 },
   3: { maxOpaquePixels: 104, maxPaletteColors: 4, maxLayerPasses: 2, maxAnimatedPixels: 26, silhouetteAllowancePx: 3 },
   4: { maxOpaquePixels: 152, maxPaletteColors: 5, maxLayerPasses: 3, maxAnimatedPixels: 42, silhouetteAllowancePx: 5 },
+  // 第五档「这一身」：传承线固定掉落。预算不小于遗物档，雨衣（真穿戴）划入此档后仍然合法。
+  5: { maxOpaquePixels: 168, maxPaletteColors: 5, maxLayerPasses: 3, maxAnimatedPixels: 46, silhouetteAllowancePx: 5 },
 };
 
 export type AppearancePropKey =
@@ -184,7 +186,7 @@ export interface ItemAppearanceDefinition {
   readonly anchor: BodyAnchor;
   readonly priority: number;
   readonly visualBudget: QualityVisualBudget;
-  readonly mutations: readonly [AppearanceMutation, ...AppearanceMutation[]];
+  readonly mutations: readonly AppearanceMutation[];
   readonly animation: ItemAnimationHint;
   readonly alternateAttachments?: readonly ConditionalAttachment[];
 }
@@ -216,13 +218,26 @@ function appearance<const Id extends ItemId>(id: Id, input: AppearanceInput): It
 }
 
 export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
+  // ── 第五档 · 这一身：固定传承物使用 Image2 四方向实体层，事件反馈由 game.ts 单独驱动 ──
+  'admission-notice': appearance('admission-notice', {
+    layer: 'attachment', anchor: 'rightHand', priority: 12,
+    mutations: [],
+    animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
+  }),
+  'iphone-17-pro-max': appearance('iphone-17-pro-max', {
+    layer: 'attachment', anchor: 'rightHand', priority: 12,
+    mutations: [],
+    animation: { kind: 'jitter', trigger: 'attack', frames: 2, periodMs: 400, amplitudePx: 1, loop: false },
+  }),
+  'fathers-chart': appearance('fathers-chart', {
+    layer: 'attachment', anchor: 'waist', priority: 12,
+    mutations: [],
+    animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
+  }),
   'server-shutdown': appearance('server-shutdown', {
     layer: 'effect', anchor: 'shadow', priority: 24,
-    mutations: [
-      { kind: 'mark', target: 'shadow', pattern: 'empty-person' },
-      { kind: 'palette', target: 'shadow', color: '#6f8577', coverage: 'partial' },
-    ],
-    animation: { kind: 'pulse', trigger: 'low-health', frames: 2, periodMs: 900, amplitudePx: 1, loop: true },
+    mutations: [],
+    animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
   }),
   'always-crying': appearance('always-crying', {
     layer: 'effect', anchor: 'face', priority: 30,
@@ -234,17 +249,12 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
   }),
   'three-day-visible': appearance('three-day-visible', {
     layer: 'effect', anchor: 'shadow', priority: 26,
-    mutations: [
-      { kind: 'mark', target: 'shadow', pattern: 'empty-person' },
-    ],
-    animation: { kind: 'pulse', trigger: 'always', frames: 2, periodMs: 1400, amplitudePx: 1, loop: true },
+    mutations: [],
+    animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
   }),
   'read-3am': appearance('read-3am', {
     layer: 'attachment', anchor: 'rightHand', priority: 12,
-    mutations: [
-      { kind: 'palette', target: 'eyes', color: '#d8d2c5', coverage: 'accent' },
-      { kind: 'expression', value: 'dazed', intensity: 2 },
-    ],
+    mutations: [],
     animation: { kind: 'tick', trigger: 'always', frames: 2, periodMs: 1000, amplitudePx: 1, loop: true },
   }),
   'retracted-voice': appearance('retracted-voice', {
@@ -265,10 +275,8 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
   }),
   'auto-renew': appearance('auto-renew', {
     layer: 'effect', anchor: 'shadow', priority: 20,
-    mutations: [
-      { kind: 'palette', target: 'shadow', color: '#7f8a6e', coverage: 'partial' },
-    ],
-    animation: { kind: 'pulse', trigger: 'always', frames: 2, periodMs: 1300, amplitudePx: 1, loop: true },
+    mutations: [],
+    animation: { kind: 'pulse', trigger: 'stage-start', frames: 4, periodMs: 15000, amplitudePx: 0, loop: false },
   }),
   'bargain-link': appearance('bargain-link', {
     layer: 'attachment', anchor: 'chest', priority: 16,
@@ -289,7 +297,6 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
   'group-dad': appearance('group-dad', {
     layer: 'effect', anchor: 'shadow', priority: 22,
     mutations: [
-      { kind: 'mark', target: 'shadow', pattern: 'empty-person' },
       { kind: 'expression', value: 'numb', intensity: 2 },
     ],
     animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
@@ -320,11 +327,7 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
   }),
   'third-pill': appearance('third-pill', {
     layer: 'effect', anchor: 'face', priority: 32,
-    mutations: [
-      { kind: 'expression', value: 'dazed', intensity: 2 },
-      { kind: 'silhouette', target: 'torso', compressX: 3 },
-      { kind: 'palette', target: 'eyes', color: '#96789c', coverage: 'partial' },
-    ],
+    mutations: [],
     animation: { kind: 'jitter', trigger: 'always', frames: 2, periodMs: 600, amplitudePx: 2, loop: true },
   }),
   'loan-contract': appearance('loan-contract', {
@@ -340,7 +343,6 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
     layer: 'effect', anchor: 'face', priority: 34,
     mutations: [
       { kind: 'expression', value: 'numb', intensity: 2 },
-      { kind: 'mark', target: 'shadow', pattern: 'empty-person' },
       { kind: 'palette', target: 'outline', color: '#6b6f7e', coverage: 'partial' },
     ],
     animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
@@ -348,7 +350,6 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
   'moms-bowl': appearance('moms-bowl', {
     layer: 'attachment', anchor: 'chest', priority: 14,
     mutations: [
-      { kind: 'silhouette', target: 'torso', expandX: 2 },
       { kind: 'palette', target: 'skin', color: '#c9a98a', coverage: 'accent' },
     ],
     animation: { kind: 'bob', trigger: 'walk', frames: 2, periodMs: 600, amplitudePx: 1, loop: true },
@@ -387,17 +388,17 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
     animation: { kind: 'sway', trigger: 'walk', frames: 2, periodMs: 700, amplitudePx: 1, loop: true },
   }),
   'hair-in-takeout': appearance('hair-in-takeout', {
-    layer: 'attachment', anchor: 'waist', priority: 10,
+    layer: 'face', anchor: 'face', priority: 30,
     mutations: [
-      { kind: 'silhouette', target: 'torso', expandX: 2 },
-      { kind: 'palette', target: 'outfit', color: '#8a7a5f', coverage: 'accent' },
+      { kind: 'expression', value: 'strained', intensity: 2 },
+      { kind: 'palette', target: 'skin', color: '#a6ad91', coverage: 'accent' },
     ],
     animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
   }),
   'unwashed-pillow': appearance('unwashed-pillow', {
     layer: 'attachment', anchor: 'chest', priority: 12,
     mutations: [
-      { kind: 'silhouette', target: 'torso', expandX: 3 },
+      { kind: 'silhouette', target: 'shadow', expandX: 5 },
       { kind: 'posture', shoulderDrop: 3 },
     ],
     animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
@@ -407,7 +408,6 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
     mutations: [
       { kind: 'palette', target: 'skin', color: '#c9b98a', coverage: 'partial' },
       { kind: 'mark', target: 'face', pattern: 'under-eye-shadow' },
-      { kind: 'silhouette', target: 'torso', compressX: 2 },
     ],
     animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
   }),
@@ -430,24 +430,22 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
     layer: 'effect', anchor: 'face', priority: 36,
     mutations: [
       { kind: 'expression', value: 'forced-smile', intensity: 2 },
+      { kind: 'palette', target: 'skin', color: '#b6b3b0', coverage: 'partial' },
       { kind: 'palette', target: 'outline', color: '#d8cfae', coverage: 'accent' },
     ],
     animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
   }),
   'typing-indicator': appearance('typing-indicator', {
-    layer: 'effect', anchor: 'face', priority: 22,
-    mutations: [
-      { kind: 'expression', value: 'startled', intensity: 2 },
-      { kind: 'mark', target: 'face', pattern: 'under-eye-shadow' },
-    ],
-    animation: { kind: 'tick', trigger: 'always', frames: 2, periodMs: 800, amplitudePx: 1, loop: true },
+    layer: 'effect', anchor: 'head', priority: 22,
+    mutations: [],
+    animation: { kind: 'tick', trigger: 'attack', frames: 3, periodMs: 500, amplitudePx: 0, loop: true },
   }),
   'year-report': appearance('year-report', {
     layer: 'effect', anchor: 'face', priority: 24,
     mutations: [
       { kind: 'mark', target: 'face', pattern: 'under-eye-shadow' },
       { kind: 'palette', target: 'eyes', color: '#4a4a58', coverage: 'partial' },
-      { kind: 'silhouette', target: 'torso', compressX: 1 },
+      { kind: 'silhouette', target: 'shadow', expandX: 3 },
     ],
     animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
   }),
@@ -460,17 +458,12 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
   }),
   'breath-on-glass': appearance('breath-on-glass', {
     layer: 'effect', anchor: 'face', priority: 18,
-    mutations: [
-      { kind: 'palette', target: 'eyes', color: '#a9c2c6', coverage: 'accent' },
-    ],
-    animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
+    mutations: [],
+    animation: { kind: 'flicker', trigger: 'attack', frames: 2, periodMs: 160, amplitudePx: 0, loop: false },
   }),
   'momo-avatar': appearance('momo-avatar', {
     layer: 'attachment', anchor: 'head', priority: 20,
-    mutations: [
-      { kind: 'palette', target: 'hair', color: '#e8a8c8', coverage: 'accent' },
-      { kind: 'expression', value: 'guarded', intensity: 2 },
-    ],
+    mutations: [],
     animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
   }),
   'ai-chat': appearance('ai-chat', {
@@ -494,7 +487,7 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
     mutations: [
       { kind: 'mark', target: 'face', pattern: 'under-eye-shadow' },
       { kind: 'palette', target: 'skin', color: '#a8a4b0', coverage: 'partial' },
-      { kind: 'silhouette', target: 'torso', compressX: 2 },
+      { kind: 'silhouette', target: 'shadow', expandX: 2 },
     ],
     animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
   }),
@@ -525,10 +518,8 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
   }),
   'eye-exercise': appearance('eye-exercise', {
     layer: 'effect', anchor: 'face', priority: 20,
-    mutations: [
-      { kind: 'palette', target: 'eyes', color: '#5f7581', coverage: 'accent' },
-    ],
-    animation: { kind: 'tick', trigger: 'always', frames: 2, periodMs: 1500, amplitudePx: 1, loop: true },
+    mutations: [],
+    animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
   }),
   'card-binder': appearance('card-binder', {
     layer: 'attachment', anchor: 'back', priority: 12,
@@ -547,10 +538,7 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
   }),
   'shop-freezer': appearance('shop-freezer', {
     layer: 'attachment', anchor: 'back', priority: 12,
-    mutations: [
-      { kind: 'mark', target: 'outfit', pattern: 'static-specks', color: '#bfe0e8' },
-      { kind: 'palette', target: 'outline', color: '#7e97a0', coverage: 'accent' },
-    ],
+    mutations: [],
     animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
   }),
 
@@ -572,7 +560,7 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
     layer: 'behind', anchor: 'back', priority: 22,
     mutations: [
       { kind: 'prop', visual: 'red-workbook', scale: 'medium', offset: [-2, 2] },
-      { kind: 'mark', target: 'outfit', pattern: 'red-crosses', color: '#a64049' },
+      { kind: 'mark', target: 'face', pattern: 'red-crosses', color: '#a64049' },
     ],
     animation: { kind: 'flutter', trigger: 'attack', frames: 3, periodMs: 260, amplitudePx: 1, loop: false },
   }),
@@ -597,7 +585,7 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
     layer: 'attachment', anchor: 'leftHand', priority: 48,
     mutations: [
       { kind: 'prop', visual: 'eyebrow-razor', scale: 'small', offset: [-1, 1] },
-      { kind: 'mark', target: 'arm', pattern: 'forearm-cuts', color: '#9b3848' },
+      { kind: 'mark', target: 'arm', pattern: 'forearm-cuts', color: '#76515a' },
       { kind: 'expression', value: 'guarded', intensity: 2 },
     ],
     animation: { kind: 'flicker', trigger: 'hurt', frames: 2, periodMs: 120, amplitudePx: 0, loop: false },
@@ -619,19 +607,12 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
   }),
   'cracked-glasses': appearance('cracked-glasses', {
     layer: 'face', anchor: 'face', priority: 40,
-    mutations: [
-      { kind: 'prop', visual: 'cracked-glasses', scale: 'medium' },
-      { kind: 'mark', target: 'face', pattern: 'eye-crack', color: '#d9e3df' },
-    ],
+    mutations: [],
     animation: { kind: 'flicker', trigger: 'hurt', frames: 2, periodMs: 100, amplitudePx: 0, loop: false },
   }),
   'small-uniform': appearance('small-uniform', {
     layer: 'garment', anchor: 'chest', priority: 24,
-    mutations: [
-      { kind: 'prop', visual: 'tight-uniform', scale: 'large' },
-      { kind: 'silhouette', target: 'torso', compressX: 1, compressY: 1 },
-      { kind: 'palette', target: 'outfit', color: '#405969', coverage: 'full' },
-    ],
+    mutations: [],
     animation: { kind: 'rattle', trigger: 'walk', frames: 2, periodMs: 360, amplitudePx: 1, loop: true },
   }),
   'only-key': appearance('only-key', {
@@ -710,20 +691,15 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
   'empty-frame': appearance('empty-frame', {
     // 相框空着，是因为那个人一直没来——不背框，影子里缺一块
     layer: 'behind', anchor: 'shadow', priority: 8,
-    mutations: [
-      { kind: 'mark', target: 'shadow', pattern: 'empty-person', color: '#76553d' },
-      { kind: 'palette', target: 'outline', color: '#76553d', coverage: 'accent' },
-    ],
+    mutations: [{ kind: 'palette', target: 'shadow', color: '#403944', coverage: 'accent' }],
     animation: { kind: 'pulse', trigger: 'attack', frames: 3, periodMs: 520, amplitudePx: 1, loop: false },
   }),
   'broken-spine': appearance('broken-spine', {
-    layer: 'behind', anchor: 'back', priority: 52,
+    layer: 'body', anchor: 'back', priority: 52,
     mutations: [
-      { kind: 'prop', visual: 'broken-spine', scale: 'large', offset: [1, 0] },
       { kind: 'posture', lean: 4, shoulderDrop: 3, headOffsetX: 4 },
-      { kind: 'silhouette', target: 'back', expandX: 2 },
     ],
-    animation: { kind: 'rattle', trigger: 'hurt', frames: 3, periodMs: 220, amplitudePx: 1, loop: false },
+    animation: { kind: 'none', trigger: 'always', frames: 1, periodMs: 0, amplitudePx: 0, loop: false },
   }),
   'spent-decade': appearance('spent-decade', {
     layer: 'effect', anchor: 'shadow', priority: 28,
@@ -756,9 +732,7 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
   'flash-escape': appearance('flash-escape', {
     // 纯效果道具：平时不上身，只在受击触发瞬移时留短残影
     layer: 'effect', anchor: 'shadow', priority: 34,
-    mutations: [
-      { kind: 'palette', target: 'outline', color: '#9a8fb5', coverage: 'accent' },
-    ],
+    mutations: [],
     animation: { kind: 'afterimage', trigger: 'hurt', frames: 4, periodMs: 180, amplitudePx: 3, loop: false },
   }),
   'class-break': appearance('class-break', {
@@ -772,15 +746,12 @@ export const ITEM_APPEARANCE_REGISTRY: ExhaustiveAppearanceRegistry = {
     layer: 'attachment', anchor: 'rightHand', priority: 38,
     mutations: [
       { kind: 'prop', visual: 'last-page', scale: 'medium', offset: [1, 1] },
-      { kind: 'mark', target: 'outfit', pattern: 'red-crosses', color: '#a0524a' },
     ],
     animation: { kind: 'flutter', trigger: 'attack', frames: 3, periodMs: 240, amplitudePx: 2, loop: false },
   }),
   'five-ha': appearance('five-ha', {
     layer: 'face', anchor: 'face', priority: 46,
-    mutations: [
-      { kind: 'expression', value: 'forced-smile', intensity: 2 },
-    ],
+    mutations: [],
     animation: { kind: 'jitter', trigger: 'hurt', frames: 3, periodMs: 160, amplitudePx: 1, loop: false },
   }),
   'red-packet': appearance('red-packet', {

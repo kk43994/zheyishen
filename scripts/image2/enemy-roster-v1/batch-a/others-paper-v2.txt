@@ -1,0 +1,18 @@
+Use case: precise-object-edit
+Asset type: 32x32 game enemy action concept source, targeted v2 correction
+Input images: Image 1 is the authoritative Zhe Yi Shen canonical style board. Image 2 is the authoritative runtime enemy motion sheet. Image 3 is the rejected v1 candidate: preserve its successful single-paper silhouette, four-pose layout, palette, scale, motion, crumpled death pose, and pure green background, but replace the misleading central red mark in every intact pose.
+
+Create one strict 2x2 action sheet of the exact same enemy, "Someone Else's Paper". It is one clean, slightly creased school exam sheet floating upright and presenting a visibly praised result. The v1 red circular symbol looks like the digit 6; this is the only major semantic failure and must not survive.
+
+Mandatory mark correction:
+- Replace the digit-like circle-and-dash symbol with a symmetrical closed old-red excellence seal: a clear five-point star centered inside a double-ring teacher stamp.
+- The star must read as a star, not an X, 0, 6, 9, letter, score, face, or mouth.
+- No center dash, inner spiral, broken loop, handwriting, number, or readable text.
+- Keep the attack pose's old-red proximity halo outside the paper, distinct from the excellence seal.
+
+Quadrants remain fixed: top-left idle face-on; top-right sideways hover while keeping the marked face visible; bottom-left proximity-damage attack with a tight old-red outer halo; bottom-right hurt/death as the same sheet crumpled inward, with the star seal broken only by physical folds.
+
+Scene/backdrop: perfectly uniform solid pure #00ff00 chroma-key background in every pixel outside the sprites. No floor, shadow, glow on background, gradient, texture, grid lines, or borders.
+Style/medium: crisp chunky low-resolution pixel art for reduction into 32x32; hard pixel clusters; 10-16 subject colors; deep ink one-logical-pixel outline; top-left light; old paper, paper shadow, deep ink, and restrained old-red only.
+Composition/framing: four equal quadrants, same three-quarter-front camera, same scale and construction, each sprite centered with green padding and stable bottom-center anchor; no crop or overlap.
+Constraints: exactly one sheet per quadrant; preserve v1's successful form while correcting only the seal semantics; distinct from Red Cross and Uniform Answer; no giant X, digits, letters, readable text, names, limbs, eyes, mouth, UI, scenery, watermark, antialiasing, blur, gradients, semi-transparent edges, or #00ff00 inside the subject.

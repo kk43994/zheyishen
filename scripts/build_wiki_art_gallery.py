@@ -20,8 +20,10 @@ START = "<!-- ART-GALLERY-START -->"
 END = "<!-- ART-GALLERY-END -->"
 
 ENEMY_DIR = Path("src/assets/enemies")
+BOSS_SKILL_DIR = ENEMY_DIR / "boss-skills-v1"
+BOSS_SKILL_MANIFEST = BOSS_SKILL_DIR / "manifest.json"
 HERO_DIR = Path("src/assets/hero-style1-profiles")
-TITLE_PNG = Path("src/assets/ui/title-life-night.png")
+TITLE_PNG = Path("src/assets/ui/title-life-clutter.png")
 PROPS_PNG = Path("src/assets/world/props.png")
 ENTITIES_PNG = Path("src/assets/world/entities.png")
 REVIEW_ART = (
@@ -104,6 +106,44 @@ REVIEW_ART = (
     ),
 )
 
+ITEM_REVIEW_ART = (
+    (Path("output/art-audit-loop/wiki-item-review/items-01-12.png"), "道具 01-12"),
+    (Path("output/art-audit-loop/wiki-item-review/items-13-24.png"), "道具 13-24"),
+    (Path("output/art-audit-loop/wiki-item-review/items-25-36.png"), "道具 25-36"),
+    (Path("output/art-audit-loop/wiki-item-review/items-37-48.png"), "道具 37-48"),
+    (Path("output/art-audit-loop/wiki-item-review/items-49-60.png"), "道具 49-60"),
+    (Path("output/art-audit-loop/wiki-item-review/items-61-72.png"), "道具 61-72"),
+    (Path("output/art-audit-loop/wiki-item-review/items-73-77.png"), "道具 73-77"),
+)
+
+FOCUSED_ITEM_REVIEW_ART = (
+    (
+        Path("output/art-audit-loop/runtime-integration/broken-spine-card-warp-scar.png"),
+        "22 断掉的脊梁骨 · 已锁定",
+        "整个人驼背前倾，旧伤贴着后背；没有外挂骨头、额外横杠或第三肢体。",
+    ),
+    (
+        Path("output/art-audit-loop/runtime-integration/momo-avatar-card-v2.1.png"),
+        "60 momo的头像 · 小恐龙头套",
+        "主角直接戴圆头粉色小恐龙头套；身体、衣服和四肢保持原样。",
+    ),
+    (
+        Path("output/art-audit-loop/runtime-integration/eye-exercise-card-v1.png"),
+        "67 眼保健操 · 轮刮眼眶触发态",
+        "触发半秒时替换原双臂，拇指与食指贴着眼眶形成受压弧环；不是悬空眼睛或望远镜。",
+    ),
+    (
+        Path("output/imagegen/zhe-yi-shen-art-loop-v1/71-server-shutdown/v1/shutdown-standby-review-12x.png"),
+        "71 关服那天 · 常驻小伙伴",
+        "一个有头身的小伙伴贴着影子慢半拍跟随，不画成屏幕或设备。",
+    ),
+    (
+        Path("output/imagegen/zhe-yi-shen-art-loop-v1/71-server-shutdown/v1/shutdown-trigger-review-12x.png"),
+        "71 关服那天 · 替挡与断线",
+        "致命伤时依次出现、跃出、替挡、断线；结束后本局永久清空，不留残骸。",
+    ),
+)
+
 ENEMY_FRAME = 32
 ENEMY_MOTION_ROWS = {"idle": 0, "move": 1, "attack": 2, "hurt": 3, "death": 4}
 HERO_W, HERO_H = 40, 56
@@ -111,28 +151,87 @@ HERO_MOTION_FRAMES = {"idle": 2, "walk": 4, "attack": 2, "hurt": 2}
 HERO_PROFILE_ROW = (1 * 4 + 1) * 4  # 平均身高 x 平均体格, front 朝向
 PROP_CELL_W, PROP_CELL_H = 40, 44
 
-# 图鉴顺序：按人生阶段
+# 图鉴顺序：按当前 LIFE_STAGE_CANON；同一视觉在多章复用时只列一次。
+# (asset, name, stage/role, source frame, review display width)
 ENEMIES = [
-    ("cry-moth", "哭蛾", "降生"),
-    ("hunger-shadow", "空奶瓶", "降生"),
-    ("fear", "床下的呼吸", "童年"),
-    ("closet-dark", "没人相信的怪物", "童年 Boss"),
-    ("red-mark", "红叉", "少年"),
-    ("whisper", "他们都在说", "少年"),
-    ("uniform-answer", "统一答案", "少年 Boss"),
-    ("clockwork", "打卡齿轮", "青年"),
-    ("last-bus", "末班车", "青年 Boss"),
-    ("missed-call", "未接来电", "成年"),
-    ("silence", "没人说话", "成年"),
-    ("silent-father", "沉默的父亲", "成年 Boss"),
-    ("silent-father-p2", "沉默的父亲 · 裂开", "成年 Boss 二阶段"),
-    ("debt", "下个月账单", "中年"),
-    ("badge-thief", "打包的纸箱", "中年"),
-    ("debt-collector", "上门催收", "中年 Boss"),
-    ("forgetter", "忘记名字的人", "暮年"),
-    ("empty-chair", "空椅子", "暮年"),
-    ("lamp-keeper", "收灯人", "终 Boss"),
+    ("cry-moth", "哭蛾", "童年", 32, 48),
+    ("hunger-shadow", "空奶瓶", "童年", 32, 48),
+    ("fear", "床下的呼吸", "童年", 32, 48),
+    ("coat-rack", "立在墙角的衣架", "童年 · 小 Boss", 48, 64),
+    ("closet-dark-hd", "没人相信的怪物", "童年 · 章节 Boss", 48, 80),
+    ("red-mark", "红叉", "少年", 32, 48),
+    ("whisper", "他们都在说", "少年／中年", 32, 48),
+    ("others-paper", "别人的那张", "少年", 32, 48),
+    ("sign-here", "要签字的那一栏", "少年", 32, 48),
+    ("uniform-answer-hd", "统一答案", "少年 · 小 Boss", 48, 64),
+    ("silent-father-hd", "沉默的父亲", "少年 · 章节 Boss 一阶段", 64, 88),
+    ("silent-father-p2-hd", "沉默的父亲 · 雨衣落下", "少年 · 章节 Boss 二阶段", 64, 76),
+    ("id-scanner", "证件扫描框", "青年", 32, 48),
+    ("last-bus", "错过的车", "青年", 32, 48),
+    ("task-simple", "这个很简单", "青年", 32, 48),
+    ("task-revise", "顺手改一下", "青年", 32, 48),
+    ("task-deadline", "下班前要", "青年", 32, 48),
+    ("task-sync", "拉个会同步", "青年", 32, 48),
+    ("last-bus-hd", "错过的那一班", "青年 · 小 Boss", 64, 72),
+    ("praise-chair-p1", "你很优秀", "青年 · 章节 Boss 一阶段", 64, 80),
+    ("praise-chair-p2", "你很优秀 · 起身", "青年 · 章节 Boss 二阶段", 96, 96),
+    ("missed-call", "未接来电", "成年", 32, 48),
+    ("debt", "下个月账单", "成年／中年／暮年", 32, 48),
+    ("silence", "没人说话", "成年", 32, 48),
+    ("desk-lamp", "总亮着的台灯", "成年", 32, 48),
+    ("reheated-pot", "热了三遍的饭", "成年", 32, 48),
+    ("wet-shoes", "还没干的那双鞋", "成年 · 小 Boss", 48, 64),
+    ("ringing-phone-p1", "响个不停", "成年 · 章节 Boss 一阶段", 64, 80),
+    ("ringing-phone-p2", "响个不停 · 分裂", "成年 · 章节 Boss 二阶段", 64, 80),
+    ("badge-thief", "注销工牌", "中年", 32, 48),
+    ("meeting-door", "开不完的会", "中年", 32, 48),
+    ("checkup-report", "体检报告", "中年", 32, 48),
+    ("whose-box", "不知道是谁的纸箱", "中年 · 小 Boss", 48, 64),
+    ("debt-collector-hd", "上门催收", "中年 · 章节 Boss", 48, 80),
+    ("forgetter", "忘记名字的人", "暮年", 32, 48),
+    ("empty-chair", "空椅子", "暮年", 32, 48),
+    ("queue-screen", "叫不到号的屏幕", "暮年", 32, 48),
+    ("others-family", "别人家的家属", "暮年", 32, 48),
+    ("iv-stand", "滴完的输液架", "暮年", 48, 48),
+    ("revolving-lantern", "走马灯", "暮年 · 小 Boss", 48, 64),
+    ("lamp-keeper-hd", "收灯人", "暮年 · 终 Boss", 64, 88),
 ]
+
+BOSS_FORM_NAMES = {
+    "closet-dark-skills": "童年《没人相信的怪物》",
+    "silent-father-p1-skills": "少年《沉默的父亲》一阶段",
+    "silent-father-p2-skills": "少年《沉默的父亲》二阶段",
+    "praise-chair-p1-skills": "青年《你很优秀》一阶段",
+    "praise-chair-p2-skills": "青年《你很优秀》二阶段",
+    "ringing-phone-p1-skills": "成年《响个不停》一阶段",
+    "ringing-phone-p2-skills": "成年《响个不停》二阶段",
+    "debt-collector-skills": "中年《上门催收》",
+    "lamp-keeper-skills": "暮年《收灯人》",
+    "coat-rack-skills": "童年小 Boss《立在墙角的衣架》",
+    "uniform-answer-skills": "少年小 Boss《统一答案》",
+    "last-bus-skills": "青年小 Boss《错过的那一班》",
+    "wet-shoes-skills": "成年小 Boss《还没干的那双鞋》",
+    "whose-box-skills": "中年小 Boss《不知道是谁的纸箱》",
+    "revolving-lantern-skills": "暮年小 Boss《走马灯》",
+}
+
+BOSS_SKILL_NAMES = {
+    "closet-shadow": "被窝里的影子", "closet-split": "柜门裂开",
+    "father-stomp": "进去", "father-stand": "站好", "father-brace": "外面冷",
+    "father-charge": "不许看", "father-tantrum": "都怪你", "father-tears": "我没有哭",
+    "praise-p1-praise": "我看好你", "praise-p1-delegate": "这个只有你能做",
+    "praise-p1-retreat": "退桌", "praise-p1-consult": "你怎么看",
+    "praise-p2-slam": "拍桌", "praise-p2-paper": "下班前给我",
+    "praise-p2-optimize": "优化", "praise-p2-dismiss": "离职", "praise-p2-one-seat": "岗位只有一个",
+    "phone-p1-ring": "响铃", "phone-p1-answer": "接听", "phone-p1-missed": "未接",
+    "phone-p2-ring": "分裂响铃", "phone-p2-answer": "分裂接听", "phone-p2-missed": "分裂未接",
+    "collector-bill": "寄账单", "collector-drag": "上门拖拽", "collector-relocate": "换个门",
+    "keeper-name": "点名", "keeper-strip": "收灯", "keeper-dim": "吹灯",
+    "coat-sleeve": "里面有人吗", "coat-double-sleeve": "两只袖子",
+    "uniform-standard": "标准答案", "uniform-process": "过程没写", "uniform-pass": "卷子往后传",
+    "bus-depart": "开走", "wet-shoes-hurry": "又跟近了", "box-count": "清点",
+    "lantern-summon": "转起来", "lantern-summon-fast": "一生回来",
+}
 
 PROP_STAGES = [
     ("童年 · 床底王国", ["床柱", "积木", "发条老鼠", "纸船"]),
@@ -168,10 +267,10 @@ def file_uri(path: Path) -> str:
     return "data:image/png;base64," + base64.b64encode(path.read_bytes()).decode("ascii")
 
 
-def enemy_frame(asset: str, motion: str, frame: int) -> Image.Image:
+def enemy_frame(asset: str, motion: str, frame: int, frame_size: int) -> Image.Image:
     atlas = Image.open(ENEMY_DIR / f"{asset}.png").convert("RGBA")
     row = ENEMY_MOTION_ROWS[motion]
-    return atlas.crop((frame * ENEMY_FRAME, row * ENEMY_FRAME, (frame + 1) * ENEMY_FRAME, (row + 1) * ENEMY_FRAME))
+    return atlas.crop((frame * frame_size, row * frame_size, (frame + 1) * frame_size, (row + 1) * frame_size))
 
 
 def hero_frame(motion: str, frame: int, overlay_raincoat: bool = False) -> Image.Image:
@@ -200,9 +299,19 @@ def img_tag(uri: str, width: int, alt: str) -> str:
     )
 
 
-def review_img_tag(path: Path, alt: str) -> str:
+def boss_strip_tag(image: Image.Image, width: int, alt: str) -> str:
     return (
-        f'<img src="{file_uri(path)}" alt="{alt}" loading="lazy" style="width:100%;max-width:980px;'
+        f'<img src="{to_uri(image)}" alt="{alt}" loading="lazy" style="width:{width}px;max-width:100%;height:auto;'
+        'image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px">'
+    )
+
+
+def review_img_tag(path: Path, alt: str) -> str:
+    with Image.open(path) as image:
+        width, height = image.size
+    return (
+        f'<img src="{file_uri(path)}" alt="{alt}" loading="lazy" width="{width}" height="{height}" '
+        'style="width:100%;max-width:980px;'
         'height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px">'
     )
 
@@ -214,10 +323,10 @@ def build_section() -> str:
     parts.append('<h2 class="serif">美术馆 · 实机资源</h2>')
     parts.append(
         '<p class="lede">除文末明确标注“未接入”的生产候选外，本页主体全部直接取自游戏运行时图集，不是概念稿。'
-        '2026-07-20 起全部十九种敌怪采用"生图四姿态基底 + 程序合成动作"混合管线'
+        '六章现役敌怪、六只小 Boss 与六只章节 Boss 均采用"Image2 基底 + 程序合成动作"混合管线'
         '（站立/移动/攻击三格真实姿态 + 受击红闪与残差溶解由程序推导）；'
         '标题画、场景摆设、世界实体、道具图标、弹体、命中特效、房间、地面、卡框与结局画面同为混合管线产物；'
-        '主角人偶与道具穿戴上身的形变仍由代码实时绘制。</p>'
+        '主角基础身体由图集与部位遮罩驱动，道具体现由 Image2 四向/状态层与整数部位形变实时组合。</p>'
     )
 
     # 标题画
@@ -244,18 +353,76 @@ def build_section() -> str:
     )
     parts.append("</div>")
 
+    # 道具在主角身上的实机体现
+    parts.append('<div class="stage-h"><h3>道具与主角体现 · 七十七件</h3>'
+                 '<span class="cnt">77/77 有运行态消费者 · 四方向 × 常态/动作/触发态审查</span></div>')
+    parts.append(
+        '<p class="lede">下列图片来自同一份运行时审查页。每张卡左侧的小图只作为道具身份参考；'
+        '右侧四方向与动作格才是主角实际显示。只在触发瞬间出现的道具会明确标成触发态，常态不强行悬挂无关物件。</p>'
+    )
+    for path, title in ITEM_REVIEW_ART:
+        if not path.exists():
+            continue
+        parts.append(
+            '<figure style="margin:16px 0;text-align:center">'
+            + review_img_tag(path, title)
+            + f'<figcaption class="dim" style="font-size:12px;margin-top:6px">{title} · 实机审查页</figcaption></figure>'
+        )
+
+    parts.append('<h4 style="margin:24px 0 8px">本轮高优先级修正</h4>')
+    for path, title, note in FOCUSED_ITEM_REVIEW_ART:
+        if not path.exists():
+            continue
+        parts.append(
+            '<figure style="margin:16px 0;text-align:center">'
+            + review_img_tag(path, title)
+            + f'<figcaption class="dim" style="font-size:12px;margin-top:6px"><b>{title}</b><br>{note}</figcaption></figure>'
+        )
+
     # 敌怪
-    parts.append('<div class="stage-h"><h3>敌怪图集 · 十九种 × 五行动作</h3>'
-                 '<span class="cnt">32×32 帧 · 站立/移动/攻击/受击/消散 · 生图四姿态基底 + 程序合成动作</span></div>')
+    parts.append(f'<div class="stage-h"><h3>敌怪图集 · 六章现役 {len(ENEMIES)} 个视觉形态</h3>'
+                 '<span class="cnt">普通怪 32px，小 Boss 48–64px，章节 Boss 48–96px 源帧 · 此表按战斗层级差异化显示</span></div>')
     parts.append('<div class="tbl-wrap"><table><thead><tr><th>怪物</th><th>阶段</th>'
                  '<th>站立</th><th>移动</th><th>攻击</th><th>受击</th><th>消散</th></tr></thead><tbody>')
-    for asset, name, stage in ENEMIES:
+    for asset, name, stage, frame_size, display_width in ENEMIES:
         cells = "".join(
-            f'<td>{img_tag(to_uri(enemy_frame(asset, motion, 1 if motion == "death" else 0)), 48, f"{name} {motion}")}</td>'
+            f'<td>{img_tag(to_uri(enemy_frame(asset, motion, 1 if motion == "death" else 0, frame_size)), display_width, f"{name} {motion}")}</td>'
             for motion in ENEMY_MOTION_ROWS
         )
         parts.append(f"<tr><td>{name}</td><td>{stage}</td>{cells}</tr>")
     parts.append("</tbody></table></div>")
+
+    # Boss 专属攻击帧：基础 attack 行不能替代逐招表演，逐条展开 4 帧供审阅。
+    skill_manifest = json.loads(BOSS_SKILL_MANIFEST.read_text(encoding="utf-8"))
+    skills_by_asset: dict[str, list[tuple[int, str]]] = {}
+    for skill_id, spec in skill_manifest["skills"].items():
+        skills_by_asset.setdefault(spec["asset"], []).append((spec["row"], skill_id))
+    parts.append('<div class="stage-h"><h3>大小 Boss · 专属攻击动画逐帧审阅</h3>'
+                 f'<span class="cnt">{len(skill_manifest["assets"])} 个阶段形态 · '
+                 f'{len(skill_manifest["skills"])} 条独立动作 · {len(skill_manifest["skills"]) * 4} 帧</span></div>')
+    parts.append(
+        '<p class="lede">下列每一行都直接裁自运行时 <code>boss-skills-v1</code> 图集。'
+        '四格分别承担起势、蓄力、结算与回收；基础图集的通用“攻击”帧只作兜底，不能冒充这些招式。'
+        '跨图身份同样是门禁：《谁的纸箱》四帧保留工椅、五星脚与轮子，《走马灯》四帧保留红边纸灯与灯面奔马；'
+        '人生阶段怪由运行时单独召唤，不烘进 48px 灯体动作帧。'
+        '所有通用直线前摇都以结算前 Boss 坐标锁定：红框起止与命中带共用同一组几何参数，Boss 位移只在判定后发生。'
+        '非直线招式同样不得另画假范围：《上门》固定显示 280px 拖行圆域，末班车显示完整车身扫掠，'
+        '《拍桌子》保留 230px 外边界，《不许看》与《都怪你》会按落地雨衣真实截断危险带和雨圈。</p>'
+    )
+    for asset, asset_spec in skill_manifest["assets"].items():
+        atlas = Image.open(BOSS_SKILL_DIR / f"{asset}.png").convert("RGBA")
+        frame_size = asset_spec["frame"]
+        parts.append(f'<h4 style="margin:20px 0 8px">{BOSS_FORM_NAMES[asset]}</h4>')
+        parts.append('<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">')
+        for row, skill_id in sorted(skills_by_asset.get(asset, [])):
+            strip = atlas.crop((0, row * frame_size, frame_size * 4, (row + 1) * frame_size))
+            display_width = min(frame_size * 4, 384)
+            parts.append(
+                '<figure style="margin:0;text-align:center">'
+                + boss_strip_tag(strip, display_width, f"{BOSS_SKILL_NAMES[skill_id]} 四帧动画")
+                + f'<figcaption class="dim" style="font-size:12px;margin-top:4px">《{BOSS_SKILL_NAMES[skill_id]}》 · 4 帧</figcaption></figure>'
+            )
+        parts.append('</div>')
 
     # 世界实体
     parts.append('<div class="stage-h"><h3>世界实体 · 门与灯</h3>'

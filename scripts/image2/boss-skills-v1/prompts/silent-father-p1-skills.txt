@@ -1,0 +1,7 @@
+Use case: stylized-concept
+Asset type: 2x2 pixel-art boss skill pose sheet for an action game
+Primary request: Preserve the exact back-facing silent father in the old yellow raincoat. Four poses in reading order: one arm sweeping broadly to drive a child back inside; a rigid heavy forward step with one hand pointing down to command stand straight; turning sideways and bracing both shoulders into slanting rain while shielding the space behind him; returning to the closed silent posture.
+Style: crisp high-detail pixel art matching the references, intimidating adult scale, readable limbs and raincoat folds at 64px.
+Layout: exact 2x2 grid, one complete back-facing father in each cell, same identity and scale, generous gutters.
+Background: perfectly flat solid #00ff00 chroma key, no rain particles, floor, scenery, labels, borders, or text.
+Avoid: face reveal, weapon, front-facing portrait, extra people, smooth painting, blur.

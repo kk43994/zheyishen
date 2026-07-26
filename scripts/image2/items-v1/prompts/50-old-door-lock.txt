@@ -1,0 +1,21 @@
+Use case: stylized-concept
+Asset type: production source sheet for one item in the Chinese pixel-art action game 《这一身》, targeting a 40x56 logical hero sprite
+Primary request: design the complete item-specific art layers for “一直没有换的家门锁” as a strict four-direction 2x2 source sheet
+Input images:
+Image 1 is the canonical palette, pixel density and outline reference.
+Image 2 is the approved front/left/back/right hero proportion and direction reference; do not redraw the hero.
+Image 3 is the approved torso/head anatomy-part reference.
+Image 4 is the approved near/far arm anatomy-part reference.
+Canon appearance: 腰间挂着那把一直没换的旧门锁，钥匙孔磨得发亮。
+Canon hero manifestation: 腰间挂着那把一直没换的旧门锁，钥匙孔磨得发亮。
+Canon irony/event: 那把钥匙，一直都开得了门
+Runtime production channels: projectile
+Item-specific disambiguation: Follow the canon literally and avoid replacing it with a generic fantasy or UI symbol.
+Production requirements:
+Include one small, isolated projectile or attack-state variant derived from the same physical object and satire concept, placed close to the main component without touching it.
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background, with no shadow, gradient, texture, floor or lighting variation
+Style/medium: restrained Chinese indie-game pixel art, hard 1-pixel-equivalent edges, deliberate clusters, muted lived-in materials, up to 8 subject colors plus outline
+Composition/framing: strict 2x2 layout; top-left front, top-right left, bottom-left back, bottom-right right; equal scale and generous cell padding; no labels, separators or grid lines
+Semantic direction: translate the specific irony into physical wear, tension, placement, material, absence or repetition. Do not draw a generic collectible icon and do not add unrelated melodrama.
+Constraints: show only item-specific garment parts, props, decals, silhouette guides and effects; keep every component disconnected only where it is a real anatomy or rig part; preserve identical identity, palette and scale across directions; reserve blank pixel blocks where runtime text is required
+Avoid: hero body, head, skin, hands, legs, complete character, UI frame, Chinese or Latin text, watermark, fantasy armor, magical ornament, photorealism, smooth vector edges, floating rods, unexplained bars, duplicate limbs, decorative clutter

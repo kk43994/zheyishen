@@ -252,7 +252,14 @@ const REGION_WHEEL = [
 ] as const;
 const TONE_WHEEL = ['灰色幽默', '狗血抓马', '青春伤感', '平淡白描', '荒诞'] as const;
 const NICKNAME_STYLE_WHEEL = [
-  '叠词', '动宾短语', '物件名', '谐音梗', '网络ID式', '出名的小事故', '口头禅', '爱吃的东西',
+  '叠词人称',
+  '小或老开头的特征称呼',
+  '身体或穿戴特征称呼',
+  '性格习惯称呼',
+  '物件转喻的人称化称呼',
+  '谐音人称',
+  '小事故留下的人称',
+  '口头禅留下的人称',
 ] as const;
 
 const WHEEL_HISTORY_KEY = 'zys-origin-wheels-v1';
@@ -325,10 +332,26 @@ export function getOriginModifiers(traits: OriginTraitId[]): OriginModifiers {
   return result;
 }
 
+const PERSON_NICKNAME_ENDING = /(?:少爷|小姐|太子|公主|先生|同学|站长|班长|组长|队长|哥哥|姐姐|弟弟|妹妹|哥|姐|弟|妹|叔|姨|爷|奶|娃|仔|崽|头|脸|眼|嘴|手|脚|腿|耳|鼻|辫|毛|鬼|王|匠|迷|精|包|球|墩|葫芦|喇叭|算盘|串儿|兜|宝)$/u;
+const PERSON_NICKNAME_PREFIX = /^(?:小|老|大|胖|瘦|高|矮|红|白|黑|快|慢|闷|倔|馋|懒|急|笑|哭|铁|软|硬|长|短|歪|圆|尖|花)/u;
+const PERSON_NICKNAME_DESCRIPTOR = /(?:半拍|不胖|不瘦|不高|不矮|不哭|不笑|不睡|不服|不认|不清|不闲|不住|不停|没影)$/u;
+const BARE_ACTION_NICKNAME = /^(?:爱|总爱|老爱|只会|常|老|总)?(?:数|捡|背|看|吃|喝|拿|抱|扛|追|等|睡|哭|笑|喊|跑|爬|踢|揣|藏|收|抄|写|画|修|拆|搬|叠|拧|吹|听|摸|敲|抢|丢|忘|怕|咬|叼|攒|卖|买|送|骑|拉|推|守|晒|烧|煮|洗|擦|扫|挖|抓|养|喂)[\p{Script=Han}]{1,4}$/u;
+
+export function isPersonLikeNickname(value: string): boolean {
+  const nickname = value.trim();
+  if (nickname.length < 2 || nickname.length > 7 || !/^[\p{Script=Han}]+$/u.test(nickname)) return false;
+  if (BARE_ACTION_NICKNAME.test(nickname) && !PERSON_NICKNAME_ENDING.test(nickname)) return false;
+  if (PERSON_NICKNAME_ENDING.test(nickname)
+    || PERSON_NICKNAME_PREFIX.test(nickname)
+    || PERSON_NICKNAME_DESCRIPTOR.test(nickname)
+    || /([\p{Script=Han}])\1/u.test(nickname)) return true;
+  return false;
+}
+
 export function validateOriginProfile(value: unknown, expectedKind?: OriginKind): OriginProfile | null {
   if (!isRecord(value)) return null;
   const title = readText(value.title, 2, 16);
-  const nickname = readText(value.nickname, 2, 10);
+  const nickname = readText(value.nickname, 2, 7);
   const nicknameReason = readText(value.nicknameReason, 8, 70);
   const kind = typeof value.kind === 'string' && ORIGIN_KINDS.includes(value.kind as OriginKind)
     ? value.kind as OriginKind : null;
@@ -348,7 +371,7 @@ export function validateOriginProfile(value: unknown, expectedKind?: OriginKind)
       .slice(0, traits.length)
     : undefined;
   const storyLength = story.join('').length;
-  if (!title || !nickname || !nicknameReason || !kind || (expectedKind && kind !== expectedKind) || story.length < 3 || story.length > 4 || storyLength < 120 || storyLength > 260 || traits.length > 2 || !appearance) return null;
+  if (!title || !nickname || !isPersonLikeNickname(nickname) || !nicknameReason || !kind || (expectedKind && kind !== expectedKind) || story.length < 3 || story.length > 4 || storyLength < 120 || storyLength > 260 || traits.length > 2 || !appearance) return null;
   if (kind === 'ordinary' && traits.length !== 0) return null;
   if (kind === 'favored' && traits.some((id) => ORIGIN_TRAITS[id].tone === 'negative')) return null;
   if (kind === 'harsh' && traits.some((id) => ORIGIN_TRAITS[id].tone === 'positive')) return null;

@@ -1,0 +1,727 @@
+{
+  "version": 2,
+  "model": "gpt-image-2",
+  "route": "DMIT sub2 owner pool",
+  "cell": {
+    "width": 40,
+    "height": 56
+  },
+  "directions": [
+    "front",
+    "left",
+    "back",
+    "right"
+  ],
+  "rowCount": 31,
+  "items": {
+    "third-pill": {
+      "row": 0,
+      "phases": [
+        "rage",
+        "crash"
+      ]
+    },
+    "auto-renew": {
+      "row": 2,
+      "phases": [
+        "stub",
+        "two",
+        "three",
+        "four"
+      ]
+    },
+    "shop-freezer": {
+      "row": 6,
+      "phases": [
+        "drag"
+      ]
+    },
+    "pregnancy-test": {
+      "row": 7,
+      "phases": [
+        "shadow",
+        "prop"
+      ]
+    },
+    "cracked-glasses": {
+      "row": 9,
+      "phases": [
+        "fitted"
+      ]
+    },
+    "divorce-draft": {
+      "row": 10,
+      "phases": [
+        "fitted"
+      ]
+    },
+    "goodnight-2h": {
+      "row": 11,
+      "phases": [
+        "shadow"
+      ]
+    },
+    "slow-watch": {
+      "row": 12,
+      "phases": [
+        "freeze-idle",
+        "freeze-walk",
+        "freeze-attack",
+        "freeze-hurt"
+      ]
+    },
+    "broken-spine": {
+      "row": 16,
+      "phases": [
+        "scar-idle",
+        "scar-walk",
+        "scar-attack",
+        "scar-hurt"
+      ]
+    },
+    "momo-avatar": {
+      "row": 20,
+      "phases": [
+        "safe",
+        "threatened"
+      ]
+    },
+    "eye-exercise": {
+      "row": 22,
+      "phases": [
+        "press-idle",
+        "press-walk",
+        "press-attack",
+        "press-hurt"
+      ]
+    },
+    "server-shutdown": {
+      "row": 26,
+      "phases": [
+        "standby",
+        "appear",
+        "leap",
+        "guard",
+        "disconnect"
+      ]
+    }
+  },
+  "sources": {
+    "third-pill": {
+      "source": "output/imagegen/zhe-yi-shen-art-loop-v1/44-third-pill/v1/44-third-pill-v1.png",
+      "sourceSha256": "1ca93bf07f889e2ea9569dd02fbcf9f5a9709a13c5c0c3040619a0e7e677066b",
+      "prompt": "output/imagegen/zhe-yi-shen-art-loop-v1/44-third-pill/v1/prompt-v1.txt",
+      "promptSha256": "7635f6912edb1b8694ccc5768c02466fa3b046f8ad04bd1c7bb6f891af760d9b",
+      "selection": "output/imagegen/zhe-yi-shen-art-loop-v1/44-third-pill/selection.json",
+      "selectionSha256": "0379f2973fef6903c1cacb5e79ac64f1e946ba662e2b4d6f81deea1b749a366f"
+    },
+    "auto-renew": {
+      "source": "output/imagegen/zhe-yi-shen-art-loop-v1/37-auto-renew/v1/37-auto-renew-v1.png",
+      "sourceSha256": "d8a9bac734ec2662c7f40d602b961e052913eae9d164fe36cec106c8969170be",
+      "logicalSource": "output/imagegen/zhe-yi-shen-art-loop-v1/37-auto-renew/v1/37-auto-renew-v1-logical-vfx.png",
+      "logicalSourceSha256": "0e01ced1b3f4fec94b2581a268ddb24f5ca88e9b94cac62428c6b8917877bfe5",
+      "prompt": "output/imagegen/zhe-yi-shen-art-loop-v1/37-auto-renew/v1/prompt-v1.txt",
+      "promptSha256": "704fc37384dbfc7edb0b73a4b3856f7383df7e65821d7579d5f14da05d00d0fd",
+      "selection": "output/imagegen/zhe-yi-shen-art-loop-v1/37-auto-renew/selection.json",
+      "selectionSha256": "0bcb569045100278ceda05323708e88a6bb8b5d9592a2100d3aec11c5b8a7814"
+    },
+    "shop-freezer": {
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/70-shop-freezer.png",
+      "sourceSha256": "58c769866bb17c75e771e77b1c1d3db591395b2ad00709f28f4e87e556b3cb83",
+      "logicalSource": "output/imagegen/zhe-yi-shen-art-loop-v1/70-shop-freezer-74-breath/v4/70-shop-freezer-overlay-4dir-40x56.png",
+      "logicalSourceSha256": "82ff465b955a519e3da2211bdd492ac060496b64a10222358108a6ae13297295",
+      "selection": "output/imagegen/zhe-yi-shen-art-loop-v1/70-shop-freezer-74-breath/selection.json",
+      "selectionSha256": "3d22c1a38155cb76eff224f72925156ef4709f77b7ff80d3fb0fe7d0a335b91c"
+    },
+    "pregnancy-test": {
+      "source": "output/imagegen/zhe-yi-shen-art-loop-v1/55-pregnancy-test/v1/55-pregnancy-test-v1.png",
+      "sourceSha256": "51d932266e5ff8dd1260ae61f25b5d9830d2441662c52c4c751bac427c24dc51",
+      "propSource": "output/imagegen/zhe-yi-shen-art-loop-v1/55-pregnancy-test/v1/rigid-overlay-4dir-40x56.png",
+      "propSourceSha256": "bbb0d63bc3b9d4dad0165fafe558a4767781164a78d4f16ebb12852e6c1d3378",
+      "shadowSource": "output/imagegen/zhe-yi-shen-art-loop-v1/55-pregnancy-test/v1/child-shadow-overlay-4dir-40x56.png",
+      "shadowSourceSha256": "77840e679f739d63870c230d317014ada368952bafbb54890b8a9eadddbf09f7",
+      "selection": "output/imagegen/zhe-yi-shen-art-loop-v1/55-pregnancy-test/selection.json",
+      "selectionSha256": "4b29d3e09107306c2c2061da839336cee284bb1f15d19e4c5a896f6ba790aea8"
+    },
+    "cracked-glasses": {
+      "source": "output/imagegen/zhe-yi-shen-art-loop-v1/09-cracked-glasses/v2.1/source.png",
+      "sourceSha256": "a4e5dd0754c6beaf72a0351cf83e4a6329b4a7ada0ff3e4d96f9b4f76c6743cc",
+      "logicalSource": "output/imagegen/zhe-yi-shen-art-loop-v1/09-cracked-glasses/v2.1/face-overlay-40x56.png",
+      "logicalSourceSha256": "cf1752f9ac30f06816fbae78b8a5cea1812a382c0d42ad50412ea6c0125e36ea",
+      "prompt": "output/imagegen/zhe-yi-shen-art-loop-v1/09-cracked-glasses/v2.1/prompt.txt",
+      "promptSha256": "586a4dc85820a8494fb77a07fbee9062a335ea255078db2fe26cb904bb353187",
+      "selection": "output/imagegen/zhe-yi-shen-art-loop-v1/09-cracked-glasses/selection.json",
+      "selectionSha256": "bfc58656c440c46e3536cc78f142092c52dbf4e9fa6b3c6d1f94d6a91d3d1cf3"
+    },
+    "divorce-draft": {
+      "source": "output/imagegen/zhe-yi-shen-art-loop-v1/41-divorce-draft/v1/41-divorce-draft-v1.png",
+      "sourceSha256": "a52ec1decac2ccbadfc6fdfa19e24293f7d768c478940bf3500190fe08dbbb31",
+      "logicalSource": "output/imagegen/zhe-yi-shen-art-loop-v1/41-divorce-draft/v1.1/41-divorce-draft-v1.1-overlay-4dir-40x56.png",
+      "logicalSourceSha256": "91aca012763eee7eaee91c3a7f312892dd048cdbd421531b0cb36f019048de12",
+      "prompt": "output/imagegen/zhe-yi-shen-art-loop-v1/41-divorce-draft/v1/prompt-v1.txt",
+      "promptSha256": "61e39be053ee2fc8182f0a1a807f32d71abaff9d73f4147c385ea7b4a4fca982",
+      "selection": "output/imagegen/zhe-yi-shen-art-loop-v1/41-divorce-draft/selection.json",
+      "selectionSha256": "f79ab46975a7cb6aaa43add2f44a65359c01a86ce21e566b905fee5b5143f885"
+    },
+    "goodnight-2h": {
+      "source": "output/imagegen/zhe-yi-shen-art-loop-v1/63-goodnight-2h/v1/source.png",
+      "sourceSha256": "b32c0d1e48f6d1c097ba5fac58e676f4b2e194096ab31a187e520d3472148e20",
+      "logicalSource": "output/imagegen/zhe-yi-shen-art-loop-v1/63-goodnight-2h/v1.4/ground-shadow-overlay-40x56.png",
+      "logicalSourceSha256": "fbf93e8f0467276175dc89e6e0d3540ba91a7f43d76a74ffcb4f8c70e3da1295",
+      "selection": "output/imagegen/zhe-yi-shen-art-loop-v1/63-goodnight-2h/selection.json",
+      "selectionSha256": "b1b8654b6027a9fbe1af66cc3ba697efeb15033b76b0fcacc2258145fac4b624"
+    },
+    "slow-watch": {
+      "source": "output/imagegen/zhe-yi-shen-art-loop-v1/18-slow-watch/v1/source.png",
+      "sourceSha256": "367f97e36e2ff7579864334bd7a7adbe6f0a8f28187d086822b6bf97f5486e04",
+      "logicalSource": "output/imagegen/zhe-yi-shen-art-loop-v1/18-slow-watch/v1.1/freeze-overlay-4action-4dir-40x56.png",
+      "logicalSourceSha256": "6688a4af0028324c31744bbacbfb10e491c8333289fac7e66194456d7907be95",
+      "prompt": "output/imagegen/zhe-yi-shen-art-loop-v1/18-slow-watch/v1.1/prompt.txt",
+      "promptSha256": "0579c0c4447f6d2826ad2fb909490a703ec33f997e94270ade513551c99bb1c6",
+      "selection": "output/imagegen/zhe-yi-shen-art-loop-v1/18-slow-watch/selection.json",
+      "selectionSha256": "8889e020c3cd1feb5597beabfb138c749a7db676661678f9f69f42b7f94b0c93"
+    },
+    "broken-spine": {
+      "source": "output/imagegen/zhe-yi-shen-art-loop-v1/22-broken-spine/v2.1/source.png",
+      "sourceSha256": "7776bd55fde8745275f9432094b3a4f73f8aef38eea51f2c06000686b8d8b8a3",
+      "logicalSource": "output/imagegen/zhe-yi-shen-art-loop-v1/22-broken-spine/v2.1/old-scar-decal-4action-4dir-40x56.png",
+      "logicalSourceSha256": "e984a2ce3e20066f950ff146d0a55517a55e8066b923bb784aad645ea8c63d6d",
+      "prompt": "output/imagegen/zhe-yi-shen-art-loop-v1/22-broken-spine/v2.1/prompt.txt",
+      "promptSha256": "9768313045a643092a5bf0f8af44a3603509a002575ad7c12f9b376d339766cb",
+      "selection": "output/imagegen/zhe-yi-shen-art-loop-v1/22-broken-spine/selection.json",
+      "selectionSha256": "d215ee811b612b0c350ff18e8ca29dc03222898e1e175b0f5d017fba0ede2cf9"
+    },
+    "momo-avatar": {
+      "source": "output/imagegen/zhe-yi-shen-art-loop-v1/60-momo-avatar/v2.1/source.png",
+      "sourceSha256": "925e1d5a8ef56ee261d081a12b06acde8688c3636b40475b220a987bf534b6e4",
+      "safeSource": "output/imagegen/zhe-yi-shen-art-loop-v1/60-momo-avatar/v2.1/safe-headpiece-overlay-40x56.png",
+      "safeSourceSha256": "0bab4f9b65f393d411a818d08d37cb7cef4efce991cb80f584a6ee2e869610b9",
+      "threatenedSource": "output/imagegen/zhe-yi-shen-art-loop-v1/60-momo-avatar/v2.1/threatened-headpiece-overlay-40x56.png",
+      "threatenedSourceSha256": "0dff72d2495e1c4a2f5ccf109bd73e8a494f2201ac83e930a8359a5b1f52e6e9",
+      "selection": "output/imagegen/zhe-yi-shen-art-loop-v1/60-momo-avatar/selection.json",
+      "selectionSha256": "d1f8be7b7e8c17a50197861289a6848ff95abf509eaa24c73f0361ab7353d81d"
+    },
+    "eye-exercise": {
+      "source": "output/imagegen/zhe-yi-shen-art-loop-v1/67-eye-exercise/v1/source.png",
+      "sourceSha256": "354a5d2a0a6590904e09d4fded69e54b6b3c9165ece15f856f8d0596cb6b8dbf",
+      "logicalSource": "output/imagegen/zhe-yi-shen-art-loop-v1/67-eye-exercise/v1/press-overlay-4action-4dir-40x56.png",
+      "logicalSourceSha256": "859973bf5619420be63c9def42337ae161d926eaf767d7030ca4b28e38618acf",
+      "prompt": "scripts/image2/art-loop-v1/67-eye-exercise/prompt-v1.txt",
+      "promptSha256": "9e6a127ddf7f094ac8036ca7ee4d0f5095f56ea1c8cb3b027c6adb048e28713e",
+      "selection": "output/imagegen/zhe-yi-shen-art-loop-v1/67-eye-exercise/selection.json",
+      "selectionSha256": "4638158026ce36839c978a160b8ba37b6205f80515456d81b256cfe7f1795670"
+    },
+    "server-shutdown": {
+      "source": "output/imagegen/zhe-yi-shen-art-loop-v1/71-server-shutdown/v1/source.png",
+      "sourceSha256": "aaa055804ea615626270076ba3efd2afb8a8371474b14822c3da03404004e002",
+      "standbySource": "output/imagegen/zhe-yi-shen-art-loop-v1/71-server-shutdown/v1/shutdown-standby-overlay-40x56.png",
+      "standbySourceSha256": "6011e6932fb5de13ebc1f0d700ea52ee8cca0682749c1bc4729fb0b8b5cfc191",
+      "triggerSource": "output/imagegen/zhe-yi-shen-art-loop-v1/71-server-shutdown/v1/shutdown-trigger-overlay-4f-4dir.png",
+      "triggerSourceSha256": "fcfdb6431c19af22dd6c38a7887a09d8adb29faf7cfcf36bb409c3c4f8ec1cfe",
+      "prompt": "scripts/image2/art-loop-v1/71-server-shutdown/prompt-trigger-v1-draft.txt",
+      "promptSha256": "eb469cde19778ca2d365137016f0ddde320a48b76d48e1ef45c7382bb506b68b",
+      "selection": "output/imagegen/zhe-yi-shen-art-loop-v1/71-server-shutdown/selection.json",
+      "selectionSha256": "dd5f5636f1b84448cb38d58af764fe18c77b56d1ec0c35474f7df7edce44066b"
+    }
+  },
+  "atlas": "src/assets/items/state-overlays.png",
+  "atlasSha256": "4b61bb1fdf9eb05b95df57a3fe121b3b7329ad8c0c76e6239e8eff5e9be5f08b",
+  "cells": {
+    "rage:front": {
+      "visiblePixels": 74,
+      "colors": 10
+    },
+    "rage:left": {
+      "visiblePixels": 58,
+      "colors": 10
+    },
+    "rage:back": {
+      "visiblePixels": 39,
+      "colors": 10
+    },
+    "rage:right": {
+      "visiblePixels": 46,
+      "colors": 10
+    },
+    "crash:front": {
+      "visiblePixels": 36,
+      "colors": 10
+    },
+    "crash:left": {
+      "visiblePixels": 47,
+      "colors": 10
+    },
+    "crash:back": {
+      "visiblePixels": 26,
+      "colors": 10
+    },
+    "crash:right": {
+      "visiblePixels": 29,
+      "colors": 10
+    },
+    "auto-renew:stub:front": {
+      "visiblePixels": 46,
+      "colors": 8
+    },
+    "auto-renew:stub:left": {
+      "visiblePixels": 46,
+      "colors": 8
+    },
+    "auto-renew:stub:back": {
+      "visiblePixels": 46,
+      "colors": 8
+    },
+    "auto-renew:stub:right": {
+      "visiblePixels": 46,
+      "colors": 8
+    },
+    "auto-renew:two:front": {
+      "visiblePixels": 116,
+      "colors": 8
+    },
+    "auto-renew:two:left": {
+      "visiblePixels": 116,
+      "colors": 8
+    },
+    "auto-renew:two:back": {
+      "visiblePixels": 116,
+      "colors": 8
+    },
+    "auto-renew:two:right": {
+      "visiblePixels": 116,
+      "colors": 8
+    },
+    "auto-renew:three:front": {
+      "visiblePixels": 141,
+      "colors": 8
+    },
+    "auto-renew:three:left": {
+      "visiblePixels": 141,
+      "colors": 8
+    },
+    "auto-renew:three:back": {
+      "visiblePixels": 141,
+      "colors": 8
+    },
+    "auto-renew:three:right": {
+      "visiblePixels": 141,
+      "colors": 8
+    },
+    "auto-renew:four:front": {
+      "visiblePixels": 187,
+      "colors": 8
+    },
+    "auto-renew:four:left": {
+      "visiblePixels": 187,
+      "colors": 8
+    },
+    "auto-renew:four:back": {
+      "visiblePixels": 187,
+      "colors": 8
+    },
+    "auto-renew:four:right": {
+      "visiblePixels": 187,
+      "colors": 8
+    },
+    "shop-freezer:drag:front": {
+      "visiblePixels": 63,
+      "colors": 7
+    },
+    "shop-freezer:drag:left": {
+      "visiblePixels": 64,
+      "colors": 8
+    },
+    "shop-freezer:drag:back": {
+      "visiblePixels": 62,
+      "colors": 8
+    },
+    "shop-freezer:drag:right": {
+      "visiblePixels": 63,
+      "colors": 8
+    },
+    "pregnancy-test:shadow:front": {
+      "visiblePixels": 65,
+      "colors": 2
+    },
+    "pregnancy-test:shadow:left": {
+      "visiblePixels": 61,
+      "colors": 2
+    },
+    "pregnancy-test:shadow:back": {
+      "visiblePixels": 74,
+      "colors": 2
+    },
+    "pregnancy-test:shadow:right": {
+      "visiblePixels": 62,
+      "colors": 2
+    },
+    "pregnancy-test:prop:front": {
+      "visiblePixels": 18,
+      "colors": 9
+    },
+    "pregnancy-test:prop:left": {
+      "visiblePixels": 16,
+      "colors": 8
+    },
+    "pregnancy-test:prop:back": {
+      "visiblePixels": 17,
+      "colors": 9
+    },
+    "pregnancy-test:prop:right": {
+      "visiblePixels": 16,
+      "colors": 9
+    },
+    "cracked-glasses:fitted:front": {
+      "visiblePixels": 21,
+      "colors": 2
+    },
+    "cracked-glasses:fitted:left": {
+      "visiblePixels": 12,
+      "colors": 2
+    },
+    "cracked-glasses:fitted:back": {
+      "visiblePixels": 2,
+      "colors": 1
+    },
+    "cracked-glasses:fitted:right": {
+      "visiblePixels": 10,
+      "colors": 1
+    },
+    "divorce-draft:fitted:front": {
+      "visiblePixels": 14,
+      "colors": 4
+    },
+    "divorce-draft:fitted:left": {
+      "visiblePixels": 2,
+      "colors": 2
+    },
+    "divorce-draft:fitted:back": {
+      "visiblePixels": 0,
+      "colors": 0
+    },
+    "divorce-draft:fitted:right": {
+      "visiblePixels": 2,
+      "colors": 2
+    },
+    "goodnight-2h:shadow:front": {
+      "visiblePixels": 64,
+      "colors": 4
+    },
+    "goodnight-2h:shadow:left": {
+      "visiblePixels": 40,
+      "colors": 4
+    },
+    "goodnight-2h:shadow:back": {
+      "visiblePixels": 64,
+      "colors": 4
+    },
+    "goodnight-2h:shadow:right": {
+      "visiblePixels": 39,
+      "colors": 4
+    },
+    "slow-watch:freeze-idle:front": {
+      "visiblePixels": 4,
+      "colors": 3
+    },
+    "slow-watch:freeze-idle:left": {
+      "visiblePixels": 4,
+      "colors": 3
+    },
+    "slow-watch:freeze-idle:back": {
+      "visiblePixels": 4,
+      "colors": 3
+    },
+    "slow-watch:freeze-idle:right": {
+      "visiblePixels": 4,
+      "colors": 3
+    },
+    "slow-watch:freeze-walk:front": {
+      "visiblePixels": 4,
+      "colors": 3
+    },
+    "slow-watch:freeze-walk:left": {
+      "visiblePixels": 4,
+      "colors": 3
+    },
+    "slow-watch:freeze-walk:back": {
+      "visiblePixels": 4,
+      "colors": 3
+    },
+    "slow-watch:freeze-walk:right": {
+      "visiblePixels": 4,
+      "colors": 3
+    },
+    "slow-watch:freeze-attack:front": {
+      "visiblePixels": 4,
+      "colors": 3
+    },
+    "slow-watch:freeze-attack:left": {
+      "visiblePixels": 4,
+      "colors": 3
+    },
+    "slow-watch:freeze-attack:back": {
+      "visiblePixels": 4,
+      "colors": 3
+    },
+    "slow-watch:freeze-attack:right": {
+      "visiblePixels": 4,
+      "colors": 3
+    },
+    "slow-watch:freeze-hurt:front": {
+      "visiblePixels": 4,
+      "colors": 3
+    },
+    "slow-watch:freeze-hurt:left": {
+      "visiblePixels": 4,
+      "colors": 3
+    },
+    "slow-watch:freeze-hurt:back": {
+      "visiblePixels": 4,
+      "colors": 3
+    },
+    "slow-watch:freeze-hurt:right": {
+      "visiblePixels": 4,
+      "colors": 3
+    },
+    "broken-spine:scar-idle:front": {
+      "visiblePixels": 0,
+      "colors": 0
+    },
+    "broken-spine:scar-idle:left": {
+      "visiblePixels": 2,
+      "colors": 2
+    },
+    "broken-spine:scar-idle:back": {
+      "visiblePixels": 3,
+      "colors": 2
+    },
+    "broken-spine:scar-idle:right": {
+      "visiblePixels": 2,
+      "colors": 2
+    },
+    "broken-spine:scar-walk:front": {
+      "visiblePixels": 0,
+      "colors": 0
+    },
+    "broken-spine:scar-walk:left": {
+      "visiblePixels": 2,
+      "colors": 2
+    },
+    "broken-spine:scar-walk:back": {
+      "visiblePixels": 3,
+      "colors": 2
+    },
+    "broken-spine:scar-walk:right": {
+      "visiblePixels": 2,
+      "colors": 2
+    },
+    "broken-spine:scar-attack:front": {
+      "visiblePixels": 0,
+      "colors": 0
+    },
+    "broken-spine:scar-attack:left": {
+      "visiblePixels": 2,
+      "colors": 2
+    },
+    "broken-spine:scar-attack:back": {
+      "visiblePixels": 3,
+      "colors": 2
+    },
+    "broken-spine:scar-attack:right": {
+      "visiblePixels": 2,
+      "colors": 2
+    },
+    "broken-spine:scar-hurt:front": {
+      "visiblePixels": 0,
+      "colors": 0
+    },
+    "broken-spine:scar-hurt:left": {
+      "visiblePixels": 3,
+      "colors": 2
+    },
+    "broken-spine:scar-hurt:back": {
+      "visiblePixels": 4,
+      "colors": 2
+    },
+    "broken-spine:scar-hurt:right": {
+      "visiblePixels": 3,
+      "colors": 2
+    },
+    "momo-avatar:safe:front": {
+      "visiblePixels": 348,
+      "colors": 6
+    },
+    "momo-avatar:safe:left": {
+      "visiblePixels": 276,
+      "colors": 6
+    },
+    "momo-avatar:safe:back": {
+      "visiblePixels": 314,
+      "colors": 5
+    },
+    "momo-avatar:safe:right": {
+      "visiblePixels": 275,
+      "colors": 6
+    },
+    "momo-avatar:threatened:front": {
+      "visiblePixels": 346,
+      "colors": 6
+    },
+    "momo-avatar:threatened:left": {
+      "visiblePixels": 276,
+      "colors": 5
+    },
+    "momo-avatar:threatened:back": {
+      "visiblePixels": 315,
+      "colors": 5
+    },
+    "momo-avatar:threatened:right": {
+      "visiblePixels": 274,
+      "colors": 6
+    },
+    "eye-exercise:press-idle:front": {
+      "visiblePixels": 129,
+      "colors": 5
+    },
+    "eye-exercise:press-idle:left": {
+      "visiblePixels": 81,
+      "colors": 5
+    },
+    "eye-exercise:press-idle:back": {
+      "visiblePixels": 67,
+      "colors": 3
+    },
+    "eye-exercise:press-idle:right": {
+      "visiblePixels": 82,
+      "colors": 5
+    },
+    "eye-exercise:press-walk:front": {
+      "visiblePixels": 129,
+      "colors": 5
+    },
+    "eye-exercise:press-walk:left": {
+      "visiblePixels": 81,
+      "colors": 5
+    },
+    "eye-exercise:press-walk:back": {
+      "visiblePixels": 67,
+      "colors": 3
+    },
+    "eye-exercise:press-walk:right": {
+      "visiblePixels": 82,
+      "colors": 5
+    },
+    "eye-exercise:press-attack:front": {
+      "visiblePixels": 129,
+      "colors": 5
+    },
+    "eye-exercise:press-attack:left": {
+      "visiblePixels": 81,
+      "colors": 5
+    },
+    "eye-exercise:press-attack:back": {
+      "visiblePixels": 67,
+      "colors": 3
+    },
+    "eye-exercise:press-attack:right": {
+      "visiblePixels": 82,
+      "colors": 5
+    },
+    "eye-exercise:press-hurt:front": {
+      "visiblePixels": 127,
+      "colors": 5
+    },
+    "eye-exercise:press-hurt:left": {
+      "visiblePixels": 76,
+      "colors": 5
+    },
+    "eye-exercise:press-hurt:back": {
+      "visiblePixels": 86,
+      "colors": 3
+    },
+    "eye-exercise:press-hurt:right": {
+      "visiblePixels": 77,
+      "colors": 5
+    },
+    "server-shutdown:standby:front": {
+      "visiblePixels": 45,
+      "colors": 3
+    },
+    "server-shutdown:standby:left": {
+      "visiblePixels": 45,
+      "colors": 4
+    },
+    "server-shutdown:standby:back": {
+      "visiblePixels": 45,
+      "colors": 3
+    },
+    "server-shutdown:standby:right": {
+      "visiblePixels": 44,
+      "colors": 3
+    },
+    "server-shutdown:appear:front": {
+      "visiblePixels": 44,
+      "colors": 3
+    },
+    "server-shutdown:appear:left": {
+      "visiblePixels": 26,
+      "colors": 3
+    },
+    "server-shutdown:appear:back": {
+      "visiblePixels": 166,
+      "colors": 5
+    },
+    "server-shutdown:appear:right": {
+      "visiblePixels": 21,
+      "colors": 4
+    },
+    "server-shutdown:leap:front": {
+      "visiblePixels": 43,
+      "colors": 4
+    },
+    "server-shutdown:leap:left": {
+      "visiblePixels": 21,
+      "colors": 3
+    },
+    "server-shutdown:leap:back": {
+      "visiblePixels": 160,
+      "colors": 5
+    },
+    "server-shutdown:leap:right": {
+      "visiblePixels": 11,
+      "colors": 5
+    },
+    "server-shutdown:guard:front": {
+      "visiblePixels": 44,
+      "colors": 3
+    },
+    "server-shutdown:guard:left": {
+      "visiblePixels": 25,
+      "colors": 3
+    },
+    "server-shutdown:guard:back": {
+      "visiblePixels": 156,
+      "colors": 5
+    },
+    "server-shutdown:guard:right": {
+      "visiblePixels": 24,
+      "colors": 3
+    },
+    "server-shutdown:disconnect:front": {
+      "visiblePixels": 45,
+      "colors": 3
+    },
+    "server-shutdown:disconnect:left": {
+      "visiblePixels": 21,
+      "colors": 3
+    },
+    "server-shutdown:disconnect:back": {
+      "visiblePixels": 163,
+      "colors": 5
+    },
+    "server-shutdown:disconnect:right": {
+      "visiblePixels": 11,
+      "colors": 5
+    }
+  }
+}

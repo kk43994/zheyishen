@@ -8,7 +8,7 @@ export const HERO_STYLE1_FRAME_HEIGHT = 56;
 export const HERO_STYLE1_MOTION_FRAMES = {
   idle: 2,
   walk: 4,
-  attack: 2,
+  attack: 4,
   hurt: 2,
 } as const satisfies Record<HeroMotion, number>;
 
@@ -33,11 +33,25 @@ const RAINCOAT_URLS = {
   hurt: new URL('./assets/hero-style1-profiles/raincoat-hurt.png', import.meta.url).href,
 } as const satisfies Record<HeroMotion, string>;
 
+const UNIFORM_URLS = {
+  idle: new URL('./assets/hero-style1-profiles/uniform-idle.png', import.meta.url).href,
+  walk: new URL('./assets/hero-style1-profiles/uniform-walk.png', import.meta.url).href,
+  attack: new URL('./assets/hero-style1-profiles/uniform-attack.png', import.meta.url).href,
+  hurt: new URL('./assets/hero-style1-profiles/uniform-hurt.png', import.meta.url).href,
+} as const satisfies Record<HeroMotion, string>;
+
 const HAIR_MASK_URLS = {
   idle: new URL('./assets/hero-style1-profiles/hair-mask-idle.png', import.meta.url).href,
   walk: new URL('./assets/hero-style1-profiles/hair-mask-walk.png', import.meta.url).href,
   attack: new URL('./assets/hero-style1-profiles/hair-mask-attack.png', import.meta.url).href,
   hurt: new URL('./assets/hero-style1-profiles/hair-mask-hurt.png', import.meta.url).href,
+} as const satisfies Record<HeroMotion, string>;
+
+const PART_MASK_URLS = {
+  idle: new URL('./assets/hero-style1-profiles/part-mask-idle.png', import.meta.url).href,
+  walk: new URL('./assets/hero-style1-profiles/part-mask-walk.png', import.meta.url).href,
+  attack: new URL('./assets/hero-style1-profiles/part-mask-attack.png', import.meta.url).href,
+  hurt: new URL('./assets/hero-style1-profiles/part-mask-hurt.png', import.meta.url).href,
 } as const satisfies Record<HeroMotion, string>;
 
 const MOTIONS = Object.keys(ATLAS_URLS) as HeroMotion[];
@@ -58,7 +72,9 @@ const PROFILE_COUNT = Object.keys(PROFILE_STATURE_INDEX).length * PROFILE_BUILD_
 export class HeroStyle1Atlas {
   private images = new Map<HeroMotion, HTMLImageElement>();
   private raincoatImages = new Map<HeroMotion, HTMLImageElement>();
+  private uniformImages = new Map<HeroMotion, HTMLImageElement>();
   private hairMaskImages = new Map<HeroMotion, HTMLImageElement>();
+  private partMaskImages = new Map<HeroMotion, HTMLImageElement>();
   private frameCache = new Map<string, HTMLCanvasElement>();
   private failed = new Set<string>();
   private loading: Promise<void> | null = null;
@@ -95,6 +111,16 @@ export class HeroStyle1Atlas {
     return this.sliceFamily('raincoat', this.raincoatImages, motion, facing, frame, stature, build);
   }
 
+  sliceUniform(
+    motion: HeroMotion,
+    facing: HeroFacing,
+    frame: number,
+    stature: BodyStature = 'average',
+    build: BodyBuild = 'average',
+  ): HTMLCanvasElement | null {
+    return this.sliceFamily('uniform', this.uniformImages, motion, facing, frame, stature, build);
+  }
+
   sliceHairMask(
     motion: HeroMotion,
     facing: HeroFacing,
@@ -103,6 +129,16 @@ export class HeroStyle1Atlas {
     build: BodyBuild = 'average',
   ): HTMLCanvasElement | null {
     return this.sliceFamily('hair-mask', this.hairMaskImages, motion, facing, frame, stature, build);
+  }
+
+  slicePartMask(
+    motion: HeroMotion,
+    facing: HeroFacing,
+    frame: number,
+    stature: BodyStature = 'average',
+    build: BodyBuild = 'average',
+  ): HTMLCanvasElement | null {
+    return this.sliceFamily('part-mask', this.partMaskImages, motion, facing, frame, stature, build);
   }
 
   private sliceFamily(
@@ -150,7 +186,9 @@ export class HeroStyle1Atlas {
     this.loadGeneration += 1;
     this.images.clear();
     this.raincoatImages.clear();
+    this.uniformImages.clear();
     this.hairMaskImages.clear();
+    this.partMaskImages.clear();
     this.frameCache.clear();
     this.failed.clear();
     this.loading = null;
@@ -158,15 +196,19 @@ export class HeroStyle1Atlas {
   }
 
   private async load(generation: number): Promise<void> {
-    const [entries, raincoatEntries, hairMaskEntries] = await Promise.all([
+    const [entries, raincoatEntries, uniformEntries, hairMaskEntries, partMaskEntries] = await Promise.all([
       this.loadFamily(ATLAS_URLS, 'hero'),
       this.loadFamily(RAINCOAT_URLS, 'raincoat'),
+      this.loadFamily(UNIFORM_URLS, 'uniform'),
       this.loadFamily(HAIR_MASK_URLS, 'hair-mask'),
+      this.loadFamily(PART_MASK_URLS, 'part-mask'),
     ]);
     if (generation !== this.loadGeneration) return;
     this.images = new Map(entries);
     this.raincoatImages = new Map(raincoatEntries);
+    this.uniformImages = new Map(uniformEntries);
     this.hairMaskImages = new Map(hairMaskEntries);
+    this.partMaskImages = new Map(partMaskEntries);
     this.loaded = this.images.size > 0;
     if (!this.loaded) console.warn('主角像素图集全部不可用，继续使用程序化人物。');
     this.loading = null;

@@ -1,0 +1,3111 @@
+{
+  "version": 1,
+  "model": "gpt-image-2",
+  "route": "DMIT sub2 owner pool",
+  "cell": {
+    "width": 32,
+    "height": 40
+  },
+  "directions": [
+    "front",
+    "left",
+    "back",
+    "right"
+  ],
+  "rows": 77,
+  "index": {
+    "loose-button": 0,
+    "wooden-sword": 1,
+    "red-workbook": 2,
+    "stone-schoolbag": 3,
+    "bleach-powder": 4,
+    "eyebrow-razor": 5,
+    "od-pill": 6,
+    "front-desk-letter": 7,
+    "cracked-glasses": 8,
+    "small-uniform": 9,
+    "only-key": 10,
+    "first-salary": 11,
+    "nameless-tie": 12,
+    "fathers-raincoat": 13,
+    "unsent-phone": 14,
+    "baby-tooth": 15,
+    "revoked-badge": 16,
+    "slow-watch": 17,
+    "missing-photo": 18,
+    "white-bottle": 19,
+    "empty-frame": 20,
+    "broken-spine": 21,
+    "spent-decade": 22,
+    "held-pee": 23,
+    "flash-escape": 24,
+    "class-break": 25,
+    "last-page": 26,
+    "five-ha": 27,
+    "red-packet": 28,
+    "snow-screen": 29,
+    "marble": 30,
+    "always-crying": 31,
+    "three-day-visible": 32,
+    "read-3am": 33,
+    "retracted-voice": 34,
+    "takeout-3am": 35,
+    "auto-renew": 36,
+    "bargain-link": 37,
+    "mineral-water": 38,
+    "group-dad": 39,
+    "divorce-draft": 40,
+    "checkup-arrows": 41,
+    "shared-powerbank": 42,
+    "third-pill": 43,
+    "loan-contract": 44,
+    "name-sold": 45,
+    "moms-bowl": 46,
+    "ruma-msg": 47,
+    "held-elevator": 48,
+    "old-door-lock": 49,
+    "drank-for-boss": 50,
+    "hair-in-takeout": 51,
+    "unwashed-pillow": 52,
+    "sock-cigs": 53,
+    "pregnancy-test": 54,
+    "gym-card": 55,
+    "funeral-photo": 56,
+    "typing-indicator": 57,
+    "year-report": 58,
+    "momo-avatar": 59,
+    "ai-chat": 60,
+    "streak-1847": 61,
+    "goodnight-2h": 62,
+    "friend-verify": 63,
+    "summer-run": 64,
+    "one-more-game": 65,
+    "eye-exercise": 66,
+    "card-binder": 67,
+    "abstract-lv10": 68,
+    "shop-freezer": 69,
+    "server-shutdown": 70,
+    "painless-night": 71,
+    "ktv-song": 72,
+    "breath-on-glass": 73,
+    "admission-notice": 74,
+    "iphone-17-pro-max": 75,
+    "fathers-chart": 76
+  },
+  "processed": 76,
+  "missing": [],
+  "items": [
+    {
+      "index": 0,
+      "id": "loose-button",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/01-loose-button.png",
+      "sourceSha256": "096b18c59ae6eaa58f80700a847cff12fa7d080839f604ebfa53a434f09785b9",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 5,
+          "height": 5,
+          "colors": 8
+        },
+        "left": {
+          "width": 4,
+          "height": 6,
+          "colors": 8
+        },
+        "back": {
+          "width": 5,
+          "height": 5,
+          "colors": 8
+        },
+        "right": {
+          "width": 4,
+          "height": 6,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 0,
+      "spriteMax": [
+        5,
+        6
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 1,
+      "id": "wooden-sword",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/02-wooden-sword.png",
+      "sourceSha256": "2ab94eb4df252f9b6fe69d964941fd779abfc319a444512b8cb7619f655b27d9",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 11,
+          "height": 28,
+          "colors": 8
+        },
+        "left": {
+          "width": 5,
+          "height": 28,
+          "colors": 8
+        },
+        "back": {
+          "width": 12,
+          "height": 28,
+          "colors": 8
+        },
+        "right": {
+          "width": 4,
+          "height": 28,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 1,
+      "spriteMax": [
+        14,
+        28
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 2,
+      "id": "red-workbook",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/03-red-workbook.png",
+      "sourceSha256": "d1a84e2e7a964abe9263027b2d42bdb264c0074ad6dcd12e0367bbb66735b982",
+      "production": [
+        "rigid",
+        "projectile",
+        "decal"
+      ],
+      "directions": {
+        "front": {
+          "width": 18,
+          "height": 23,
+          "colors": 8
+        },
+        "left": {
+          "width": 9,
+          "height": 24,
+          "colors": 8
+        },
+        "back": {
+          "width": 18,
+          "height": 22,
+          "colors": 8
+        },
+        "right": {
+          "width": 10,
+          "height": 24,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 2,
+      "spriteMax": [
+        18,
+        24
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 3,
+      "id": "stone-schoolbag",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/04-stone-schoolbag.png",
+      "sourceSha256": "e3f55ffaac6950471079e724bdad36ebfb5f9f0779257490871de6cc3a70f5ef",
+      "production": [
+        "rigid",
+        "morph",
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 22,
+          "height": 27,
+          "colors": 8
+        },
+        "left": {
+          "width": 22,
+          "height": 25,
+          "colors": 8
+        },
+        "back": {
+          "width": 22,
+          "height": 27,
+          "colors": 8
+        },
+        "right": {
+          "width": 22,
+          "height": 25,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 3,
+      "spriteMax": [
+        22,
+        28
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 4,
+      "id": "bleach-powder",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/05-bleach-powder.png",
+      "sourceSha256": "5814f35fd271476da8f2a31ee21fbfdf3b84f4fd2376976e5bf26dbfd308395c",
+      "production": [
+        "decal"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 11,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 14,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 14,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 14,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 4,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 5,
+      "id": "eyebrow-razor",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/06-eyebrow-razor.png",
+      "sourceSha256": "d945736a9fdf0dc4d8ed1a2c711b4c20c3d8fda3d96b98a959bc9342e60e7003",
+      "production": [
+        "decal",
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 12,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 5,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 4,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 5,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 5,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 6,
+      "id": "od-pill",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/07-od-pill.png",
+      "sourceSha256": "01d86da72a3936cb8c649dda627ee755dbc877ef212f63c26ad28b46b4955860",
+      "production": [
+        "decal",
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 10,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 9,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 13,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 9,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 6,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 7,
+      "id": "front-desk-letter",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/08-front-desk-letter.png",
+      "sourceSha256": "36dbda3d04b25f8e949a9019f68411c4a132c93a261358a9a921c17216fe39ec",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 6,
+          "height": 8,
+          "colors": 8
+        },
+        "left": {
+          "width": 2,
+          "height": 8,
+          "colors": 8
+        },
+        "back": {
+          "width": 6,
+          "height": 8,
+          "colors": 8
+        },
+        "right": {
+          "width": 9,
+          "height": 7,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 7,
+      "spriteMax": [
+        9,
+        8
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 8,
+      "id": "cracked-glasses",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/09-cracked-glasses.png",
+      "sourceSha256": "bff0dcd79a3fe875328f7dd8af1e3ba9d8ddca104bf4dcf1dc581a77748de74c",
+      "production": [
+        "fitted",
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 18,
+          "height": 6,
+          "colors": 8
+        },
+        "left": {
+          "width": 18,
+          "height": 7,
+          "colors": 8
+        },
+        "back": {
+          "width": 18,
+          "height": 10,
+          "colors": 8
+        },
+        "right": {
+          "width": 18,
+          "height": 7,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 8,
+      "spriteMax": [
+        18,
+        10
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 9,
+      "id": "small-uniform",
+      "status": "custom-fitted-uniform-v1",
+      "directions": [
+        "front",
+        "left",
+        "back",
+        "right"
+      ]
+    },
+    {
+      "index": 10,
+      "id": "only-key",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/11-only-key.png",
+      "sourceSha256": "6c0004e957f27046614172f4c6de895f8080a9cb01ffc42fb4c9fc23f2b20ac4",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 3,
+          "height": 14,
+          "colors": 8
+        },
+        "left": {
+          "width": 2,
+          "height": 14,
+          "colors": 7
+        },
+        "back": {
+          "width": 3,
+          "height": 14,
+          "colors": 8
+        },
+        "right": {
+          "width": 2,
+          "height": 14,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 10,
+      "spriteMax": [
+        12,
+        14
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 11,
+      "id": "first-salary",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/12-first-salary.png",
+      "sourceSha256": "83785814ee28bffb691c1ca6877cb3444f622300f74df3c8b204a598a890125b",
+      "production": [
+        "rigid"
+      ],
+      "directions": {
+        "front": {
+          "width": 10,
+          "height": 6,
+          "colors": 8
+        },
+        "left": {
+          "width": 2,
+          "height": 9,
+          "colors": 8
+        },
+        "back": {
+          "width": 10,
+          "height": 6,
+          "colors": 8
+        },
+        "right": {
+          "width": 2,
+          "height": 9,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 11,
+      "spriteMax": [
+        10,
+        9
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 12,
+      "id": "nameless-tie",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/13-nameless-tie.png",
+      "sourceSha256": "468bc8d339961f646f53a11fbbb2e4c6feef98e1f3c1498496b4b00a1e22ab28",
+      "production": [
+        "fitted"
+      ],
+      "directions": {
+        "front": {
+          "width": 8,
+          "height": 14,
+          "colors": 8
+        },
+        "left": {
+          "width": 7,
+          "height": 14,
+          "colors": 8
+        },
+        "back": {
+          "width": 10,
+          "height": 4,
+          "colors": 8
+        },
+        "right": {
+          "width": 7,
+          "height": 14,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 12,
+      "spriteMax": [
+        10,
+        14
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 13,
+      "id": "fathers-raincoat",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/14-fathers-raincoat.png",
+      "sourceSha256": "e629cf4f0d3f1cb1012fc67518d9d1c6f23b8bb4f5bf29cc028a757aca9e9f82",
+      "production": [
+        "fitted",
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 12,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 9,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 12,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 9,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 13,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "custom-fitted",
+      "reviewNote": null
+    },
+    {
+      "index": 14,
+      "id": "unsent-phone",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/15-unsent-phone.png",
+      "sourceSha256": "6565840102c3d7593389c6409b6084657ad7c4b18fbd2ccb6901d13a234c08d9",
+      "production": [
+        "rigid"
+      ],
+      "directions": {
+        "front": {
+          "width": 6,
+          "height": 12,
+          "colors": 8
+        },
+        "left": {
+          "width": 4,
+          "height": 12,
+          "colors": 8
+        },
+        "back": {
+          "width": 6,
+          "height": 12,
+          "colors": 8
+        },
+        "right": {
+          "width": 4,
+          "height": 12,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 14,
+      "spriteMax": [
+        8,
+        12
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 15,
+      "id": "baby-tooth",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/16-baby-tooth.png",
+      "sourceSha256": "d1bf501569c58c86f0b4c14e75f8381d17be23078d074e7eb177f2697d901bdb",
+      "production": [
+        "rigid",
+        "aura"
+      ],
+      "directions": {
+        "front": {
+          "width": 10,
+          "height": 10,
+          "colors": 8
+        },
+        "left": {
+          "width": 10,
+          "height": 8,
+          "colors": 8
+        },
+        "back": {
+          "width": 10,
+          "height": 6,
+          "colors": 8
+        },
+        "right": {
+          "width": 10,
+          "height": 8,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 15,
+      "spriteMax": [
+        10,
+        14
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 16,
+      "id": "revoked-badge",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/17-revoked-badge.png",
+      "sourceSha256": "e486e753ccd775eec42f7e0925ae1a85c2143f6f480fd8ba58e6f3afe05e8e7f",
+      "production": [
+        "fitted"
+      ],
+      "directions": {
+        "front": {
+          "width": 7,
+          "height": 14,
+          "colors": 8
+        },
+        "left": {
+          "width": 2,
+          "height": 14,
+          "colors": 8
+        },
+        "back": {
+          "width": 7,
+          "height": 14,
+          "colors": 8
+        },
+        "right": {
+          "width": 2,
+          "height": 14,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 16,
+      "spriteMax": [
+        12,
+        14
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 17,
+      "id": "slow-watch",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/18-slow-watch.png",
+      "sourceSha256": "341c5dfd05fadf92f81f3a954fa8d7ed78bfa91e47676b000b7b9a7667c0e5d4",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 6,
+          "height": 10,
+          "colors": 8
+        },
+        "left": {
+          "width": 8,
+          "height": 10,
+          "colors": 8
+        },
+        "back": {
+          "width": 6,
+          "height": 10,
+          "colors": 8
+        },
+        "right": {
+          "width": 8,
+          "height": 10,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 17,
+      "spriteMax": [
+        8,
+        10
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 18,
+      "id": "missing-photo",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/19-missing-photo.png",
+      "sourceSha256": "4eeb29c1cc07a249ca89df6e6b5b1368531ab50908ac0f711ba3dcb56cdc79db",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 8,
+          "height": 7,
+          "colors": 8
+        },
+        "left": {
+          "width": 2,
+          "height": 9,
+          "colors": 7
+        },
+        "back": {
+          "width": 8,
+          "height": 7,
+          "colors": 8
+        },
+        "right": {
+          "width": 2,
+          "height": 9,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 18,
+      "spriteMax": [
+        8,
+        9
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 19,
+      "id": "white-bottle",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/20-white-bottle.png",
+      "sourceSha256": "0dfc778115f9638c2da7886313cfe0e78e054ec5890c83ec2faa3b12ba90feec",
+      "production": [
+        "rigid"
+      ],
+      "directions": {
+        "front": {
+          "width": 6,
+          "height": 11,
+          "colors": 8
+        },
+        "left": {
+          "width": 6,
+          "height": 11,
+          "colors": 8
+        },
+        "back": {
+          "width": 5,
+          "height": 11,
+          "colors": 8
+        },
+        "right": {
+          "width": 6,
+          "height": 11,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 19,
+      "spriteMax": [
+        8,
+        11
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 20,
+      "id": "empty-frame",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/21-empty-frame.png",
+      "sourceSha256": "8c37c65164deb218a5a87dbc9a29d77b32da66aabf3399a11c6c8608ba56a5e2",
+      "production": [
+        "aura",
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 8,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 13,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 7,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 20,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 21,
+      "id": "broken-spine",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/22-broken-spine.png",
+      "sourceSha256": "9b55d63266925073e7515838755095d11e0167e1a1df346da962f3bb6fed5e87",
+      "production": [
+        "morph",
+        "decal"
+      ],
+      "directions": {
+        "front": {
+          "width": 13,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 15,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 8,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 15,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 21,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 22,
+      "id": "spent-decade",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/23-spent-decade.png",
+      "sourceSha256": "85024f7f5fdf57444933e666fe0a78b5002577d9695b2393b8c8e521803707fa",
+      "production": [
+        "aura",
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 14,
+          "colors": 8
+        },
+        "left": {
+          "width": 13,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 14,
+          "colors": 8
+        },
+        "right": {
+          "width": 11,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 22,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 23,
+      "id": "held-pee",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/24-held-pee.png",
+      "sourceSha256": "f6d5a6de83106f7ca10c33e68d02d9aff6549af0b5c9575aeb7ff85da4d17196",
+      "production": [
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 13,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 8,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 11,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 8,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 23,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 24,
+      "id": "flash-escape",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/25-flash-escape.png",
+      "sourceSha256": "04760f448375135757a7ada2bc66fa73fb91a049b1a3c941021ab3d01748b6f1",
+      "production": [
+        "event"
+      ],
+      "directions": {
+        "front": {
+          "width": 9,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 11,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 5,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 14,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 24,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 25,
+      "id": "class-break",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/26-class-break.png",
+      "sourceSha256": "955da127071ec49eaea2055005e362026f595d92262018f54048e8d0dae96ddc",
+      "production": [
+        "aura"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 3,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 7,
+          "colors": 8
+        },
+        "back": {
+          "width": 13,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 9,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 25,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 26,
+      "id": "last-page",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/27-last-page.png",
+      "sourceSha256": "9dd96b3c968fb334e1ca8379c270a006436d977a20a8028e78b6ab65e0618307",
+      "production": [
+        "rigid"
+      ],
+      "directions": {
+        "front": {
+          "width": 10,
+          "height": 13,
+          "colors": 8
+        },
+        "left": {
+          "width": 4,
+          "height": 14,
+          "colors": 8
+        },
+        "back": {
+          "width": 10,
+          "height": 14,
+          "colors": 8
+        },
+        "right": {
+          "width": 3,
+          "height": 14,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 26,
+      "spriteMax": [
+        10,
+        14
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 27,
+      "id": "five-ha",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/28-five-ha.png",
+      "sourceSha256": "be05a1edf01818753e3c6b897ed0062580ec0dbb52e4f803514469bb491eee4d",
+      "production": [
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 16,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 16,
+          "colors": 8
+        },
+        "right": {
+          "width": 13,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 27,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 28,
+      "id": "red-packet",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/29-red-packet.png",
+      "sourceSha256": "7425bae8a176aec5fb4fbf42e361b36eeb16a52e7ed9d4ab14289c75550ba7c9",
+      "production": [
+        "rigid"
+      ],
+      "directions": {
+        "front": {
+          "width": 12,
+          "height": 12,
+          "colors": 8
+        },
+        "left": {
+          "width": 7,
+          "height": 14,
+          "colors": 8
+        },
+        "back": {
+          "width": 12,
+          "height": 12,
+          "colors": 8
+        },
+        "right": {
+          "width": 7,
+          "height": 14,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 28,
+      "spriteMax": [
+        12,
+        14
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 29,
+      "id": "snow-screen",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/30-snow-screen.png",
+      "sourceSha256": "fa03f27a6f2cc941b1cd97d4a469ab93f6f2ab455132a94553f53df1ea07125f",
+      "production": [
+        "event",
+        "decal"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 12,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 10,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 8,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 14,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 29,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 30,
+      "id": "marble",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/31-marble.png",
+      "sourceSha256": "6ef00b8b0f875b07bbc142b5237723a70b6d638c6e3a2426fee8468c00636ca8",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 5,
+          "height": 5,
+          "colors": 8
+        },
+        "left": {
+          "width": 5,
+          "height": 5,
+          "colors": 8
+        },
+        "back": {
+          "width": 5,
+          "height": 5,
+          "colors": 8
+        },
+        "right": {
+          "width": 5,
+          "height": 5,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 30,
+      "spriteMax": [
+        5,
+        5
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 31,
+      "id": "always-crying",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/32-always-crying.png",
+      "sourceSha256": "e0597915ce5a8c387d9758f62e25a2a534d0ce5ef1a875341c994d808d683e5d",
+      "production": [
+        "decal",
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 7,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 6,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 13,
+          "colors": 8
+        },
+        "right": {
+          "width": 6,
+          "height": 18,
+          "colors": 7
+        }
+      },
+      "iconAtlasIndex": 31,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 32,
+      "id": "three-day-visible",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/33-three-day-visible.png",
+      "sourceSha256": "5767b772cb7645d291f1db69179f24569644b1a1d0101d4f03ba67f659633027",
+      "production": [
+        "aura",
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 9,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 4,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 10,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 5,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 32,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 33,
+      "id": "read-3am",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/34-read-3am.png",
+      "sourceSha256": "54cb8c9f7661968d72664b500630eb9377e9745f2f4045a12ec4f8657be26ba6",
+      "production": [
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 7,
+          "height": 13,
+          "colors": 6
+        },
+        "left": {
+          "width": 2,
+          "height": 13,
+          "colors": 8
+        },
+        "back": {
+          "width": 7,
+          "height": 13,
+          "colors": 8
+        },
+        "right": {
+          "width": 2,
+          "height": 13,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 33,
+      "spriteMax": [
+        8,
+        13
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 34,
+      "id": "retracted-voice",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/35-retracted-voice.png",
+      "sourceSha256": "054694fb2697b668a46ac6974be7ef3175564461320985e795e7ebfa7f5492e0",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 12,
+          "height": 6,
+          "colors": 7
+        },
+        "left": {
+          "width": 9,
+          "height": 6,
+          "colors": 8
+        },
+        "back": {
+          "width": 13,
+          "height": 6,
+          "colors": 8
+        },
+        "right": {
+          "width": 11,
+          "height": 6,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 34,
+      "spriteMax": [
+        13,
+        6
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 35,
+      "id": "takeout-3am",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/36-takeout-3am.png",
+      "sourceSha256": "750b2b64d4eca7a3345fe91b857559e2171803c4fbd5062a4d5c0af816df58ad",
+      "production": [
+        "rigid"
+      ],
+      "directions": {
+        "front": {
+          "width": 18,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 11,
+          "height": 24,
+          "colors": 8
+        },
+        "back": {
+          "width": 18,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 11,
+          "height": 24,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 35,
+      "spriteMax": [
+        18,
+        24
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 36,
+      "id": "auto-renew",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/37-auto-renew.png",
+      "sourceSha256": "ab1b15d266b080341d11000298bbeb2e1072f8f571c569760d37081051bafd34",
+      "production": [
+        "aura"
+      ],
+      "directions": {
+        "front": {
+          "width": 11,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 11,
+          "height": 18,
+          "colors": 7
+        },
+        "back": {
+          "width": 11,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 10,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 36,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 37,
+      "id": "bargain-link",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/38-bargain-link.png",
+      "sourceSha256": "35693a41121ecb52640e72640f74b3e7ec8172d4f8bdc9d25f36e0ca41ff7ca2",
+      "production": [
+        "projectile",
+        "rigid"
+      ],
+      "directions": {
+        "front": {
+          "width": 8,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 4,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 9,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 4,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 37,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 38,
+      "id": "mineral-water",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/39-mineral-water.png",
+      "sourceSha256": "2bf75c98543b562c68f5b8649f3df2e96e5205745ed61c6f5d72479bd59402e6",
+      "production": [
+        "rigid"
+      ],
+      "directions": {
+        "front": {
+          "width": 5,
+          "height": 13,
+          "colors": 8
+        },
+        "left": {
+          "width": 4,
+          "height": 13,
+          "colors": 8
+        },
+        "back": {
+          "width": 5,
+          "height": 13,
+          "colors": 8
+        },
+        "right": {
+          "width": 4,
+          "height": 13,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 38,
+      "spriteMax": [
+        7,
+        13
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 39,
+      "id": "group-dad",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/40-group-dad.png",
+      "sourceSha256": "11d4f5b10d0c1ec3c335c344e6cc0aabcb9c9ab8ea5deb072fcff84c662dfd0f",
+      "production": [
+        "projectile",
+        "decal"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 7,
+          "colors": 8
+        },
+        "left": {
+          "width": 6,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 7,
+          "colors": 8
+        },
+        "right": {
+          "width": 6,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 39,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 40,
+      "id": "divorce-draft",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/41-divorce-draft.png",
+      "sourceSha256": "0ad6a1c864d04f243ae0890a071b40d4adfa5780aa4a2d9fee089f2efcf544e7",
+      "production": [
+        "fitted"
+      ],
+      "directions": {
+        "front": {
+          "width": 8,
+          "height": 5,
+          "colors": 7
+        },
+        "left": {
+          "width": 3,
+          "height": 8,
+          "colors": 7
+        },
+        "back": {
+          "width": 8,
+          "height": 2,
+          "colors": 7
+        },
+        "right": {
+          "width": 4,
+          "height": 8,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 40,
+      "spriteMax": [
+        8,
+        8
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 41,
+      "id": "checkup-arrows",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/42-checkup-arrows.png",
+      "sourceSha256": "8d92724d93e935b2ec9d0db868d1de7e53d3e31d59ee20d250a2472cf68dc1d4",
+      "production": [
+        "decal"
+      ],
+      "directions": {
+        "front": {
+          "width": 9,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 7,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 11,
+          "colors": 8
+        },
+        "right": {
+          "width": 8,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 41,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 42,
+      "id": "shared-powerbank",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/43-shared-powerbank.png",
+      "sourceSha256": "51101cdb7b952761f5182dd6ad5509cb3e478611fa062c7bd40bb68bee4bb02f",
+      "production": [
+        "rigid"
+      ],
+      "directions": {
+        "front": {
+          "width": 9,
+          "height": 9,
+          "colors": 8
+        },
+        "left": {
+          "width": 9,
+          "height": 12,
+          "colors": 8
+        },
+        "back": {
+          "width": 9,
+          "height": 8,
+          "colors": 8
+        },
+        "right": {
+          "width": 9,
+          "height": 12,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 42,
+      "spriteMax": [
+        9,
+        12
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 43,
+      "id": "third-pill",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/44-third-pill.png",
+      "sourceSha256": "fe121266ea23a00491e8940ed6c2a9638e0ada7dddadcf8d8062975f889eb9ab",
+      "production": [
+        "morph",
+        "decal"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 13,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 14,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 13,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 13,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 43,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 44,
+      "id": "loan-contract",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/45-loan-contract.png",
+      "sourceSha256": "1c11b0928e2624f23933f7a8e2ccfabf902f978c0172088075c7162bdea13109",
+      "production": [
+        "rigid"
+      ],
+      "directions": {
+        "front": {
+          "width": 11,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 9,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 12,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 8,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 44,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 45,
+      "id": "name-sold",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/46-name-sold.png",
+      "sourceSha256": "d81ee06c12c23987e6642c7fda13a5ec79ea91cdbedb831e8d95147ec5c3e4eb",
+      "production": [
+        "projectile",
+        "rigid"
+      ],
+      "directions": {
+        "front": {
+          "width": 11,
+          "height": 10,
+          "colors": 8
+        },
+        "left": {
+          "width": 4,
+          "height": 10,
+          "colors": 8
+        },
+        "back": {
+          "width": 12,
+          "height": 10,
+          "colors": 8
+        },
+        "right": {
+          "width": 4,
+          "height": 10,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 45,
+      "spriteMax": [
+        18,
+        10
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 46,
+      "id": "moms-bowl",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/47-moms-bowl.png",
+      "sourceSha256": "1caa2b4299f20aef7db828e572f506221338f363865a2d6224cd47ad0a8979e8",
+      "production": [
+        "aura"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 17,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 16,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 17,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 16,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 46,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 47,
+      "id": "ruma-msg",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/48-ruma-msg.png",
+      "sourceSha256": "3bdd36e0f9935c4bea6312057115d7cbb410991c0dd567381bf1ac418ae63b57",
+      "production": [
+        "aura"
+      ],
+      "directions": {
+        "front": {
+          "width": 13,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 9,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 12,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 9,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 47,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 48,
+      "id": "held-elevator",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/49-held-elevator.png",
+      "sourceSha256": "0cbb598bfd711c91a39b7ea8f012b2344a3411cf4392ca853ae0ecf3db95ea15",
+      "production": [
+        "projectile",
+        "aura"
+      ],
+      "directions": {
+        "front": {
+          "width": 11,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 5,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 12,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 5,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 48,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 49,
+      "id": "old-door-lock",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/50-old-door-lock.png",
+      "sourceSha256": "14826622806f904ff3a0d2a223200fc6e0b50bafb452db536dd7daba65013277",
+      "production": [
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 7,
+          "height": 10,
+          "colors": 8
+        },
+        "left": {
+          "width": 4,
+          "height": 10,
+          "colors": 8
+        },
+        "back": {
+          "width": 7,
+          "height": 10,
+          "colors": 8
+        },
+        "right": {
+          "width": 4,
+          "height": 10,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 49,
+      "spriteMax": [
+        8,
+        10
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 50,
+      "id": "drank-for-boss",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/51-drank-for-boss.png",
+      "sourceSha256": "f3025e6282ebc9d75fe7400dab610b839427ba5f8bd1a44ecc2d647e4a72c464",
+      "production": [
+        "decal"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 8,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 14,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 9,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 50,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 51,
+      "id": "hair-in-takeout",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/52-hair-in-takeout.png",
+      "sourceSha256": "8baf48fbaea0cc769daf79d60eb38afd1476eac0ea712ed9b6f6c3b3aa0315e3",
+      "production": [
+        "decal"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 6,
+          "colors": 8
+        },
+        "left": {
+          "width": 10,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 9,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 6,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 51,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 52,
+      "id": "unwashed-pillow",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/53-unwashed-pillow.png",
+      "sourceSha256": "eb13858d736d3af36d0a6d54467486555cc9a19c98b9ae3b733eee246ddf1f31",
+      "production": [
+        "aura"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 11,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 11,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 10,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 11,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 52,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 53,
+      "id": "sock-cigs",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/54-sock-cigs.png",
+      "sourceSha256": "b9f181afbaf5cbc883fcf47fec79d02039887ceb47d4fb446d2b47dc4a908be2",
+      "production": [
+        "decal"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 7,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 7,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 53,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 54,
+      "id": "pregnancy-test",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/55-pregnancy-test.png",
+      "sourceSha256": "65737ff27feaf5cf38001228e29a5d6e2848bf011a84a849e9f4466791fcc167",
+      "production": [
+        "projectile",
+        "morph"
+      ],
+      "directions": {
+        "front": {
+          "width": 2,
+          "height": 11,
+          "colors": 8
+        },
+        "left": {
+          "width": 1,
+          "height": 11,
+          "colors": 8
+        },
+        "back": {
+          "width": 2,
+          "height": 11,
+          "colors": 7
+        },
+        "right": {
+          "width": 1,
+          "height": 11,
+          "colors": 7
+        }
+      },
+      "iconAtlasIndex": 54,
+      "spriteMax": [
+        7,
+        11
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 55,
+      "id": "gym-card",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/56-gym-card.png",
+      "sourceSha256": "0c86c333986190f1b3b67bcb5c6f4ffe914c65093b5c47d912cb4df772eeff57",
+      "production": [
+        "rigid"
+      ],
+      "directions": {
+        "front": {
+          "width": 7,
+          "height": 7,
+          "colors": 8
+        },
+        "left": {
+          "width": 1,
+          "height": 7,
+          "colors": 7
+        },
+        "back": {
+          "width": 6,
+          "height": 7,
+          "colors": 8
+        },
+        "right": {
+          "width": 1,
+          "height": 7,
+          "colors": 7
+        }
+      },
+      "iconAtlasIndex": 55,
+      "spriteMax": [
+        9,
+        7
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 56,
+      "id": "funeral-photo",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/57-funeral-photo.png",
+      "sourceSha256": "a62c5bab47d313cae13fac3e18632b5e30603a1e2262e40b754657f8d8a15f37",
+      "production": [
+        "decal"
+      ],
+      "directions": {
+        "front": {
+          "width": 13,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 5,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 13,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 5,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 56,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 57,
+      "id": "typing-indicator",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/58-typing-indicator.png",
+      "sourceSha256": "cbd0d4c2d626156f52d4563c7b9f1517f0d91f0f520e0f470d5d811618d28775",
+      "production": [
+        "projectile",
+        "aura"
+      ],
+      "directions": {
+        "front": {
+          "width": 8,
+          "height": 13,
+          "colors": 8
+        },
+        "left": {
+          "width": 2,
+          "height": 13,
+          "colors": 7
+        },
+        "back": {
+          "width": 7,
+          "height": 13,
+          "colors": 8
+        },
+        "right": {
+          "width": 2,
+          "height": 13,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 57,
+      "spriteMax": [
+        8,
+        13
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 58,
+      "id": "year-report",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/59-year-report.png",
+      "sourceSha256": "18739bc74212157e638f40ff5489bc9155c3437474ffd504a00c9c814618e32f",
+      "production": [
+        "projectile",
+        "aura"
+      ],
+      "directions": {
+        "front": {
+          "width": 12,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 7,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 7,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 58,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 59,
+      "id": "momo-avatar",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/60-momo-avatar.png",
+      "sourceSha256": "281d0d690d3f3e92417a3771097ab1fa2988e832c0ae7e2f54470addafe21237",
+      "production": [
+        "decal"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 14,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 14,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 14,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 14,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 59,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 60,
+      "id": "ai-chat",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/61-ai-chat.png",
+      "sourceSha256": "534d892622e936df2f1954b8ab73fc31794a9f7aaa3690da6b627313a3df7ace",
+      "production": [
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 7,
+          "height": 13,
+          "colors": 8
+        },
+        "left": {
+          "width": 2,
+          "height": 13,
+          "colors": 8
+        },
+        "back": {
+          "width": 7,
+          "height": 13,
+          "colors": 8
+        },
+        "right": {
+          "width": 2,
+          "height": 13,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 60,
+      "spriteMax": [
+        8,
+        13
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 61,
+      "id": "streak-1847",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/62-streak-1847.png",
+      "sourceSha256": "c2ca3152c87b078e4f1fbf7e16e5365a3841f537176c98831ead08cd9b534457",
+      "production": [
+        "rigid"
+      ],
+      "directions": {
+        "front": {
+          "width": 10,
+          "height": 11,
+          "colors": 8
+        },
+        "left": {
+          "width": 4,
+          "height": 14,
+          "colors": 8
+        },
+        "back": {
+          "width": 10,
+          "height": 12,
+          "colors": 8
+        },
+        "right": {
+          "width": 4,
+          "height": 14,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 61,
+      "spriteMax": [
+        10,
+        14
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 62,
+      "id": "goodnight-2h",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/63-goodnight-2h.png",
+      "sourceSha256": "4e6859d19645e4803e1136079797d8671e6a6cce1e13198d938b7fb2247e6a6f",
+      "production": [
+        "aura"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 6,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 5,
+          "colors": 7
+        },
+        "back": {
+          "width": 14,
+          "height": 5,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 6,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 62,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 63,
+      "id": "friend-verify",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/64-friend-verify.png",
+      "sourceSha256": "df4f6a906bc0b4184cbe4767e0a4e53b301f388e2d92f66634ec65586d289380",
+      "production": [
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 7,
+          "height": 13,
+          "colors": 8
+        },
+        "left": {
+          "width": 2,
+          "height": 13,
+          "colors": 8
+        },
+        "back": {
+          "width": 7,
+          "height": 13,
+          "colors": 8
+        },
+        "right": {
+          "width": 2,
+          "height": 13,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 63,
+      "spriteMax": [
+        8,
+        13
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 64,
+      "id": "summer-run",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/65-summer-run.png",
+      "sourceSha256": "f3f59ae3dc155d348c0efe46cf2311abdf46b6b3336e1d40bd62e8bc326ee482",
+      "production": [
+        "morph"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 9,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 10,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 10,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 10,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 64,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 65,
+      "id": "one-more-game",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/66-one-more-game.png",
+      "sourceSha256": "39b55a7856feeb047b27fe77d17d1fc9eb13bdec2c39d2a198e4cb2e18c4605c",
+      "production": [
+        "aura"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 9,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 11,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 8,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 12,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 65,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 66,
+      "id": "eye-exercise",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/67-eye-exercise.png",
+      "sourceSha256": "0018ad79235bf7bca2a12e04e846cd178136cfb517b3593f501686ea01ec227f",
+      "production": [
+        "decal"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 3,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 4,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 3,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 4,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 66,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 67,
+      "id": "card-binder",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/68-card-binder.png",
+      "sourceSha256": "7bc9bc348dc74c7313ad5d60dbdd26772916b706b966852d7bd98cd0d8f3ebff",
+      "production": [
+        "projectile",
+        "rigid"
+      ],
+      "directions": {
+        "front": {
+          "width": 22,
+          "height": 26,
+          "colors": 8
+        },
+        "left": {
+          "width": 13,
+          "height": 28,
+          "colors": 8
+        },
+        "back": {
+          "width": 22,
+          "height": 26,
+          "colors": 8
+        },
+        "right": {
+          "width": 13,
+          "height": 28,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 67,
+      "spriteMax": [
+        22,
+        28
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 68,
+      "id": "abstract-lv10",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/69-abstract-lv10.png",
+      "sourceSha256": "1a425e60fbf10fcc22a479708e61dba58f359ad11a650e33cb808b50cd6d4cfa",
+      "production": [
+        "decal"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 12,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 14,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 68,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 69,
+      "id": "shop-freezer",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/70-shop-freezer.png",
+      "sourceSha256": "58c769866bb17c75e771e77b1c1d3db591395b2ad00709f28f4e87e556b3cb83",
+      "production": [
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 10,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 13,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 9,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 11,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 69,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 70,
+      "id": "server-shutdown",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/71-server-shutdown.png",
+      "sourceSha256": "1e5c532e0eef236ead47337d18eec5f8a0665ab03639e401884c0181217bba1d",
+      "production": [
+        "event",
+        "aura"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 16,
+          "colors": 8
+        },
+        "left": {
+          "width": 11,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 16,
+          "colors": 8
+        },
+        "right": {
+          "width": 11,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 70,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 71,
+      "id": "painless-night",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/72-painless-night.png",
+      "sourceSha256": "aa0613d4b5fae2d4f3c0f542a5b765b2f71b31cda0260934ceb214a9e04f1198",
+      "production": [
+        "aura",
+        "decal"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 14,
+          "colors": 8
+        },
+        "left": {
+          "width": 7,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 14,
+          "colors": 8
+        },
+        "right": {
+          "width": 7,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 71,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 72,
+      "id": "ktv-song",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/73-ktv-song.png",
+      "sourceSha256": "febe2d7d9eaa6edc90bb0a8e316b3dea44e9bdab64e66e1cb87248c621a488b5",
+      "production": [
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 8,
+          "height": 18,
+          "colors": 8
+        },
+        "left": {
+          "width": 10,
+          "height": 18,
+          "colors": 8
+        },
+        "back": {
+          "width": 7,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 10,
+          "height": 18,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 72,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 73,
+      "id": "breath-on-glass",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/74-breath-on-glass.png",
+      "sourceSha256": "be066ed665d31e9fe5cc7ac2b1dbb76dbde8dd1a7716239c8c874bd67715760e",
+      "production": [
+        "projectile"
+      ],
+      "directions": {
+        "front": {
+          "width": 14,
+          "height": 13,
+          "colors": 8
+        },
+        "left": {
+          "width": 14,
+          "height": 14,
+          "colors": 8
+        },
+        "back": {
+          "width": 14,
+          "height": 12,
+          "colors": 8
+        },
+        "right": {
+          "width": 14,
+          "height": 13,
+          "colors": 8
+        }
+      },
+      "iconAtlasIndex": 73,
+      "spriteMax": [
+        14,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 74,
+      "id": "admission-notice",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/75-admission-notice.png",
+      "sourceSha256": "51290aad857989ca1454054ec26d0a542a36b19f3b1f588061efdc20ba4f6fb5",
+      "production": [
+        "rigid",
+        "event"
+      ],
+      "directions": {
+        "front": {
+          "width": 12,
+          "height": 17,
+          "colors": 8
+        },
+        "left": {
+          "width": 1,
+          "height": 18,
+          "colors": 7
+        },
+        "back": {
+          "width": 12,
+          "height": 17,
+          "colors": 7
+        },
+        "right": {
+          "width": 1,
+          "height": 18,
+          "colors": 6
+        }
+      },
+      "iconAtlasIndex": 74,
+      "spriteMax": [
+        12,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 75,
+      "id": "iphone-17-pro-max",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/76-iphone-17-pro-max.png",
+      "sourceSha256": "a08b705beacc71b76ad29f15fc568e1dd9b664e0dd85219462a2f338f41c1e65",
+      "production": [
+        "rigid",
+        "event"
+      ],
+      "directions": {
+        "front": {
+          "width": 10,
+          "height": 18,
+          "colors": 7
+        },
+        "left": {
+          "width": 2,
+          "height": 18,
+          "colors": 6
+        },
+        "back": {
+          "width": 10,
+          "height": 18,
+          "colors": 8
+        },
+        "right": {
+          "width": 2,
+          "height": 18,
+          "colors": 6
+        }
+      },
+      "iconAtlasIndex": 75,
+      "spriteMax": [
+        10,
+        18
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    },
+    {
+      "index": 76,
+      "id": "fathers-chart",
+      "status": "source-approved",
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/77-fathers-chart.png",
+      "sourceSha256": "91f2e490a38c41791980f13ff692e1a50cee482203326b6249a2988535019e35",
+      "production": [
+        "rigid",
+        "event"
+      ],
+      "directions": {
+        "front": {
+          "width": 12,
+          "height": 15,
+          "colors": 8
+        },
+        "left": {
+          "width": 4,
+          "height": 16,
+          "colors": 6
+        },
+        "back": {
+          "width": 12,
+          "height": 15,
+          "colors": 6
+        },
+        "right": {
+          "width": 4,
+          "height": 16,
+          "colors": 6
+        }
+      },
+      "iconAtlasIndex": 76,
+      "spriteMax": [
+        12,
+        16
+      ],
+      "runtime": "source-sprite-or-canon-mutation",
+      "reviewNote": null
+    }
+  ]
+}

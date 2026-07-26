@@ -1,0 +1,17 @@
+Use case: stylized-concept, magenta-key source
+Asset type: 32x32 enemy sprite action foundation, delivered as one 1024x1024 source sheet
+Input images: Image 1 is the mandatory canonical project style board; Image 2 is the approved runtime enemy-family action contact sheet. Match their chunky pixel density, deep-ink outline, limited muted palette, and top-left light. Do not copy an existing enemy or the rejected wide kiosk form.
+
+Create one enemy called "Recognition In Progress": a NARROW UPRIGHT COMPANY FACE-ATTENDANCE TERMINAL, the small device workers face at an office entrance. Its entire body is a slim portrait screen with one tiny camera lens centered directly above it, mounted on a thin metal post and a very small weighted foot. The dark screen is the creature's face and contains one EMPTY square green recognition bracket, with no human portrait. Keep it unmistakably smaller and narrower than an ATM, vending machine, ticket kiosk, or self-service console.
+
+Strict 2x2 quadrant order, same identity and scale in every quadrant:
+- top-left: idle, slim terminal upright, empty green recognition bracket softly active;
+- top-right: moving, thin post bends one pixel-step forward while the screen remains facing the viewer;
+- bottom-left: attack, one thin horizontal teal-green scan beam leaves the screen and the bracket contracts toward center;
+- bottom-right: hurt, the screen glitches with a broken bracket and the narrow post recoils, but the top camera and small base remain recognizable.
+
+Composition: exactly four isolated figures, one centered in each quadrant, identical camera distance and three-quarter-front game-sprite perspective, generous magenta clearance, full small base visible. Preserve a tall narrow silhouette in all four panels.
+Scene/backdrop: perfectly flat uniform solid pure #ff00ff chroma-key magenta only. Do not use #ff00ff or neighboring vivid magenta anywhere in the subject. Preserve the non-key green/teal recognition bracket and scan beam.
+Style/medium: crisp deliberately low-resolution pixel art, hard square pixels, one logical-pixel dark outline, 10-16 colors, worn office plastic and metal, left-top highlights, right-bottom shadows.
+Constraints: no keypad, no keyboard, no card slot, no cash slot, no ticket slot, no receipt slot, no ATM console, no vending-machine body, no bulky cabinet, no shelf, no counter, no printed labels. No #ff00ff in the subject, no cast shadow, contact shadow, floor, reflection, scenery, grid, divider, frame, writing, letters, digits, UI screenshot, watermark, anti-aliasing, gradients, blur, smooth vector edges, photorealism, humanoid face, gore, fantasy armor, duplicate terminal.
+

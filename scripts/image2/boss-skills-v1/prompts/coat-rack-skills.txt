@@ -1,0 +1,7 @@
+Use case: stylized-concept
+Asset type: 2x2 pixel-art small-boss skill pose sheet for an action game
+Primary request: Preserve the exact tall empty wooden coat-rack identity from the runtime reference: adult coat and hat, hollow collar, no face. Four strongly different poses in reading order: perfectly still and deceptively ordinary; one coat sleeve unrolling into a long pointed cone of attached black shadow; both sleeves unrolling into two clearly separate shadow cones; sleeves withdrawing while the rack leans back to recover. The sleeves and shadows must remain physically attached to the same coat rack.
+Style: crisp high-detail pixel art matching the references, readable at 48px, small-boss silhouette taller than the player.
+Layout: exact 2x2 grid, one complete coat rack per cell, identical identity, scale and viewpoint, generous gutters.
+Background: perfectly flat solid #00ff00 chroma key, no room, floor, cast shadow, labels, borders, or text.
+Avoid: human face, person inside the coat, detached arms, tentacles, weapons, four similar idle poses, smooth painting, blur.

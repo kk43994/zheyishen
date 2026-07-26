@@ -1,1 +1,1 @@
-{"cell": 12, "cols": 4, "rows": 1, "index": {"freeze": 0, "paralyze": 1, "read": 2, "loop": 3}}
+{"cell": 12, "cols": 4, "rows": 2, "index": {"freeze": 0, "paralyze": 1, "read": 2, "loop": 3, "wet": 4, "raw": 5, "heavy": 6, "control-fatigue": 7}, "generator": "reference-aware Image2 bases + scripts/process_vfx_ui_pack.py", "provenance": "src/assets/vfx/status.sources.json"}

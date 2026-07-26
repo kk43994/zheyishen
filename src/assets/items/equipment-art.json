@@ -1,0 +1,1480 @@
+{
+  "version": 2,
+  "itemCount": 77,
+  "items": [
+    {
+      "look": "胸前缺扣，手腕系着纽扣",
+      "irony": "小事被孩子保存成全部安全感",
+      "index": 0,
+      "id": "loose-button",
+      "name": "校服上掉下来的纽扣",
+      "source": "回忆祭坛",
+      "roles": [
+        "召唤继承",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "hero": "一颗小纽扣攥在近手掌心，不改体型；弹出时手指短暂张开。",
+      "projectile": "额外弹沿用当前《一口气》配方，携带被记下的那次伤害值。",
+      "feedback": "弹出瞬间掌心一个小圆印高光，落弹带轻微\"啪\"的脆响。"
+    },
+    {
+      "look": "木剑斜背在身后",
+      "irony": "想象出来的勇敢",
+      "index": 1,
+      "id": "wooden-sword",
+      "name": "床底下的木剑",
+      "source": "回忆祭坛",
+      "roles": [
+        "弹体改造"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "hero": "一截磨秃木剑握在近手，随攻击向前劈；不改体型。",
+      "projectile": "弹体压成又宽又短的斩痕，覆盖面变大、射程明显缩短。",
+      "feedback": "劈出时一道短促白刃残影，命中带闷响。"
+    },
+    {
+      "look": "练习册绑在背后，红叉爬上脸",
+      "irony": "标准答案与失败羞耻",
+      "index": 2,
+      "id": "red-workbook",
+      "name": "写满红叉的练习册",
+      "source": "回忆祭坛",
+      "roles": [
+        "弹体改造",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid",
+        "projectile",
+        "decal"
+      ],
+      "hero": "一本卷边练习册夹在背后；不改体型。",
+      "projectile": "弹体到终点盖一个红叉印，掉头折返并强化，回程可再命中。",
+      "feedback": "折返点浮现红叉贴花，掉头时一声划纸音。"
+    },
+    {
+      "look": "书包压弯主角的背",
+      "irony": "\"都是为你好\"的重量",
+      "index": 3,
+      "id": "stone-schoolbag",
+      "name": "装满石头的书包",
+      "source": "回忆祭坛",
+      "roles": [
+        "弹体改造",
+        "召唤继承"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid",
+        "morph",
+        "projectile"
+      ],
+      "hero": "沉重书包压在背上，主角永久驼背、肩线下沉。",
+      "projectile": "弹体变沉变慢、穿透力大增，能压穿前排。",
+      "feedback": "出弹带下坠拖影，命中一声闷顿。"
+    },
+    {
+      "look": "头发染黄且不断掉色",
+      "irony": "用显眼叛逆制造身份",
+      "index": 4,
+      "id": "bleach-powder",
+      "name": "剩了半袋的漂粉",
+      "source": "回忆祭坛",
+      "roles": [
+        "位移节奏",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "decal"
+      ],
+      "hero": "头发被漂成显眼的黄色，并持续掉色；不改体型。",
+      "projectile": "保持当前《一口气》配方，仅出弹频率变快。",
+      "feedback": "黄色发梢不断落下褪色像素，敌人加速时边缘微微发红。"
+    },
+    {
+      "look": "手臂出现多道陈旧伤痕",
+      "irony": "求救被模仿成小众审美",
+      "index": 5,
+      "id": "eyebrow-razor",
+      "name": "同桌的修眉刀",
+      "source": "回忆祭坛",
+      "roles": [
+        "弹体改造",
+        "生存防御"
+      ],
+      "statOnly": false,
+      "production": [
+        "decal",
+        "projectile"
+      ],
+      "hero": "小臂内侧数道细浅疤痕（decal），夏天也从不卷袖；不改体型。",
+      "projectile": "弹体收得极细如刀锋，暴击时划出一道亮线。",
+      "feedback": "暴击命中划出细亮切口，受伤时浅痕短暂发红。"
+    },
+    {
+      "look": "瞳孔、脸色与动作失真",
+      "irony": "痛苦、药物与圈层身份混在一起",
+      "index": 6,
+      "id": "od-pill",
+      "name": "OD妹给的小药丸",
+      "source": "回忆祭坛",
+      "roles": [
+        "弹体改造",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "decal",
+        "projectile"
+      ],
+      "hero": "眼神涣散、黑眼圈加深（decal）；不改体型。",
+      "projectile": "被强化/削弱的那项让弹体每场形态都不一样（忽大忽快忽散）。",
+      "feedback": "开场一次药效恍惚的画面轻颤，强化项弹体泛微光。"
+    },
+    {
+      "look": "信封露在胸前，纸片绕身",
+      "irony": "欲望与没有回应的感情",
+      "index": 7,
+      "id": "front-desk-letter",
+      "name": "前桌的情书",
+      "source": "回忆祭坛",
+      "roles": [
+        "弹体改造"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "hero": "一封没有名字的信塞在胸前口袋；不改体型。",
+      "projectile": "弹体强力咬住目标转向追踪，但出膛更散。",
+      "feedback": "追踪时弹尾拉出一条犹豫的弧线。"
+    },
+    {
+      "look": "一边镜片裂开",
+      "irony": "看清远方，却看不清自己",
+      "index": 8,
+      "id": "cracked-glasses",
+      "name": "裂了一边的眼镜",
+      "source": "回忆祭坛",
+      "roles": [
+        "弹体改造"
+      ],
+      "statOnly": false,
+      "production": [
+        "fitted",
+        "projectile"
+      ],
+      "hero": "一副裂了一边镜片的眼镜戴在脸上；不改体型。",
+      "projectile": "弹体拉长变细、飞得更远，命中远端暴击更高。",
+      "feedback": "裂痕镜片偶尔反一道光，远端命中有清脆暴击音。"
+    },
+    {
+      "look": "衣服绷紧、袖口过短",
+      "irony": "被要求长大，又不被允许改变",
+      "index": 9,
+      "id": "small-uniform",
+      "name": "小了一号的校服",
+      "source": "回忆祭坛",
+      "roles": [
+        "位移节奏"
+      ],
+      "statOnly": false,
+      "production": [
+        "fitted",
+        "morph"
+      ],
+      "hero": "偏紧偏小的校服绷在身上，姿态略显局促（morph 轻微收束）。",
+      "projectile": "出弹更快、弹体略细，配方不变。",
+      "feedback": "攻击时肩背衣料紧绷的细节，受伤时更显狼狈。"
+    },
+    {
+      "look": "钥匙挂在腰间摆动",
+      "irony": "自由与孤独是同一扇门",
+      "index": 10,
+      "id": "only-key",
+      "name": "出租屋唯一的钥匙",
+      "source": "回忆祭坛",
+      "roles": [
+        "弹体改造"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "hero": "一把孤零零的钥匙挂在腰侧；不改体型。",
+      "projectile": "弹体末端炸开，把\"关门\"的孤独变成一圈冲击。",
+      "feedback": "消失点一声轻响与小范围光圈。"
+    },
+    {
+      "look": "一只手始终攥着信封",
+      "irony": "价值被第一次收入证明",
+      "index": 11,
+      "id": "first-salary",
+      "name": "第一次工资的信封",
+      "source": "回忆祭坛",
+      "roles": [
+        "经济资源",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid"
+      ],
+      "hero": "一个鼓鼓的工资信封攥在近手；不改体型。",
+      "projectile": "保持当前《一口气》配方，仅整体伤害随存款浮动。",
+      "feedback": "攒够一档时信封微微一亮，花钱时黯下去。"
+    },
+    {
+      "look": "领带越来越紧，脸色变白",
+      "irony": "体面与窒息",
+      "index": 12,
+      "id": "nameless-tie",
+      "name": "没有商标的领带",
+      "source": "回忆祭坛",
+      "roles": [
+        "纯属性"
+      ],
+      "statOnly": true,
+      "production": [
+        "fitted"
+      ],
+      "hero": "一条没有商标的领带系在领口；不改体型。",
+      "projectile": "保持当前《一口气》配方，不改弹体形态。",
+      "feedback": "系紧领带的细节，受光面一点朴素反光。"
+    },
+    {
+      "look": "过大的旧雨衣改变整个轮廓",
+      "irony": "不会表达的保护与代际继承",
+      "index": 13,
+      "id": "fathers-raincoat",
+      "name": "父亲的雨衣",
+      "source": "传承",
+      "roles": [
+        "生存防御",
+        "召唤继承"
+      ],
+      "statOnly": false,
+      "production": [
+        "fitted",
+        "projectile"
+      ],
+      "hero": "一件宽大旧雨衣披在身上（fitted），肩背被压得略沉。",
+      "projectile": "触发时派生一圈雨滴弹，继承母弹机制并削弱。",
+      "feedback": "挡伤瞬间雨衣一沉、四周溅开雨滴，闷响一声。"
+    },
+    {
+      "look": "电话缠在手腕，屏幕不断闪",
+      "irony": "自尊、思念与延迟沟通",
+      "index": 14,
+      "id": "unsent-phone",
+      "name": "没打出去的电话",
+      "source": "回忆祭坛",
+      "roles": [
+        "生存防御",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid"
+      ],
+      "hero": "一部亮着未拨号码的手机握在近手；不改体型。",
+      "projectile": "保持配方；储备释放时才化为声波，不常改弹体。",
+      "feedback": "每攒一层屏幕亮一下，来电层堆积时有静音震动感。"
+    },
+    {
+      "look": "乳牙成为项链，身后出现孩子剪影",
+      "irony": "守护与害怕先离开",
+      "index": 15,
+      "id": "baby-tooth",
+      "name": "女儿换下的乳牙",
+      "source": "留灯间",
+      "roles": [
+        "生存防御",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid",
+        "aura"
+      ],
+      "hero": "一颗乳牙用红绳挂在颈前（rigid），触发时身周一圈护光（aura）。",
+      "projectile": "爆发时向四周推出一圈冲击，配方保持。",
+      "feedback": "免死瞬间白光一闪、时间微顿，一声心跳。"
+    },
+    {
+      "look": "工牌仍挂着，门禁灯变红",
+      "irony": "名字还在，身份已被拿走",
+      "index": 16,
+      "id": "revoked-badge",
+      "name": "已经注销的旧工牌",
+      "source": "传承",
+      "roles": [
+        "经济资源",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "fitted"
+      ],
+      "hero": "一张已注销的工牌别在胸前；不改体型。",
+      "projectile": "保持当前《一口气》配方，仅整体伤害随穿戴数上升。",
+      "feedback": "每多穿一件工牌微亮一下，进商城时价格标红。"
+    },
+    {
+      "look": "手腕延迟，动作与影子不同步",
+      "irony": "身体与时间脱节",
+      "index": 17,
+      "id": "slow-watch",
+      "name": "慢了七分钟的手表",
+      "source": "回忆祭坛",
+      "roles": [
+        "位移节奏",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "hero": "一块慢了七分钟的手表戴在手腕；不改体型。",
+      "projectile": "弹体被定格时悬停，解冻瞬间齐射式加速。",
+      "feedback": "冻结时画面秒针停摆感，解冻一声\"咔哒\"。"
+    },
+    {
+      "look": "照片别在衣服内侧",
+      "irony": "回忆越来越满，现实越来越空",
+      "index": 18,
+      "id": "missing-photo",
+      "name": "少了一个人的合照",
+      "source": "留灯间",
+      "roles": [
+        "召唤继承",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "hero": "一张缺了一个人的合照攥在胸前；不改体型。",
+      "projectile": "补射的两枚更高伤，继承当前配方。",
+      "feedback": "补射时合照上空缺的位置一亮，两声更沉的击发。"
+    },
+    {
+      "look": "药瓶逐渐挂满腰间",
+      "irony": "用药维持运转而不是恢复",
+      "index": 19,
+      "id": "white-bottle",
+      "name": "药房最下面的白瓶子",
+      "source": "回忆祭坛",
+      "roles": [
+        "位移节奏",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid"
+      ],
+      "hero": "一个没有标签的白瓶子揣在腰侧；不改体型。",
+      "projectile": "保持配方，仅出弹更密。",
+      "feedback": "开场吞服的一个小动作，扣血时画面短暂发白。"
+    },
+    {
+      "look": "空相框悬在主角影子里",
+      "irony": "\"等大家有空\"的无限延期",
+      "index": 20,
+      "id": "empty-frame",
+      "name": "一直空着的相框",
+      "source": "回忆祭坛",
+      "roles": [
+        "弹体改造"
+      ],
+      "statOnly": false,
+      "production": [
+        "aura",
+        "projectile"
+      ],
+      "hero": "一个空相框以影子形式悬在身侧（aura），不作大件跟随物、只留影廓。",
+      "projectile": "弹体到点炸得更开，但飞得不够久。",
+      "feedback": "爆炸圈更大更空，消散时一声轻叹。"
+    },
+    {
+      "look": "整个人肩背塌下、头和躯干前倾；影子保持普通地影，不外挂骨头",
+      "irony": "\"男人必须成为顶梁柱\"与被赞美的自我消耗",
+      "index": 21,
+      "id": "broken-spine",
+      "name": "断掉的脊梁骨",
+      "source": "里屋",
+      "roles": [
+        "规则触发",
+        "生存防御"
+      ],
+      "statOnly": false,
+      "production": [
+        "morph",
+        "decal"
+      ],
+      "hero": "脊背彻底佝偻（morph），后背一道旧伤痕（decal）。",
+      "projectile": "负面越多弹体越强越穿，配方随负面成长。",
+      "feedback": "每多一条负面身形更弯一分，命中更沉。"
+    },
+    {
+      "look": "头发提前变白，动作短暂凝固",
+      "irony": "用未来换现在的效率",
+      "index": 22,
+      "id": "spent-decade",
+      "name": "提前花掉的十年",
+      "source": "里屋",
+      "roles": [
+        "位移节奏",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "aura",
+        "projectile"
+      ],
+      "hero": "身周浮起一层被提前消耗的年岁影（aura）；不改体型。",
+      "projectile": "爆发瞬间倾泻 5 轮弹幕，之后弹体归零 2 秒。",
+      "feedback": "爆发一片密集齐射，停息时画面与呼吸声一同停顿。"
+    },
+    {
+      "look": "姿态略微夹紧忍耐（轻微 morph），不改体型主轮廓。",
+      "irony": "连膀胱都要服从纪律",
+      "index": 23,
+      "id": "held-pee",
+      "name": "憋回去的那泡尿",
+      "source": "回忆祭坛",
+      "roles": [
+        "位移节奏",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "projectile"
+      ],
+      "hero": "姿态略微夹紧忍耐（轻微 morph），不改体型主轮廓。",
+      "projectile": "蓄满时弹体更实更重，攻击一次泄压清空。",
+      "feedback": "蓄力时身周一圈憋忍的紧绷感，泄压一声痛快。"
+    },
+    {
+      "look": "纯玩法道具，不上身：触发时只有一次瞬移残影（event），无实体挂件。",
+      "irony": "人生没有取消施法",
+      "index": 24,
+      "id": "flash-escape",
+      "name": "交掉的闪现",
+      "source": "回忆祭坛",
+      "roles": [
+        "生存防御",
+        "位移节奏"
+      ],
+      "statOnly": false,
+      "production": [
+        "event"
+      ],
+      "hero": "纯玩法道具，不上身：触发时只有一次瞬移残影（event），无实体挂件。",
+      "projectile": "保持当前《一口气》配方，不改弹体。",
+      "feedback": "闪现一道短促位移残影与\"嗖\"声，闪错方向时一声懊恼顿挫。"
+    },
+    {
+      "look": "开场脚下一圈轻快的光（aura），不上身。",
+      "irony": "现在给他一天假，他躺着刷完了手机",
+      "index": 25,
+      "id": "class-break",
+      "name": "课间十分钟",
+      "source": "回忆祭坛",
+      "roles": [
+        "位移节奏",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "aura"
+      ],
+      "hero": "开场脚下一圈轻快的光（aura），不上身。",
+      "projectile": "保持配方，仅开场出弹更快。",
+      "feedback": "亢奋期脚步带残影，疲惫期动作明显放缓。"
+    },
+    {
+      "look": "一页没写完的作业攥在近手；不改体型。",
+      "irony": "截止日期是第一生产力，从小练的",
+      "index": 26,
+      "id": "last-page",
+      "name": "暑假作业最后一页",
+      "source": "回忆祭坛",
+      "roles": [
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid"
+      ],
+      "hero": "一页没写完的作业攥在近手；不改体型。",
+      "projectile": "保持配方，末段整体伤害翻倍。",
+      "feedback": "进入末段时画面一紧、弹体泛红加重。"
+    },
+    {
+      "look": "不上身，纯弹体行为改造。",
+      "irony": "哈哈哈哈哈，少一个都显得没礼貌",
+      "index": 27,
+      "id": "five-ha",
+      "name": "五个哈",
+      "source": "回忆祭坛",
+      "roles": [
+        "召唤继承",
+        "弹体改造"
+      ],
+      "statOnly": false,
+      "production": [
+        "projectile"
+      ],
+      "hero": "不上身，纯弹体行为改造。",
+      "projectile": "一次击发变五连；没有其他弹体替换时，每枚都是压在气息基底上的真正“哈”字；与弹珠、钥匙等弹体替换组合时，改为五份逐发缩小的当前弹体。",
+      "feedback": "五连发五声递弱的轻响，最后一发几乎无力；替换后沿用当前弹体的材质命中声。"
+    },
+    {
+      "look": "一个抢到的小红包揣在腰侧；不改体型。",
+      "irony": "快乐明码标价，不足一元",
+      "index": 28,
+      "id": "red-packet",
+      "name": "抢到的0.87元红包",
+      "source": "回忆祭坛",
+      "roles": [
+        "经济资源",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid"
+      ],
+      "hero": "一个抢到的小红包揣在腰侧；不改体型。",
+      "projectile": "保持当前《一口气》配方，不改弹体。",
+      "feedback": "掉钱时一声轻快的\"叮\"，一枚零钱蹦出。"
+    },
+    {
+      "look": "不上身；触发时全屏一帧雪花噪点（event/decal）。",
+      "irony": "那台电视早就扔了。雪花有时候还来",
+      "index": 29,
+      "id": "snow-screen",
+      "name": "雪花屏",
+      "source": "回忆祭坛",
+      "roles": [
+        "生存防御",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "event",
+        "decal"
+      ],
+      "hero": "不上身；触发时全屏一帧雪花噪点（event/decal）。",
+      "projectile": "保持配方，不改弹体。",
+      "feedback": "免死瞬间画面雪花闪断一帧、声音短暂失真。"
+    },
+    {
+      "look": "一颗玻璃弹珠捏在近手；不改体型。",
+      "irony": "它没有变小，是他的世界变大了",
+      "index": 30,
+      "id": "marble",
+      "name": "当年最强的那颗弹珠",
+      "source": "回忆祭坛",
+      "roles": [
+        "弹体改造",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "hero": "一颗玻璃弹珠捏在近手；不改体型。",
+      "projectile": "命中后弹体像弹珠一样折射改道，扑向下一个目标。",
+      "feedback": "折射时一声清脆玻璃碰撞、弹体划一道亮弧。"
+    },
+    {
+      "look": "表情不变，两道夸张眼泪持续流下，泪水积在衣领与已穿戴物品上",
+      "irony": "真实情绪被压缩成可复制、可围观、可快速划走的网络后缀",
+      "index": 31,
+      "id": "always-crying",
+      "name": "我一直在哭",
+      "source": "回忆祭坛",
+      "roles": [
+        "召唤继承",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "decal",
+        "projectile"
+      ],
+      "hero": "面无表情的脸上挂着泪痕（decal），刷手机的姿态；不改体型。",
+      "projectile": "受伤派生 3 枚细长穿透泪弹，继承当前配方。",
+      "feedback": "受伤瞬间三道泪痕弹射出，与\"面无表情\"形成反差。"
+    },
+    {
+      "look": "平时不挂相框；触发时三枚当前弹体绕身，第三圈留下短暂褪色光轨",
+      "irony": "选择性展示与记忆删除",
+      "index": 32,
+      "id": "three-day-visible",
+      "name": "朋友圈仅三天可见",
+      "source": "回忆祭坛",
+      "roles": [
+        "召唤继承",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "aura",
+        "projectile"
+      ],
+      "hero": "身侧三枚弹体环绕（aura），不作大件跟随。",
+      "projectile": "3 枚弹继承当前配方，先绕身三圈再放飞。",
+      "feedback": "环绕时身周一圈折叠光轨，释放时一声\"啪\"散开。"
+    },
+    {
+      "look": "手机屏幕一直亮着\"已读\"",
+      "irony": "在线不等于回应",
+      "index": 33,
+      "id": "read-3am",
+      "name": "凌晨三点的已读",
+      "source": "回忆祭坛",
+      "roles": [
+        "弹体改造",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "projectile"
+      ],
+      "hero": "不上身，纯弹体延迟结算行为。",
+      "projectile": "命中留一个\"已读\"延迟标记，到点连本带利爆开。",
+      "feedback": "挂账时目标身上一个灰\"已读\"标，5 秒后一声延迟重击。"
+    },
+    {
+      "look": "耳边悬着不断撤回的语音条",
+      "irony": "服从、猜测与隐形加班",
+      "index": 34,
+      "id": "retracted-voice",
+      "name": "领导撤回的六十秒语音",
+      "source": "回忆祭坛",
+      "roles": [
+        "命运交互",
+        "召唤继承"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "hero": "一条撤回的语音条挂在颈前；不改体型。",
+      "projectile": "吐出时每层派生一道声波弹，继承配方。",
+      "feedback": "咽下时语音条变灰积压，吐出时逐层\"咻\"地放出声波。"
+    },
+    {
+      "look": "油渍袋挂在椅背和腰间",
+      "irony": "对身体的延期付款",
+      "index": 35,
+      "id": "takeout-3am",
+      "name": "凌晨三点的外卖袋",
+      "source": "回忆祭坛",
+      "roles": [
+        "生存防御",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid"
+      ],
+      "hero": "一个凌晨外卖袋拎在腰侧；不改体型。",
+      "projectile": "保持当前《一口气》配方，不改弹体。",
+      "feedback": "低血自愈时身周一点微暖回血光。"
+    },
+    {
+      "look": "身后挂着不断增长的账单条",
+      "irony": "被遗忘的小额持续剥夺",
+      "index": 36,
+      "id": "auto-renew",
+      "name": "自动续费到明年的会员",
+      "source": "回忆祭坛",
+      "roles": [
+        "经济资源",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "aura"
+      ],
+      "hero": "不上身；开场一层会员金边光（aura）。",
+      "projectile": "保持配方，仅开场整体伤害提升。",
+      "feedback": "开场一声\"已为您自动续费\"的微光，扣费时零钱静静少 1。"
+    },
+    {
+      "look": "红色进度条缠住身体",
+      "irony": "人情关系被平台计量",
+      "index": 37,
+      "id": "bargain-link",
+      "name": "全家帮砍仍差一刀的链接",
+      "source": "回忆祭坛",
+      "roles": [
+        "召唤继承",
+        "经济资源"
+      ],
+      "statOnly": false,
+      "production": [
+        "projectile",
+        "rigid"
+      ],
+      "hero": "手机屏上那条永远差一刀的砍价链接，攥在手里当作还差一点的证据。",
+      "projectile": "《一口气》命中即分裂成多代弱助力弹，铺成一片\"就差一刀\"，但自己收不了尾。",
+      "feedback": "分裂时弹出砍价红字，目标被压到1血时描边闪红等人补刀。"
+    },
+    {
+      "look": "手边一直放着未拆水瓶",
+      "irony": "亲密关系被条件表格化",
+      "index": 38,
+      "id": "mineral-water",
+      "name": "相亲桌上没拆的矿泉水",
+      "source": "回忆祭坛",
+      "roles": [
+        "规则触发",
+        "位移节奏"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid"
+      ],
+      "hero": "相亲桌上那瓶始终没拧开的矿泉水，攥在手里给沉默找个由头。",
+      "projectile": "保持当前《一口气》配方，触发是独立的重创判定，不改弹形。",
+      "feedback": "瓶盖显示对峙进度条，满槽时最近敌人被狠狠按住一下。"
+    },
+    {
+      "look": "主角姓名逐渐被群昵称覆盖",
+      "irony": "个体身份被家庭角色吞没",
+      "index": 39,
+      "id": "group-dad",
+      "name": "家长群里的“孩子他爸”",
+      "source": "回忆祭坛",
+      "roles": [
+        "召唤继承"
+      ],
+      "statOnly": false,
+      "production": [
+        "projectile",
+        "decal"
+      ],
+      "hero": "本人退到附属身后，头顶名牌被\"孩子他爸\"这个称呼盖住。",
+      "projectile": "一切衍生/继承弹显著增伤，本体《一口气》反而被削弱，主力让给了\"他爸\"们。",
+      "feedback": "继承弹命中带群消息弹窗的红点感，本体命中声变闷。"
+    },
+    {
+      "look": "一张折叠纸卡在内袋",
+      "irony": "关系中的拖延与机会成本",
+      "index": 40,
+      "id": "divorce-draft",
+      "name": "没有按下发送的离婚协议",
+      "source": "回忆祭坛",
+      "roles": [
+        "生存防御",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "fitted"
+      ],
+      "hero": "揣在胸口那份始终没按下发送的协议，贴身却发不出去。",
+      "projectile": "保持当前《一口气》配方，效果只作用于受伤结算。",
+      "feedback": "首次受伤时半截数字变灰标\"待结算\"，阶段末悄悄补扣。"
+    },
+    {
+      "look": "红色箭头在身体各处闪烁",
+      "irony": "人被缩成一组异常指标",
+      "index": 41,
+      "id": "checkup-arrows",
+      "name": "体检报告上的向上箭头",
+      "source": "回忆祭坛",
+      "roles": [
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "decal"
+      ],
+      "hero": "脸色被那排向上的红箭头压出一层病气，越看越回不去。",
+      "projectile": "保持当前《一口气》配方，只放大既有偏移，不新增弹形。",
+      "feedback": "触发时属性面板箭头集体上挑/下压，数字抖一下定死。"
+    },
+    {
+      "look": "充电线像输液管缠绕身体",
+      "irony": "等待、焦虑与按分钟收费",
+      "index": 42,
+      "id": "shared-powerbank",
+      "name": "医院走廊的共享充电宝",
+      "source": "回忆祭坛",
+      "roles": [
+        "位移节奏",
+        "经济资源"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid"
+      ],
+      "hero": "腰上挂着医院走廊借来的共享充电宝，线一直没拔。",
+      "projectile": "保持当前《一口气》配方，只改连射节奏。",
+      "feedback": "连射时充电宝亮蓝灯掉格，扣费时弹出小额账单。"
+    },
+    {
+      "look": "瞳孔、轮廓和弹道持续错位",
+      "irony": "痛苦被当作圈层通行证",
+      "index": 43,
+      "id": "third-pill",
+      "name": "她没说名字的第三颗药",
+      "source": "里屋",
+      "roles": [
+        "规则触发",
+        "位移节奏"
+      ],
+      "statOnly": false,
+      "production": [
+        "morph",
+        "decal"
+      ],
+      "hero": "狂暴时身形绷胀发红、崩落时缩瘪发青，一颗没名字的药把人拉扯变形。",
+      "projectile": "狂暴期《一口气》又快又重，崩落期整体缩水发虚。",
+      "feedback": "相位切换时全屏色相偏移一下，角色轮廓抖动失真。"
+    },
+    {
+      "look": "合同像绷带缠满身体",
+      "irony": "将未来收入抵押给即时欲望",
+      "index": 44,
+      "id": "loan-contract",
+      "name": "已经签好名字的网贷合同",
+      "source": "里屋",
+      "roles": [
+        "经济资源",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid"
+      ],
+      "hero": "手里攥着已经签好名字的网贷合同，字迹是自己的。",
+      "projectile": "保持当前《一口气》配方，只常驻增伤。",
+      "feedback": "阶段结算时弹出还款单，零钱不够时血条被划走一截。"
+    },
+    {
+      "look": "合同遮住姓名，只留下编号",
+      "irony": "价值与身份被组织吞没",
+      "index": 45,
+      "id": "name-sold",
+      "name": "把名字卖掉的合同",
+      "source": "里屋",
+      "roles": [
+        "弹体改造",
+        "命运交互"
+      ],
+      "statOnly": false,
+      "production": [
+        "projectile",
+        "rigid"
+      ],
+      "hero": "胸前挂着把名字卖掉的合同，签完就再没人叫得出他是谁。",
+      "projectile": "《一口气》被规整成毫无波动的制式弹，齐整、稳定、也再不会爆发。",
+      "feedback": "命中数字始终一模一样，命运牌上\"亲口回应\"的按钮变灰。"
+    },
+    {
+      "look": "身边浮着一碗留在锅里的饭的暖光，热气一阶段比一阶段淡。",
+      "irony": "无论多晚，锅里总有一只倒扣的碗",
+      "index": 46,
+      "id": "moms-bowl",
+      "name": "母亲留在锅里的那碗饭",
+      "source": "留灯间",
+      "roles": [
+        "生存防御"
+      ],
+      "statOnly": false,
+      "production": [
+        "aura"
+      ],
+      "hero": "身边浮着一碗留在锅里的饭的暖光，热气一阶段比一阶段淡。",
+      "projectile": "护盾破碎时喷出的蒸汽继承《一口气》配方，替你还一下手。",
+      "feedback": "溢疗时碗沿冒热气结成护盾，凉了则光晕转灰。"
+    },
+    {
+      "look": "影子旁悬着一条凌晨两点的\"在吗\"，一直亮着没敢回。",
+      "irony": "这一次，有人接了",
+      "index": 47,
+      "id": "ruma-msg",
+      "name": "凌晨两点朋友发来的“在吗”",
+      "source": "留灯间",
+      "roles": [
+        "生存防御",
+        "命运交互"
+      ],
+      "statOnly": false,
+      "production": [
+        "aura"
+      ],
+      "hero": "影子旁悬着一条凌晨两点的\"在吗\"，一直亮着没敢回。",
+      "projectile": "保持当前《一口气》配方，层数只作用于护盾与接通。",
+      "feedback": "低血时消息弹出\"已接通\"，每层化成一小格护盾。"
+    },
+    {
+      "look": "身后一道虚门始终替你按着，光标一样停在那里等你。",
+      "irony": "有人愿意为你多等三秒",
+      "index": 48,
+      "id": "held-elevator",
+      "name": "有人替你按住的电梯",
+      "source": "留灯间",
+      "roles": [
+        "弹体改造"
+      ],
+      "statOnly": false,
+      "production": [
+        "projectile",
+        "aura"
+      ],
+      "hero": "身后一道虚门始终替你按着，光标一样停在那里等你。",
+      "projectile": "《一口气》飞到尽头不散，被\"按住\"一下后重新追向最近的敌人。",
+      "feedback": "悬停瞬间弹体定住闪一下，再拐弯追出去。"
+    },
+    {
+      "look": "腰间挂着那把一直没换的旧门锁，钥匙孔磨得发亮。",
+      "irony": "那把钥匙，一直都开得了门",
+      "index": 49,
+      "id": "old-door-lock",
+      "name": "一直没有换的家门锁",
+      "source": "留灯间",
+      "roles": [
+        "弹体改造"
+      ],
+      "statOnly": false,
+      "production": [
+        "projectile"
+      ],
+      "hero": "腰间挂着那把一直没换的旧门锁，钥匙孔磨得发亮。",
+      "projectile": "《一口气》到终点被锁住折返，回到身边再以更狠的力道打第二遍。",
+      "feedback": "终点浮出锁孔咔一声，回程弹描边加重。"
+    },
+    {
+      "look": "脸颊泛着代喝上头的红，开场脚下有点飘。",
+      "irony": "身体是递给酒桌的投名状",
+      "index": 50,
+      "id": "drank-for-boss",
+      "name": "酒局上代喝的那杯",
+      "source": "回忆祭坛",
+      "roles": [
+        "生存防御",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "decal"
+      ],
+      "hero": "脸颊泛着代喝上头的红，开场脚下有点飘。",
+      "projectile": "保持当前《一口气》配方，反伤是独立的范围回敬。",
+      "feedback": "攒够层数时周身晃出一圈酒气反伤，开场画面轻微摇。"
+    },
+    {
+      "look": "嘴角挂着一根吃出来的头发，反胃的表情压着。",
+      "irony": "又穷，又讲究不起",
+      "index": 51,
+      "id": "hair-in-takeout",
+      "name": "外卖里吃出的头发",
+      "source": "回忆祭坛",
+      "roles": [
+        "生存防御"
+      ],
+      "statOnly": false,
+      "production": [
+        "decal"
+      ],
+      "hero": "嘴角挂着一根吃出来的头发，反胃的表情压着。",
+      "projectile": "保持当前《一口气》配方，只作用于自动回血。",
+      "feedback": "触发时干呕一下回一小口血，画面泛一层反胃绿。"
+    },
+    {
+      "look": "影子摊成一片没洗的枕套，越不动陷得越深。",
+      "irony": "躺平是仅剩的自我保护",
+      "index": 52,
+      "id": "unwashed-pillow",
+      "name": "没洗的枕套",
+      "source": "回忆祭坛",
+      "roles": [
+        "生存防御",
+        "位移节奏"
+      ],
+      "statOnly": false,
+      "production": [
+        "aura"
+      ],
+      "hero": "影子摊成一片没洗的枕套，越不动陷得越深。",
+      "projectile": "保持当前《一口气》配方，只改减伤与起身节奏。",
+      "feedback": "静止满2秒时周身罩一层灰蒙护罩，起身时\"啪\"地散掉。"
+    },
+    {
+      "look": "袜筒里露出半根藏着的烟，走路带点满不在乎的劲。",
+      "irony": "慢性自毁被叫做解压",
+      "index": 53,
+      "id": "sock-cigs",
+      "name": "藏在袜子里的烟",
+      "source": "回忆祭坛",
+      "roles": [
+        "位移节奏"
+      ],
+      "statOnly": false,
+      "production": [
+        "decal"
+      ],
+      "hero": "袜筒里露出半根藏着的烟，走路带点满不在乎的劲。",
+      "projectile": "保持当前《一口气》配方，只改受伤后的走位。",
+      "feedback": "受伤瞬间脚下窜出一缕烟提速，扣血时最大血条悄悄缩一格。"
+    },
+    {
+      "look": "手里攥着验孕棒，站姿不自觉护起了小腹。",
+      "irony": "先成为父亲，再学会当人",
+      "index": 54,
+      "id": "pregnancy-test",
+      "name": "验孕棒",
+      "source": "回忆祭坛",
+      "roles": [
+        "召唤继承"
+      ],
+      "statOnly": false,
+      "production": [
+        "projectile",
+        "morph"
+      ],
+      "hero": "手里攥着验孕棒，站姿不自觉护起了小腹。",
+      "projectile": "每第三轮由跟随剪影多打出一枚继承当前配方的弹。",
+      "feedback": "复制弹出膛时剪影亮一下两道杠，商城标价上浮。"
+    },
+    {
+      "look": "腰上别着一张几乎没用过的健身房年卡。",
+      "irony": "买的不是健康，是\"有在管自己\"的错觉",
+      "index": 55,
+      "id": "gym-card",
+      "name": "健身房年卡",
+      "source": "回忆祭坛",
+      "roles": [
+        "位移节奏",
+        "经济资源"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid"
+      ],
+      "hero": "腰上别着一张几乎没用过的健身房年卡。",
+      "projectile": "保持当前《一口气》配方，只改移速。",
+      "feedback": "持续移动时卡面亮\"到店\"层数，月初自动划走一枚零钱。"
+    },
+    {
+      "look": "脸上定格着遗照那张笑，越到最后越僵。",
+      "irony": "人这辈子最配合的一次摆拍",
+      "index": 56,
+      "id": "funeral-photo",
+      "name": "遗照选用的那张",
+      "source": "回忆祭坛",
+      "roles": [
+        "生存防御"
+      ],
+      "statOnly": false,
+      "production": [
+        "decal"
+      ],
+      "hero": "脸上定格着遗照那张笑，越到最后越僵。",
+      "projectile": "狂暴五秒内《一口气》全面强化，像回光返照。",
+      "feedback": "触发时画面压成黑白定格一帧，随即1血带笑爆发。"
+    },
+    {
+      "look": "不举手机、不挂气泡，句号直接显示在头发正上方",
+      "irony": "被三个点吊住，又把没等到的话朝所有方向说完",
+      "index": 57,
+      "id": "typing-indicator",
+      "name": "对方正在输入…",
+      "source": "回忆祭坛",
+      "roles": [
+        "弹体改造",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "projectile",
+        "aura"
+      ],
+      "hero": "不举手机、不挂气泡；只在头发正上方依次出现一、二、三个像素句号。",
+      "projectile": "第三个句号出现时，从主角位置向360度均匀散出12枚当前《一口气》，继承当前外形、材质、穿透、追踪、折返、分裂与爆炸。",
+      "feedback": "第三个句号停留0.5秒，并在出现瞬间触发一圈大范围扩散环；不再出现巨弹缩成\"嗯\"的旧演出。"
+    },
+    {
+      "look": "影子上滚动播放一份年度听歌报告，循环着同几首。",
+      "irony": "大数据比他妈先知道他不对劲",
+      "index": 58,
+      "id": "year-report",
+      "name": "年度听歌报告",
+      "source": "回忆祭坛",
+      "roles": [
+        "召唤继承"
+      ],
+      "statOnly": false,
+      "production": [
+        "projectile",
+        "aura"
+      ],
+      "hero": "影子上滚动播放一份年度听歌报告，循环着同几首。",
+      "projectile": "每第四轮把上一轮的《一口气》弹道原样重放一遍，弱一点、偏一格色。",
+      "feedback": "重放那轮弹道泛出歌单配色，开场血条先掉两点。"
+    },
+    {
+      "look": "人物直接戴上圆头粉色小恐龙头套，身体和衣服仍保持原样",
+      "irony": "只有没有名字的时候才敢做自己",
+      "index": 59,
+      "id": "momo-avatar",
+      "name": "momo的头像",
+      "source": "回忆祭坛",
+      "roles": [
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "decal"
+      ],
+      "hero": "主角戴上圆头粉色小恐龙头套；只替换头部轮廓，身体和衣服仍是本人，却已经认不出是谁。",
+      "projectile": "保持当前《一口气》配方，距离只调暴击与伤害。",
+      "feedback": "拉开距离时暴击金光更亮，被贴脸时头像闪一下变怂。"
+    },
+    {
+      "look": "手机屏亮着和AI聊到凌晨的对话，回复永远秒到。",
+      "irony": "这个时代最耐心的倾听者是个语言模型",
+      "index": 60,
+      "id": "ai-chat",
+      "name": "和AI聊到凌晨",
+      "source": "回忆祭坛",
+      "roles": [
+        "召唤继承",
+        "命运交互"
+      ],
+      "statOnly": false,
+      "production": [
+        "projectile"
+      ],
+      "hero": "手机屏亮着和AI聊到凌晨的对话，回复永远秒到。",
+      "projectile": "每轮《一口气》打完，0.4秒后自动复读一轮更弱的回声弹。",
+      "feedback": "回声弹出膛带打字气泡感，命运结算后回一小口血。"
+    },
+    {
+      "look": "手里举着连续签到1847天的打卡页，一天不敢断。",
+      "irony": "他的坚持全喂给了一个 APP",
+      "index": 61,
+      "id": "streak-1847",
+      "name": "连续签到1847天",
+      "source": "回忆祭坛",
+      "roles": [
+        "位移节奏",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid"
+      ],
+      "hero": "手里举着连续签到1847天的打卡页，一天不敢断。",
+      "projectile": "踩点整十秒时《一口气》首发必爆，其余照常。",
+      "feedback": "临近整十秒时打卡页高亮读秒，准点首发金光暴击。"
+    },
+    {
+      "look": "影子里透出说完晚安又醒着的手机冷光。",
+      "irony": "睡不着不是困不困，是不甘心",
+      "index": 62,
+      "id": "goodnight-2h",
+      "name": "晚安之后的两小时",
+      "source": "回忆祭坛",
+      "roles": [
+        "位移节奏"
+      ],
+      "statOnly": false,
+      "production": [
+        "aura"
+      ],
+      "hero": "影子里透出说完晚安又醒着的手机冷光。",
+      "projectile": "保持当前《一口气》配方，只在残血时提速。",
+      "feedback": "低血时射速拉高、屏幕泛蓝光，每半分钟最大血条缩一格。"
+    },
+    {
+      "look": "手机屏弹着\"对方已开启朋友验证\"，怎么发都先被退回。",
+      "irony": "这个时代的绝交是静音的",
+      "index": 63,
+      "id": "friend-verify",
+      "name": "对方已开启朋友验证",
+      "source": "回忆祭坛",
+      "roles": [
+        "弹体改造"
+      ],
+      "statOnly": false,
+      "production": [
+        "projectile"
+      ],
+      "hero": "手机屏弹着\"对方已开启朋友验证\"，怎么发都先被退回。",
+      "projectile": "《一口气》首次命中不结算、盖章折返，回来再打一次才真正生效。",
+      "feedback": "首命中弹出\"验证失败\"红戳并折返，二次命中才出伤。"
+    },
+    {
+      "look": "换成练了一个暑假的中二跑姿，手臂朝后甩。",
+      "irony": "现在他还这样跑——在地铁关门前",
+      "index": 64,
+      "id": "summer-run",
+      "name": "练了一个暑假的跑法",
+      "source": "回忆祭坛",
+      "roles": [
+        "位移节奏"
+      ],
+      "statOnly": false,
+      "production": [
+        "morph"
+      ],
+      "hero": "换成练了一个暑假的中二跑姿，手臂朝后甩。",
+      "projectile": "保持当前《一口气》配方，只改跑动与惯性。",
+      "feedback": "连续跑动时身后拉出速度残影，急停时脚下滑半步。"
+    },
+    {
+      "look": "影子里亮着一句\"再来一把就睡\"的屏光，怎么都不肯关。",
+      "irony": "不是想赢，是不甘心就这样结束今天",
+      "index": 65,
+      "id": "one-more-game",
+      "name": "再来一把就睡",
+      "source": "回忆祭坛",
+      "roles": [
+        "规则触发",
+        "经济资源"
+      ],
+      "statOnly": false,
+      "production": [
+        "aura"
+      ],
+      "hero": "影子里亮着一句\"再来一把就睡\"的屏光，怎么都不肯关。",
+      "projectile": "保持当前《一口气》配方，只影响开场节奏与增伤。",
+      "feedback": "过渡时弹出两项抉择；继续后显示熬夜层数，下一阶段开场先沉默对应时长。"
+    },
+    {
+      "look": "触发时原有双臂抬起，拇指与食指贴着双眼眼眶形成受压弧环，像轮刮、揉按眼眶；常态不显示",
+      "irony": "为革命保护视力，第四节，轮刮眼眶",
+      "index": 66,
+      "id": "eye-exercise",
+      "name": "眼保健操",
+      "source": "回忆祭坛",
+      "roles": [
+        "生存防御",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "decal"
+      ],
+      "hero": "人物常态不变；到点时原有双臂抬起，拇指与食指贴着双眼眼眶形成受压弧环，像轮刮、揉按眼眶，半秒后放下。",
+      "projectile": "保持当前《一口气》配方，闭眼只给无敌窗口。",
+      "feedback": "闭眼时画面轻微发暗+护罩，睁眼后敌人明显窜快一下。"
+    },
+    {
+      "look": "背上背着一本大扫除时差点清掉的卡册，翻出旧卡。",
+      "irony": "大人的一次大扫除，清空一个宇宙",
+      "index": 67,
+      "id": "card-binder",
+      "name": "大扫除清掉的卡册",
+      "source": "回忆祭坛",
+      "roles": [
+        "召唤继承"
+      ],
+      "statOnly": false,
+      "production": [
+        "projectile",
+        "rigid"
+      ],
+      "hero": "背上背着一本大扫除时差点清掉的卡册，翻出旧卡。",
+      "projectile": "复制所收道具的核心触发，间接改写《一口气》的一部分打法。",
+      "feedback": "每阶段翻卡定格随机加成，阶段末整册合上消失。"
+    },
+    {
+      "look": "脸上挂着一副抽象话十级的怪表情，专门招人。",
+      "irony": "会说的字越来越少，没说的话越来越多",
+      "index": 68,
+      "id": "abstract-lv10",
+      "name": "抽象话十级",
+      "source": "回忆祭坛",
+      "roles": [
+        "命运交互",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "decal"
+      ],
+      "hero": "脸上挂着一副抽象话十级的怪表情，专门招人。",
+      "projectile": "保持当前《一口气》配方，嘲讽只改敌人仇恨与易伤。",
+      "feedback": "嘲讽时最近敌人头顶冒抽象梗气泡并红着眼冲来。"
+    },
+    {
+      "look": "背后拖着一台小卖部旧冰柜，冒着白气。",
+      "irony": "那家小卖部拆了。冰雾有时候还在梦里冒",
+      "index": 69,
+      "id": "shop-freezer",
+      "name": "小卖部的冰柜",
+      "source": "回忆祭坛",
+      "roles": [
+        "弹体改造",
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "projectile"
+      ],
+      "hero": "背后拖着一台小卖部旧冰柜，冒着白气。",
+      "projectile": "《一口气》裹上一层低像素冰雾，命中有概率把敌人冻住。",
+      "feedback": "冻结命中时敌人结一层冰壳定住，弹体拖冷雾。"
+    },
+    {
+      "look": "影子边常驻一个有头身的小伙伴；致命伤时跃到人物身前替挡、断线并永久消失，不出现屏幕、终端或设备",
+      "irony": "有些死亡不发讣告，只发停服公告",
+      "index": 70,
+      "id": "server-shutdown",
+      "name": "关服那天",
+      "source": "回忆祭坛",
+      "roles": [
+        "生存防御"
+      ],
+      "statOnly": false,
+      "production": [
+        "event",
+        "aura"
+      ],
+      "hero": "影子边跟着一个有清楚头身的小伙伴剪影，动作慢半拍；不画成屏幕、终端或设备。",
+      "projectile": "保持当前《一口气》配方，替死是一次性事件。",
+      "feedback": "致命瞬间小伙伴依次出现、跃出、替挡、断线；结束后本局永久清空且不留地面残骸，此后治疗变弱。"
+    },
+    {
+      "look": "身体颜色逐渐褪去",
+      "irony": "把麻木误认为坚强",
+      "index": 71,
+      "id": "painless-night",
+      "name": "没有痛觉的夜晚",
+      "source": "里屋",
+      "roles": [
+        "规则触发",
+        "生存防御"
+      ],
+      "statOnly": false,
+      "production": [
+        "aura",
+        "decal"
+      ],
+      "hero": "影子泛着一层没有痛觉的夜色，身上的伤一时都不疼。",
+      "projectile": "延迟池越满，《一口气》越狠，代价是账迟早一起来。",
+      "feedback": "受伤时数字入池变暗并给攻击加成，8秒到点血条一次性掉空。"
+    },
+    {
+      "look": "神情设防，欲言又止",
+      "irony": "轮到自己开口时，已经没人在听",
+      "index": 72,
+      "id": "ktv-song",
+      "name": "KTV里没人听的那首歌",
+      "source": "里屋",
+      "roles": [
+        "弹体改造",
+        "召唤继承"
+      ],
+      "statOnly": false,
+      "production": [
+        "projectile"
+      ],
+      "hero": "脖子上还挂着KTV的麦，唱的那首始终没人听。",
+      "projectile": "常规《一口气》被压弱，攒够则向四周吼出一整圈继承全部形变的声浪。",
+      "feedback": "攒满时周身炸开一圈声波涟漪，常规命中偏闷。"
+    },
+    {
+      "look": "人物常态不挂雾；攻击出膛时弹体直接变成宽短雾锥",
+      "irony": "名字擦掉了，呵出来的气是热的",
+      "index": 73,
+      "id": "breath-on-glass",
+      "name": "冬天呵在玻璃上的字",
+      "source": "留灯间",
+      "roles": [
+        "弹体改造"
+      ],
+      "statOnly": false,
+      "production": [
+        "projectile"
+      ],
+      "hero": "人物常态不挂雾、不变眼睛；攻击时弹体从嘴前直接呵成宽短雾锥。",
+      "projectile": "《一口气》被呵成一支又宽又短的雾锥，穿得更透、飞不太远。",
+      "feedback": "出膛时弹头散成白雾锥，命中在敌人身上留一层水汽。"
+    },
+    {
+      "look": "近手攥着薄米白通知书，旧红录取章、学校徽记块和折痕一眼可见；侧面保持纸张厚度，不画成信封或证书卷轴",
+      "irony": "选择变多了，第一次不能说不去",
+      "index": 74,
+      "id": "admission-notice",
+      "name": "入学通知书",
+      "source": "传承",
+      "roles": [
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid",
+        "event"
+      ],
+      "hero": "近手始终攥着一张薄薄的米白录取通知书；正面只保留学校徽记块、横向信息栏与醒目的旧红录取章，背面露出折痕，侧面必须薄到像纸，不出现可读文字。",
+      "projectile": "不碰《一口气》：弹体保持原样，它改的是选择本身。",
+      "feedback": "拾取时整屏落章「这一身 · 第五档」；此后每次奖励都多出第四格。"
+    },
+    {
+      "look": "近手握着深钛灰新机，背面三镜头模组、正面冷白屏光与顶部岛形区域负责识别；不画品牌标志、挂绳或可读界面",
+      "irony": "买得起最贵的联系工具，还是没有一条消息能等",
+      "index": 75,
+      "id": "iphone-17-pro-max",
+      "name": "最新款的 iPhone 17 Pro Max",
+      "source": "传承",
+      "roles": [
+        "规则触发",
+        "经济资源"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid",
+        "event"
+      ],
+      "hero": "近手始终握着一台深钛灰新机；背面用清楚的三镜头模组识别，正面只留冷白屏光与顶部深色岛形区域，不画品牌标志和可读文字；消息到来时屏光骤亮并在头顶弹出短气泡。",
+      "projectile": "不改弹形：还是那一口气，只是更狠、更快。",
+      "feedback": "零钱清零用金字浮词当场记账；每条新消息在头顶弹「手停了一下」。"
+    },
+    {
+      "look": "腰侧别着灰绿布脊病历本，米白旧封皮露出红色挂号条、医院章块和层叠页签；不画成散页报告、药包或急救箱",
+      "irony": "父亲没说过的病，最后都写进了他的症状栏",
+      "index": 76,
+      "id": "fathers-chart",
+      "name": "父亲的病历本",
+      "source": "传承",
+      "roles": [
+        "规则触发"
+      ],
+      "statOnly": false,
+      "production": [
+        "rigid",
+        "event"
+      ],
+      "hero": "腰侧别着一本翻旧的灰绿布脊病历本；米白封面露出旧红挂号条、医院章块和多层页签，纸角卷起，四方向都保持同一本册子的厚薄与腰带夹法，不出现可读文字。",
+      "projectile": "弹体不换形；透支掉的每一格都折成更重的伤害。",
+      "feedback": "每跨过一档十点，攻击浮词更沉一分；治疗时数字明显缩水。"
+    }
+  ]
+}

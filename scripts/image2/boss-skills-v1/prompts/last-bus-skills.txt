@@ -1,0 +1,7 @@
+Use case: stylized-concept
+Asset type: 2x2 pixel-art small-boss skill pose sheet for an action game
+Primary request: Preserve the exact worn late-night city bus identity from the runtime reference, including its long horizontal body, old yellow signal lights and dark windows. Four strongly different poses in reading order: stopped at the curb with doors open; doors snapping shut and front lights brightening; full bus lunging sideways with a short attached exhaust-and-speed wake; only the receding rear and two red tail lights visible as it leaves. Keep one complete bus in every cell.
+Style: crisp high-detail pixel art matching the references, readable at 64px, unmistakably a threatening small boss rather than a tiny icon.
+Layout: exact 2x2 grid, identical bus construction and viewpoint family, consistent scale, generous gutters.
+Background: perfectly flat solid #00ff00 chroma key, no station, road, people, floor, labels, borders, route text, or numbers.
+Avoid: car, train, school bus, front-facing square vehicle, detached smoke cloud, motion blur, smooth painting.

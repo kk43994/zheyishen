@@ -1,0 +1,19 @@
+Create one 2x2 game-VFX sprite source sheet using the supplied references.
+
+Reference order:
+1. Canonical project style board: match its dark fairytale pixel-art language, restrained palette, hard pixels and exact-size readability.
+2. Approved breath projectile family: every quadrant must still read as a form of the moon-white breath carrier unless explicitly stated.
+3. Name-sold contract equipment sheet: use its regulated, anonymous, serial-production feeling.
+4. Typing-indicator equipment sheet: use its held-back, unsent pressure, but never copy readable UI text.
+5. Loose-button equipment sheet: use the actual small uniform button identity.
+6. Bargain-link equipment sheet: use the incomplete red-gold link identity without copying app UI.
+
+Output layout: exactly four isolated sprites in a clean 2x2 grid on solid pure chroma green #00FF00. No grid lines. Each sprite is centered in its quadrant, faces right, occupies about 72 percent of the quadrant, and has a strong silhouette that remains distinct after reduction to 28x28 pixels.
+
+Quadrants, left-to-right then top-to-bottom:
+1. SERIAL PROJECTILE: moon-white breath compressed into a uniform grey capsule or short rectangular round, with three barcode-like dark ticks. Perfectly regular and emotionally flat. No readable number, no document, no receipt.
+2. TYPING PROJECTILE: one oversized dense moon-white breath mass with three tiny square pulse marks embedded near its rear edge. It must read as pressure held inside breath, not a speech bubble. No ellipsis text, no letters, no chat window.
+3. BUTTON EXTRA SHOT: a small inherited moon-white breath body wrapped around one clearly visible worn two-hole uniform-button core. The breath remains the carrier; do not draw a loose button by itself and do not add thread.
+4. BARGAIN HELPER SHOT: a small inherited moon-white breath core inside one incomplete red-and-muted-gold chain link. Leave a visible gap so it reads as unfinished assistance. No app logo, no currency symbol, no shopping UI.
+
+Chunky low-resolution pixel art, crisp hard pixel clusters, no anti-aliasing, no gradients, no glow haze, no shadows cast onto the green, no scenery, no border, no UI, no text, no letters, no numbers, no faces.

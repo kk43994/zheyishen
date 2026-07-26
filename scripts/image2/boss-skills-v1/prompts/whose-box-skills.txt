@@ -1,0 +1,8 @@
+Use case: stylized-concept
+Asset type: 2x2 pixel-art small-boss skill pose sheet for an action game
+Input images: Image 1 is the canonical game style board. Image 2 is the exact runtime identity reference and is authoritative for silhouette, construction, colors and viewing angle.
+Primary request: Preserve the exact battered office moving-box-on-chair identity from Image 2. It is a taped cardboard carton strapped to the seat/back of a worn swivel office chair, with the chair post, five-spoke metal base and wheels visibly attached. The same chair-and-box construction must remain unmistakable and nearly the same size in all four cells. Four poses in reading order: closed carton on chair waiting; one blank inventory label lifting just above the carton; a large old-red office stamp pressing that label onto the carton while the chair remains visible; carton tightly sealed on the same chair with the label attached and red tape crossing the lid. No readable writing is needed.
+Style: crisp high-detail pixel art matching the references, readable at 48px, literal office object with a deliberate confiscation action.
+Layout: exact 2x2 layout, one complete chair-and-box subject per cell, identical construction and three-quarter viewpoint, consistent scale, each subject occupies roughly 60-70 percent of its cell, generous gutters. No visible grid dividers.
+Background: perfectly flat solid #00ff00 chroma key, no office, desk, floor, hands, person, labels outside the subject, borders, letters, or numbers.
+Avoid: box without chair, cube replacing the chair silhouette, treasure chest, gift box, monster face, teeth, wooden cabinet, detached stamp in every pose, different object between cells, smooth painting, blur.

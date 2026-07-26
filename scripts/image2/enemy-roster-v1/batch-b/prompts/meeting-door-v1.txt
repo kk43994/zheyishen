@@ -1,0 +1,17 @@
+Use case: stylized-concept
+Asset type: 32x32 stationary enemy sprite action foundation, delivered as one 1024x1024 source sheet
+Input images: Image 1 is the mandatory canonical project style board; Image 2 is the approved runtime enemy-family action contact sheet. Match their chunky logical pixels, daily-object monster language, limited palette, deep-ink outline, and top-left light. Do not copy the existing debt-collector door.
+
+Create one middle-age enemy called "The Meeting Room Door": a narrow modern office meeting-room door in its own slim metal frame, with a large cold frosted-glass panel, a horizontal push bar, and two faint head-and-shoulder silhouettes visible BEHIND the glass. The door never attacks and never grows limbs. Its unease comes from hearing a meeting continue without you. It slows the player who lingers nearby.
+
+Strict 2x2 quadrant order, same door and scale in every quadrant:
+- top-left: idle, fully closed, two vague silhouettes behind frosted glass;
+- top-right: ambient/movement state, silhouettes shift one step while the door itself remains rooted;
+- bottom-left: slowdown aura active, door remains closed while two short cold-blue-grey threshold bands compress toward its base; no projectile;
+- bottom-right: hurt, frame rattled and glass showing one broad safe pixel crack, silhouettes recede, door still shut.
+
+Composition: exactly four isolated full doors, one centered in each quadrant, identical camera distance and near-front three-quarter game-sprite perspective, bottom-center anchor, generous green padding.
+Scene/backdrop: perfectly flat uniform solid pure #00ff00 only.
+Style/medium: crisp deliberately low-resolution pixel art, hard square pixels, one logical-pixel deep-ink outline, 10-16 colors, worn hospital-blue-grey metal, smoky glass, paper-dim highlights, one restrained old-red indicator, top-left light.
+Constraints: clearly different from the red-notice debt-collector door: no pasted bills, no fist, no red paper covering, no legs, no face. No readable room sign, text, letters, digits, people in front, open doorway, cast shadow, floor plane, grid, dividers, scenery, watermark, anti-aliasing, gradients, blur, smooth vector edges, photorealism, fantasy ornament.
+

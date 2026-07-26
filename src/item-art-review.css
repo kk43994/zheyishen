@@ -1,0 +1,63 @@
+:root {
+  color: #e9e2d5;
+  background: #111014;
+  font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: #111014; }
+button, input { font: inherit; }
+
+.catalog-shell { max-width: 1600px; margin: 0 auto; padding: 28px 24px 48px; }
+.catalog-head {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end;
+  gap: 24px; padding: 0 0 18px; border-bottom: 1px solid #3a3740;
+}
+.catalog-kicker { margin: 0 0 6px; color: #c7a052; font-size: 12px; }
+h1 { margin: 0; font-size: 28px; line-height: 1.2; letter-spacing: 0; font-weight: 650; }
+.catalog-summary { margin: 8px 0 0; color: #aaa3a9; font-size: 13px; }
+.catalog-counts { display: flex; gap: 14px; color: #aaa3a9; font-size: 12px; }
+.catalog-counts strong { color: #f0e8da; font-size: 20px; font-weight: 650; }
+
+.catalog-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px; margin-top: 16px;
+}
+.item-card {
+  min-width: 0; overflow: hidden; border: 1px solid #37333b; border-radius: 6px;
+  background: #1b191f;
+}
+.item-card[data-source="留灯间"] { border-top-color: #c7a052; }
+.item-card[data-source="里屋"] { border-top-color: #9e555c; }
+.item-card[data-visible="false"] { outline: 2px solid #d95454; outline-offset: -2px; }
+.art-stage { width: 100%; aspect-ratio: 48 / 25; display: block; background: #15141a; image-rendering: pixelated; }
+.item-copy { padding: 11px 13px 13px; border-top: 1px solid #302d34; }
+.item-line { display: flex; gap: 10px; align-items: baseline; justify-content: space-between; }
+.item-index { color: #6f6873; font: 11px ui-monospace, monospace; }
+.item-name { margin: 0; min-width: 0; font-size: 15px; line-height: 1.35; letter-spacing: 0; }
+.source { flex: none; color: #a8a1a8; font-size: 11px; }
+.look-copy, .irony-copy { margin: 8px 0 0; color: #c8c0c2; font-size: 12px; line-height: 1.5; }
+.look-copy span, .irony-copy span {
+  display: inline-block; width: 34px; margin-right: 7px; color: #837b83;
+  font: 10px ui-monospace, monospace;
+}
+.irony-copy { min-height: 36px; margin-top: 3px; color: #a9a0a4; }
+.consumer-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.consumer-mode { overflow: hidden; color: #77717a; font: 9px ui-monospace, monospace; text-overflow: ellipsis; white-space: nowrap; }
+.source-swatches { display: flex; flex: none; gap: 2px; }
+.source-swatches i { width: 10px; height: 10px; border: 1px solid #524d55; background: var(--swatch); }
+.tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
+.tag { border: 1px solid #48434b; border-radius: 3px; padding: 2px 6px; color: #8f8991; font: 10px ui-monospace, monospace; }
+.delta { margin-left: auto; border-color: #466858; color: #86b49a; }
+.delta.zero { border-color: #8c3f46; color: #e27c82; }
+.projectile { border-color: #765c7d; color: #bc93c8; }
+.worn { border-color: #625c46; color: #b9aa76; }
+.image2 { border-color: #5e745f; color: #9cbb92; }
+
+@media (max-width: 1100px) { .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 700px) {
+  .catalog-shell { padding: 20px 12px 36px; }
+  .catalog-head { grid-template-columns: 1fr; }
+  .catalog-grid { grid-template-columns: 1fr; }
+}

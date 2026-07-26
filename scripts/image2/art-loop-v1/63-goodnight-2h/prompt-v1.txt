@@ -1,0 +1,31 @@
+Use case: stylized-concept
+Asset type: detachable four-direction ground-shadow overlay source sheet for one item in the Chinese pixel-art action game 《这一身》, targeting a 40x56 logical hero sprite
+Primary request: create only the foot-level phone and cold-screen-light manifestation for item 63, “晚安之后的两小时”; this is a mundane phone left awake inside the hero's shadow, never a magical blue aura
+
+Input images:
+Image 1 is the canonical palette, pixel density and hard-outline reference.
+Image 2 is the approved exact front, left, back, right hero ground-anchor reference. Match the foot baseline, shadow width and direction order, but do not include or redraw any part of the hero.
+Image 3 is the rejected previous source and a negative reference only. It failed because every quadrant became a blue elliptical portal with a large empty center and floating clock-like dots. Remove that entire visual language.
+Image 4 is a schematic exact-scale geometry reference. Preserve only its semantic hierarchy: dark ground shadow, unmistakable black phone rectangle, narrow cold-white screen inside the phone, and a small one-sided blue-gray light patch. Do not turn its long shadow strip into a platform.
+
+Canon event and irony: “发完晚安，他又刷了两小时。” He says good night to finish the day other people can see, then steals two more irresponsible hours from tomorrow. The image is exhausted, private and ordinary, not supernatural.
+
+Direction layout: strict 2x2 equal quadrants with generous green padding. Top-left front, top-right left profile, bottom-left back, bottom-right right profile. Identical logical scale and foot baseline. No labels, separators, grid lines or extra variants.
+
+Each quadrant must show all of the following as one compact ground overlay:
+- one low hard-edged charcoal foot-shadow fragment, no larger than about 22x8 logical pixels after reduction;
+- one unmistakable face-up smartphone represented by a neutral-black rectangular frame, roughly 6x3 logical pixels in front/back and 3x6 in side views;
+- one narrow cold-white or pale blue-white screen inset inside the black phone frame, with a visible black bezel on at least three sides;
+- two or three tiny short feed-bar pixels inside the screen, abstract and unreadable;
+- one restrained blue-gray light wedge touching only the phone-side portion of the shadow and occupying less than half the shadow width.
+
+Directional placement: keep the phone near the corresponding near foot. Front places it just to the viewer's right of center; left profile places it beside the left-facing toe with its long axis front-to-back; back places it just to the viewer's left of center; right profile mirrors the left view. The hero's feet will be composited over the shadow later, so keep the phone outside the central ankle gap and do not float it above ground.
+
+Runtime readability: the phone's black rectangle and pale inset screen must remain separately visible after the complete quadrant is reduced to a 40x56 hero cell. The screen is narrow and hard, not a bloom. The authored overlay must contain no closed oval or large transparent hole.
+
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background with no floor, ambient scene, cast shadow on the green, texture, gradient, reflection or lighting variation. Use #00ff00 nowhere in the authored overlay.
+Style/medium: restrained Chinese indie-game pixel art, crisp square clusters, hard alpha, dark plum-charcoal shadow, neutral-black phone, muted steel-blue local light and cold off-white screen, maximum 5 subject colors, no antialiasing, no gradients, no blur
+Composition/framing: overlay pieces only, centered low in each quadrant, consistent scale and wide clean green gaps between cells
+Constraints: no hero, body, head, hands, legs, bed, blanket, room, icon, text, logo, UI frame or watermark
+Avoid: blue portal, teleport ring, magic circle, galaxy, moon, clock, floating ticks, eye symbol, halo, elliptical ring, central hole, entire blue fog cloud, neon cyan pool, spotlight cone, upright phone, giant phone, white slab without black bezel, readable app UI, notification text, green spill, photorealism, smooth vector rendering
+Final gate: at exact 40x56 scale every direction first reads as a black phone with a narrow cold-white screen resting inside the foot shadow; only then should the viewer notice the small blue-gray light contamination. No direction may read as a portal or an undifferentiated blue mist.

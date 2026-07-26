@@ -1,0 +1,14 @@
+Create one square 2x2 character action sheet for the portrait mobile game "Zhe Yi Shen".
+
+SUBJECT
+The same ordinary Chinese male coworker called Xiao Zhang in every quadrant, late twenties to early thirties. Short slightly messy black hair, tired but kind face, white office shirt with rolled sleeves, charcoal trousers, worn black shoes, dark lanyard, and one unmistakable muted yellow rectangular employee badge on his chest. He is modest and human, never heroic, never a monster. Keep his face, clothes, body proportions, badge, and palette exactly consistent in all four poses.
+
+LAYOUT
+Pure flat #00FF00 chroma-key background covering the entire canvas. Four evenly spaced full-body figures, one centered in each quadrant, generous empty green space around every silhouette. No panel borders, no grid lines, no captions, no letters, no numbers.
+- top left: IDLE / WAITING. Slightly hunched, holding one unfinished folded paper near his waist, feet still.
+- top right: FOLLOW / WALK. A clear forward step, one arm balancing, folded paper held close, employee badge swinging slightly.
+- bottom left: SHOOT / HELP. A readable throwing pose, arm extended, just releasing one small tightly folded paper wad toward screen right.
+- bottom right: BACKSTAB / SURVIVOR. Clearly the same man, body twisted and hunched away, several short dry red-brown paper and cardboard spikes growing from the back of his shirt, one tense arm striking toward screen right. Tragic workplace survival, not evil, no blood, no gore, no weapon.
+
+STYLE
+High-density authored pixel art with small controlled pixel clusters, approximately 64x64 game-sprite detail per figure when reduced. Crisp silhouette, restrained Chinese indie-game palette, warm dirty paper whites, charcoal gray, muted badge yellow, and old dried red only in the backstab pose. More facial and clothing detail than a 16-bit chibi sprite, but still unmistakably pixel art. Consistent three-quarter side view facing screen right. Flat game sprite lighting. Transparent-looking hard silhouette against the exact green background. No soft glow, no motion blur, no smooth vector outlines, no 3D render, no photorealism, no floor, no cast shadow, no scenery, no UI, no watermark.

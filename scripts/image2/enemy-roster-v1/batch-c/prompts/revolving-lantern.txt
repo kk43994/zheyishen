@@ -1,0 +1,14 @@
+Use case: stylized-concept
+Asset type: enemy 2x2 action-concept source for later pixel-atlas derivation.
+
+Create one canonical enemy identity shown exactly four times in a clean 2x2 arrangement: top-left idle, top-right beginning to rotate, bottom-left fast rotation, bottom-right compressed defeat transition. Do not draw grid lines, labels, captions, UI, borders, or text.
+
+The enemy is a freestanding traditional revolving paper lantern: a squat cylindrical or softly octagonal paper shade, visible top and bottom wooden rims, a clear central axle, and a repeating band of running-horse silhouettes seen through the paper. The horse silhouettes must visibly advance around the shade from cell to cell so rotation is legible. The lantern is an object, not a person. Keep the entire object fully visible and centered in every cell. Use warm aged paper, muted cinnabar wood, near-black horse shapes, and a tiny restrained amber core.
+
+The first reference is the authoritative style board. The second reference is only a runtime pixel-scale and outline-family reference. Do not reuse its lamp-keeper character, body, head, robe, staff, or handheld-lantern silhouette.
+
+Pixel art only: chunky logical pixels, crisp nearest-neighbor edges, hard one-logical-pixel dark outline, top-left lighting, restrained 10-16 color palette, no anti-aliasing, no painterly rendering, no soft blur. Rotation cues must be sparse blocky pixel marks, never translucent motion blur.
+
+Background must be a perfectly flat, uniform, exact #00ff00 in every unused pixel. No floor, no pedestal, no contact shadow, no cast shadow, no vignette, no gradient, no texture, no glow spill, no green variation. Leave generous green gutters between all four figures.
+
+Avoid: humanoid keeper, handheld lantern, street lamp, pole, face, limbs, extra props, duplicated loose horses, flame outside the paper shade, photorealism, 3D render, smooth vector art, words, watermark.

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "status": "approved-and-promoted",
+  "promotionAllowed": true,
+  "promotionGate": "user-approved-2026-07-25",
+  "sourceMode": "gpt-image-2 edit with canonical project references",
+  "assets": [
+    { "id": "coat-rack", "name": "立在墙角的衣架", "stage": "童年", "kind": "elite", "frame": 48, "batch": "a" },
+    { "id": "others-paper", "name": "别人的那张", "stage": "少年", "kind": "ordinary", "frame": 32, "batch": "a" },
+    { "id": "sign-here", "name": "要签字的那一栏", "stage": "少年", "kind": "ordinary", "frame": 32, "batch": "a" },
+    { "id": "wet-shoes", "name": "还没干的那双鞋", "stage": "成年", "kind": "elite", "frame": 48, "batch": "a" },
+    { "id": "desk-lamp", "name": "没关的台灯", "stage": "成年", "kind": "ordinary", "frame": 32, "batch": "a" },
+    { "id": "reheated-pot", "name": "热过两遍的那锅", "stage": "成年", "kind": "ordinary", "frame": 32, "batch": "a" },
+
+    { "id": "id-scanner", "name": "识别中", "stage": "青年", "kind": "ordinary", "frame": 32, "batch": "b" },
+    { "id": "task-simple", "name": "这个很简单", "stage": "青年", "kind": "ordinary", "frame": 32, "batch": "b" },
+    { "id": "task-revise", "name": "再改一版", "stage": "青年", "kind": "ordinary", "frame": 32, "batch": "b" },
+    { "id": "task-deadline", "name": "辛苦下周一前", "stage": "青年", "kind": "ordinary", "frame": 32, "batch": "b" },
+    { "id": "task-sync", "name": "对齐一下", "stage": "青年", "kind": "ordinary", "frame": 32, "batch": "b" },
+    { "id": "meeting-door", "name": "会议室的门", "stage": "中年", "kind": "ordinary", "frame": 32, "batch": "b" },
+    { "id": "checkup-report", "name": "去年的体检报告", "stage": "中年", "kind": "ordinary", "frame": 32, "batch": "b" },
+
+    { "id": "revolving-lantern", "name": "走马灯", "stage": "暮年", "kind": "elite", "frame": 48, "batch": "c" },
+    { "id": "queue-screen", "name": "叫号屏", "stage": "暮年", "kind": "ordinary", "frame": 32, "batch": "c" },
+    { "id": "others-family", "name": "别人的家属", "stage": "暮年", "kind": "ordinary", "frame": 32, "batch": "c" },
+    { "id": "praise-chair-p1", "name": "你很优秀 · 第一阶段", "stage": "青年", "kind": "boss-phase", "frame": 64, "batch": "c" },
+    { "id": "praise-chair-p2", "name": "你很优秀 · 第二阶段", "stage": "青年", "kind": "boss-phase", "frame": 96, "batch": "c" },
+    { "id": "ringing-phone-p1", "name": "响个不停 · 第一阶段", "stage": "成年", "kind": "boss-phase", "frame": 64, "batch": "c" },
+    { "id": "ringing-phone-p2", "name": "响个不停 · 第二阶段", "stage": "成年", "kind": "boss-phase", "frame": 64, "batch": "c" }
+  ]
+}

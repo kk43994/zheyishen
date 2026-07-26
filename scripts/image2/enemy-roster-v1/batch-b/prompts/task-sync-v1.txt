@@ -1,0 +1,17 @@
+Use case: stylized-concept
+Asset type: 32x32 enemy sprite action foundation, delivered as one 1024x1024 source sheet
+Input images: Image 1 is the mandatory canonical project style board; Image 2 is the approved runtime enemy-family action contact sheet. Match only their pixel grammar, palette discipline, outline, and lighting. Do not reuse the existing whisper/blob enemy or any other task-message body.
+
+Create one youth-stage task-message enemy called "Let's Align On This". It does not directly attack; it pulls other enemies together and synchronizes their motion. Its grayscale silhouette must be a compact CENTRAL SQUARE MESSAGE HUB with four rigid cable-arms extending north, east, south, and west to four small square connector nodes. A single short message tail points downward from the hub. It reads like an office notification turned into a synchronization junction, not a robot, not a mouth, and not a cloud.
+
+Strict 2x2 quadrant order, same identity and scale in every quadrant:
+- top-left: idle, four nodes held wide around the central hub;
+- top-right: moving, hub glides while cable arms trail in a pinwheel-like stagger, still four nodes;
+- bottom-left: support/attack action, all four connector nodes are pulled tightly inward toward the hub and the cables visibly tense;
+- bottom-right: hurt, one cable buckles and the hub recoils, but all nodes remain attached.
+
+Composition: exactly four isolated figures, one centered in each quadrant, identical camera distance and three-quarter-front game-sprite perspective, all cable tips fully visible with generous pure-green padding.
+Scene/backdrop: perfectly flat uniform solid pure #00ff00 only.
+Style/medium: crisp deliberately low-resolution pixel art, hard square pixels, one logical-pixel deep-ink outline, 10-16 colors, muted hospital-blue-grey hub, paper-cream connector highlights, restrained dull-red unread dot, top-left light.
+Constraints: silhouette differentiation is mandatory; do not make a rounded split bubble, doubled patch stack, timer wedge, spider, drone, gear, or fleshy blob. No text, letters, digits, face, eyes, mouth, flesh, whisper cloud, cast shadow, floor, grid, panel divider, scenery, watermark, anti-aliasing, gradients, blur, smooth vector edges, photorealism.
+

@@ -1,0 +1,9 @@
+Use case: stylized-concept
+Asset type: one standalone game inventory icon source, designed to remain unmistakable at 36x36 pixels
+Primary request: create a centered icon for "剩了半袋的漂粉": one small translucent grey plastic bag containing pale yellow bleaching powder, visibly only half full, with the powder settled into one clean mound at the bottom and the empty upper plastic twisted and tied once
+Input images: Image 1 is the canonical project pixel palette and edge-density reference; Image 2 is the previous inventory icon and is a failure reference because its contents look like rocks or rubbish; Image 3 shows the approved yellow hair result and is context only, not the icon subject
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background with no shadow, floor, gradient, texture or lighting variation
+Style/medium: restrained Chinese indie-game pixel art, hard square pixel clusters, deep ink-purple outline, worn translucent plastic, muted pale yellow powder, no antialiasing and no smooth vector edges
+Composition/framing: one isolated bag in a three-quarter view, centered, occupying about 72% of the square; strong triangular bag silhouette; the tied empty plastic and the half-full powder level must both survive aggressive downscaling
+Constraints: exactly one bag; exactly one tied top; one clearly horizontal half-full powder level; at most 8 subject colors; no text, label, logo, watermark or extra object; do not use #00ff00 in the subject
+Avoid: stones, gravel, rubble, rubbish pile, sandbag, flour sack, detergent bottle, hair, wig, head, person, loose powder outside the bag, photographic plastic, soft shadows

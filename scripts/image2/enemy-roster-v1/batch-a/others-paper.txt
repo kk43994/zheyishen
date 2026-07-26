@@ -1,0 +1,16 @@
+Use case: stylized-concept
+Asset type: 32x32 game enemy action concept source
+Input images: Image 1 is the authoritative Zhe Yi Shen canonical style board for palette, outline, top-left light, and pixel density. Image 2 is the authoritative runtime enemy motion sheet for compact 32x32 silhouettes and readable action changes. Preserve that visual language; do not copy any existing creature.
+
+Create one strict 2x2 action sheet of the exact same enemy: "Someone Else's Paper". It is one clean but slightly creased school exam sheet floating upright, always turning its graded face toward the player. Its menace is comparison: the sheet looks neat and highly praised, while remaining an ordinary piece of paper. Give it a large abstract old-red circled approval mark and tidy ruled rows, but absolutely no readable score, digit, word, letter, or name. Do not use a giant red X; this must not be confused with the existing Red Cross enemy.
+
+Quadrants, fixed order:
+- top-left IDLE: hovering face-on, corners gently curled, approval mark visible.
+- top-right MOVE/HOVER: gliding sideways while rotating to keep the marked face presented, two tiny paper-motion nicks only.
+- bottom-left ATTACK: the sheet pushes its marked face closer and emits a tight old-red pressure halo around itself, communicating proximity damage; no projectile and no mouth.
+- bottom-right HURT/DEATH: paper crumples inward and the approval mark breaks across a fold; no gore.
+
+Scene/backdrop: perfectly uniform solid pure #00ff00 chroma-key background in every pixel outside the sprites. No floor plane, no contact shadow, no cast shadow, no background glow, no gradient, no texture.
+Style/medium: crisp chunky low-resolution pixel art designed to survive reduction into a 32x32 enemy frame; hard integer-like pixel clusters; 10-16 visible subject colors; one-logical-pixel deep ink outline; weaker internal lines; top-left light and lower-right shadow. Use old paper #d8d0c1 / #e8e1d3, paper shadow #786f69, deep ink #17151a, and one restrained old-red #9f3548 accent.
+Composition/framing: four equal quadrants, same three-quarter-front camera, same scale and construction, each sprite centered independently with generous green padding and a stable bottom-center anchor. No cropping and no overlap across quadrants.
+Constraints: the four poses must clearly be the same single sheet; readable in 300 ms and distinct from Red Cross and Uniform Answer; no arms, legs, eyes, mouth, grid lines, quadrant borders, labels, captions, readable text, letters, numbers, watermark, UI, scenery, extra pages, extra creatures, antialiasing, blur, gradients, semi-transparent edges, or #00ff00 inside the subject.

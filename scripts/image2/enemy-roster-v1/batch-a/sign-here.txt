@@ -1,0 +1,16 @@
+Use case: stylized-concept
+Asset type: 32x32 game enemy action concept source
+Input images: Image 1 is the authoritative Zhe Yi Shen canonical style board for palette, outline, top-left light, and pixel density. Image 2 is the authoritative runtime enemy motion sheet for compact 32x32 silhouettes and readable action changes. Preserve that visual language; do not copy any existing creature.
+
+Create one strict 2x2 action sheet of the exact same enemy: "The Line That Needs a Parent's Signature". It is the torn bottom strip of a school report sheet, floating horizontally. Its defining feature is one long blank dark signature line with a small old-red pointing tab at one end. The line is empty: no signature, no handwriting, no readable text, no score, no digits. It must look like an unfinished obligation chasing a child, not a sword, ruler, snake, mouth, or full exam paper.
+
+Quadrants, fixed order:
+- top-left IDLE: short paper strip hovering level, blank signature line clearly inset on the paper.
+- top-right MOVE/HOVER: strip curls forward while gliding, still recognizably paper and still showing the blank line.
+- bottom-left ATTACK: the blank line extends out from the paper strip like a flat dark tether and hooks around an empty space, communicating a close-range slowing snare. Keep the paper body visible; do not turn it into a weapon blade.
+- bottom-right HURT/DEATH: strip folds sharply and tears across the blank line into two nearby pieces; no gore.
+
+Scene/backdrop: perfectly uniform solid pure #00ff00 chroma-key background in every pixel outside the sprites. No floor plane, no contact shadow, no cast shadow, no glow, no gradient, no texture.
+Style/medium: crisp chunky low-resolution pixel art designed to survive reduction into a 32x32 enemy frame; hard integer-like pixel clusters; 10-16 visible subject colors; one-logical-pixel deep ink outline; weaker internal lines; top-left light and lower-right shadow. Use old paper #d8d0c1 / #e8e1d3, paper shadow #786f69, deep ink #17151a, and restrained old-red #9f3548 for the pointing tab only.
+Composition/framing: four equal quadrants, same three-quarter-front camera, same scale and construction, each sprite centered independently with generous green padding and a stable bottom-center anchor. No cropping and no overlap across quadrants.
+Constraints: same enemy in all four poses; readable in 300 ms and distinct from Someone Else's Paper, Red Cross, and Uniform Answer; no eyes, mouth, limbs, full-page body, grid lines, quadrant borders, labels, captions, readable text, letters, numbers, watermark, UI, scenery, extra creatures, antialiasing, blur, gradients, semi-transparent edges, or #00ff00 inside the subject.

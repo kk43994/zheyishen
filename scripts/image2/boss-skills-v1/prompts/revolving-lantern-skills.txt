@@ -1,0 +1,8 @@
+Use case: stylized-concept
+Asset type: 2x2 pixel-art small-boss skill pose sheet for an action game
+Input images: Image 1 is the canonical game style board. Image 2 is the exact runtime identity reference and is authoritative for silhouette, construction, colors and viewing angle.
+Primary request: Preserve the exact square old-paper revolving lantern identity from Image 2: broad cream paper body, dark red top and bottom rims, short red cap, black running-horse cutout band on the lamp face, warm orange inner light. The same large square lantern must remain unmistakable and nearly the same size in every cell. Four poses in reading order: quiet lantern with one horse visible; slow turn showing the horse band shifted around the paper body; fast turn with a tight attached ring of horse-shadow streaks around the same body; lantern dimming and shrinking slightly while the horse band folds back into darkness. The spawned life-stage enemies are rendered separately by the game and must not appear in this sprite sheet.
+Style: crisp high-detail pixel art matching the references, readable at 48px, ceremonial small-boss silhouette.
+Layout: exact 2x2 layout, one complete lantern per cell, identical square construction and three-quarter viewpoint, consistent scale, each main lantern occupies roughly 60-70 percent of its cell, generous gutters. No visible grid dividers.
+Background: perfectly flat solid #00ff00 chroma key, no hospital room, floor, labels, borders, or text.
+Avoid: narrow brass table lantern, carnival carousel, horse toy, ordinary table lamp, human silhouettes, free-standing people, detached crowd, different object between cells, smooth painting, blur.

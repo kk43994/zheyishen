@@ -1,0 +1,19 @@
+Create one 2x2 game-VFX sprite source sheet using the supplied references.
+
+Reference order:
+1. Canonical project style board: match its dark fairytale pixel-art language, restrained palette, hard pixels and exact-size readability.
+2. Approved breath projectile family: preserve its moon-white breath language in quadrants 2, 3 and 4.
+3. Friend-verification equipment sheet: use only its failed-access red stamp feeling, never copy readable text.
+4. Stone-schoolbag equipment sheet: use its oppressive weight and dark stone underside, not the bag object.
+5. Cracked-glasses equipment sheet: use its thin cracked refraction and cold cyan edge, not the glasses object.
+6. Five-ha equipment sheet: use its restrained dismissive exhalation as the generated base; an exact Chinese glyph is added later by deterministic post-processing.
+
+Output layout: exactly four isolated sprites in a clean 2x2 grid on solid pure chroma green #00FF00. No grid lines. Each sprite is centered in its quadrant, faces right, occupies about 72 percent of the quadrant, and has a strong silhouette that remains distinct after reduction to 28x28 pixels.
+
+Quadrants, left-to-right then top-to-bottom:
+1. FAILED-VERIFICATION STAMP: one compact rectangular dark-red ink stamp impression with uneven edges and an abstract blocked doorway mark. This is trigger feedback after first contact. The relief must be illegible. No readable text, no chat bubble.
+2. STONE-SCHOOLBAG EFFECT: moon-white breath compressed low and heavy, with a dark grey weighted underside and two tiny falling stone chips. No schoolbag, no boulder, no rock projectile.
+3. CRACKED-GLASSES EFFECT: a very thin elongated moon-white breath with one clear cyan refraction split along its leading edge and a tiny glass shard spark. No eyeglasses, no circular lens icon.
+4. FIVE-HA GLYPH BASE: one small restrained moon-white breath puff, compact and slightly deflated, with a short fading tail and a clean open center reserved for a deterministic Chinese 哈 glyph. Do not attempt to write the glyph in this generated source. No mouth, no face, no smile, no speech bubble.
+
+Chunky low-resolution pixel art, crisp hard pixel clusters, no anti-aliasing, no gradients, no glow haze, no shadows cast onto the green, no scenery, no border, no UI, no text, no letters, no numbers, no faces.

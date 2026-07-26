@@ -1,0 +1,18 @@
+Use case: stylized-concept
+Asset type: production source sheet of item-only face decals, silhouette offsets, and compact attack VFX for the Chinese pixel-art action game 《这一身》, aligned to a 40x56 logical hero sprite
+Primary request: redesign the visual manifestation of “她没说名字的第三颗药” as two unmistakably different alternating states without redrawing the hero
+Input images:
+Image 1 is the canonical palette, pixel density, restrained outline, item, and VFX style reference. Match its lived-in Chinese indie-game art language.
+Image 2 is the current failed 44-third-pill source. It is a NEGATIVE REFERENCE ONLY: do not repeat its large capsule, pink vertical strips, scattered plus signs, or detached decorative fragments.
+Image 3 is the approved front/back/left/right 40x56 hero alignment reference. Use only for direction, body scale, anchors, and empty silhouette placement. Do not redraw or include the hero.
+Image 4 is the approved head/neck/torso anatomy-part alignment reference. Use only to place pupils, cheek marks, shoulder contour offsets, and torso-edge effects. Do not include solid hair, skin, torso, or a complete person.
+Canon appearance: 瞳孔、轮廓和弹道持续错位
+Canon hero manifestation: 狂暴时身形绷胀发红、崩落时缩瘪发青，一颗没名字的药把人拉扯变形
+Canon irony/event: 痛苦被当作圈层通行证
+Subject: two alternating item-effect states made only from sparse face decals, broken contour fragments, and short projectile afterimages. State A, top row: muted hot red, tense and expanded; pupils offset outward, jaw/shoulder/torso contour fragments pushed 1-2 logical pixels away from the body, one doubled attack streak leading ahead. State B, bottom row: cold cyan-grey, exhausted and contracted; pupils sit low and inward, cheek pixels hollow, contour fragments pull 1-2 pixels toward the body, one faint projectile echo lags behind.
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background for removal, one uniform color with no shadows, gradients, floor, texture, reflections, or lighting variation
+Style/medium: restrained Chinese indie-game pixel art, hard square pixels, deliberate compact clusters, dark warm outline, maximum 8 subject colors per state, no antialiasing
+Composition/framing: exact 4-column x 2-row source sheet. Columns from left to right are FRONT, BACK, LEFT, RIGHT. Top row is STATE A RED EXPANDED. Bottom row is STATE B CYAN CONTRACTED. Every cell uses the same invisible 40x56 hero-sized alignment box, same scale, same feet baseline, generous padding, and no labels, separators, borders, or grid lines.
+Readability: the two rows must look clearly different at final 40x56 scale. Red state expands outside the invisible body boundary and leans forward; cyan state contracts inward and sags. Use asymmetrical doubled edges to communicate continuous misregistration, not decorative stripes.
+Constraints: output ONLY item-specific pupil marks, cheek marks, detached 1-2-pixel-equivalent contour fragments, and compact attack/projectile echoes. Keep the center mostly empty where the unchanged base hero will be composited. Each direction must preserve correct front/back/side occlusion. Use #00ff00 nowhere in the subject. No text and no watermark.
+Avoid: complete hero, full head, solid hair, skin, torso fill, arms, legs, full person silhouette, capsule or pill attached to the body, pink vertical bars, plus signs, medical cross, poison cloud, psychedelic rainbow, generic magic aura, runes, fantasy ornament, extra limbs, smooth vector lines, soft glow, UI, labels, grid lines, shadows, reflections

@@ -1,0 +1,16 @@
+Use case: stylized-concept
+Asset type: production source sheet for the rigid hand-held item layer of one item in the Chinese pixel-art action game 《这一身》, targeting a 40x56 logical hero sprite
+Primary request: redesign “第一次工资的信封” as one small, unmistakable wage envelope held tightly in the near hand, shown in a strict four-direction 2x2 source sheet
+Input images:
+Image 1 is the canonical project style board. Match only its restrained Chinese indie-game pixel density, hard cluster edges, muted lived-in materials, outline weight and limited palette.
+Image 2 is a rejected previous source and a negative reference only. It demonstrates the wrong object: a thick rope-bound archive packet with a wax seal. Do not preserve its rope, seal, document stack, thickness, square package silhouette or antique dossier styling. Preserve only the requirement that the final output is a clean four-direction production sheet.
+Canon event: He receives his first salary and grips the envelope in one hand. The ordinary pay packet is slightly swollen by banknotes. For the first time, income is treated by his family and by himself as proof that he is useful.
+Subject: exactly one cheap, palm-sized paper wage envelope. It is thin and rectangular, slightly bulged by banknotes, with one short banknote edge peeking from the flap and one pinched, creased corner showing a tight grip. Use a faded warm red paper envelope with muted kraft-paper wear, not ceremonial decoration.
+Direction identity: top-left front face with the flap seam and subtle money bulge; top-right left edge view, very narrow; bottom-left back face with the simple closing flap; bottom-right right edge view, very narrow. All four views must depict the same single envelope at identical scale and wear state.
+Runtime readability: the front/back object will be reduced to about 10x9 logical pixels and the side views to about 3x9 pixels. Use a clear rectangular silhouette, a one-pixel-equivalent dark outline, one light fold and one darker crease. Keep the object compact enough to sit beside a hand without covering the torso.
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background, one uniform color with no shadow, gradient, texture, floor, reflection or lighting variation. Do not use #00ff00 in the subject.
+Style/medium: restrained Chinese indie-game pixel art, deliberate hard pixel clusters, no antialias softness, muted faded-red paper, warm beige note edge, dark plum-brown outline, up to 8 subject colors
+Composition/framing: strict 2x2 layout with equal cells and generous padding; top-left front, top-right left, bottom-left back, bottom-right right; no labels, separators, grid lines or extra variants
+Constraints: prop only; no hero body, hand, head, skin or complete character; identical object identity and scale across all directions; crisp separated edges; no text, numerals or currency symbols
+Avoid: rope, string, ribbon, bow, wax seal, portfolio, document folder, parcel, book, stack of files, red packet ornament, gift envelope, ceremonial pattern, logo, UI frame, floating support bar, watermark, fantasy ornament, photorealism, smooth vector edges, shadows, extra objects
+Final gate: after nearest-neighbor reduction the first read must be “one small salary envelope”, not “archive packet”, “parcel”, “book” or “stack of papers”.

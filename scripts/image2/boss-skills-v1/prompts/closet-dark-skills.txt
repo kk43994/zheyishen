@@ -1,0 +1,7 @@
+Use case: stylized-concept
+Asset type: 2x2 pixel-art boss skill pose sheet for an action game
+Primary request: Preserve the exact haunted wardrobe identity from the reference. Create four isolated poses in reading order: shadow gathering inside the closed doors; doors violently opening as a long black shadow surges forward; wardrobe splitting open with two pale eyes and two smaller shadows emerging; exhausted doors settling half closed.
+Style: crisp high-detail pixel art matching the reference board, large boss silhouette, readable at 48px.
+Layout: exact 2x2 grid, one complete wardrobe in each cell, generous gutters, consistent scale and viewpoint.
+Background: perfectly flat solid #00ff00 chroma key, no shadows, floor, scenery, labels, borders, or text.
+Avoid: redesigning the wardrobe, humanoid body, multiple unrelated objects, smooth painting, blur, anti-aliased glow.

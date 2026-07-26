@@ -1,0 +1,33 @@
+Use case: stylized-concept
+Asset type: four-direction persistent tiny-companion phase plus four-frame triggered save-event sprite source for a 40x56 logical pixel hero
+
+Primary request: create both (A) the persistent tiny companion that stands beside the protagonist's shadow before use and (B) the momentary “offline companion sacrifices itself” sequence for item 71, “关服那天”. The subject is one tiny electronic-pet companion silhouette, not a computer, monitor, server cabinet or physical device. Before the fatal trigger it remains visibly near the shadow and may move one beat late; during the trigger it moves in front of the unseen protagonist, blocks once, disconnects and disappears forever.
+
+Canon event and irony: “他养的那只电子宠物还在等他喂食。服务器关闭那天，没有人通知它。” / “有些死亡不发讣告，只发停服公告.” Its last act is protecting the player. The image should feel like losing a small relationship, not shutting down hardware.
+
+Input images:
+Image 1: canonical palette, hard pixel density and outline reference.
+Image 2: approved four-direction hero and ground anchors. Use only for scale and trajectory; output no hero anatomy.
+Image 3: current rejected runtime review. Negative reference: remove the permanent foot-side CRT, cable, red indicator and debris.
+Image 4: current rejected full-screen shutdown VFX. Negative reference: do not draw a monitor frame, horizontal shutdown line or full-screen panel.
+Image 5: rejected old Image2 paper source. Negative reference: no paper, envelope, red X, stamp or ink puddle.
+
+Layout: strict 2x2 equal quadrants with generous green gaps. Top-left FRONT, top-right LEFT, bottom-left BACK, bottom-right RIGHT. Inside every quadrant, place exactly five small images in one horizontal left-to-right strip with equal spacing: STANDBY, APPEAR, LEAP, GUARD, DISCONNECT. No labels, separators or extra frames.
+
+Identity: one tiny dark graphite and muted gray-green virtual companion, a simple round-corner head and smaller body, two dim pale-mint eye pixels, short feet or tail sufficient to read as a shy pet. It has no screen, bezel, keyboard, cable, antenna, text or logo. Preserve the same head/body ratio and eye spacing in all directions and frames.
+
+STANDBY: a compact 7x9-logical-pixel-equivalent companion standing at the outer edge of the hero's shadow. It is fully readable, low contrast and grounded, with no surrounding debris. This is a persistent one-phase asset while the save is unused, not a fading echo.
+Frame 1 APPEAR: the exact same companion at the same shadow-side position becomes slightly brighter and more present when fatal damage begins. Identity and scale must match STANDBY.
+Frame 2 LEAP: the same companion moves upward and inward toward the fatal hit. One short trailing pixel cluster may lag behind; do not stretch it into a line or rod.
+Frame 3 GUARD: the same companion is centered in a small 14x16-equivalent impact posture. A restrained pale-mint shield edge or contact flash may wrap around one side, but the companion remains identifiable in the center. No circle, magic portal or full-screen effect.
+Frame 4 DISCONNECT: the companion collapses from its eyes/chest into one dark pixel and 2-4 small gray-green square fragments drifting away from the hero. This frame must contain visibly fewer pixels than GUARD and no object on the ground. Runtime will make the following frame fully transparent and permanently remove STANDBY.
+
+Directional behavior: front/back retain two-eye symmetry only when anatomically visible; left/right show one eye. Side views mirror trajectory, not identity. The partner moves from the outer shadow edge toward the hero center in every direction.
+
+Backdrop: perfectly flat solid #00ff00 with no floor, cast shadow, gradient, texture, reflection, glow field or green spill.
+Style: restrained Chinese indie-game pixel art; hard square clusters; one-pixel-equivalent stepped edges; charcoal outline; muted gray-green body; pale mint eye/contact highlight; at most six subject colors; no antialiasing, gradients or blur.
+
+Constraints: tiny companion and event pieces only; no protagonist body, head, skin, hands or legs; no persistent hardware/equipment; no collectible icon; no UI panel, text, logo or watermark.
+Avoid: CRT, monitor, television, server rack, phone, console, tombstone, gravestone, broken machine, cable, red status light, paper, envelope, red X, magic ring, portal, platform, explosion cloud, large shield bubble, floating rods, ground fragments, cute full-body mascot costume, photorealism, smooth vector rendering.
+
+Final gate: STANDBY reads as a tiny living companion beside the shadow, never a foot-side device; the trigger reads as that same companion brightening, moving to protect the hero, taking one fatal hit and permanently disconnecting; the last frame leaves no persistent remnant and STANDBY is removed only after the trigger.

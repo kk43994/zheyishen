@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "model": "gpt-image-2",
+  "source": "output/imagegen/zhe-yi-shen-xiao-zhang-v1/raw/xiao-zhang-actions.png",
+  "sourceSha256": "ca66b09dff476f8fd32d15f261980d2aa676e96e277a0aa4551f503718b75a6d",
+  "atlas": "src/assets/characters/xiao-zhang.png",
+  "frame": {
+    "width": 64,
+    "height": 64
+  },
+  "columns": 4,
+  "actions": {
+    "idle": {
+      "row": 0,
+      "frames": 4
+    },
+    "follow": {
+      "row": 1,
+      "frames": 4
+    },
+    "shoot": {
+      "row": 2,
+      "frames": 4
+    },
+    "backstab": {
+      "row": 3,
+      "frames": 4
+    }
+  },
+  "quadrants": {
+    "idle": [
+      0,
+      0
+    ],
+    "follow": [
+      1,
+      0
+    ],
+    "shoot": [
+      0,
+      1
+    ],
+    "backstab": [
+      1,
+      1
+    ]
+  },
+  "processing": "green-screen removal; fitted to 54x59; 28-color quantization; four-frame action rows"
+}

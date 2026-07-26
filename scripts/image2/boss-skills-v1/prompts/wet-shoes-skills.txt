@@ -1,0 +1,7 @@
+Use case: stylized-concept
+Asset type: 2x2 pixel-art small-boss skill pose sheet for an action game
+Primary request: Preserve the exact pair of heavy rain-soaked work shoes from the runtime reference. Four strongly different poses in reading order: both shoes standing still with small grounded puddles; leather shuddering while drops shake outward; one shoe taking a heavy first step toward the viewer; alternating fast pursuit step with a short attached water streak. Always show exactly two shoes as one paired enemy.
+Style: crisp high-detail pixel art matching the references, readable at 48px, literal exhausted household object made threatening through movement.
+Layout: exact 2x2 grid, identical shoe pair, consistent scale and viewpoint, generous gutters.
+Background: perfectly flat solid #00ff00 chroma key, no hallway, legs, person, floor, labels, borders, or text.
+Avoid: sneakers, bare feet, creature eyes, mouth, detached splash, four static shoe pairs, smooth painting, blur.

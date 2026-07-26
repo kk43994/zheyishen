@@ -1,0 +1,44 @@
+{
+  "logicalHeroSize": [40, 56],
+  "sourceLayout": {
+    "columns": ["front", "left", "back", "right"],
+    "rows": ["safe", "threatened"]
+  },
+  "anchors": {
+    "safe": {
+      "front": [20, 18],
+      "left": [20, 18],
+      "back": [20, 18],
+      "right": [20, 18]
+    },
+    "threatened": {
+      "front": [20, 19],
+      "left": [20, 19],
+      "back": [20, 19],
+      "right": [20, 19]
+    }
+  },
+  "limits": {
+    "safe": {
+      "front": [22, 20],
+      "left": [21, 20],
+      "back": [20, 19],
+      "right": [21, 20]
+    },
+    "threatened": {
+      "front": [22, 20],
+      "left": [21, 20],
+      "back": [20, 19],
+      "right": [21, 20]
+    }
+  },
+  "gates": {
+    "minimumOriginalHeadCoveragePixels": 70,
+    "maximumOverlayBottomY": 29,
+    "maximumRectangularFillRatio": 0.88,
+    "minimumPinkPixelRatio": 0.45,
+    "bodyClothingLimbOverlayPixels": 0,
+    "transparentRgbNonzero": 0,
+    "exactGreenPixels": 0
+  }
+}

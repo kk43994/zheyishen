@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "model": "gpt-image-2",
+  "route": "DMIT sub2 owner pool",
+  "quality": "high",
+  "size": "1024x1024",
+  "intent": "dedicated-inventory-icon-edit-with-project-references",
+  "items": [
+    { "index": 4, "id": "bleach-powder", "prompt": "prompts/05-bleach-powder.txt" },
+    { "index": 5, "id": "eyebrow-razor", "prompt": "prompts/06-eyebrow-razor.txt" },
+    { "index": 24, "id": "flash-escape", "prompt": "prompts/25-flash-escape.txt" },
+    { "index": 51, "id": "hair-in-takeout", "prompt": "prompts/52-hair-in-takeout.txt" }
+  ]
+}

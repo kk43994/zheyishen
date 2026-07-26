@@ -1,0 +1,100 @@
+{
+  "logicalCell": [
+    40,
+    56
+  ],
+  "rows": [
+    "idle",
+    "walk",
+    "attack",
+    "hurt"
+  ],
+  "columns": [
+    "front",
+    "left",
+    "back",
+    "right"
+  ],
+  "selectedFrames": {
+    "idle": 0,
+    "walk": 0,
+    "attack": 1,
+    "hurt": 0
+  },
+  "watchAtlasRow": 17,
+  "watchAnchors": {
+    "idle": {
+      "front": [
+        28,
+        35
+      ],
+      "left": [
+        23,
+        35
+      ],
+      "back": [
+        28,
+        35
+      ],
+      "right": [
+        17,
+        35
+      ]
+    },
+    "walk": {
+      "front": [
+        28,
+        36
+      ],
+      "left": [
+        23,
+        35
+      ],
+      "back": [
+        28,
+        36
+      ],
+      "right": [
+        17,
+        35
+      ]
+    },
+    "attack": {
+      "front": [
+        28,
+        32
+      ],
+      "left": [
+        23,
+        35
+      ],
+      "back": [
+        28,
+        38
+      ],
+      "right": [
+        17,
+        35
+      ]
+    },
+    "hurt": {
+      "front": [
+        29,
+        34
+      ],
+      "left": [
+        24,
+        35
+      ],
+      "back": [
+        29,
+        34
+      ],
+      "right": [
+        16,
+        35
+      ]
+    }
+  },
+  "scope": "review input only; approved watch and hero atlases are not modified"
+}

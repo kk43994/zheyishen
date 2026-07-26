@@ -12,7 +12,7 @@ import json
 import sys
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 RAW = Path("output/imagegen/zhe-yi-shen-vfx-ui-v1/raw")
 ASSETS = Path("src/assets")
@@ -168,13 +168,52 @@ def do_proj() -> bool:
         ("proj-breath", 0), ("proj-breath", 1), ("proj-breath", 2), ("proj-breath", 3),
         ("proj-forms", 0), ("proj-forms", 1), ("proj-forms", 2), ("proj-forms", 3),
         ("proj-special", 0), ("proj-special", 1), ("proj-special", 2), ("proj-special", 3),
+        ("proj-wood-slash-v2", 1), ("proj-readable-a", 1), ("proj-readable-a", 2), ("proj-readable-a", 3),
+        ("proj-readable-b", 0), ("proj-readable-b", 1), ("proj-readable-b", 2), ("proj-readable-b", 3),
+        ("proj-readable-c", 0), ("proj-readable-c", 1), ("proj-readable-c", 2), ("proj-readable-c", 3),
     ]
     ok = build_grid_atlas(specs, cell=28, cols=6, out_png=ASSETS / "vfx/projectiles.png",
                           out_json=ASSETS / "vfx/projectiles.json", logical=26, colors=8, soft=True)
     if ok:
-        names = ["breath0", "breath1", "breath2", "breath3", "paper", "rain", "sound", "key", "bone", "tear", "cone", "echo"]
+        names = [
+            "breath0", "breath1", "breath2", "breath3", "paper", "rain", "sound", "key", "bone", "tear", "cone", "echo",
+            "slash", "razor", "marble", "ice", "serial", "typing", "button", "link", "stamp", "stone", "lens", "laugh",
+        ]
         manifest = json.loads((ASSETS / "vfx/projectiles.json").read_text())
         manifest["index"] = {name: index for index, name in enumerate(names)}
+        manifest["generator"] = "reference-aware Image2 bases + scripts/process_vfx_ui_pack.py"
+        manifest["designContract"] = "src/projectile-item-signatures.ts"
+        manifest["provenance"] = "src/assets/vfx/projectiles.sources.json"
+        manifest["sourceSheets"] = ["proj-breath", "proj-forms", "proj-special", "proj-readable-a", "proj-readable-b", "proj-readable-c", "proj-wood-slash-v2"]
+        manifest["deterministicOverlays"] = {"laugh": "哈"}
+        # Image2 supplies the breath/ink base. Exact Chinese text is rendered in
+        # post-processing so the five-shot volley always spells 哈哈哈哈哈.
+        atlas_path = ASSETS / "vfx/projectiles.png"
+        atlas = Image.open(atlas_path).convert("RGBA")
+        index = manifest["index"]["laugh"]
+        cell = manifest["cell"]
+        left = (index % manifest["cols"]) * cell
+        top = (index // manifest["cols"]) * cell
+        patch = atlas.crop((left, top, left + cell, top + cell))
+        font_paths = [
+            Path("/System/Library/Fonts/STHeiti Medium.ttc"),
+            Path("/System/Library/Fonts/STHeiti Light.ttc"),
+            Path("/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"),
+        ]
+        font_path = next((path for path in font_paths if path.is_file()), None)
+        if font_path is None:
+            raise FileNotFoundError("a CJK font is required to render the 五个哈 projectile")
+        font = ImageFont.truetype(str(font_path), 21)
+        draw = ImageDraw.Draw(patch)
+        bounds = draw.textbbox((0, 0), "哈", font=font, stroke_width=1)
+        width = bounds[2] - bounds[0]
+        height = bounds[3] - bounds[1]
+        x = (cell - width) // 2 - bounds[0]
+        y = (cell - height) // 2 - bounds[1]
+        draw.text((x, y), "哈", font=font, fill=(245, 238, 221, 255), stroke_width=1, stroke_fill=(48, 43, 50, 255))
+        patch = quantize_hard(patch, colors=8, alpha_cut=48)
+        atlas.paste(patch, (left, top), patch)
+        atlas.save(atlas_path, optimize=True)
         (ASSETS / "vfx/projectiles.json").write_text(json.dumps(manifest), encoding="utf-8")
     return ok
 
@@ -222,12 +261,20 @@ def do_syn() -> bool:
 
 
 def do_status() -> bool:
-    specs = [("status-marks", quadrant) for quadrant in range(4)]
+    specs = [
+        *[("status-marks", quadrant) for quadrant in range(4)],
+        *[("status-materials", quadrant) for quadrant in range(4)],
+    ]
     ok = build_grid_atlas(specs, cell=12, cols=4, out_png=ASSETS / "vfx/status.png",
                           out_json=ASSETS / "vfx/status.json", logical=11, colors=6)
     if ok:
         manifest = json.loads((ASSETS / "vfx/status.json").read_text())
-        manifest["index"] = {"freeze": 0, "paralyze": 1, "read": 2, "loop": 3}
+        manifest["index"] = {
+            "freeze": 0, "paralyze": 1, "read": 2, "loop": 3,
+            "wet": 4, "raw": 5, "heavy": 6, "control-fatigue": 7,
+        }
+        manifest["generator"] = "reference-aware Image2 bases + scripts/process_vfx_ui_pack.py"
+        manifest["provenance"] = "src/assets/vfx/status.sources.json"
         (ASSETS / "vfx/status.json").write_text(json.dumps(manifest), encoding="utf-8")
     return ok
 

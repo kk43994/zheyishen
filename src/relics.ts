@@ -54,7 +54,7 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
     flavor: '系上它，他们也许会认真听。', summary: '体面而窒息', positive: '伤害+18% · 暴击+18%', negative: '最大生命-10', price: 12, color: '#84313e',
   },
   'fathers-raincoat': {
-    id: 'fathers-raincoat', name: '父亲的雨衣', quality: 4, qualityName: '遗物', slot: 'chest', glyph: '雨',
+    id: 'fathers-raincoat', name: '父亲的雨衣', quality: 5, qualityName: '这一身', slot: 'chest', glyph: '雨',
     flavor: '他没有拥抱过你，但那天雨很大。', summary: '承受并化为雨', positive: '每场抵挡首次受伤；受伤释放雨滴', negative: '射速-18% · 身体变得沉重', price: 15, color: '#c4a23f',
   },
   'unsent-phone': {
@@ -66,7 +66,7 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
     flavor: '他开始害怕自己先离开。', summary: '替他留下来一次', positive: '每场首次致命伤保留1生命并爆发', negative: '基础伤害-10%', price: 15, color: '#e9e2c9',
   },
   'revoked-badge': {
-    id: 'revoked-badge', name: '已经注销的旧工牌', quality: 3, qualityName: '心结', slot: 'chest', glyph: '牌',
+    id: 'revoked-badge', name: '已经注销的旧工牌', quality: 5, qualityName: '这一身', slot: 'chest', glyph: '牌',
     flavor: '名字还在，门已经打不开了。', summary: '经历越多伤害越高', positive: '每件穿戴物使伤害+5%', negative: '商城价格+20%', price: 10, color: '#64748a',
   },
   'slow-watch': {
@@ -163,7 +163,7 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
   },
   'divorce-draft': {
     id: 'divorce-draft', name: '没有按下发送的离婚协议', quality: 4, qualityName: '遗物', slot: 'chest', glyph: '离',
-    flavor: '存了三年的草稿箱。', summary: '拖延成了护甲', positive: '每阶段首次受伤减半', negative: '治疗-15%', price: 13, color: '#6d6a75',
+    flavor: '存了三年的草稿箱。', summary: '拖延成了护甲', positive: '首次受伤一半立即结算，另一半阶段末补扣', negative: '治疗-15%', price: 13, color: '#6d6a75',
   },
   'checkup-arrows': {
     id: 'checkup-arrows', name: '体检报告上的向上箭头', quality: 3, qualityName: '心结', slot: 'shadow', glyph: '检',
@@ -171,7 +171,7 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
   },
   'shared-powerbank': {
     id: 'shared-powerbank', name: '医院走廊的共享充电宝', quality: 2, qualityName: '旧物', slot: 'waist', glyph: '电',
-    flavor: '按分钟计费的等待。', summary: '租来的精力', positive: '射速+12%', negative: '每阶段扣1零钱', price: 8, color: '#6e8783',
+    flavor: '按分钟计费的等待。', summary: '租来的精力', positive: '攻击空窗租电，恢复攻击时短暂连射加速', negative: '每累计租电8秒扣1零钱', price: 8, color: '#6e8783',
   },
   'third-pill': {
     id: 'third-pill', name: '她没说名字的第三颗药', quality: 4, qualityName: '遗物', slot: 'waist', glyph: '三',
@@ -179,7 +179,7 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
   },
   'loan-contract': {
     id: 'loan-contract', name: '已经签好名字的网贷合同', quality: 4, qualityName: '遗物', slot: 'hand', glyph: '贷',
-    flavor: '利息比字迹清楚。', summary: '预支的力量', positive: '伤害+25%', negative: '每阶段结算2零钱，不够则扣4生命', price: 13, color: '#8a6a4f',
+    flavor: '利息比字迹清楚。', summary: '预支的力量', positive: '伤害+25%', negative: '每阶段先扣2零钱；不足仍扣现有零钱，再扣4生命', price: 13, color: '#8a6a4f',
   },
   'name-sold': {
     id: 'name-sold', name: '把名字卖掉的合同', quality: 4, qualityName: '遗物', slot: 'chest', glyph: '名',
@@ -203,7 +203,7 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
   },
   'drank-for-boss': {
     id: 'drank-for-boss', name: '酒局上代喝的那杯', quality: 3, qualityName: '心结', slot: 'neck', glyph: '杯',
-    flavor: '领导说，小周能喝。', summary: '把伤吐还回去', positive: '受伤25%概率反弹等量伤害', negative: '每阶段开场1.2秒站不稳', price: 10, color: '#96603f',
+    flavor: '领导说，小周能喝。', summary: '把伤吐还回去', positive: '受伤25%概率攒代喝；3层释放累计范围反伤', negative: '每阶段开场1.2秒站不稳', price: 10, color: '#96603f',
   },
   'hair-in-takeout': {
     id: 'hair-in-takeout', name: '外卖里吃出的头发', quality: 2, qualityName: '旧物', slot: 'waist', glyph: '发',
@@ -231,7 +231,7 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
   },
   'typing-indicator': {
     id: 'typing-indicator', name: '对方正在输入…', quality: 3, qualityName: '心结', slot: 'hand', glyph: '输',
-    flavor: '输入了很久。最后收到的是“嗯”。', summary: '憋了很久的那句', positive: '停火后蓄力：下一发巨大出膛、命中时缩成「嗯」，深穿高暴击', negative: '射速-4%', price: 10, color: '#6f7d88',
+    flavor: '输入了很久。最后收到的是“嗯”。', summary: '三个点以后，话向四面散开', positive: '头顶每0.5秒出现1个点；第3点触发12向大范围散射，继承当前弹体机制', negative: '取消普通连射，改为每1.5秒结算1轮散射', price: 10, color: '#6f7d88',
   },
   'year-report': {
     id: 'year-report', name: '年度听歌报告', quality: 3, qualityName: '心结', slot: 'shadow', glyph: '歌',
@@ -263,7 +263,7 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
   },
   'one-more-game': {
     id: 'one-more-game', name: '再来一把就睡', quality: 2, qualityName: '旧物', slot: 'hand', glyph: '把',
-    flavor: '这话他说了十年。', summary: '不甘心的续航', positive: '阶段结束满血则下阶段伤害+10%', negative: '每阶段开场1秒射速减半', price: 8, color: '#6f7d88',
+    flavor: '这话他说了十年。', summary: '不甘心的续航', positive: '章末可跳过回复；伤害+10%一层（最多5层）', negative: '每层令下阶段开场停火0.5秒', price: 8, color: '#6f7d88',
   },
   'eye-exercise': {
     id: 'eye-exercise', name: '眼保健操', quality: 3, qualityName: '心结', slot: 'face', glyph: '眼',
@@ -275,7 +275,7 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
   },
   'abstract-lv10': {
     id: 'abstract-lv10', name: '抽象话十级', quality: 2, qualityName: '旧物', slot: 'face', glyph: '6',
-    flavor: '6。乐。急了。', summary: '嘲讽拉满', positive: '每8秒嘲讽最近敌人：受伤+20%但冲向你', negative: '咽下效果-10%', price: 8, color: '#96789c',
+    flavor: '6。乐。急了。', summary: '嘲讽拉满', positive: '每8秒嘲讽最近非Boss敌人：受伤+20%但冲向你', negative: '咽下效果-10%', price: 8, color: '#96789c',
   },
   'shop-freezer': {
     id: 'shop-freezer', name: '小卖部的冰柜', quality: 2, qualityName: '旧物', slot: 'back', glyph: '冰',
@@ -298,9 +298,25 @@ export const ITEM_DEFINITIONS: Record<ItemId, ItemDefinition> = {
     id: 'breath-on-glass', name: '冬天呵在玻璃上的字', quality: 4, qualityName: '遗物', slot: 'face', glyph: '呵',
     flavor: '他呵出一团雾，写了个名字，又擦掉了。', summary: '一口气呵成雾', positive: '弹体呵成宽雾锥：弹宽×2.2 · 穿透+2', negative: '射程×0.55', price: 14, color: '#a9c2c6',
   },
+  // ── 第五档 · 这一身：每章大 Boss 固定掉落，不进随机池，不可拒绝 ──
+  'admission-notice': {
+    id: 'admission-notice', name: '入学通知书', quality: 5, qualityName: '这一身', slot: 'hand', glyph: '录',
+    flavor: '上面印着他的名字，名字后面跟着一个号。', summary: '选择变多了，但你不能不选', positive: '每章奖励三选一变四选一', negative: '不能再跳过奖励，每次必须选走一件', price: 0, color: '#c9b87a',
+  },
+  'iphone-17-pro-max': {
+    id: 'iphone-17-pro-max', name: '最新款的 iPhone 17 Pro Max', quality: 5, qualityName: '这一身', slot: 'hand', glyph: '机',
+    flavor: '离职金买的最新款手机。爽歪歪。', summary: '新机就是快', positive: '伤害+30% · 攻速+10%', negative: '拾取时零钱清零 · 每15秒弹一次消息，攻击中断0.4秒', price: 0, color: '#4a5a6e',
+  },
+  'fathers-chart': {
+    id: 'fathers-chart', name: '父亲的病历本', quality: 5, qualityName: '这一身', slot: 'waist', glyph: '病',
+    flavor: '名字栏写着他父亲的名字。轮到他填自己的时候，症状栏可以照抄。', summary: '你透支得越多，你越强', positive: '每永久损失10点最大生命，伤害+8%（无上限）', negative: '治疗效果-40%', price: 0, color: '#8f8579',
+  },
 };
 
 export const ITEM_IDS = Object.keys(ITEM_DEFINITIONS) as ItemId[];
+
+// 第五档「这一身」传承线：固定掉落专用，不进任何随机池（奖励/商店/命运/两间房）。
+export const STORY_ITEM_IDS: ItemId[] = ['admission-notice', 'fathers-raincoat', 'iphone-17-pro-max', 'fathers-chart', 'revoked-badge'];
 
 // Fate may only grant modest items; stronger build cores keep their authored sources.
 export const FATE_ITEM_IDS = ITEM_IDS.filter((id) => ITEM_DEFINITIONS[id].quality <= 2);

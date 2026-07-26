@@ -1,0 +1,7 @@
+Use case: stylized-concept
+Asset type: 2x2 pixel-art boss skill pose sheet for an action game
+Primary request: Preserve the exact huge back-facing man fused to the cracked office chair. Four violent poses in reading order: both arms slamming a desk-height surface with the whole back tensed; one arm hurling a thick stack of papers sideways; chair cracks pulling a small task-message shape inward as if consuming it; torso rising and one arm dismissing someone while every black crack opens wider.
+Style: crisp high-detail pixel art matching the references, largest oppressive boss silhouette, readable at 96px.
+Layout: exact 2x2 grid, one complete fused boss in each cell, same crack map, neck and chair identity, generous gutters.
+Background: perfectly flat solid #00ff00 chroma key, no room, floor, labels, borders, readable text, or extra character.
+Avoid: front-facing face, teeth, tongue, blood, random mouths, smooth painting, blur.

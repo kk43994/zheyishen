@@ -1,0 +1,17 @@
+Use case: stylized-concept
+Asset type: 32x32 enemy sprite action foundation, delivered as one 1024x1024 source sheet
+Input images: Image 1 is the mandatory canonical project style board; Image 2 is the approved runtime enemy-family action contact sheet. Match their chunky pixel syntax, everyday-object monster language, limited muted palette, deep-ink outline, and top-left light. Do not copy the existing bill-paper enemy.
+
+Create one middle-age enemy called "Last Year's Checkup Report": a thick hospital-blue-grey medical clipboard with several uneven paper sheets clipped inside, standing and chasing on two short folded-paper legs. Its main readable marks are an abstract heartbeat zigzag, three OLD-RED UPWARD ARROWS, and a dull circular hospital stamp shape, all pictograms with no writing. On contact it temporarily strips away the player's bonuses; express this as a desaturating ring, not damage or a projectile.
+
+Strict 2x2 quadrant order, same identity and scale in every quadrant:
+- top-left: idle, clipboard upright, clipped pages and three upward arrows clearly visible;
+- top-right: moving, short paper legs running, stack leaning forward, pages fluttering as one mass;
+- bottom-left: attack/contact, clipboard snaps open and emits one tight grey cancellation ring while its colored marks turn temporarily dull;
+- bottom-right: hurt, clip bent and papers compressed inward, still recognizable as a medical report.
+
+Composition: exactly four isolated figures, one centered per quadrant, identical camera distance and three-quarter-front game-sprite perspective, bottom-center anchor, full feet and paper edges visible with generous pure-green padding.
+Scene/backdrop: perfectly flat uniform solid pure #00ff00 only.
+Style/medium: crisp low-resolution pixel art, hard square pixels, one logical-pixel deep-ink outline, 10-16 colors, hospital blue-grey, paper cream, paper shadow, restrained old red, worn handled-paper texture, top-left light.
+Constraints: must differ from the existing next-month bill: use a rigid clipboard silhouette, blue-grey clip, stacked pages, medical pictograms, and upward arrows; no prices, invoices, money, text, letters, digits, readable chart labels, human face, mouth, gore, syringe, cast shadow, floor, grid, dividers, scenery, watermark, anti-aliasing, gradients, blur, smooth vector edges, photorealism.
+

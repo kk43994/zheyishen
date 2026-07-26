@@ -1,4 +1,5 @@
 import type { ItemId } from './types';
+import equipmentArt from './assets/items/equipment-art.json';
 
 export type ItemVisualModule =
   | 'rigid'
@@ -34,7 +35,7 @@ const modules = <const T extends NonEmptyModules>(...values: T): T => values;
  * docs/主角道具外观系统-v2.md. This registry describes production intent only;
  * it does not opt unapproved review assets into the runtime renderer.
  */
-export const ITEM_VISUAL_MODULES_V2 = {
+const LEGACY_ITEM_VISUAL_MODULES_V2 = {
   'loose-button': modules('mutation', 'vfx', 'projectile'),
   'wooden-sword': modules('rigid', 'mutation', 'projectile'),
   'red-workbook': modules('rigid', 'vfx', 'projectile'),
@@ -109,7 +110,44 @@ export const ITEM_VISUAL_MODULES_V2 = {
   'painless-night': modules('mutation', 'vfx', 'projectile'),
   'ktv-song': modules('rigid', 'vfx', 'projectile'),
   'breath-on-glass': modules('mutation', 'vfx', 'projectile'),
+  // 第五档「这一身」：常驻实体负责一眼认物，事件层只表现选择、消息与透支结算。
+  'admission-notice': modules('rigid', 'vfx'),
+  'iphone-17-pro-max': modules('rigid', 'vfx'),
+  'fathers-chart': modules('rigid', 'vfx'),
 } satisfies Record<ItemId, NonEmptyModules>;
+
+const PRODUCTION_TO_MODULE: Readonly<Record<string, ItemVisualModule>> = {
+  rigid: 'rigid',
+  fitted: 'garment',
+  decal: 'mutation',
+  morph: 'mutation',
+  aura: 'vfx',
+  event: 'vfx',
+  projectile: 'projectile',
+};
+
+const WIKI_MODULE_OVERRIDES: Partial<Record<ItemId, NonEmptyModules>> = {
+  // These are not hand-held props: the wiki explicitly wraps the visual around
+  // the body, so their primary production task belongs to the mutation layer.
+  'bargain-link': modules('mutation', 'projectile'),
+  'loan-contract': modules('mutation'),
+};
+
+export const ITEM_VISUAL_MODULES_V2 = {
+  // LEGACY 表保留穷尽式正典兜底；当前全部道具均由装备美术合同覆盖并按合同覆盖模块映射。
+  ...LEGACY_ITEM_VISUAL_MODULES_V2,
+  ...Object.fromEntries(
+    equipmentArt.items.map((item) => {
+      const mapped = [...new Set(
+        item.production
+          .map((value) => PRODUCTION_TO_MODULE[value])
+          .filter((value): value is ItemVisualModule => value !== undefined),
+      )];
+      const override = WIKI_MODULE_OVERRIDES[item.id as ItemId];
+      return [item.id, override ?? (mapped.length ? mapped : LEGACY_ITEM_VISUAL_MODULES_V2[item.id as ItemId])];
+    }),
+  ),
+} as unknown as Record<ItemId, NonEmptyModules>;
 
 /** Persistent or conditional body consequences driven by the modular rig. */
 export const ITEM_BODY_CONSEQUENCES_V2 = {
@@ -144,4 +182,3 @@ export const ITEM_BODY_CONSEQUENCES_V2 = {
   'summer-run': ['sprint-lean'],
   'painless-night': ['numb-weight', 'weighted'],
 } as const satisfies Partial<Record<ItemId, readonly BodyConsequence[]>>;
-

@@ -12,3 +12,4 @@ archive/
 .env.*.local
 .env.local.bak*
 ai-profiles.local.json
+__pycache__/

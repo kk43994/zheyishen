@@ -1,0 +1,41 @@
+{
+  "pipeline": "Image2 reference edit -> chroma key -> crop -> 12px quantization",
+  "sourceStatus": "image2-edit-recorded",
+  "jobFile": "scripts/image2/status-v2/jobs.jsonl",
+  "sources": {
+    "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/status-marks.png": {
+      "sha256": "1173228e23601b78c14ab6cf31f80394a7a1d113121f1e13215bbbfac5f6841c",
+      "size": [
+        1254,
+        1254
+      ],
+      "greenRatio": 0.8681
+    },
+    "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/status-materials.png": {
+      "sha256": "c12e5baf9d71d512f4e5562bd6e0defbe8fb0f41c38c6b2a076218d9bc6dc93c",
+      "size": [
+        1254,
+        1254
+      ],
+      "greenRatio": 0.8873
+    }
+  },
+  "referenceJob": {
+    "model": "gpt-image-2",
+    "prompt": "scripts/image2/status-v2/materials.txt",
+    "references": [
+      "output/art-style-reference-v1/canonical-style-board.png",
+      "output/imagegen/zhe-yi-shen-vfx-ui-v1/raw/status-marks.png",
+      "docs/item-equipment-v1/items/14-fathers-raincoat.png",
+      "docs/item-equipment-v1/items/03-red-workbook.png",
+      "docs/item-equipment-v1/items/06-eyebrow-razor.png",
+      "docs/item-equipment-v1/items/04-stone-schoolbag.png"
+    ],
+    "statuses": [
+      "wet",
+      "raw",
+      "heavy",
+      "control-fatigue"
+    ]
+  }
+}

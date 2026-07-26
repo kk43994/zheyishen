@@ -1,0 +1,24 @@
+Use case: stylized-concept
+Asset type: anatomy-aware delayed-forearm shadow overlay source sheet for the Chinese pixel-art action game 《这一身》, targeting exact 40x56 logical hero cells
+Item: 18 slow-watch, 《慢了七分钟的手表》
+Canon event and irony: the old wristwatch is always seven minutes late. The body has already moved, but the shadow of the watched forearm remains in the previous beat. The body and time are no longer synchronized.
+Primary request: create only one compact previous-pose forearm-and-hand shadow per cell. Do not redraw the approved watch, current arm, full hero or inventory icon.
+Input images:
+Image 1 is the approved exact hero plus approved watch reference grid. Rows are IDLE, WALK, ATTACK, HURT. Columns are FRONT, LEFT, BACK, RIGHT. Every cell preserves the real 40x56 foot root and current wrist location.
+Image 2 is the approved watch source. It defines identity only. The watch itself is already finished and must not be redrawn, recolored, enlarged or replaced.
+Image 3 repeats the action grid with cyan/magenta wrist-center guides. These marks are guides only and must not appear in the output.
+Output layout: strict 4x4 equal-cell sheet with the same order as Image 1: rows idle/walk/attack/hurt and columns front/left/back/right. Keep the same full-cell coordinates and root alignment. No labels, borders, separators or extra variants.
+Overlay construction: in every cell draw one coherent desaturated plum-gray ghost silhouette consisting only of the watched forearm from mid-forearm to fingertips. It must end 2-4 logical pixels behind the current approved watch position and follow the immediately previous pose. The ghost starts at mid-forearm, never at the shoulder, and never forms a complete second arm.
+Action behavior:
+- idle: the ghost forearm hangs one beat lower than the real wrist, with the smallest offset
+- walk: the ghost preserves the previous arm swing, trailing opposite the current wrist motion
+- attack: the ghost remains in the pre-lift forearm pose while the real arm has already attacked; this is the clearest lag
+- hurt: the ghost remains at the pre-recoil wrist position while the real body has shifted away
+Direction behavior: front and back keep the watched forearm on the approved wrist side. Left and right are true mirrored profiles; each shows only the visible watched forearm fragment and never a second hidden arm.
+Trigger policy: do not draw clocks, clock faces, numerals, speed lines, motion streaks, portals, rings or freeze symbols. The local pipeline derives a tiny stopped-wrist marker and a compact catch-up snap from this shadow source.
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background in all empty space. No shadow cast onto a floor, gradient, glow, texture, reflection or green spill. Do not use #00ff00 in authored pixels.
+Style: restrained Chinese indie-game hard pixel art, sparse deliberate clusters, dark gray-plum ghost with one cold gray edge, maximum 4 subject colors, no soft blur or antialiased haze
+Must preserve: generous green separation from the current body location; recognizable bent forearm and small hand silhouette; action-specific previous pose; consistent identity across all 16 cells
+Avoid: full person, torso, head, shoulder, extra real arm, duplicate hand, detached hand, multiple trails, seven copies, blur spray, speed line, giant clock, pocket watch, wristwatch replacement, text, UI, watermark
+Final gate: when composited over the exact hero, the first read is “one forearm shadow arriving late.” It must never read as an anatomical extra arm, a motion-blur fan, a speed effect or a literal clock.
+

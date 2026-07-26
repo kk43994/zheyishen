@@ -1,0 +1,16 @@
+Use case: stylized-concept
+Asset type: 48x48 elite enemy action concept source
+Input images: Image 1 is the authoritative Zhe Yi Shen canonical style board for palette, outline, top-left light, and pixel density. Image 2 is the authoritative runtime enemy motion sheet for compact silhouettes and readable action changes. Preserve that visual language; do not copy any existing creature.
+
+Create one strict 2x2 action sheet of the exact same enemy: "The Pair of Shoes That Never Dried". It is exactly one matched pair of worn adult dark-brown leather work shoes from a cramped home entryway. The leather is deeply creased and permanently damp, with cold blue-grey moisture highlights and only a few droplets. They move by stepping as shoes; no legs, feet, eyes, teeth, mouth, face, laces-as-tentacles, or human body. The pair should feel heavy, stubborn, and hard to kill.
+
+Quadrants, fixed order:
+- top-left IDLE: both shoes side by side, nearly motionless, damp sheen and one droplet visible.
+- top-right MOVE: same pair taking an uneven walking step, one shoe forward and one behind, two tiny wet footprint nicks trailing; no extra shoes.
+- bottom-left ATTACK: both shoes lunge toe-first together in a fast chasing stride, with short low motion nicks behind them; no projectile.
+- bottom-right HURT/DEATH: the pair is knocked apart, one shoe rolled onto its side and the other collapsed at the heel; no gore.
+
+Scene/backdrop: perfectly uniform solid pure #00ff00 chroma-key background in every pixel outside the sprites. No floor plane, no contact shadow, no cast shadow, no reflection, no background glow, no gradient, no texture.
+Style/medium: crisp chunky low-resolution pixel art designed to survive reduction into a 48x48 elite enemy frame; hard integer-like pixel clusters; 10-16 visible subject colors; one-logical-pixel deep ink outline; weaker internal lines; top-left light and lower-right shadow. The paired-shoe silhouette and damp leather must remain unmistakable inside 48 pixels. Use deep ink, soft ink, worn brown, paper-shadow leather highlights, and restrained hospital blue-grey moisture accents.
+Composition/framing: four equal quadrants, same low three-quarter-front camera, same scale and construction, each pair centered independently with generous green padding and a stable bottom-center sole anchor. No cropping and no overlap across quadrants.
+Constraints: exactly two shoes in every intact pose; readable in 300 ms; no socks, legs, person, face, monster anatomy, puddle, grid lines, quadrant borders, labels, captions, text, letters, numbers, watermark, UI, scenery, extra props, antialiasing, blur, gradients, semi-transparent edges, or #00ff00 inside the subject.

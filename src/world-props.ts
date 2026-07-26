@@ -7,6 +7,48 @@ const CELL_W = 40;
 const CELL_H = 44;
 const STAGE_ROWS = 6;
 
+const STAGE_FLOOR_URLS = [
+  new URL('./assets/world/stage-floor-0.png', import.meta.url).href,
+  new URL('./assets/world/stage-floor-1.png', import.meta.url).href,
+  new URL('./assets/world/stage-floor-2.png', import.meta.url).href,
+  new URL('./assets/world/stage-floor-3.png', import.meta.url).href,
+  new URL('./assets/world/stage-floor-4.png', import.meta.url).href,
+  new URL('./assets/world/stage-floor-5.png', import.meta.url).href,
+] as const;
+const STAGE_FLOOR_W = 360;
+const STAGE_FLOOR_H = 640;
+
+class StageClutterFloorSet {
+  private images: Array<HTMLImageElement | null> = Array.from({ length: STAGE_ROWS }, () => null);
+  private loaded = new Set<number>();
+
+  load(): void {
+    STAGE_FLOOR_URLS.forEach((url, index) => {
+      if (this.images[index]) return;
+      const image = new Image();
+      image.decoding = 'async';
+      image.onload = () => {
+        if (image.naturalWidth !== STAGE_FLOOR_W || image.naturalHeight !== STAGE_FLOOR_H) {
+          console.warn(`第 ${index + 1} 章背景尺寸错误: ${image.naturalWidth}x${image.naturalHeight}`);
+          return;
+        }
+        this.loaded.add(index);
+      };
+      image.onerror = () => console.warn(`第 ${index + 1} 章人生背景加载失败，继续使用地面色带回退。`);
+      image.src = url;
+      this.images[index] = image;
+    });
+  }
+
+  frame(stageIndex: number): HTMLImageElement | null {
+    const index = Math.min(Math.max(stageIndex, 0), STAGE_ROWS - 1);
+    return this.loaded.has(index) ? (this.images[index] ?? null) : null;
+  }
+}
+
+export const stageClutterFloors = new StageClutterFloorSet();
+stageClutterFloors.load();
+
 class WorldPropAtlas {
   private image: HTMLImageElement | null = null;
   private frames = new Map<string, HTMLCanvasElement>();

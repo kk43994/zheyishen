@@ -1,0 +1,16 @@
+Use case: stylized-concept
+Asset type: boss phase 1, 2x2 action-concept source for later pixel-atlas derivation.
+
+Create one canonical boss identity shown exactly four times in a clean 2x2 arrangement: top-left rigid idle, top-right slight chair swivel, bottom-left one hand settles on the armrest, bottom-right chair jolts from impact. Do not draw grid lines, labels, captions, UI, borders, or text.
+
+The boss is a back-facing office adult seated behind a tall dark leather executive chair. The chair back is the dominant readable shape and fully hides the face. Only the back of the head, shoulders, one suited forearm, and one hand on the armrest may be visible. A small edge of a worn desk may appear only where needed for the hand relationship, never as a separate environment.
+
+CRITICAL CRACK MAP: preserve the same eight leather cracks in the exact same chair-back locations in all four cells. Three primary cracks: (1) one short diagonal crack in the upper-left quadrant, (2) one shallow nearly horizontal crack in the upper-right quadrant, and (3) one longer forked crack below center. Five smaller cracks: (4) a tiny vertical nick near top-center-left, (5) a short down-right nick near far-right-middle, (6) a tiny horizontal nick at left-middle, (7) a short diagonal nick at lower-left, and (8) a tiny hooked nick at lower-right. All eight marks are ordinary pale leather stress lines in phase 1, never mouths. Make the three primary cracks thick enough to survive pixel reduction; keep the five secondary cracks smaller but still readable. This fixed eight-mark topology is the exact phase-2 transformation map.
+
+The first reference is the authoritative style board. The second reference is only a runtime pixel-scale, office-material, outline, and palette-family reference. Do not copy a front-facing face, window scenery, room background, or unrelated desk props.
+
+Pixel art only: chunky logical pixels, crisp nearest-neighbor edges, hard one-logical-pixel dark outline, top-left lighting, restrained 10-16 color palette, no anti-aliasing, no painterly rendering, no soft blur. Keep the same chair proportions and crack topology across all four cells.
+
+Background must be a perfectly flat, uniform, exact #00ff00 in every unused pixel. No office room, no wall, no floor, no contact shadow, no cast shadow, no vignette, no gradient, no texture, no glow, no green variation. Leave generous green gutters between all four boss poses.
+
+Avoid: visible face, front view, standing person, empty chair, teeth, tongue, blood, open mouths, black openings, monster eyes, extra people, full desk scene, photorealism, 3D render, smooth vector art, watermark.

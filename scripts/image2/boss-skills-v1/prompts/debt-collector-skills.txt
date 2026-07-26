@@ -1,0 +1,7 @@
+Use case: stylized-concept
+Asset type: 2x2 pixel-art boss skill pose sheet for an action game
+Primary request: Preserve the exact tall doorstep debt collector identity shaped like a dark door and ledger. Four strongly different poses in reading order: presenting one large stamped bill straight toward the viewer; attacking with a long, unmistakable linked chain made of red-bound receipt slips, visibly anchored to its hand and whipping far outward like a hook; collapsing into a narrow side profile with loose address tags circling it as it teleports to another doorway; returning upright with both arms withdrawn and the ledger shut. The second pose MUST feature a thick readable chain silhouette, not a long loose receipt, ribbon, scroll, or stack of paper.
+Style: crisp high-detail pixel art matching the references, severe tall boss silhouette, readable at 48px.
+Layout: exact 2x2 grid, one complete collector per cell, same materials and scale, generous gutters.
+Background: perfectly flat solid #00ff00 chroma key, no house, room, floor, labels, borders, or readable text.
+Avoid: ordinary human collector, gun, money pile, extra characters, smooth painting, blur, four similar bill-presenting poses, plain long receipt in the chain pose.

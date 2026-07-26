@@ -1,0 +1,17 @@
+Use case: stylized-concept
+Asset type: 32x32 enemy sprite action foundation, delivered as one 1024x1024 source sheet
+Input images: Image 1 is the mandatory canonical project style board; Image 2 is the approved runtime enemy-family action contact sheet. Match only their pixel grammar, limited colors, dark outline, and top-left light. Do not reuse the whisper/blob enemy or the shape of any other task message.
+
+Create one youth-stage task-message enemy called "Revise It One More Time". It is an unread office message body whose grayscale silhouette is TALL and NARROW: two offset rectangular chat-bubble layers stacked front-and-back, with doubled tails, visibly patched corners, correction tape strips, and a peeled-back top layer revealing the previous version beneath. It must look revised and able to come back once after defeat. No face and no text.
+
+Strict 2x2 quadrant order, same identity and scale in every quadrant:
+- top-left: idle, front bubble patched over an offset older bubble behind it;
+- top-right: moving, the doubled layers shuffle out of alignment, two tails clearly visible;
+- bottom-left: attack/revival concept, the torn front layer folds aside while the intact older layer rises forward from behind;
+- bottom-right: hurt, front version collapses and crumples but the rear version remains upright, making the second life unmistakable.
+
+Composition: exactly four large isolated figures, one centered per quadrant, identical camera distance and three-quarter-front game-sprite perspective, full silhouette visible with generous pure-green padding.
+Scene/backdrop: perfectly flat uniform solid pure #00ff00 only.
+Style/medium: crisp deliberately low-resolution pixel art, hard square pixels, one logical-pixel deep-ink outline, 10-16 colors, muted paper-grey and blue-grey with old-red correction strips, worn office texture, top-left light and right-bottom shadow.
+Constraints: silhouette differentiation is mandatory; do not make a wide split bubble, alarm-clock wedge, or four-spoke hub. No text, letters, digits, arrows made from typography, mouth, flesh, whisper cloud, human, ordinary paper document, cast shadow, floor, grid, dividers, scenery, watermark, anti-aliasing, gradients, blur, vector smoothness, photorealism.
+

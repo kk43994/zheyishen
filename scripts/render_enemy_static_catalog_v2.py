@@ -82,7 +82,9 @@ class EnemySpec:
 
     @property
     def draw_scale(self) -> int:
-        return 3 if self.role in {"boss", "phase_variant"} else 1
+        if self.role in {"boss", "phase_variant"}:
+            return 3
+        return 2 if self.role == "elite" else 1
 
     @property
     def root(self) -> tuple[int, int]:
@@ -93,11 +95,14 @@ SPECS = (
     EnemySpec("cry-moth", "哭蛾", "童年", "normal", 8, 48, 10, 2, "hover"),
     EnemySpec("fear", "床下的呼吸", "童年", "normal", 13, 44, 14, 4),
     EnemySpec("hunger-shadow", "饥饿影", "童年", "normal", 10, 34, 12, 3),
+    EnemySpec("closet-clothes", "衣柜里那身衣服", "童年", "elite", 58, 34, 20, 4, stage_pool=False, wiki_badge="精英"),
     EnemySpec("closet-dark", "没人相信的怪物", "童年", "boss", 150, 30, 26, 6),
     EnemySpec("red-mark", "红叉", "少年", "normal", 21, 36, 15, 4),
     EnemySpec("whisper", "他们都在说", "少年", "normal", 15, 54, 13, 3, "hover"),
+    EnemySpec("wall-ranking", "贴满墙的排名", "少年", "elite", 72, 20, 21, 5, stage_pool=False, wiki_badge="精英"),
     EnemySpec("uniform-answer", "统一答案", "少年", "boss", 200, 22, 26, 6, wiki_badge="精英"),
     EnemySpec("clockwork", "打卡齿轮", "青年", "normal", 38, 32, 18, 6),
+    EnemySpec("window-desk", "窗边那张空工位", "青年", "elite", 92, 27, 22, 6, stage_pool=False, wiki_badge="精英"),
     EnemySpec(
         "missed-bus", "错过的车", "青年", "normal", 60, 150, 16, 9,
         stage_pool=False, source_note="EnemyType/spec retained; no STAGES pool entry; wiki aliases it to last-bus.",
@@ -105,22 +110,30 @@ SPECS = (
     EnemySpec("last-bus", "末班车", "青年", "boss", 260, 26, 28, 10),
     EnemySpec("missed-call", "未接来电", "成年", "normal", 30, 30, 14, 1, "hover"),
     EnemySpec("silence", "沉默", "成年", "normal", 34, 22, 16, 3),
+    EnemySpec("father-silence", "饭桌上没说完的话", "成年", "elite", 116, 23, 23, 7, stage_pool=False, wiki_badge="精英"),
     EnemySpec("debt", "下个月账单", "成年/中年/暮年", "normal", 48, 28, 20, 7),
-    EnemySpec("silent-father", "沉默的父亲", "成年", "boss", 300, 24, 30, 9, wiki_badge="精英"),
+    EnemySpec("silent-father", "沉默的父亲", "少年", "boss", 300, 24, 30, 9),
     EnemySpec(
-        "silent-father-p2", "沉默的父亲·裂甲", "成年", "phase_variant", 300, 36, 30, 9,
+        "silent-father-p2", "沉默的父亲·裂甲", "少年", "phase_variant", 300, 36, 30, 9,
         stage_pool=False, variant_of="silent-father", source_note="Half-HP visual phase; not a separate EnemyType.",
     ),
     EnemySpec("badge-thief", "注销工牌", "中年", "normal", 30, 40, 14, 4),
+    EnemySpec("whose-box", "不知道是谁的纸箱", "中年", "elite", 142, 24, 24, 8, stage_pool=False, wiki_badge="精英"),
     EnemySpec("debt-collector", "上门催收", "中年", "boss", 340, 24, 26, 8),
     EnemySpec("forgetter", "忘记名字的人", "暮年", "normal", 90, 12, 18, 8),
     EnemySpec("empty-chair", "空椅子", "暮年", "normal", 70, 0, 14, 0),
+    EnemySpec("iv-stand", "滴完的输液架", "暮年", "elite", 168, 20, 23, 8, stage_pool=False, wiki_badge="精英"),
     EnemySpec("lamp-keeper", "收灯人", "暮年", "boss", 430, 20, 40, 12),
 )
 
 EXISTING_FRONTS = {
     "fear", "red-mark", "whisper", "clockwork", "debt",
     "uniform-answer", "silent-father", "silent-father-p2", "lamp-keeper",
+}
+
+STAGE_ELITES = {
+    "closet-clothes", "wall-ranking", "window-desk",
+    "father-silence", "whose-box", "iv-stand",
 }
 
 
@@ -150,9 +163,41 @@ def grounded(image: Image.Image, root_y: int = 30) -> Image.Image:
     return result
 
 
+def remap_to_catalog_palette(image: Image.Image, limit: int = 8) -> Image.Image:
+    palette_values = tuple(COLOR_NAME)
+    mapped = []
+    for pixel in image.convert("RGBA").getdata():
+        if not pixel[3]:
+            mapped.append(CLEAR)
+            continue
+        mapped.append(min(
+            palette_values,
+            key=lambda candidate: sum((pixel[index] - candidate[index]) ** 2 for index in range(3)),
+        ))
+    result = Image.new("RGBA", image.size, CLEAR)
+    result.putdata(mapped)
+    counts = result.getcolors(maxcolors=result.width * result.height) or []
+    opaque_counts = sorted(((count, color) for count, color in counts if color[3]), reverse=True)
+    keep = tuple(color for _count, color in opaque_counts[:limit])
+    if len(opaque_counts) <= limit:
+        return result
+    reduced = []
+    for pixel in result.getdata():
+        if not pixel[3]:
+            reduced.append(CLEAR)
+        else:
+            reduced.append(min(
+                keep,
+                key=lambda candidate: sum((pixel[index] - candidate[index]) ** 2 for index in range(3)),
+            ))
+    result.putdata(reduced)
+    return result
+
+
 def existing_front(spec: EnemySpec) -> Image.Image:
     atlas = Image.open(SOURCE_ASSET_DIR / f"{spec.id}.png").convert("RGBA")
     frame = atlas.crop((0, 0, FRAME, FRAME))
+    frame = remap_to_catalog_palette(frame)
     return frame if spec.root_kind == "hover" else grounded(frame)
 
 
@@ -336,6 +381,24 @@ def draw_debt_collector(view: str) -> Image.Image:
     return image
 
 
+def draw_stage_elite(asset_id: str, view: str) -> Image.Image:
+    atlas = Image.open(SOURCE_ASSET_DIR / f"{asset_id}.png").convert("RGBA")
+    source = atlas.crop((0, 0, 48, 48))
+    bbox = source.getchannel("A").getbbox()
+    if bbox is None:
+        raise AssertionError(f"empty stage elite source: {asset_id}")
+    crop = source.crop(bbox)
+    width_limit = 27 if view == "front" else 20
+    ratio = min(width_limit / crop.width, 27 / crop.height)
+    size = (max(1, round(crop.width * ratio)), max(1, round(crop.height * ratio)))
+    sprite = crop.resize(size, Image.Resampling.NEAREST)
+    sprite = remap_to_catalog_palette(sprite)
+    image = blank()
+    x = (FRAME - sprite.width) // 2 + (2 if view == "side" else 0)
+    image.alpha_composite(sprite, (x, 30 - sprite.height + 1))
+    return image
+
+
 def draw_side_existing(asset_id: str) -> Image.Image:
     image = blank(); draw = ImageDraw.Draw(image)
     if asset_id == "fear":
@@ -395,6 +458,7 @@ def render_view(spec: EnemySpec, view: str) -> Image.Image:
     elif spec.id == "empty-chair": image = draw_empty_chair(view)
     elif spec.id == "closet-dark": image = draw_closet_dark(view)
     elif spec.id == "debt-collector": image = draw_debt_collector(view)
+    elif spec.id in STAGE_ELITES: image = draw_stage_elite(spec.id, view)
     else: raise AssertionError(f"no renderer: {spec.id}/{view}")
     return image if spec.root_kind == "hover" else grounded(image)
 
@@ -557,8 +621,8 @@ def main() -> None:
     catalog_types = {spec.id for spec in SPECS if spec.variant_of is None}
     if source_types != catalog_types:
         raise AssertionError(f"catalog/type mismatch: missing={sorted(source_types - catalog_types)} extra={sorted(catalog_types - source_types)}")
-    if len(source_types) != 19:
-        raise AssertionError(f"expected 19 MVP EnemyType values, found {len(source_types)}")
+    if len(source_types) != 25:
+        raise AssertionError(f"expected 25 runtime EnemyType values, found {len(source_types)}")
     for required in (GAME_PATH, PIXEL_RUNTIME_PATH, WIKI_PATH):
         if not required.exists():
             raise AssertionError(f"missing source-of-truth file: {required}")
@@ -572,7 +636,7 @@ def main() -> None:
         for row, spec in enumerate(SPECS)
     ]
     atlas = make_atlas(frames)
-    if atlas.size != (64, 640):
+    if atlas.size != (64, FRAME * len(SPECS)):
         raise AssertionError(f"atlas grid mismatch: {atlas.size}")
     if any(alpha not in (0, 255) for alpha in atlas.getchannel("A").getdata()):
         raise AssertionError("atlas contains antialiased alpha")
@@ -585,12 +649,12 @@ def main() -> None:
         "scope": "static art approval only; no GIF, runtime import, or src/assets mutation",
         "sources": [str(WIKI_PATH), str(TYPES_PATH), str(GAME_PATH), str(PIXEL_RUNTIME_PATH), str(SOURCE_ASSET_DIR)],
         "inventory": {
-            "enemy_type_count": 19,
+            "enemy_type_count": len(source_types),
             "phase_variant_count": 1,
             "atlas_entry_count": len(SPECS),
             "boss_count": sum(spec.role == "boss" for spec in SPECS),
-            "small_boss_count": 0,
-            "small_boss_note": "MVP source defines no separate small-boss type; wiki 精英 entries are boss:true in game.ts.",
+            "small_boss_count": sum(spec.role == "elite" for spec in SPECS),
+            "small_boss_note": "Each life chapter has one Image2 life-object elite before its chapter boss.",
             "wiki_elite_badge_count": sum(spec.wiki_badge == "精英" for spec in SPECS),
             "wiki_elite_badge_ids": [spec.id for spec in SPECS if spec.wiki_badge == "精英"],
             "defined_but_not_stage_pool": [spec.id for spec in SPECS if spec.variant_of is None and not spec.stage_pool],

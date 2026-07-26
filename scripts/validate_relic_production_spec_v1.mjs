@@ -3,7 +3,8 @@ import { resolve } from 'node:path';
 import vm from 'node:vm';
 
 const root = resolve(process.cwd());
-const allowedSources = new Set(['回忆祭坛', '留灯间', '里屋']);
+// 「传承」＝第五档「这一身」：每章大 Boss 固定掉落，不进任何随机池。
+const allowedSources = new Set(['回忆祭坛', '留灯间', '里屋', '传承']);
 const allowedRoles = new Set([
   '纯属性', '弹体改造', '规则触发', '生存防御',
   '位移节奏', '经济资源', '命运交互', '召唤继承',
@@ -36,8 +37,8 @@ const specs = {
 const errors = [];
 const warnings = [];
 const specIds = Object.keys(specs);
-if (runtimeItems.length !== 74) errors.push(`runtime item count must be 74, got ${runtimeItems.length}`);
-if (specIds.length !== 74) errors.push(`production contract count must be 74, got ${specIds.length}`);
+if (runtimeItems.length !== 77) errors.push(`runtime item count must be 77, got ${runtimeItems.length}`);
+if (specIds.length !== 77) errors.push(`production contract count must be 77, got ${specIds.length}`);
 
 for (const item of runtimeItems) {
   const spec = specs[item.id];

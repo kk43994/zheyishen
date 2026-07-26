@@ -1,4 +1,5 @@
 import { validateFateEvent } from './fate';
+import { LIFE_STAGE_CANON } from './life-stage';
 import { FATE_ITEM_IDS, getItem, ITEM_IDS } from './relics';
 import { validateOriginProfile } from './origins';
 import type {
@@ -66,6 +67,10 @@ export interface CheckpointPersistentState {
   petGone: boolean;
   graceUsed: boolean;
   coinKillProgress: number;
+  oneMoreStacks: number;
+  helpedXiaoZhang: boolean;
+  xiaoZhangBetrayed: boolean;
+  xiaoZhangDecision: 'none' | 'helped' | 'declined';
   comboSeen: string[];
   synergySeen: string[];
 }
@@ -83,11 +88,15 @@ export interface RunCheckpoint {
   items: ItemId[];
   poisons: PoisonVector;
   memories: string[];
+  /** 本局已经在战场上浮现过的记忆；旧档缺省为空。 */
+  recalledMemories: string[];
   fateReceipts: FateReceipt[];
   stats: RunStats;
   fateBuild: CheckpointFateBuild;
   persistent: CheckpointPersistentState;
   battleTime: number;
+  /** 累计永久损失的最大生命（病历本伤害加成的依据）。旧档缺省 0。 */
+  permanentHpLost: number;
   currentFate?: FateEvent;
   fateDestination: CheckpointFateDestination;
   fateResultDirection?: FateDirection;
@@ -104,6 +113,8 @@ export interface RunCheckpoint {
   specialRoomOffers: ItemId[];
   specialRoomTaken: ItemId[];
   specialRoomFocus: number;
+  /** 最近一世插入留灯间的物证；旧存档缺省为空。 */
+  specialRoomPreviousLifeItem?: ItemId;
 }
 
 const SCREENS: CheckpointScreen[] = ['origin', 'battle', 'fateEvent', 'itemReward', 'shop', 'specialRoom'];
@@ -215,6 +226,11 @@ function rewardAcquire(value: unknown): CheckpointRewardAcquire | undefined {
 
 function persistentState(value: unknown): CheckpointPersistentState {
   const input = isRecord(value) ? value : {};
+  const xiaoZhangDecision = input.xiaoZhangDecision === 'helped' || input.xiaoZhangDecision === 'declined'
+    ? input.xiaoZhangDecision
+    : input.helpedXiaoZhang === true
+      ? 'helped'
+      : 'none';
   return {
     firstFateDamageReduction: finite(input.firstFateDamageReduction, 0, 0, 24),
     strainTendency: integer(input.strainTendency, 0, 0, 99),
@@ -228,6 +244,10 @@ function persistentState(value: unknown): CheckpointPersistentState {
     petGone: input.petGone === true,
     graceUsed: input.graceUsed === true,
     coinKillProgress: finite(input.coinKillProgress, 0, 0, 5),
+    oneMoreStacks: integer(input.oneMoreStacks, 0, 0, 5),
+    helpedXiaoZhang: xiaoZhangDecision === 'helped',
+    xiaoZhangBetrayed: input.xiaoZhangBetrayed === true,
+    xiaoZhangDecision,
     comboSeen: strings(input.comboSeen, 24, 48),
     synergySeen: strings(input.synergySeen, 32, 64),
   };
@@ -242,11 +262,14 @@ function validationSnapshot(
   memories: string[],
   stats: RunStats,
 ): LifeSnapshot {
+  const stage = LIFE_STAGE_CANON[encounterIndex] ?? LIFE_STAGE_CANON[LIFE_STAGE_CANON.length - 1]!;
   return {
     runSeed,
     chapterIndex: encounterIndex,
     chapter: '恢复中的人生阶段',
-    age: ['童年', '少年', '青年', '成年', '中年', '晚年'][encounterIndex] ?? '晚年',
+    age: stage.age,
+    stageFocus: stage.focus,
+    stageBossMeaning: stage.bossMeaning,
     hp: Math.round(hero.hp),
     maxHp: hero.maxHp,
     coins: hero.coins,
@@ -295,6 +318,8 @@ function parseCheckpoint(value: unknown): RunCheckpoint | null {
   const items = itemIds(value.items);
   const poisons = poisonVector(value.poisons);
   const memories = strings(value.memories, 20, 120);
+  const recalledMemories = strings(value.recalledMemories, 20, 120)
+    .filter((line) => memories.includes(line));
   const stats = runStats(value.stats);
   const snapshot = validationSnapshot(runSeed, encounterIndex, hero, items, poisons, memories, stats);
 
@@ -333,11 +358,13 @@ function parseCheckpoint(value: unknown): RunCheckpoint | null {
     items,
     poisons,
     memories,
+    recalledMemories,
     fateReceipts,
     stats,
     fateBuild: fateBuild(value.fateBuild),
     persistent: persistentState(value.persistent),
     battleTime: finite(value.battleTime, 0, 0, 600),
+    permanentHpLost: finite(value.permanentHpLost, 0, 0, 999),
     currentFate,
     fateDestination,
     fateResultDirection,
@@ -354,6 +381,10 @@ function parseCheckpoint(value: unknown): RunCheckpoint | null {
     specialRoomOffers: itemIds(value.specialRoomOffers, 3),
     specialRoomTaken: itemIds(value.specialRoomTaken, 3),
     specialRoomFocus: integer(value.specialRoomFocus, 0, 0, 2),
+    specialRoomPreviousLifeItem: typeof value.specialRoomPreviousLifeItem === 'string'
+      && ITEM_IDS.includes(value.specialRoomPreviousLifeItem as ItemId)
+      ? value.specialRoomPreviousLifeItem as ItemId
+      : undefined,
   };
 }
 

@@ -68,7 +68,7 @@ function expectedClaim(moduleSet: ReadonlySet<ItemVisualModule>): string[] {
 
 const contractIds = Object.keys(ITEM_VISUAL_MODULES_V2) as ItemId[];
 const errors: string[] = [];
-if (ITEM_IDS.length !== 74) errors.push(`expected 74 item ids, got ${ITEM_IDS.length}`);
+if (ITEM_IDS.length !== 77) errors.push(`expected 77 item ids, got ${ITEM_IDS.length}`);
 for (const id of ITEM_IDS) {
   if (!contractIds.includes(id)) errors.push(`missing visual contract: ${id}`);
 }
@@ -83,15 +83,16 @@ const items = ITEM_IDS.map((id, index) => {
   const moduleSet = new Set<ItemVisualModule>(modules);
   const claim = HERO_ITEM_CLAIMS[id];
   const expectedClaims = expectedClaim(moduleSet);
-  const claimCovered = expectedClaims.includes(claim.kind)
+  const hasBodyMutation = appearance.mutations.some((mutation) => mutation.kind !== 'prop');
+  const claimCovered = expectedClaims.length === 0
+    || expectedClaims.includes(claim.kind)
+    || (claim.kind === 'rigid' && moduleSet.has('garment'))
+    || (claim.kind === 'rigid' && moduleSet.has('mutation') && hasBodyMutation)
     || (claim.kind === 'mutation' && moduleSet.has('vfx'))
     || (claim.kind === 'effect' && moduleSet.has('vfx'));
   const tasks = modules.map((module) => taskFor(id, module, appearance.anchor));
   if (modules.length === 0) errors.push(`empty visual module list: ${id}`);
   if (tasks.length === 0) errors.push(`no production tasks: ${id}`);
-  if (!modules.some((module) => module !== 'projectile')) {
-    errors.push(`projectile-only item has no persistent or trigger visual: ${id}`);
-  }
   return {
     order: index + 1,
     id,

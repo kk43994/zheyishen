@@ -1,0 +1,41 @@
+Use case: stylized-concept
+Asset type: production pixel-art RIGID OVERLAY source sheet for a 40x56 logical hero sprite in the Chinese indie game "这一身"
+Primary request: create the four-direction item-only overlay for item 41, "没有按下发送的离婚协议"
+Output boundary: this task changes only the item's four-direction appearance on the hero. Do not generate, redesign, or modify an inventory icon.
+
+INPUT IMAGE ROLES:
+- Image 1 is the canonical positive style reference. Match its restrained palette, hard pixel clusters, outline weight, and density.
+- Image 2 is the exact positive hero alignment reference. Its row order is FRONT / BACK / LEFT / RIGHT. Use only its proportions and chest anchors; do not redraw any hero pixels.
+- Image 3 is the positive modular head/torso anchor reference. Use it only to understand the inner-chest-pocket location and side-view torso depth.
+- Image 4 is the existing icon and a positive material cue only: worn off-white paper plus a tiny dark-red mark. It is not an icon-generation target; do not copy its frame or full page silhouette.
+- Image 5 is NEGATIVE evidence only. The red rectangle across the torso reads as a progress bar or badge and must not be repeated.
+- Image 6 is NEGATIVE evidence only. The giant agreement, readable lettering, and black sling are all rejected.
+
+CANON:
+- Appearance: 一张折叠纸卡在内袋
+- Event/irony: the agreement has already been written, but sending it is postponed indefinitely; the relationship remains trapped in delay and opportunity cost.
+- Physical reading: one old off-white agreement folded twice and caught inside the inner chest pocket, physically close to the heart. Only a small stepped fold corner is exposed.
+
+COMPOSITION:
+- Strict 2x2 sheet with equal cells and generous green padding.
+- Row-major order must be: top-left FRONT, top-right BACK, bottom-left LEFT, bottom-right RIGHT.
+- Item overlay only. Do not draw the hero, torso, head, arms, hands, skin, legs, or a garment shell.
+- FRONT: one compact twice-folded paper corner plus a very short dark pocket lip. The exposed paper should be taller than a horizontal bar.
+- BACK: blank is acceptable. If torso depth permits visibility, show only one extremely small neutral paper side-edge; never show a full page or a red mark.
+- LEFT and RIGHT: show a thin folded paper edge following the front depth of the chest, mirrored correctly. Keep it flush to the body anchor, not floating.
+
+MATERIAL AND PIXEL RULES:
+- Worn warm off-white paper, dusty grey fold shadow, dark warm outline, muted charcoal pocket edge.
+- FRONT has exactly one tiny dark-red signature or stamp cluster that must reduce to 2-4 logical pixels, never a long line. A side view may show at most one dark-red pixel; BACK shows none.
+- No readable words, characters, numbers, signatures, form fields, or ruled text.
+- Maximum 8 subject colors. Crisp square pixels, no antialiasing, no gradient, no blur.
+- Perfectly uniform flat #00FF00 chroma-key background with no texture, shadow, floor, separator, labels, or green spill.
+
+SCALE TARGET AFTER REDUCTION:
+- FRONT overlay no larger than 5x4 logical pixels.
+- LEFT and RIGHT overlays no larger than 2x3 logical pixels.
+- BACK overlay empty or no larger than 1x2 logical pixels.
+- The asset must remain a small paper fold inside a chest pocket at exact 40x56 scale.
+
+NEGATIVE:
+No red progress bar, loading meter, status bar, chest badge, name tag, bandage, torso strap, sash, tie, sweater, shirt, coat, vest, garment, full torso, giant document, full page, clipboard, envelope held in a hand, floating paper, UI panel, readable text, legal-form layout, black sling, hero body, duplicate pieces, fantasy ornament, smooth vector art, watermark, or chroma-green reflection on the subject.

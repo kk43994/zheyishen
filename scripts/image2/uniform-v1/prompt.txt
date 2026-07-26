@@ -1,0 +1,20 @@
+Use case: stylized-concept
+Asset type: modular pixel-art garment source sheet for an existing game character rig
+
+Input images:
+- Image 1 is the canonical project style board. Match its crisp low-resolution pixel language, restrained palette, hard edges, and readable silhouettes.
+- Image 2 is the approved four-direction modular hero. Preserve its exact body scale, camera, proportions, and front/back/left/right direction order.
+- Image 3 shows the approved head and torso anatomy parts and their pixel scale.
+- Image 4 shows the approved arm anatomy parts and their pixel scale.
+
+Create a strict 2x2 garment-only design sheet on a perfectly flat solid pure green #00FF00 background. Quadrants, in reading order: FRONT, BACK, LEFT, RIGHT. Do not draw grid lines or labels.
+
+In every quadrant show the same five separated clothing components at consistent scale and spacing: one torso jacket shell centered; far upper-sleeve and far forearm-sleeve to its left; near upper-sleeve and near forearm-sleeve to its right. These are overlay parts for the existing decomposed character rig, not a full character.
+
+Garment: an ordinary blue-and-white Chinese middle-school tracksuit uniform jacket, clearly one size too small. Muted petrol-blue body, off-white shoulder stripe continuing down both sleeves, small faded dark-red school badge on the left chest, narrow zipper, short tight cuffs exposing the wrists, and a hem sitting slightly too high. The tension should come from fit and shortened sleeves, not torn fabric, bondage, armor, or fantasy decoration.
+
+Preserve one-pixel joint overlap at shoulder and elbow connections. Front and back torso pieces must remain bilaterally readable; left and right parts must be true side views and mirror-compatible. Keep all pieces fully separated, centered, and surrounded by generous green padding.
+
+Style: chunky 8-bit/16-bit game pixel art, crisp hard pixels, no antialiasing, no gradients, no soft lighting, no texture noise. Maximum six garment colors including outline. The parts must survive reduction to a 40x56 character frame.
+
+Constraints: garment pieces only; no head, hair, face, neck, skin, hands, legs, shoes, mannequin, hanger, full person, scenery, floor, shadow, UI, text, letters, numbers, watermark, extra objects, or extra component variants. Do not use #00FF00 anywhere in the garment.

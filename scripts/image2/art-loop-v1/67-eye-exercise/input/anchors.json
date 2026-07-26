@@ -1,0 +1,787 @@
+{
+  "logicalCell": [
+    40,
+    56
+  ],
+  "rows": [
+    "idle",
+    "walk",
+    "attack",
+    "hurt"
+  ],
+  "columns": [
+    "front",
+    "left",
+    "back",
+    "right"
+  ],
+  "selectedFrames": {
+    "idle": 0,
+    "walk": 0,
+    "attack": 1,
+    "hurt": 0
+  },
+  "profile": "average-average",
+  "gesture": "compressed thumb-index contact arcs at the eye sockets; front=2, side near=1, back=0",
+  "armMaskColors": [
+    [
+      64,
+      64,
+      255,
+      255
+    ],
+    [
+      255,
+      255,
+      64,
+      255
+    ]
+  ],
+  "anchors": {
+    "idle": {
+      "front": {
+        "face": [
+          20,
+          17
+        ],
+        "arms": {
+          "far": {
+            "shoulder": [
+              13,
+              26
+            ],
+            "elbow": [
+              12,
+              22
+            ],
+            "wrist": [
+              15,
+              20
+            ],
+            "eyeTarget": [
+              16,
+              17
+            ],
+            "handRingRadius": 2
+          },
+          "near": {
+            "shoulder": [
+              27,
+              26
+            ],
+            "elbow": [
+              28,
+              22
+            ],
+            "wrist": [
+              25,
+              20
+            ],
+            "eyeTarget": [
+              24,
+              17
+            ],
+            "handRingRadius": 2
+          }
+        }
+      },
+      "left": {
+        "face": [
+          15,
+          17
+        ],
+        "arms": {
+          "far": {
+            "shoulder": [
+              17,
+              27
+            ],
+            "elbow": [
+              17,
+              23
+            ],
+            "wrist": [
+              17,
+              21
+            ],
+            "eyeTarget": [
+              17,
+              18
+            ],
+            "handRingRadius": 0
+          },
+          "near": {
+            "shoulder": [
+              22,
+              27
+            ],
+            "elbow": [
+              20,
+              22
+            ],
+            "wrist": [
+              16,
+              20
+            ],
+            "eyeTarget": [
+              14,
+              17
+            ],
+            "handRingRadius": 2
+          }
+        }
+      },
+      "back": {
+        "face": [
+          20,
+          17
+        ],
+        "arms": {
+          "far": {
+            "shoulder": [
+              27,
+              26
+            ],
+            "elbow": [
+              28,
+              22
+            ],
+            "wrist": [
+              26,
+              20
+            ],
+            "eyeTarget": [
+              25,
+              17
+            ],
+            "handRingRadius": 0
+          },
+          "near": {
+            "shoulder": [
+              13,
+              26
+            ],
+            "elbow": [
+              12,
+              22
+            ],
+            "wrist": [
+              14,
+              20
+            ],
+            "eyeTarget": [
+              15,
+              17
+            ],
+            "handRingRadius": 0
+          }
+        }
+      },
+      "right": {
+        "face": [
+          25,
+          17
+        ],
+        "arms": {
+          "far": {
+            "shoulder": [
+              23,
+              27
+            ],
+            "elbow": [
+              23,
+              23
+            ],
+            "wrist": [
+              23,
+              21
+            ],
+            "eyeTarget": [
+              23,
+              18
+            ],
+            "handRingRadius": 0
+          },
+          "near": {
+            "shoulder": [
+              18,
+              27
+            ],
+            "elbow": [
+              20,
+              22
+            ],
+            "wrist": [
+              24,
+              20
+            ],
+            "eyeTarget": [
+              26,
+              17
+            ],
+            "handRingRadius": 2
+          }
+        }
+      }
+    },
+    "walk": {
+      "front": {
+        "face": [
+          20,
+          17
+        ],
+        "arms": {
+          "far": {
+            "shoulder": [
+              13,
+              26
+            ],
+            "elbow": [
+              12,
+              22
+            ],
+            "wrist": [
+              15,
+              20
+            ],
+            "eyeTarget": [
+              16,
+              17
+            ],
+            "handRingRadius": 2
+          },
+          "near": {
+            "shoulder": [
+              27,
+              26
+            ],
+            "elbow": [
+              28,
+              22
+            ],
+            "wrist": [
+              25,
+              20
+            ],
+            "eyeTarget": [
+              24,
+              17
+            ],
+            "handRingRadius": 2
+          }
+        }
+      },
+      "left": {
+        "face": [
+          15,
+          17
+        ],
+        "arms": {
+          "far": {
+            "shoulder": [
+              17,
+              27
+            ],
+            "elbow": [
+              17,
+              23
+            ],
+            "wrist": [
+              17,
+              21
+            ],
+            "eyeTarget": [
+              17,
+              18
+            ],
+            "handRingRadius": 0
+          },
+          "near": {
+            "shoulder": [
+              22,
+              27
+            ],
+            "elbow": [
+              20,
+              22
+            ],
+            "wrist": [
+              16,
+              20
+            ],
+            "eyeTarget": [
+              14,
+              17
+            ],
+            "handRingRadius": 2
+          }
+        }
+      },
+      "back": {
+        "face": [
+          20,
+          17
+        ],
+        "arms": {
+          "far": {
+            "shoulder": [
+              27,
+              26
+            ],
+            "elbow": [
+              28,
+              22
+            ],
+            "wrist": [
+              26,
+              20
+            ],
+            "eyeTarget": [
+              25,
+              17
+            ],
+            "handRingRadius": 0
+          },
+          "near": {
+            "shoulder": [
+              13,
+              26
+            ],
+            "elbow": [
+              12,
+              22
+            ],
+            "wrist": [
+              14,
+              20
+            ],
+            "eyeTarget": [
+              15,
+              17
+            ],
+            "handRingRadius": 0
+          }
+        }
+      },
+      "right": {
+        "face": [
+          25,
+          17
+        ],
+        "arms": {
+          "far": {
+            "shoulder": [
+              23,
+              27
+            ],
+            "elbow": [
+              23,
+              23
+            ],
+            "wrist": [
+              23,
+              21
+            ],
+            "eyeTarget": [
+              23,
+              18
+            ],
+            "handRingRadius": 0
+          },
+          "near": {
+            "shoulder": [
+              18,
+              27
+            ],
+            "elbow": [
+              20,
+              22
+            ],
+            "wrist": [
+              24,
+              20
+            ],
+            "eyeTarget": [
+              26,
+              17
+            ],
+            "handRingRadius": 2
+          }
+        }
+      }
+    },
+    "attack": {
+      "front": {
+        "face": [
+          20,
+          17
+        ],
+        "arms": {
+          "far": {
+            "shoulder": [
+              13,
+              26
+            ],
+            "elbow": [
+              12,
+              22
+            ],
+            "wrist": [
+              15,
+              20
+            ],
+            "eyeTarget": [
+              16,
+              17
+            ],
+            "handRingRadius": 2
+          },
+          "near": {
+            "shoulder": [
+              27,
+              26
+            ],
+            "elbow": [
+              28,
+              22
+            ],
+            "wrist": [
+              25,
+              20
+            ],
+            "eyeTarget": [
+              24,
+              17
+            ],
+            "handRingRadius": 2
+          }
+        }
+      },
+      "left": {
+        "face": [
+          15,
+          17
+        ],
+        "arms": {
+          "far": {
+            "shoulder": [
+              17,
+              27
+            ],
+            "elbow": [
+              17,
+              23
+            ],
+            "wrist": [
+              17,
+              21
+            ],
+            "eyeTarget": [
+              17,
+              18
+            ],
+            "handRingRadius": 0
+          },
+          "near": {
+            "shoulder": [
+              22,
+              27
+            ],
+            "elbow": [
+              20,
+              22
+            ],
+            "wrist": [
+              16,
+              20
+            ],
+            "eyeTarget": [
+              14,
+              17
+            ],
+            "handRingRadius": 2
+          }
+        }
+      },
+      "back": {
+        "face": [
+          20,
+          17
+        ],
+        "arms": {
+          "far": {
+            "shoulder": [
+              27,
+              26
+            ],
+            "elbow": [
+              28,
+              22
+            ],
+            "wrist": [
+              26,
+              20
+            ],
+            "eyeTarget": [
+              25,
+              17
+            ],
+            "handRingRadius": 0
+          },
+          "near": {
+            "shoulder": [
+              13,
+              26
+            ],
+            "elbow": [
+              12,
+              22
+            ],
+            "wrist": [
+              14,
+              20
+            ],
+            "eyeTarget": [
+              15,
+              17
+            ],
+            "handRingRadius": 0
+          }
+        }
+      },
+      "right": {
+        "face": [
+          25,
+          17
+        ],
+        "arms": {
+          "far": {
+            "shoulder": [
+              23,
+              27
+            ],
+            "elbow": [
+              23,
+              23
+            ],
+            "wrist": [
+              23,
+              21
+            ],
+            "eyeTarget": [
+              23,
+              18
+            ],
+            "handRingRadius": 0
+          },
+          "near": {
+            "shoulder": [
+              18,
+              27
+            ],
+            "elbow": [
+              20,
+              22
+            ],
+            "wrist": [
+              24,
+              20
+            ],
+            "eyeTarget": [
+              26,
+              17
+            ],
+            "handRingRadius": 2
+          }
+        }
+      }
+    },
+    "hurt": {
+      "front": {
+        "face": [
+          19,
+          16
+        ],
+        "arms": {
+          "far": {
+            "shoulder": [
+              12,
+              26
+            ],
+            "elbow": [
+              11,
+              22
+            ],
+            "wrist": [
+              14,
+              19
+            ],
+            "eyeTarget": [
+              15,
+              16
+            ],
+            "handRingRadius": 2
+          },
+          "near": {
+            "shoulder": [
+              26,
+              26
+            ],
+            "elbow": [
+              27,
+              22
+            ],
+            "wrist": [
+              24,
+              19
+            ],
+            "eyeTarget": [
+              23,
+              16
+            ],
+            "handRingRadius": 2
+          }
+        }
+      },
+      "left": {
+        "face": [
+          17,
+          16
+        ],
+        "arms": {
+          "far": {
+            "shoulder": [
+              18,
+              27
+            ],
+            "elbow": [
+              18,
+              23
+            ],
+            "wrist": [
+              19,
+              20
+            ],
+            "eyeTarget": [
+              19,
+              17
+            ],
+            "handRingRadius": 0
+          },
+          "near": {
+            "shoulder": [
+              23,
+              27
+            ],
+            "elbow": [
+              21,
+              22
+            ],
+            "wrist": [
+              18,
+              19
+            ],
+            "eyeTarget": [
+              16,
+              16
+            ],
+            "handRingRadius": 2
+          }
+        }
+      },
+      "back": {
+        "face": [
+          21,
+          16
+        ],
+        "arms": {
+          "far": {
+            "shoulder": [
+              28,
+              26
+            ],
+            "elbow": [
+              29,
+              22
+            ],
+            "wrist": [
+              27,
+              19
+            ],
+            "eyeTarget": [
+              26,
+              16
+            ],
+            "handRingRadius": 0
+          },
+          "near": {
+            "shoulder": [
+              14,
+              26
+            ],
+            "elbow": [
+              13,
+              22
+            ],
+            "wrist": [
+              15,
+              19
+            ],
+            "eyeTarget": [
+              16,
+              16
+            ],
+            "handRingRadius": 0
+          }
+        }
+      },
+      "right": {
+        "face": [
+          23,
+          16
+        ],
+        "arms": {
+          "far": {
+            "shoulder": [
+              22,
+              27
+            ],
+            "elbow": [
+              22,
+              23
+            ],
+            "wrist": [
+              21,
+              20
+            ],
+            "eyeTarget": [
+              21,
+              17
+            ],
+            "handRingRadius": 0
+          },
+          "near": {
+            "shoulder": [
+              17,
+              27
+            ],
+            "elbow": [
+              19,
+              22
+            ],
+            "wrist": [
+              22,
+              19
+            ],
+            "eyeTarget": [
+              24,
+              16
+            ],
+            "handRingRadius": 2
+          }
+        }
+      }
+    }
+  },
+  "scope": "review input only; no runtime atlas was modified"
+}

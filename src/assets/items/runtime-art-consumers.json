@@ -1,0 +1,2062 @@
+{
+  "version": 1,
+  "itemCount": 77,
+  "sourceModel": "gpt-image-2",
+  "sourceRoute": "DMIT sub2 owner pool",
+  "summary": {
+    "image2-rigid-four-direction-atlas": 31,
+    "image2-palette-body-mutation": 23,
+    "image2-state-overlay-atlas": 10,
+    "image2-fitted-uniform-anatomy-atlas": 1,
+    "image2-fitted-raincoat-palette-atlas": 1,
+    "image2-palette-event-effect": 4,
+    "image2-event-composite": 2,
+    "image2-projectile-trigger-preview": 5
+  },
+  "items": [
+    {
+      "index": 0,
+      "id": "loose-button",
+      "name": "校服上掉下来的纽扣",
+      "claim": "rigid",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/01-loose-button.png",
+      "sourceSha256": "096b18c59ae6eaa58f80700a847cff12fa7d080839f604ebfa53a434f09785b9",
+      "sourcePalette": {
+        "ink": "#261a22",
+        "dominant": "#5e5557",
+        "accent": "#c0b5af",
+        "light": "#d2c8c0"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一颗小纽扣攥在近手掌心，不改体型；弹出时手指短暂张开。",
+      "wikiIrony": "小事被孩子保存成全部安全感"
+    },
+    {
+      "index": 1,
+      "id": "wooden-sword",
+      "name": "床底下的木剑",
+      "claim": "rigid",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/02-wooden-sword.png",
+      "sourceSha256": "2ab94eb4df252f9b6fe69d964941fd779abfc319a444512b8cb7619f655b27d9",
+      "sourcePalette": {
+        "ink": "#020301",
+        "dominant": "#aa7456",
+        "accent": "#d9aa8c",
+        "light": "#d9aa8c"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一截磨秃木剑握在近手，随攻击向前劈；不改体型。",
+      "wikiIrony": "想象出来的勇敢"
+    },
+    {
+      "index": 2,
+      "id": "red-workbook",
+      "name": "写满红叉的练习册",
+      "claim": "rigid",
+      "production": [
+        "rigid",
+        "projectile",
+        "decal"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-projectile-atlas",
+        "anatomy-part-decal"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/03-red-workbook.png",
+      "sourceSha256": "d1a84e2e7a964abe9263027b2d42bdb264c0074ad6dcd12e0367bbb66735b982",
+      "sourcePalette": {
+        "ink": "#1b111b",
+        "dominant": "#423b3e",
+        "accent": "#dabea3",
+        "light": "#e3c9af"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一本卷边练习册夹在背后；不改体型。",
+      "wikiIrony": "标准答案与失败羞耻"
+    },
+    {
+      "index": 3,
+      "id": "stone-schoolbag",
+      "name": "装满石头的书包",
+      "claim": "rigid",
+      "production": [
+        "rigid",
+        "morph",
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-projectile-atlas",
+        "anatomy-part-morph"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/04-stone-schoolbag.png",
+      "sourceSha256": "e3f55ffaac6950471079e724bdad36ebfb5f9f0779257490871de6cc3a70f5ef",
+      "sourcePalette": {
+        "ink": "#0a090a",
+        "dominant": "#483934",
+        "accent": "#af997d",
+        "light": "#af997d"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "沉重书包压在背上，主角永久驼背、肩线下沉。",
+      "wikiIrony": "\"都是为你好\"的重量"
+    },
+    {
+      "index": 4,
+      "id": "bleach-powder",
+      "name": "剩了半袋的漂粉",
+      "claim": "mutation",
+      "production": [
+        "decal"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "anatomy-part-decal"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/05-bleach-powder.png",
+      "sourceSha256": "5814f35fd271476da8f2a31ee21fbfdf3b84f4fd2376976e5bf26dbfd308395c",
+      "sourcePalette": {
+        "ink": "#110c18",
+        "dominant": "#443941",
+        "accent": "#c4ac79",
+        "light": "#c4ac79"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "头发被漂成显眼的黄色，并持续掉色；不改体型。",
+      "wikiIrony": "用显眼叛逆制造身份"
+    },
+    {
+      "index": 5,
+      "id": "eyebrow-razor",
+      "name": "同桌的修眉刀",
+      "claim": "mutation",
+      "production": [
+        "decal",
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "image2-projectile-atlas",
+        "anatomy-part-decal"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/06-eyebrow-razor.png",
+      "sourceSha256": "d945736a9fdf0dc4d8ed1a2c711b4c20c3d8fda3d96b98a959bc9342e60e7003",
+      "sourcePalette": {
+        "ink": "#301e2d",
+        "dominant": "#b39395",
+        "accent": "#c8b2a2",
+        "light": "#cdc2ac"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "小臂内侧数道细浅疤痕（decal），夏天也从不卷袖；不改体型。",
+      "wikiIrony": "求救被模仿成小众审美"
+    },
+    {
+      "index": 6,
+      "id": "od-pill",
+      "name": "OD妹给的小药丸",
+      "claim": "mutation",
+      "production": [
+        "decal",
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "image2-projectile-atlas",
+        "anatomy-part-decal"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/07-od-pill.png",
+      "sourceSha256": "01d86da72a3936cb8c649dda627ee755dbc877ef212f63c26ad28b46b4955860",
+      "sourcePalette": {
+        "ink": "#1a0512",
+        "dominant": "#483641",
+        "accent": "#cdada8",
+        "light": "#f3e4da"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "眼神涣散、黑眼圈加深（decal）；不改体型。",
+      "wikiIrony": "痛苦、药物与圈层身份混在一起"
+    },
+    {
+      "index": 7,
+      "id": "front-desk-letter",
+      "name": "前桌的情书",
+      "claim": "rigid",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/08-front-desk-letter.png",
+      "sourceSha256": "36dbda3d04b25f8e949a9019f68411c4a132c93a261358a9a921c17216fe39ec",
+      "sourcePalette": {
+        "ink": "#2b1c1c",
+        "dominant": "#e7d2b9",
+        "accent": "#d3bba2",
+        "light": "#ecd8bf"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一封没有名字的信塞在胸前口袋；不改体型。",
+      "wikiIrony": "欲望与没有回应的感情"
+    },
+    {
+      "index": 8,
+      "id": "cracked-glasses",
+      "name": "裂了一边的眼镜",
+      "claim": "rigid",
+      "production": [
+        "fitted",
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-state-overlay-atlas",
+      "consumers": [
+        "image2-state-overlay-atlas",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/09-cracked-glasses.png",
+      "sourceSha256": "bff0dcd79a3fe875328f7dd8af1e3ba9d8ddca104bf4dcf1dc581a77748de74c",
+      "sourcePalette": {
+        "ink": "#1b131f",
+        "dominant": "#c9c5c5",
+        "accent": "#c9c5c5",
+        "light": "#dcd9d8"
+      },
+      "runtimeEntry": "src/hero-pixel.ts#itemStateOverlayAtlas.slice",
+      "wikiHero": "一副裂了一边镜片的眼镜戴在脸上；不改体型。",
+      "wikiIrony": "看清远方，却看不清自己"
+    },
+    {
+      "index": 9,
+      "id": "small-uniform",
+      "name": "小了一号的校服",
+      "claim": "fitted",
+      "production": [
+        "fitted",
+        "morph"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-fitted-uniform-anatomy-atlas",
+      "consumers": [
+        "image2-fitted-uniform-anatomy-atlas",
+        "anatomy-part-morph"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-uniform-image2-v1/raw/small-uniform-anatomy-source.png",
+      "sourceSha256": "0b673d363268c2ca583b53ba48199d0e119767abed941ddc818d937fdc344baf",
+      "sourcePalette": {
+        "ink": "#0d0e13",
+        "dominant": "#3d5e8a",
+        "accent": "#3b5e89",
+        "light": "#f4ece6"
+      },
+      "runtimeEntry": "src/hero-pixel.ts#paintAtlasFrame",
+      "wikiHero": "偏紧偏小的校服绷在身上，姿态略显局促（morph 轻微收束）。",
+      "wikiIrony": "被要求长大，又不被允许改变"
+    },
+    {
+      "index": 10,
+      "id": "only-key",
+      "name": "出租屋唯一的钥匙",
+      "claim": "rigid",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/11-only-key.png",
+      "sourceSha256": "6c0004e957f27046614172f4c6de895f8080a9cb01ffc42fb4c9fc23f2b20ac4",
+      "sourcePalette": {
+        "ink": "#0e080c",
+        "dominant": "#9b7a6a",
+        "accent": "#e2c5aa",
+        "light": "#e2c5aa"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一把孤零零的钥匙挂在腰侧；不改体型。",
+      "wikiIrony": "自由与孤独是同一扇门"
+    },
+    {
+      "index": 11,
+      "id": "first-salary",
+      "name": "第一次工资的信封",
+      "claim": "rigid",
+      "production": [
+        "rigid"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/12-first-salary.png",
+      "sourceSha256": "83785814ee28bffb691c1ca6877cb3444f622300f74df3c8b204a598a890125b",
+      "sourcePalette": {
+        "ink": "#2b1715",
+        "dominant": "#d29260",
+        "accent": "#d99d6b",
+        "light": "#e8b78d"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一个鼓鼓的工资信封攥在近手；不改体型。",
+      "wikiIrony": "价值被第一次收入证明"
+    },
+    {
+      "index": 12,
+      "id": "nameless-tie",
+      "name": "没有商标的领带",
+      "claim": "rigid",
+      "production": [
+        "fitted"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/13-nameless-tie.png",
+      "sourceSha256": "468bc8d339961f646f53a11fbbb2e4c6feef98e1f3c1498496b4b00a1e22ab28",
+      "sourcePalette": {
+        "ink": "#170c12",
+        "dominant": "#5a4f4a",
+        "accent": "#c7b2ab",
+        "light": "#e0cfc9"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一条没有商标的领带系在领口；不改体型。",
+      "wikiIrony": "体面与窒息"
+    },
+    {
+      "index": 13,
+      "id": "fathers-raincoat",
+      "name": "父亲的雨衣",
+      "claim": "fitted",
+      "production": [
+        "fitted",
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-fitted-raincoat-palette-atlas",
+      "consumers": [
+        "image2-fitted-raincoat-palette-atlas",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/14-fathers-raincoat.png",
+      "sourceSha256": "e629cf4f0d3f1cb1012fc67518d9d1c6f23b8bb4f5bf29cc028a757aca9e9f82",
+      "sourcePalette": {
+        "ink": "#1d1319",
+        "dominant": "#c69247",
+        "accent": "#cc9951",
+        "light": "#cc9951"
+      },
+      "runtimeEntry": "src/hero-pixel.ts#paintAtlasFrame",
+      "wikiHero": "一件宽大旧雨衣披在身上（fitted），肩背被压得略沉。",
+      "wikiIrony": "不会表达的保护与代际继承"
+    },
+    {
+      "index": 14,
+      "id": "unsent-phone",
+      "name": "没打出去的电话",
+      "claim": "rigid",
+      "production": [
+        "rigid"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/15-unsent-phone.png",
+      "sourceSha256": "6565840102c3d7593389c6409b6084657ad7c4b18fbd2ccb6901d13a234c08d9",
+      "sourcePalette": {
+        "ink": "#050303",
+        "dominant": "#38363d",
+        "accent": "#977d70",
+        "light": "#977d70"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一部亮着未拨号码的手机握在近手；不改体型。",
+      "wikiIrony": "自尊、思念与延迟沟通"
+    },
+    {
+      "index": 15,
+      "id": "baby-tooth",
+      "name": "女儿换下的乳牙",
+      "claim": "rigid",
+      "production": [
+        "rigid",
+        "aura"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "source-palette-aura"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/16-baby-tooth.png",
+      "sourceSha256": "d1bf501569c58c86f0b4c14e75f8381d17be23078d074e7eb177f2697d901bdb",
+      "sourcePalette": {
+        "ink": "#310914",
+        "dominant": "#dacaaa",
+        "accent": "#bc9d7d",
+        "light": "#ece3be"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一颗乳牙用红绳挂在颈前（rigid），触发时身周一圈护光（aura）。",
+      "wikiIrony": "守护与害怕先离开"
+    },
+    {
+      "index": 16,
+      "id": "revoked-badge",
+      "name": "已经注销的旧工牌",
+      "claim": "rigid",
+      "production": [
+        "fitted"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/17-revoked-badge.png",
+      "sourceSha256": "e486e753ccd775eec42f7e0925ae1a85c2143f6f480fd8ba58e6f3afe05e8e7f",
+      "sourcePalette": {
+        "ink": "#0c0710",
+        "dominant": "#443c45",
+        "accent": "#c7af99",
+        "light": "#c7af99"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一张已注销的工牌别在胸前；不改体型。",
+      "wikiIrony": "名字还在，身份已被拿走"
+    },
+    {
+      "index": 17,
+      "id": "slow-watch",
+      "name": "慢了七分钟的手表",
+      "claim": "rigid",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-projectile-atlas",
+        "image2-state-overlay-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/18-slow-watch.png",
+      "sourceSha256": "341c5dfd05fadf92f81f3a954fa8d7ed78bfa91e47676b000b7b9a7667c0e5d4",
+      "sourcePalette": {
+        "ink": "#030303",
+        "dominant": "#39312b",
+        "accent": "#d9c1a8",
+        "light": "#d9c1a8"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一块慢了七分钟的手表戴在手腕；不改体型。",
+      "wikiIrony": "身体与时间脱节"
+    },
+    {
+      "index": 18,
+      "id": "missing-photo",
+      "name": "少了一个人的合照",
+      "claim": "rigid",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/19-missing-photo.png",
+      "sourceSha256": "4eeb29c1cc07a249ca89df6e6b5b1368531ab50908ac0f711ba3dcb56cdc79db",
+      "sourcePalette": {
+        "ink": "#201b1a",
+        "dominant": "#c5a88d",
+        "accent": "#d3b599",
+        "light": "#ead2b6"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一张缺了一个人的合照攥在胸前；不改体型。",
+      "wikiIrony": "回忆越来越满，现实越来越空"
+    },
+    {
+      "index": 19,
+      "id": "white-bottle",
+      "name": "药房最下面的白瓶子",
+      "claim": "rigid",
+      "production": [
+        "rigid"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/20-white-bottle.png",
+      "sourceSha256": "0dfc778115f9638c2da7886313cfe0e78e054ec5890c83ec2faa3b12ba90feec",
+      "sourcePalette": {
+        "ink": "#190e13",
+        "dominant": "#b0938a",
+        "accent": "#caaea4",
+        "light": "#f4e1da"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一个没有标签的白瓶子揣在腰侧；不改体型。",
+      "wikiIrony": "用药维持运转而不是恢复"
+    },
+    {
+      "index": 20,
+      "id": "empty-frame",
+      "name": "一直空着的相框",
+      "claim": "effect",
+      "production": [
+        "aura",
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-event-effect",
+      "consumers": [
+        "image2-palette-event-effect",
+        "image2-projectile-atlas",
+        "source-palette-aura"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/21-empty-frame.png",
+      "sourceSha256": "8c37c65164deb218a5a87dbc9a29d77b32da66aabf3399a11c6c8608ba56a5e2",
+      "sourcePalette": {
+        "ink": "#160d22",
+        "dominant": "#3a2938",
+        "accent": "#a9785f",
+        "light": "#a9785f"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "一个空相框以影子形式悬在身侧（aura），不作大件跟随物、只留影廓。",
+      "wikiIrony": "\"等大家有空\"的无限延期"
+    },
+    {
+      "index": 21,
+      "id": "broken-spine",
+      "name": "断掉的脊梁骨",
+      "claim": "mutation",
+      "production": [
+        "morph",
+        "decal"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "anatomy-part-morph",
+        "anatomy-part-decal",
+        "image2-state-overlay-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/22-broken-spine.png",
+      "sourceSha256": "9b55d63266925073e7515838755095d11e0167e1a1df346da962f3bb6fed5e87",
+      "sourcePalette": {
+        "ink": "#1a0921",
+        "dominant": "#4a2743",
+        "accent": "#e8bfa7",
+        "light": "#f5d8bb"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "脊背彻底佝偻（morph），后背一道旧伤痕（decal）。",
+      "wikiIrony": "\"男人必须成为顶梁柱\"与被赞美的自我消耗"
+    },
+    {
+      "index": 22,
+      "id": "spent-decade",
+      "name": "提前花掉的十年",
+      "claim": "effect",
+      "production": [
+        "aura",
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-event-effect",
+      "consumers": [
+        "image2-palette-event-effect",
+        "image2-projectile-atlas",
+        "source-palette-aura"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/23-spent-decade.png",
+      "sourceSha256": "85024f7f5fdf57444933e666fe0a78b5002577d9695b2393b8c8e521803707fa",
+      "sourcePalette": {
+        "ink": "#383146",
+        "dominant": "#746c75",
+        "accent": "#cac0b8",
+        "light": "#f8f1e6"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "身周浮起一层被提前消耗的年岁影（aura）；不改体型。",
+      "wikiIrony": "用未来换现在的效率"
+    },
+    {
+      "index": 23,
+      "id": "held-pee",
+      "name": "憋回去的那泡尿",
+      "claim": "mutation",
+      "production": [
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/24-held-pee.png",
+      "sourceSha256": "f6d5a6de83106f7ca10c33e68d02d9aff6549af0b5c9575aeb7ff85da4d17196",
+      "sourcePalette": {
+        "ink": "#2e1b35",
+        "dominant": "#372d3b",
+        "accent": "#c6ad7c",
+        "light": "#f2e3c1"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "姿态略微夹紧忍耐（轻微 morph），不改体型主轮廓。",
+      "wikiIrony": "连膀胱都要服从纪律"
+    },
+    {
+      "index": 24,
+      "id": "flash-escape",
+      "name": "交掉的闪现",
+      "claim": "effect",
+      "production": [
+        "event"
+      ],
+      "persistentHero": false,
+      "heroConsumer": "image2-event-composite",
+      "consumers": [
+        "image2-event-composite"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/25-flash-escape.png",
+      "sourceSha256": "04760f448375135757a7ada2bc66fa73fb91a049b1a3c941021ab3d01748b6f1",
+      "sourcePalette": {
+        "ink": "#462b39",
+        "dominant": "#462b39",
+        "accent": "#d5d0c6",
+        "light": "#fdf7eb"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "纯玩法道具，不上身：触发时只有一次瞬移残影（event），无实体挂件。",
+      "wikiIrony": "人生没有取消施法"
+    },
+    {
+      "index": 25,
+      "id": "class-break",
+      "name": "课间十分钟",
+      "claim": "effect",
+      "production": [
+        "aura"
+      ],
+      "persistentHero": false,
+      "heroConsumer": "image2-palette-event-effect",
+      "consumers": [
+        "image2-palette-event-effect",
+        "source-palette-aura"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/26-class-break.png",
+      "sourceSha256": "955da127071ec49eaea2055005e362026f595d92262018f54048e8d0dae96ddc",
+      "sourcePalette": {
+        "ink": "#cec343",
+        "dominant": "#e8d650",
+        "accent": "#cec343",
+        "light": "#fbf696"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "开场脚下一圈轻快的光（aura），不上身。",
+      "wikiIrony": "现在给他一天假，他躺着刷完了手机"
+    },
+    {
+      "index": 26,
+      "id": "last-page",
+      "name": "暑假作业最后一页",
+      "claim": "rigid",
+      "production": [
+        "rigid"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/27-last-page.png",
+      "sourceSha256": "9dd96b3c968fb334e1ca8379c270a006436d977a20a8028e78b6ab65e0618307",
+      "sourcePalette": {
+        "ink": "#2c1d15",
+        "dominant": "#c5ad97",
+        "accent": "#d2b69e",
+        "light": "#efdec7"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一页没写完的作业攥在近手；不改体型。",
+      "wikiIrony": "截止日期是第一生产力，从小练的"
+    },
+    {
+      "index": 27,
+      "id": "five-ha",
+      "name": "五个哈",
+      "claim": "mutation",
+      "production": [
+        "projectile"
+      ],
+      "persistentHero": false,
+      "heroConsumer": "image2-projectile-trigger-preview",
+      "consumers": [
+        "image2-projectile-trigger-preview",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/28-five-ha.png",
+      "sourceSha256": "be05a1edf01818753e3c6b897ed0062580ec0dbb52e4f803514469bb491eee4d",
+      "sourcePalette": {
+        "ink": "#030405",
+        "dominant": "#eed8c5",
+        "accent": "#cda090",
+        "light": "#f3e0cc"
+      },
+      "runtimeEntry": "src/game.ts#renderProjectiles",
+      "wikiHero": "不上身，纯弹体行为改造。",
+      "wikiIrony": "哈哈哈哈哈，少一个都显得没礼貌"
+    },
+    {
+      "index": 28,
+      "id": "red-packet",
+      "name": "抢到的0.87元红包",
+      "claim": "rigid",
+      "production": [
+        "rigid"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/29-red-packet.png",
+      "sourceSha256": "7425bae8a176aec5fb4fbf42e361b36eeb16a52e7ed9d4ab14289c75550ba7c9",
+      "sourcePalette": {
+        "ink": "#060202",
+        "dominant": "#982e2e",
+        "accent": "#982e2e",
+        "light": "#935846"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一个抢到的小红包揣在腰侧；不改体型。",
+      "wikiIrony": "快乐明码标价，不足一元"
+    },
+    {
+      "index": 29,
+      "id": "snow-screen",
+      "name": "雪花屏",
+      "claim": "effect",
+      "production": [
+        "event",
+        "decal"
+      ],
+      "persistentHero": false,
+      "heroConsumer": "image2-event-composite",
+      "consumers": [
+        "image2-event-composite",
+        "anatomy-part-decal"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/30-snow-screen.png",
+      "sourceSha256": "fa03f27a6f2cc941b1cd97d4a469ab93f6f2ab455132a94553f53df1ea07125f",
+      "sourcePalette": {
+        "ink": "#2d2a30",
+        "dominant": "#cbd1cc",
+        "accent": "#cbd1cc",
+        "light": "#fbfdfb"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "不上身；触发时全屏一帧雪花噪点（event/decal）。",
+      "wikiIrony": "那台电视早就扔了。雪花有时候还来"
+    },
+    {
+      "index": 30,
+      "id": "marble",
+      "name": "当年最强的那颗弹珠",
+      "claim": "rigid",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/31-marble.png",
+      "sourceSha256": "6ef00b8b0f875b07bbc142b5237723a70b6d638c6e3a2426fee8468c00636ca8",
+      "sourcePalette": {
+        "ink": "#343133",
+        "dominant": "#343133",
+        "accent": "#a0c69e",
+        "light": "#e3ecdb"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一颗玻璃弹珠捏在近手；不改体型。",
+      "wikiIrony": "它没有变小，是他的世界变大了"
+    },
+    {
+      "index": 31,
+      "id": "always-crying",
+      "name": "我一直在哭",
+      "claim": "mutation",
+      "production": [
+        "decal",
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "image2-projectile-atlas",
+        "anatomy-part-decal"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/32-always-crying.png",
+      "sourceSha256": "e0597915ce5a8c387d9758f62e25a2a534d0ce5ef1a875341c994d808d683e5d",
+      "sourcePalette": {
+        "ink": "#150912",
+        "dominant": "#605567",
+        "accent": "#91c8f2",
+        "light": "#d7effa"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "面无表情的脸上挂着泪痕（decal），刷手机的姿态；不改体型。",
+      "wikiIrony": "真实情绪被压缩成可复制、可围观、可快速划走的网络后缀"
+    },
+    {
+      "index": 32,
+      "id": "three-day-visible",
+      "name": "朋友圈仅三天可见",
+      "claim": "mutation",
+      "production": [
+        "aura",
+        "projectile"
+      ],
+      "persistentHero": false,
+      "heroConsumer": "image2-projectile-trigger-preview",
+      "consumers": [
+        "image2-projectile-trigger-preview",
+        "image2-projectile-atlas",
+        "source-palette-aura"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/33-three-day-visible.png",
+      "sourceSha256": "5767b772cb7645d291f1db69179f24569644b1a1d0101d4f03ba67f659633027",
+      "sourcePalette": {
+        "ink": "#180b12",
+        "dominant": "#5b3d3f",
+        "accent": "#e7c59f",
+        "light": "#e7c59f"
+      },
+      "runtimeEntry": "src/game.ts#renderProjectiles",
+      "wikiHero": "身侧三枚弹体环绕（aura），不作大件跟随。",
+      "wikiIrony": "选择性展示与记忆删除"
+    },
+    {
+      "index": 33,
+      "id": "read-3am",
+      "name": "凌晨三点的已读",
+      "claim": "mutation",
+      "production": [
+        "projectile"
+      ],
+      "persistentHero": false,
+      "heroConsumer": "image2-projectile-trigger-preview",
+      "consumers": [
+        "image2-projectile-trigger-preview",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/34-read-3am.png",
+      "sourceSha256": "54cb8c9f7661968d72664b500630eb9377e9745f2f4045a12ec4f8657be26ba6",
+      "sourcePalette": {
+        "ink": "#040404",
+        "dominant": "#3d3842",
+        "accent": "#e3d7cf",
+        "light": "#f9ede6"
+      },
+      "runtimeEntry": "src/game.ts#renderProjectiles",
+      "wikiHero": "不上身，纯弹体延迟结算行为。",
+      "wikiIrony": "在线不等于回应"
+    },
+    {
+      "index": 34,
+      "id": "retracted-voice",
+      "name": "领导撤回的六十秒语音",
+      "claim": "rigid",
+      "production": [
+        "rigid",
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/35-retracted-voice.png",
+      "sourceSha256": "054694fb2697b668a46ac6974be7ef3175564461320985e795e7ebfa7f5492e0",
+      "sourcePalette": {
+        "ink": "#08060a",
+        "dominant": "#c9ac9e",
+        "accent": "#c9ac9e",
+        "light": "#c9ac9e"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一条撤回的语音条挂在颈前；不改体型。",
+      "wikiIrony": "服从、猜测与隐形加班"
+    },
+    {
+      "index": 35,
+      "id": "takeout-3am",
+      "name": "凌晨三点的外卖袋",
+      "claim": "rigid",
+      "production": [
+        "rigid"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/36-takeout-3am.png",
+      "sourceSha256": "750b2b64d4eca7a3345fe91b857559e2171803c4fbd5062a4d5c0af816df58ad",
+      "sourcePalette": {
+        "ink": "#1a1311",
+        "dominant": "#c4a37c",
+        "accent": "#ceac85",
+        "light": "#d2b28c"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "一个凌晨外卖袋拎在腰侧；不改体型。",
+      "wikiIrony": "对身体的延期付款"
+    },
+    {
+      "index": 36,
+      "id": "auto-renew",
+      "name": "自动续费到明年的会员",
+      "claim": "mutation",
+      "production": [
+        "aura"
+      ],
+      "persistentHero": false,
+      "heroConsumer": "image2-state-overlay-atlas",
+      "consumers": [
+        "image2-state-overlay-atlas",
+        "source-palette-aura"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/37-auto-renew.png",
+      "sourceSha256": "ab1b15d266b080341d11000298bbeb2e1072f8f571c569760d37081051bafd34",
+      "sourcePalette": {
+        "ink": "#493d36",
+        "dominant": "#d1b8a4",
+        "accent": "#c5852c",
+        "light": "#fbf69d"
+      },
+      "runtimeEntry": "src/hero-pixel.ts#itemStateOverlayAtlas.slice",
+      "wikiHero": "不上身；开场一层会员金边光（aura）。",
+      "wikiIrony": "被遗忘的小额持续剥夺"
+    },
+    {
+      "index": 37,
+      "id": "bargain-link",
+      "name": "全家帮砍仍差一刀的链接",
+      "claim": "mutation",
+      "production": [
+        "projectile",
+        "rigid"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/38-bargain-link.png",
+      "sourceSha256": "35693a41121ecb52640e72640f74b3e7ec8172d4f8bdc9d25f36e0ca41ff7ca2",
+      "sourcePalette": {
+        "ink": "#040305",
+        "dominant": "#343231",
+        "accent": "#88413f",
+        "light": "#82655b"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "手机屏上那条永远差一刀的砍价链接，攥在手里当作还差一点的证据。",
+      "wikiIrony": "人情关系被平台计量"
+    },
+    {
+      "index": 38,
+      "id": "mineral-water",
+      "name": "相亲桌上没拆的矿泉水",
+      "claim": "rigid",
+      "production": [
+        "rigid"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/39-mineral-water.png",
+      "sourceSha256": "2bf75c98543b562c68f5b8649f3df2e96e5205745ed61c6f5d72479bd59402e6",
+      "sourcePalette": {
+        "ink": "#4d505d",
+        "dominant": "#768694",
+        "accent": "#cebfb7",
+        "light": "#f8f6f4"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "相亲桌上那瓶始终没拧开的矿泉水，攥在手里给沉默找个由头。",
+      "wikiIrony": "亲密关系被条件表格化"
+    },
+    {
+      "index": 39,
+      "id": "group-dad",
+      "name": "家长群里的“孩子他爸”",
+      "claim": "mutation",
+      "production": [
+        "projectile",
+        "decal"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "image2-projectile-atlas",
+        "anatomy-part-decal"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/40-group-dad.png",
+      "sourceSha256": "11d4f5b10d0c1ec3c335c344e6cc0aabcb9c9ab8ea5deb072fcff84c662dfd0f",
+      "sourcePalette": {
+        "ink": "#1e1214",
+        "dominant": "#efdbca",
+        "accent": "#d1bea9",
+        "light": "#f2e0ce"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "本人退到附属身后，头顶名牌被\"孩子他爸\"这个称呼盖住。",
+      "wikiIrony": "个体身份被家庭角色吞没"
+    },
+    {
+      "index": 40,
+      "id": "divorce-draft",
+      "name": "没有按下发送的离婚协议",
+      "claim": "rigid",
+      "production": [
+        "fitted"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-state-overlay-atlas",
+      "consumers": [
+        "image2-state-overlay-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/41-divorce-draft.png",
+      "sourceSha256": "0ad6a1c864d04f243ae0890a071b40d4adfa5780aa4a2d9fee089f2efcf544e7",
+      "sourcePalette": {
+        "ink": "#18121a",
+        "dominant": "#e5cdb0",
+        "accent": "#d9bb9c",
+        "light": "#ebd6ba"
+      },
+      "runtimeEntry": "src/hero-pixel.ts#itemStateOverlayAtlas.slice",
+      "wikiHero": "揣在胸口那份始终没按下发送的协议，贴身却发不出去。",
+      "wikiIrony": "关系中的拖延与机会成本"
+    },
+    {
+      "index": 41,
+      "id": "checkup-arrows",
+      "name": "体检报告上的向上箭头",
+      "claim": "mutation",
+      "production": [
+        "decal"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "anatomy-part-decal"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/42-checkup-arrows.png",
+      "sourceSha256": "8d92724d93e935b2ec9d0db868d1de7e53d3e31d59ee20d250a2472cf68dc1d4",
+      "sourcePalette": {
+        "ink": "#6d0a10",
+        "dominant": "#d7cca8",
+        "accent": "#d4c5a3",
+        "light": "#d9d1ad"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "脸色被那排向上的红箭头压出一层病气，越看越回不去。",
+      "wikiIrony": "人被缩成一组异常指标"
+    },
+    {
+      "index": 42,
+      "id": "shared-powerbank",
+      "name": "医院走廊的共享充电宝",
+      "claim": "rigid",
+      "production": [
+        "rigid"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/43-shared-powerbank.png",
+      "sourceSha256": "51101cdb7b952761f5182dd6ad5509cb3e478611fa062c7bd40bb68bee4bb02f",
+      "sourcePalette": {
+        "ink": "#241925",
+        "dominant": "#d1bca4",
+        "accent": "#d1bca4",
+        "light": "#dbc9b2"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "腰上挂着医院走廊借来的共享充电宝，线一直没拔。",
+      "wikiIrony": "等待、焦虑与按分钟收费"
+    },
+    {
+      "index": 43,
+      "id": "third-pill",
+      "name": "她没说名字的第三颗药",
+      "claim": "mutation",
+      "production": [
+        "morph",
+        "decal"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-state-overlay-atlas",
+      "consumers": [
+        "image2-state-overlay-atlas",
+        "anatomy-part-morph",
+        "anatomy-part-decal"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-art-loop-v1/44-third-pill/v1/44-third-pill-v1.png",
+      "sourceSha256": "1ca93bf07f889e2ea9569dd02fbcf9f5a9709a13c5c0c3040619a0e7e677066b",
+      "sourcePalette": {
+        "ink": "#1b0e27",
+        "dominant": "#2c2e3a",
+        "accent": "#b51030",
+        "light": "#b2c0b5"
+      },
+      "runtimeEntry": "src/hero-pixel.ts#itemStateOverlayAtlas.slice",
+      "wikiHero": "狂暴时身形绷胀发红、崩落时缩瘪发青，一颗没名字的药把人拉扯变形。",
+      "wikiIrony": "痛苦被当作圈层通行证"
+    },
+    {
+      "index": 44,
+      "id": "loan-contract",
+      "name": "已经签好名字的网贷合同",
+      "claim": "mutation",
+      "production": [
+        "rigid"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/45-loan-contract.png",
+      "sourceSha256": "1c11b0928e2624f23933f7a8e2ccfabf902f978c0172088075c7162bdea13109",
+      "sourcePalette": {
+        "ink": "#1b1114",
+        "dominant": "#d0b398",
+        "accent": "#d0b398",
+        "light": "#d9c1a8"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "手里攥着已经签好名字的网贷合同，字迹是自己的。",
+      "wikiIrony": "将未来收入抵押给即时欲望"
+    },
+    {
+      "index": 45,
+      "id": "name-sold",
+      "name": "把名字卖掉的合同",
+      "claim": "rigid",
+      "production": [
+        "projectile",
+        "rigid"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/46-name-sold.png",
+      "sourceSha256": "d81ee06c12c23987e6642c7fda13a5ec79ea91cdbedb831e8d95147ec5c3e4eb",
+      "sourcePalette": {
+        "ink": "#161312",
+        "dominant": "#5f4a41",
+        "accent": "#ceb194",
+        "light": "#d5b99c"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "胸前挂着把名字卖掉的合同，签完就再没人叫得出他是谁。",
+      "wikiIrony": "价值与身份被组织吞没"
+    },
+    {
+      "index": 46,
+      "id": "moms-bowl",
+      "name": "母亲留在锅里的那碗饭",
+      "claim": "mutation",
+      "production": [
+        "aura"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "source-palette-aura"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/47-moms-bowl.png",
+      "sourceSha256": "1caa2b4299f20aef7db828e572f506221338f363865a2d6224cd47ad0a8979e8",
+      "sourcePalette": {
+        "ink": "#312124",
+        "dominant": "#604a45",
+        "accent": "#cfb3a3",
+        "light": "#f1e2d4"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "身边浮着一碗留在锅里的饭的暖光，热气一阶段比一阶段淡。",
+      "wikiIrony": "无论多晚，锅里总有一只倒扣的碗"
+    },
+    {
+      "index": 47,
+      "id": "ruma-msg",
+      "name": "凌晨两点朋友发来的“在吗”",
+      "claim": "mutation",
+      "production": [
+        "aura"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "source-palette-aura"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/48-ruma-msg.png",
+      "sourceSha256": "3bdd36e0f9935c4bea6312057115d7cbb410991c0dd567381bf1ac418ae63b57",
+      "sourcePalette": {
+        "ink": "#190b19",
+        "dominant": "#6c5569",
+        "accent": "#bbaa91",
+        "light": "#f3ebcb"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "影子旁悬着一条凌晨两点的\"在吗\"，一直亮着没敢回。",
+      "wikiIrony": "这一次，有人接了"
+    },
+    {
+      "index": 48,
+      "id": "held-elevator",
+      "name": "有人替你按住的电梯",
+      "claim": "mutation",
+      "production": [
+        "projectile",
+        "aura"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "image2-projectile-atlas",
+        "source-palette-aura"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/49-held-elevator.png",
+      "sourceSha256": "0cbb598bfd711c91a39b7ea8f012b2344a3411cf4392ca853ae0ecf3db95ea15",
+      "sourcePalette": {
+        "ink": "#171020",
+        "dominant": "#625e5e",
+        "accent": "#cbbc9c",
+        "light": "#cbbc9c"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "身后一道虚门始终替你按着，光标一样停在那里等你。",
+      "wikiIrony": "有人愿意为你多等三秒"
+    },
+    {
+      "index": 49,
+      "id": "old-door-lock",
+      "name": "一直没有换的家门锁",
+      "claim": "rigid",
+      "production": [
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/50-old-door-lock.png",
+      "sourceSha256": "14826622806f904ff3a0d2a223200fc6e0b50bafb452db536dd7daba65013277",
+      "sourcePalette": {
+        "ink": "#1b1416",
+        "dominant": "#4d3f41",
+        "accent": "#9e7a6b",
+        "light": "#9e7a6b"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "腰间挂着那把一直没换的旧门锁，钥匙孔磨得发亮。",
+      "wikiIrony": "那把钥匙，一直都开得了门"
+    },
+    {
+      "index": 50,
+      "id": "drank-for-boss",
+      "name": "酒局上代喝的那杯",
+      "claim": "mutation",
+      "production": [
+        "decal"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "anatomy-part-decal"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/51-drank-for-boss.png",
+      "sourceSha256": "f3025e6282ebc9d75fe7400dab610b839427ba5f8bd1a44ecc2d647e4a72c464",
+      "sourcePalette": {
+        "ink": "#1d0b1f",
+        "dominant": "#b43e49",
+        "accent": "#d1817a",
+        "light": "#d1c3b2"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "脸颊泛着代喝上头的红，开场脚下有点飘。",
+      "wikiIrony": "身体是递给酒桌的投名状"
+    },
+    {
+      "index": 51,
+      "id": "hair-in-takeout",
+      "name": "外卖里吃出的头发",
+      "claim": "mutation",
+      "production": [
+        "decal"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "anatomy-part-decal"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/52-hair-in-takeout.png",
+      "sourceSha256": "8baf48fbaea0cc769daf79d60eb38afd1476eac0ea712ed9b6f6c3b3aa0315e3",
+      "sourcePalette": {
+        "ink": "#25121e",
+        "dominant": "#533a3b",
+        "accent": "#c9ae9a",
+        "light": "#e5cbb7"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "嘴角挂着一根吃出来的头发，反胃的表情压着。",
+      "wikiIrony": "又穷，又讲究不起"
+    },
+    {
+      "index": 52,
+      "id": "unwashed-pillow",
+      "name": "没洗的枕套",
+      "claim": "mutation",
+      "production": [
+        "aura"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "source-palette-aura"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/53-unwashed-pillow.png",
+      "sourceSha256": "eb13858d736d3af36d0a6d54467486555cc9a19c98b9ae3b733eee246ddf1f31",
+      "sourcePalette": {
+        "ink": "#362833",
+        "dominant": "#4e3f44",
+        "accent": "#d1b1a2",
+        "light": "#d4b5a6"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "影子摊成一片没洗的枕套，越不动陷得越深。",
+      "wikiIrony": "躺平是仅剩的自我保护"
+    },
+    {
+      "index": 53,
+      "id": "sock-cigs",
+      "name": "藏在袜子里的烟",
+      "claim": "mutation",
+      "production": [
+        "decal"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "anatomy-part-decal"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/54-sock-cigs.png",
+      "sourceSha256": "b9f181afbaf5cbc883fcf47fec79d02039887ceb47d4fb446d2b47dc4a908be2",
+      "sourcePalette": {
+        "ink": "#1e100c",
+        "dominant": "#826d5c",
+        "accent": "#bba593",
+        "light": "#bba593"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "袜筒里露出半根藏着的烟，走路带点满不在乎的劲。",
+      "wikiIrony": "慢性自毁被叫做解压"
+    },
+    {
+      "index": 54,
+      "id": "pregnancy-test",
+      "name": "验孕棒",
+      "claim": "rigid",
+      "production": [
+        "projectile",
+        "morph"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-state-overlay-atlas",
+      "consumers": [
+        "image2-state-overlay-atlas",
+        "image2-projectile-atlas",
+        "anatomy-part-morph"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/55-pregnancy-test.png",
+      "sourceSha256": "65737ff27feaf5cf38001228e29a5d6e2848bf011a84a849e9f4466791fcc167",
+      "sourcePalette": {
+        "ink": "#360e13",
+        "dominant": "#e4d5d0",
+        "accent": "#cfb2b0",
+        "light": "#f3eae6"
+      },
+      "runtimeEntry": "src/hero-pixel.ts#itemStateOverlayAtlas.slice",
+      "wikiHero": "手里攥着验孕棒，站姿不自觉护起了小腹。",
+      "wikiIrony": "先成为父亲，再学会当人"
+    },
+    {
+      "index": 55,
+      "id": "gym-card",
+      "name": "健身房年卡",
+      "claim": "rigid",
+      "production": [
+        "rigid"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/56-gym-card.png",
+      "sourceSha256": "0c86c333986190f1b3b67bcb5c6f4ffe914c65093b5c47d912cb4df772eeff57",
+      "sourcePalette": {
+        "ink": "#1a0f1f",
+        "dominant": "#e2d1bc",
+        "accent": "#ccac96",
+        "light": "#e4d5c1"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "腰上别着一张几乎没用过的健身房年卡。",
+      "wikiIrony": "买的不是健康，是\"有在管自己\"的错觉"
+    },
+    {
+      "index": 56,
+      "id": "funeral-photo",
+      "name": "遗照选用的那张",
+      "claim": "mutation",
+      "production": [
+        "decal"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "anatomy-part-decal"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/57-funeral-photo.png",
+      "sourceSha256": "a62c5bab47d313cae13fac3e18632b5e30603a1e2262e40b754657f8d8a15f37",
+      "sourcePalette": {
+        "ink": "#1f1a1b",
+        "dominant": "#383334",
+        "accent": "#cab298",
+        "light": "#d8c5ad"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "脸上定格着遗照那张笑，越到最后越僵。",
+      "wikiIrony": "人这辈子最配合的一次摆拍"
+    },
+    {
+      "index": 57,
+      "id": "typing-indicator",
+      "name": "对方正在输入…",
+      "claim": "effect",
+      "production": [
+        "projectile",
+        "aura"
+      ],
+      "persistentHero": false,
+      "heroConsumer": "image2-projectile-trigger-preview",
+      "consumers": [
+        "image2-projectile-trigger-preview",
+        "image2-projectile-atlas",
+        "source-palette-aura"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/58-typing-indicator.png",
+      "sourceSha256": "cbd0d4c2d626156f52d4563c7b9f1517f0d91f0f520e0f470d5d811618d28775",
+      "sourcePalette": {
+        "ink": "#0e0816",
+        "dominant": "#4e3c46",
+        "accent": "#a99089",
+        "light": "#a99089"
+      },
+      "runtimeEntry": "src/game.ts#renderProjectiles",
+      "wikiHero": "不举手机、不挂气泡；只在头发正上方依次出现一、二、三个像素句号。",
+      "wikiIrony": "被三个点吊住，又把没等到的话朝所有方向说完"
+    },
+    {
+      "index": 58,
+      "id": "year-report",
+      "name": "年度听歌报告",
+      "claim": "mutation",
+      "production": [
+        "projectile",
+        "aura"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "image2-projectile-atlas",
+        "source-palette-aura"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/59-year-report.png",
+      "sourceSha256": "18739bc74212157e638f40ff5489bc9155c3437474ffd504a00c9c814618e32f",
+      "sourcePalette": {
+        "ink": "#040604",
+        "dominant": "#c0a192",
+        "accent": "#dcc0b0",
+        "light": "#e2c9b9"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "影子上滚动播放一份年度听歌报告，循环着同几首。",
+      "wikiIrony": "大数据比他妈先知道他不对劲"
+    },
+    {
+      "index": 59,
+      "id": "momo-avatar",
+      "name": "momo的头像",
+      "claim": "mutation",
+      "production": [
+        "decal"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-state-overlay-atlas",
+      "consumers": [
+        "image2-state-overlay-atlas",
+        "anatomy-part-decal"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/60-momo-avatar.png",
+      "sourceSha256": "281d0d690d3f3e92417a3771097ab1fa2988e832c0ae7e2f54470addafe21237",
+      "sourcePalette": {
+        "ink": "#150f15",
+        "dominant": "#f3dec9",
+        "accent": "#f3dec9",
+        "light": "#f3dec9"
+      },
+      "runtimeEntry": "src/hero-pixel.ts#itemStateOverlayAtlas.slice",
+      "wikiHero": "主角戴上圆头粉色小恐龙头套；只替换头部轮廓，身体和衣服仍是本人，却已经认不出是谁。",
+      "wikiIrony": "只有没有名字的时候才敢做自己"
+    },
+    {
+      "index": 60,
+      "id": "ai-chat",
+      "name": "和AI聊到凌晨",
+      "claim": "rigid",
+      "production": [
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/61-ai-chat.png",
+      "sourceSha256": "534d892622e936df2f1954b8ab73fc31794a9f7aaa3690da6b627313a3df7ace",
+      "sourcePalette": {
+        "ink": "#17121c",
+        "dominant": "#423944",
+        "accent": "#9ca6bf",
+        "light": "#dde2ef"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "手机屏亮着和AI聊到凌晨的对话，回复永远秒到。",
+      "wikiIrony": "这个时代最耐心的倾听者是个语言模型"
+    },
+    {
+      "index": 61,
+      "id": "streak-1847",
+      "name": "连续签到1847天",
+      "claim": "rigid",
+      "production": [
+        "rigid"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/62-streak-1847.png",
+      "sourceSha256": "c2ca3152c87b078e4f1fbf7e16e5365a3841f537176c98831ead08cd9b534457",
+      "sourcePalette": {
+        "ink": "#272127",
+        "dominant": "#e8cbb1",
+        "accent": "#e3c4a9",
+        "light": "#edd2b8"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "手里举着连续签到1847天的打卡页，一天不敢断。",
+      "wikiIrony": "他的坚持全喂给了一个 APP"
+    },
+    {
+      "index": 62,
+      "id": "goodnight-2h",
+      "name": "晚安之后的两小时",
+      "claim": "mutation",
+      "production": [
+        "aura"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-state-overlay-atlas",
+      "consumers": [
+        "image2-state-overlay-atlas",
+        "source-palette-aura"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/63-goodnight-2h.png",
+      "sourceSha256": "4e6859d19645e4803e1136079797d8671e6a6cce1e13198d938b7fb2247e6a6f",
+      "sourcePalette": {
+        "ink": "#15297f",
+        "dominant": "#669df6",
+        "accent": "#7ab5fa",
+        "light": "#bfe9fa"
+      },
+      "runtimeEntry": "src/hero-pixel.ts#itemStateOverlayAtlas.slice",
+      "wikiHero": "影子里透出说完晚安又醒着的手机冷光。",
+      "wikiIrony": "睡不着不是困不困，是不甘心"
+    },
+    {
+      "index": 63,
+      "id": "friend-verify",
+      "name": "对方已开启朋友验证",
+      "claim": "rigid",
+      "production": [
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/64-friend-verify.png",
+      "sourceSha256": "df4f6a906bc0b4184cbe4767e0a4e53b301f388e2d92f66634ec65586d289380",
+      "sourcePalette": {
+        "ink": "#160f13",
+        "dominant": "#37353b",
+        "accent": "#d8c9bb",
+        "light": "#dfd2c4"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "手机屏弹着\"对方已开启朋友验证\"，怎么发都先被退回。",
+      "wikiIrony": "这个时代的绝交是静音的"
+    },
+    {
+      "index": 64,
+      "id": "summer-run",
+      "name": "练了一个暑假的跑法",
+      "claim": "mutation",
+      "production": [
+        "morph"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "anatomy-part-morph"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/65-summer-run.png",
+      "sourceSha256": "f3f59ae3dc155d348c0efe46cf2311abdf46b6b3336e1d40bd62e8bc326ee482",
+      "sourcePalette": {
+        "ink": "#110b0d",
+        "dominant": "#34303f",
+        "accent": "#8c7f79",
+        "light": "#8c7f79"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "换成练了一个暑假的中二跑姿，手臂朝后甩。",
+      "wikiIrony": "现在他还这样跑——在地铁关门前"
+    },
+    {
+      "index": 65,
+      "id": "one-more-game",
+      "name": "再来一把就睡",
+      "claim": "mutation",
+      "production": [
+        "aura"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "source-palette-aura"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/66-one-more-game.png",
+      "sourceSha256": "39b55a7856feeb047b27fe77d17d1fc9eb13bdec2c39d2a198e4cb2e18c4605c",
+      "sourcePalette": {
+        "ink": "#250f2a",
+        "dominant": "#613e55",
+        "accent": "#e9daa0",
+        "light": "#e9daa0"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "影子里亮着一句\"再来一把就睡\"的屏光，怎么都不肯关。",
+      "wikiIrony": "不是想赢，是不甘心就这样结束今天"
+    },
+    {
+      "index": 66,
+      "id": "eye-exercise",
+      "name": "眼保健操",
+      "claim": "mutation",
+      "production": [
+        "decal"
+      ],
+      "persistentHero": false,
+      "heroConsumer": "image2-state-overlay-atlas",
+      "consumers": [
+        "image2-state-overlay-atlas",
+        "anatomy-part-decal"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/67-eye-exercise.png",
+      "sourceSha256": "0018ad79235bf7bca2a12e04e846cd178136cfb517b3593f501686ea01ec227f",
+      "sourcePalette": {
+        "ink": "#271a27",
+        "dominant": "#7c705a",
+        "accent": "#b0a696",
+        "light": "#b0a696"
+      },
+      "runtimeEntry": "src/hero-pixel.ts#itemStateOverlayAtlas.slice",
+      "wikiHero": "人物常态不变；到点时原有双臂抬起，拇指与食指贴着双眼眼眶形成受压弧环，像轮刮、揉按眼眶，半秒后放下。",
+      "wikiIrony": "为革命保护视力，第四节，轮刮眼眶"
+    },
+    {
+      "index": 67,
+      "id": "card-binder",
+      "name": "大扫除清掉的卡册",
+      "claim": "rigid",
+      "production": [
+        "projectile",
+        "rigid"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/68-card-binder.png",
+      "sourceSha256": "7bc9bc348dc74c7313ad5d60dbdd26772916b706b966852d7bd98cd0d8f3ebff",
+      "sourcePalette": {
+        "ink": "#060507",
+        "dominant": "#302d31",
+        "accent": "#c8a37d",
+        "light": "#c8a37d"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "背上背着一本大扫除时差点清掉的卡册，翻出旧卡。",
+      "wikiIrony": "大人的一次大扫除，清空一个宇宙"
+    },
+    {
+      "index": 68,
+      "id": "abstract-lv10",
+      "name": "抽象话十级",
+      "claim": "mutation",
+      "production": [
+        "decal"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "anatomy-part-decal"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/69-abstract-lv10.png",
+      "sourceSha256": "1a425e60fbf10fcc22a479708e61dba58f359ad11a650e33cb808b50cd6d4cfa",
+      "sourcePalette": {
+        "ink": "#22172a",
+        "dominant": "#ecdac9",
+        "accent": "#9ae4d9",
+        "light": "#eedecd"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "脸上挂着一副抽象话十级的怪表情，专门招人。",
+      "wikiIrony": "会说的字越来越少，没说的话越来越多"
+    },
+    {
+      "index": 69,
+      "id": "shop-freezer",
+      "name": "小卖部的冰柜",
+      "claim": "effect",
+      "production": [
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-state-overlay-atlas",
+      "consumers": [
+        "image2-state-overlay-atlas",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/70-shop-freezer.png",
+      "sourceSha256": "58c769866bb17c75e771e77b1c1d3db591395b2ad00709f28f4e87e556b3cb83",
+      "sourcePalette": {
+        "ink": "#111117",
+        "dominant": "#bfb7ae",
+        "accent": "#bfb7ae",
+        "light": "#d5cec4"
+      },
+      "runtimeEntry": "src/hero-pixel.ts#itemStateOverlayAtlas.slice",
+      "wikiHero": "背后拖着一台小卖部旧冰柜，冒着白气。",
+      "wikiIrony": "那家小卖部拆了。冰雾有时候还在梦里冒"
+    },
+    {
+      "index": 70,
+      "id": "server-shutdown",
+      "name": "关服那天",
+      "claim": "mutation",
+      "production": [
+        "event",
+        "aura"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-state-overlay-atlas",
+      "consumers": [
+        "image2-state-overlay-atlas",
+        "image2-event-composite",
+        "source-palette-aura"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/71-server-shutdown.png",
+      "sourceSha256": "1e5c532e0eef236ead47337d18eec5f8a0665ab03639e401884c0181217bba1d",
+      "sourcePalette": {
+        "ink": "#2d202b",
+        "dominant": "#3c3339",
+        "accent": "#d5b8a3",
+        "light": "#dec6af"
+      },
+      "runtimeEntry": "src/hero-pixel.ts#itemStateOverlayAtlas.slice",
+      "wikiHero": "影子边跟着一个有清楚头身的小伙伴剪影，动作慢半拍；不画成屏幕、终端或设备。",
+      "wikiIrony": "有些死亡不发讣告，只发停服公告"
+    },
+    {
+      "index": 71,
+      "id": "painless-night",
+      "name": "没有痛觉的夜晚",
+      "claim": "effect",
+      "production": [
+        "aura",
+        "decal"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-event-effect",
+      "consumers": [
+        "image2-palette-event-effect",
+        "anatomy-part-decal",
+        "source-palette-aura"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/72-painless-night.png",
+      "sourceSha256": "aa0613d4b5fae2d4f3c0f542a5b765b2f71b31cda0260934ceb214a9e04f1198",
+      "sourcePalette": {
+        "ink": "#170d1b",
+        "dominant": "#433045",
+        "accent": "#856f71",
+        "light": "#856f71"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "影子泛着一层没有痛觉的夜色，身上的伤一时都不疼。",
+      "wikiIrony": "把麻木误认为坚强"
+    },
+    {
+      "index": 72,
+      "id": "ktv-song",
+      "name": "KTV里没人听的那首歌",
+      "claim": "mutation",
+      "production": [
+        "projectile"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-palette-body-mutation",
+      "consumers": [
+        "image2-palette-body-mutation",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/73-ktv-song.png",
+      "sourceSha256": "febe2d7d9eaa6edc90bb0a8e316b3dea44e9bdab64e66e1cb87248c621a488b5",
+      "sourcePalette": {
+        "ink": "#100811",
+        "dominant": "#3c2e39",
+        "accent": "#a5887c",
+        "light": "#a5887c"
+      },
+      "runtimeEntry": "src/hero-item-mutations.ts#drawHeroItemMutationPass",
+      "wikiHero": "脖子上还挂着KTV的麦，唱的那首始终没人听。",
+      "wikiIrony": "轮到自己开口时，已经没人在听"
+    },
+    {
+      "index": 73,
+      "id": "breath-on-glass",
+      "name": "冬天呵在玻璃上的字",
+      "claim": "mutation",
+      "production": [
+        "projectile"
+      ],
+      "persistentHero": false,
+      "heroConsumer": "image2-projectile-trigger-preview",
+      "consumers": [
+        "image2-projectile-trigger-preview",
+        "image2-projectile-atlas"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/74-breath-on-glass.png",
+      "sourceSha256": "be066ed665d31e9fe5cc7ac2b1dbb76dbde8dd1a7716239c8c874bd67715760e",
+      "sourcePalette": {
+        "ink": "#63999c",
+        "dominant": "#68b1a3",
+        "accent": "#68b1a3",
+        "light": "#e8e5e6"
+      },
+      "runtimeEntry": "src/game.ts#renderProjectiles",
+      "wikiHero": "人物常态不挂雾、不变眼睛；攻击时弹体从嘴前直接呵成宽短雾锥。",
+      "wikiIrony": "名字擦掉了，呵出来的气是热的"
+    },
+    {
+      "index": 74,
+      "id": "admission-notice",
+      "name": "入学通知书",
+      "claim": "rigid",
+      "production": [
+        "rigid",
+        "event"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-event-composite"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/75-admission-notice.png",
+      "sourceSha256": "51290aad857989ca1454054ec26d0a542a36b19f3b1f588061efdc20ba4f6fb5",
+      "sourcePalette": {
+        "ink": "#947464",
+        "dominant": "#d6c0ae",
+        "accent": "#d6c0ae",
+        "light": "#ebdcca"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "近手始终攥着一张薄薄的米白录取通知书；正面只保留学校徽记块、横向信息栏与醒目的旧红录取章，背面露出折痕，侧面必须薄到像纸，不出现可读文字。",
+      "wikiIrony": "选择变多了，第一次不能说不去"
+    },
+    {
+      "index": 75,
+      "id": "iphone-17-pro-max",
+      "name": "最新款的 iPhone 17 Pro Max",
+      "claim": "rigid",
+      "production": [
+        "rigid",
+        "event"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-event-composite"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/76-iphone-17-pro-max.png",
+      "sourceSha256": "a08b705beacc71b76ad29f15fc568e1dd9b664e0dd85219462a2f338f41c1e65",
+      "sourcePalette": {
+        "ink": "#191116",
+        "dominant": "#4c474b",
+        "accent": "#e3dedc",
+        "light": "#f2eeea"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "近手始终握着一台深钛灰新机；背面用清楚的三镜头模组识别，正面只留冷白屏光与顶部深色岛形区域，不画品牌标志和可读文字；消息到来时屏光骤亮并在头顶弹出短气泡。",
+      "wikiIrony": "买得起最贵的联系工具，还是没有一条消息能等"
+    },
+    {
+      "index": 76,
+      "id": "fathers-chart",
+      "name": "父亲的病历本",
+      "claim": "rigid",
+      "production": [
+        "rigid",
+        "event"
+      ],
+      "persistentHero": true,
+      "heroConsumer": "image2-rigid-four-direction-atlas",
+      "consumers": [
+        "image2-rigid-four-direction-atlas",
+        "image2-event-composite"
+      ],
+      "source": "output/imagegen/zhe-yi-shen-items-image2-v1/raw/77-fathers-chart.png",
+      "sourceSha256": "91f2e490a38c41791980f13ff692e1a50cee482203326b6249a2988535019e35",
+      "sourcePalette": {
+        "ink": "#281d18",
+        "dominant": "#cbb198",
+        "accent": "#c9ad93",
+        "light": "#d3baa1"
+      },
+      "runtimeEntry": "src/hero-item-pixel.ts#drawImage2Equipment",
+      "wikiHero": "腰侧别着一本翻旧的灰绿布脊病历本；米白封面露出旧红挂号条、医院章块和多层页签，纸角卷起，四方向都保持同一本册子的厚薄与腰带夹法，不出现可读文字。",
+      "wikiIrony": "父亲没说过的病，最后都写进了他的症状栏"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+Use case: stylized-concept, magenta-key source
+Asset type: 32x32 enemy sprite action foundation, delivered as one 1024x1024 source sheet
+Input images: Image 1 is the mandatory canonical project style board; Image 2 is the approved runtime enemy-family action contact sheet. Match their chunky pixel density, deep-ink outline, limited muted palette, and top-left light. Do not copy any existing enemy's body.
+
+Create one enemy called "Recognition In Progress": a freestanding office biometric attendance scanner, the kind workers face every morning. Its dark blue-grey rectangular screen is the creature's face. The screen contains one EMPTY square green recognition bracket, with no human portrait. A worn scanner base and two very short caster-like feet let it inch forward. The scanner must remain an everyday machine with only minimal personification.
+
+Strict 2x2 quadrant order, same identity and scale in every quadrant:
+- top-left: idle, upright, empty recognition bracket softly active;
+- top-right: moving, body tilted one pixel-step forward while the screen still faces the viewer;
+- bottom-left: attack, one thin horizontal green scan beam leaves the screen, bracket contracts toward center;
+- bottom-right: hurt, screen glitches with a broken bracket and the chassis recoils, but remains recognizable.
+
+Composition: exactly four large isolated figures, one centered in each quadrant, identical camera distance and three-quarter-front game-sprite perspective, generous magenta clearance, full object and feet visible.
+Scene/backdrop: perfectly flat uniform solid pure #ff00ff chroma-key magenta only. Do not use #ff00ff or any neighboring vivid magenta anywhere in the subject. Preserve the non-key green/teal recognition bracket as the functional accent.
+Style/medium: crisp deliberately low-resolution pixel art, hard square pixels, one logical-pixel dark outline, 10-16 colors, worn office plastic and metal, left-top highlights, right-bottom shadows.
+Constraints: silhouette must survive reduction to 32x32; screen and empty recognition bracket must read within 300 ms; the attack scan line belongs only to bottom-left; no #ff00ff in the subject, no cast shadow, contact shadow, floor, reflection, scenery, grid, divider, frame, labels, writing, letters, digits, UI screenshot, watermark, anti-aliasing, gradients, blur, smooth vector edges, photorealism, humanoid face, gore, fantasy armor, extra duplicate machine.

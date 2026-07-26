@@ -1,0 +1,17 @@
+Use case: stylized-concept
+Asset type: 32x32 enemy sprite action foundation, delivered as one 1024x1024 source sheet
+Input images: Image 1 is the mandatory canonical project style board; Image 2 is the approved runtime enemy-family action contact sheet. Match only their pixel grammar, limited colors, deep-ink outline, and top-left light. Do not copy the rejected paper-and-tape concept, the whisper/blob enemy, or the shape of another task message.
+
+Create one youth-stage task-message enemy called "Revise It One More Time". It must be unmistakably a DIGITAL UNREAD MESSAGE BODY, never a paper document. Its grayscale silhouette is TALL and NARROW: two offset portrait-format rectangular chat windows stacked front-and-back, each with its own short angular message tail. The front digital panel has chunky pixel correction brackets, overwritten blocks, and one peeled UI-layer corner revealing the earlier glowing panel beneath. Surfaces are worn blue-grey screen glass and dark office plastic, not paper. It must look revised and able to return once after defeat. No face and no text.
+
+Strict 2x2 quadrant order, same identity and scale in every quadrant:
+- top-left: idle, patched front message window offset over an older glowing message window behind it;
+- top-right: moving, the two rigid digital layers shuffle out of alignment and both message tails remain visible;
+- bottom-left: attack/revival concept, the front UI layer glitches and folds aside while the intact older message window rises forward from behind;
+- bottom-right: hurt, front panel goes dark and slumps low but the rear panel remains upright and lit, making the second life unmistakable.
+
+Composition: exactly four isolated figures, one centered per quadrant, identical camera distance and three-quarter-front game-sprite perspective, full tall silhouette visible with generous pure-green padding.
+Scene/backdrop: perfectly flat uniform solid pure #00ff00 only.
+Style/medium: crisp deliberately low-resolution pixel art, hard square pixels, one logical-pixel deep-ink outline, 10-16 colors, muted hospital-blue-grey screen glass, dark office plastic, paper-cream pixels only as screen glow, restrained old-red correction brackets, top-left light.
+Constraints: digital chat-window body only. No paper, page, sheet, document, clipboard, cardboard, wood board, tape, adhesive strip, torn paper, handwritten mark, folder, receipt, book, scroll, text, letters, digits, mouth, flesh, whisper cloud, human, cast shadow, floor, grid, divider, scenery, watermark, anti-aliasing, gradients, blur, smooth vector edges, photorealism. Do not make a wide split bubble, alarm-clock wedge, or four-spoke hub.
+

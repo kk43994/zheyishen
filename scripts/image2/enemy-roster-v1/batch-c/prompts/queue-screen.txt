@@ -1,0 +1,14 @@
+Use case: stylized-concept
+Asset type: enemy 2x2 action-concept source for later pixel-atlas derivation.
+
+Create one canonical hospital queue-number display shown exactly four times in a clean 2x2 arrangement: top-left dormant, top-right number changes, bottom-left summons the viewer, bottom-right slides the called number away. Do not draw grid lines, labels, captions, UI chrome, room scenery, borders, or explanatory text.
+
+The enemy is a wall-mounted hospital calling-number screen, not a robot and not a television character. Give it a dark blue-gray rectangular metal casing, slightly worn corners, a black inset display, and large simple red-orange segmented digits. The digits may change between cells, but keep them short, legible, and aligned like a real queue display. Make the summoning state readable with a small blocky indicator light and a few restrained pixel pulses around the casing. Keep the screen fully visible and isolated in every cell.
+
+The first reference is the authoritative style board. The second reference is only a runtime pixel-scale, outline, and muted-palette reference. Do not copy its clockwork body, limbs, face, gears, or silhouette.
+
+Pixel art only: chunky logical pixels, crisp nearest-neighbor edges, hard one-logical-pixel dark outline, top-left lighting, restrained 10-16 color palette, no anti-aliasing, no painterly rendering, no soft bloom. Signal pulses must be solid blocky pixel marks.
+
+Background must be a perfectly flat, uniform, exact #00ff00 in every unused pixel. No wall, no floor, no cable, no stand, no contact shadow, no cast shadow, no vignette, no gradient, no texture, no glow spill, no green variation. Leave generous green gutters between all four screens.
+
+Avoid: humanoid, robot, face, arms, legs, CRT television, desktop monitor, giant billboard, waiting-room background, queue of people, long words, gibberish text, watermark, photorealism, 3D render, smooth vector art.

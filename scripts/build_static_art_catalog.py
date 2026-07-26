@@ -7,7 +7,7 @@ then emits one machine-readable catalog and one human-readable README.
 
 Required collections fail the command on genuine missing-file, set, slicing,
 alpha, crop, or anchor errors. Optional A/C and manifestation-card expansions
-remain pending until their manifests declare a complete, valid 72-item set.
+remain pending until their manifests declare a complete set matching source truth.
 """
 
 from __future__ import annotations
@@ -200,6 +200,7 @@ def grid_record(
     root_y: int | None,
     no_edge_clip: bool,
     role: str,
+    cell_count: int | None = None,
 ) -> dict[str, Any]:
     expected_size = (cell[0] * columns, cell[1] * rows)
     record = file_record(
@@ -212,7 +213,8 @@ def grid_record(
         "cell": list(cell),
         "columns": columns,
         "rows": rows,
-        "cellCount": columns * rows,
+        "cellCount": cell_count if cell_count is not None else columns * rows,
+        "slotCount": columns * rows,
     }
     if not path.is_file() or record["checks"]["dimensions"]["status"] != "pass":
         record["checks"]["crop"] = result("not_run", "grid file missing or dimensions invalid")
@@ -228,6 +230,8 @@ def grid_record(
     for row in range(rows):
         for column in range(columns):
             index = row * columns + column
+            if cell_count is not None and index >= cell_count:
+                continue
             crop = image.crop(
                 (
                     column * cell[0],
@@ -570,16 +574,18 @@ def build_item_icons(item_ids: list[str]) -> dict[str, Any]:
     errors: list[str] = []
     base = OUTPUT_DIR / "items"
     manifest_path = base / "item-icons-manifest.json"
-    atlas_path = base / "item-icons-72-atlas.png"
+    atlas_path = base / "item-icons-atlas.png"
+    atlas_rows = (len(item_ids) + 7) // 8
     manifest_record = file_record(manifest_path, role="item icon manifest")
     atlas_record = grid_record(
         atlas_path,
         cell=(32, 32),
         columns=8,
-        rows=9,
+        rows=atlas_rows,
         root_y=None,
         no_edge_clip=False,
-        role="72-item transparent atlas",
+        role=f"{len(item_ids)}-item transparent atlas",
+        cell_count=len(item_ids),
     )
     files: list[dict[str, Any]] = [manifest_record, atlas_record]
     require_file(manifest_path, errors)
@@ -649,7 +655,7 @@ def build_item_icons(item_ids: list[str]) -> dict[str, Any]:
         require_file(contact_path, errors)
 
     return finish_collection(
-        key="itemPickupIcons72",
+        key="itemPickupIcons",
         label="Base pickup icons",
         required=True,
         counts={"expected": len(item_ids), "manifest": len(manifest_items), "files": len(icon_paths), "contactPages": contact_count},
@@ -657,7 +663,7 @@ def build_item_icons(item_ids: list[str]) -> dict[str, Any]:
         checks={name: summarize_checks([atlas_record, *icon_file_records], name) for name in ("alpha", "crop", "anchor")},
         local_errors=errors,
         details={
-            "slicing": {"logicalCell": [32, 32], "atlasColumns": 8, "atlasRows": 9, "itemOrder": item_ids},
+            "slicing": {"logicalCell": [32, 32], "atlasColumns": 8, "atlasRows": atlas_rows, "itemOrder": item_ids},
             "items": item_records,
         },
     )
@@ -701,7 +707,8 @@ def build_optional_ac_complete(item_ids: list[str]) -> dict[str, Any]:
     generated_count = 0
     source_order: list[str] = []
     item_entries: list[dict[str, Any]] = []
-    slicing: dict[str, Any] = {"logicalCell": [64, 64], "atlasColumns": 8, "atlasRows": 9}
+    atlas_rows = (len(item_ids) + 7) // 8
+    slicing: dict[str, Any] = {"logicalCell": [64, 64], "atlasColumns": 8, "atlasRows": atlas_rows}
     if not manifest_path.is_file():
         pending.append(f"waiting for {relative(manifest_path)}")
     else:
@@ -730,15 +737,16 @@ def build_optional_ac_complete(item_ids: list[str]) -> dict[str, Any]:
                     "not_applicable", "pickup icons are centered UI art, not world-rooted sprites"
                 )
                 files.append(record)
-            atlas_path = base / "item-icons-ac-72-atlas.png"
+            atlas_path = base / "item-icons-ac-atlas.png"
             atlas_record = grid_record(
                 atlas_path,
                 cell=(64, 64),
                 columns=8,
-                rows=9,
+                rows=atlas_rows,
                 root_y=None,
                 no_edge_clip=False,
                 role="A/C complete atlas",
+                cell_count=len(item_ids),
             )
             files.append(atlas_record)
             for path in sorted(base.glob("item-icons-ac-approval-*.png")):
@@ -766,13 +774,13 @@ def build_optional_ac_complete(item_ids: list[str]) -> dict[str, Any]:
                 or not atlas_clean
             ):
                 pending.append(
-                    "A/C complete batch is present but incomplete; rerun after manifest, 72 clean sprites, source_order, items, and 8x9 atlas agree"
+                    f"A/C complete batch is present but incomplete; rerun after manifest, {len(item_ids)} clean sprites, source_order, items, and atlas agree"
                 )
         except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
             pending.append(f"A/C complete manifest is still being written: {exc}")
     checks = {name: summarize_checks(files, name) for name in ("alpha", "crop", "anchor")}
     return finish_collection(
-        key="itemAcComplete72",
+        key="itemAcComplete",
         label="A/C complete pickup icon expansion",
         required=False,
         counts={"expected": len(item_ids), "manifest": item_count, "generated": generated_count},
@@ -797,7 +805,7 @@ def build_optional_manifestation_cards(item_ids: list[str]) -> dict[str, Any]:
     item_order: list[str] = []
     card_records: list[dict[str, Any]] = []
     if not manifest_path.is_file():
-        pending.append("waiting for the 72-item manifestation approval-card renderer output")
+        pending.append(f"waiting for the {len(item_ids)}-item manifestation approval-card renderer output")
     else:
         try:
             manifest = load_json(manifest_path)
@@ -831,7 +839,7 @@ def build_optional_manifestation_cards(item_ids: list[str]) -> dict[str, Any]:
         except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
             pending.append(f"manifestation render manifest is still being written: {exc}")
     return finish_collection(
-        key="itemManifestationCards72",
+        key="itemManifestationCards",
         label="Item manifestation approval cards",
         required=False,
         counts={"expected": len(item_ids), "actual": count},
@@ -851,7 +859,7 @@ def build_enemies(enemy_types: list[str]) -> dict[str, Any]:
     approval_path = base / "enemy-static-approval-10x.png"
     files = [
         file_record(manifest_path, role="enemy manifest"),
-        file_record(atlas_path, expected_size=(64, 640), alpha_policy="binary", role="enemy transparent atlas"),
+        file_record(atlas_path, expected_size=(64, 32 * (len(enemy_types) + 1)), alpha_policy="binary", role="enemy transparent atlas"),
         file_record(approval_path, alpha_policy="opaque", role="enemy approval board"),
     ]
     for path in (manifest_path, atlas_path, approval_path):
@@ -868,8 +876,8 @@ def build_enemies(enemy_types: list[str]) -> dict[str, Any]:
         extra = sorted(set(canonical) - set(enemy_types))
         if missing or extra or len(canonical) != len(enemy_types):
             errors.append(f"enemy source/catalog set mismatch: missing={missing} extra={extra}")
-        if len(enemy_types) != 19 or len(entries) != 20:
-            errors.append(f"enemy counts must be 19 EnemyType / 20 atlas rows, got {len(enemy_types)} / {len(entries)}")
+        if len(enemy_types) != 25 or len(entries) != 26:
+            errors.append(f"enemy counts must be 25 EnemyType / 26 atlas rows, got {len(enemy_types)} / {len(entries)}")
         phase_variants = [entry for entry in entries if entry.get("variant_of")]
         if len(phase_variants) != 1 or phase_variants[0].get("id") != "silent-father-p2":
             errors.append("enemy phase variant must be exactly silent-father-p2")
@@ -898,7 +906,7 @@ def build_enemies(enemy_types: list[str]) -> dict[str, Any]:
                         anchor_failures.append(key)
     crop_check = result(
         "pass" if entries and not crop_failures else "fail",
-        "all 40 enemy views match manifest bboxes and stay inside 32x32 cells"
+        f"all {len(entries) * 2} enemy views match manifest bboxes and stay inside 32x32 cells"
         if entries and not crop_failures
         else "enemy cell crop mismatches found",
         failures=crop_failures,
@@ -919,7 +927,7 @@ def build_enemies(enemy_types: list[str]) -> dict[str, Any]:
     files[1]["checks"]["crop"] = crop_check
     files[1]["checks"]["anchor"] = anchor_check
     return finish_collection(
-        key="enemies19Rows20",
+        key="enemies25Rows26",
         label="Enemy static catalog",
         required=True,
         counts={"enemyTypes": len(enemy_types), "atlasRows": len(entries), "phaseVariants": sum(bool(entry.get("variant_of")) for entry in entries)},
@@ -929,7 +937,7 @@ def build_enemies(enemy_types: list[str]) -> dict[str, Any]:
         details={
             "enemyTypes": enemy_types,
             "rowOrder": [entry.get("id") for entry in entries],
-            "slicing": {"cell": [32, 32], "columns": ["front", "side"], "rows": 20},
+            "slicing": {"cell": [32, 32], "columns": ["front", "side"], "rows": len(entries)},
             "entries": entries,
         },
     )
@@ -1134,7 +1142,7 @@ def write_readme(catalog: dict[str, Any]) -> None:
         "## 真源结论",
         "",
         f"- `ItemId`：目标文字写 {TARGET_TEXT_ITEM_COUNT}，`src/types.ts` / `src/relics.ts` 实际一致为 **{catalog['sourceTruth']['items']['count']}**；总目录保留全部源码项。",
-        f"- `EnemyType`：`src/types.ts` 实际 **{catalog['sourceTruth']['enemies']['count']}**；敌人图集另含 `silent-father-p2` 一个阶段变体，因此为 20 行。",
+        f"- `EnemyType`：`src/types.ts` 实际 **{catalog['sourceTruth']['enemies']['count']}**；敌人图集另含 `silent-father-p2` 一个阶段变体，因此为 **{catalog['sourceTruth']['enemies']['count'] + 1}** 行。",
         "- 主角固定逻辑格：`40x56`，脚底根点 `(20,49)`；方向顺序 `front / back / left / right`。",
         "",
         "## 完整性总览",
@@ -1172,10 +1180,10 @@ def write_readme(catalog: dict[str, Any]) -> None:
                 )
         lines.append("")
 
-    base_icons = collections.get("itemPickupIcons72", {})
+    base_icons = collections.get("itemPickupIcons", {})
     if base_icons.get("items"):
         lines.extend([
-            "## 72 件拾取图逐项路径",
+            f"## {len(base_icons['items'])} 件拾取图逐项路径",
             "",
             "完整逐像素检查记录也在 `static-art-catalog.json`。",
             "",

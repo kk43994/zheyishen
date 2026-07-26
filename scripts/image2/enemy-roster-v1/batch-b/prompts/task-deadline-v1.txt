@@ -1,0 +1,17 @@
+Use case: stylized-concept
+Asset type: 32x32 enemy sprite action foundation, delivered as one 1024x1024 source sheet
+Input images: Image 1 is the mandatory canonical project style board; Image 2 is the approved runtime enemy-family action contact sheet. Match only their pixel grammar, muted palette, outline, and lighting. Do not reuse the whisper/blob enemy or any other task-message body.
+
+Create one youth-stage task-message enemy called "Please Finish Before Next Monday". It is an unread office message body with an unmistakable DEADLINE silhouette: a downward-pointing wedge-shaped chat bubble fused to a large circular timer rim at its top, like a compact alarm clock and warning marker. A thick clock hand and four chunky shrinking progress blocks communicate time without digits. The body leans forward as if time is pulling it away. No face and no text.
+
+Strict 2x2 quadrant order, same identity and scale in every quadrant:
+- top-left: idle, timer hand high and all four progress blocks present;
+- top-right: moving, wedge lunges forward, one progress block gone and timer hand advanced;
+- bottom-left: attack/expiry concept, timer rim flashes old red, hand reaches the final notch and the wedge begins collapsing upward;
+- bottom-right: hurt, timer rim dented and hand knocked sideways, still clearly a deadline creature.
+
+Composition: exactly four isolated figures, one centered in each quadrant, identical camera distance and three-quarter-front game-sprite perspective, full object visible with generous green padding.
+Scene/backdrop: perfectly flat uniform solid pure #00ff00 only.
+Style/medium: crisp chunky low-resolution pixel art, hard square pixels, one logical-pixel deep-ink outline, 10-16 colors, muted blue-grey and paper-cream with restrained old-red timer accents, top-left light.
+Constraints: grayscale silhouette must remain distinct from a wide split bubble, tall patched stack, and four-spoke hub; no digits, letters, calendar words, text, human face, mouth, flesh, whisper cloud, ordinary paper, cast shadow, floor, grid, dividers, scenery, watermark, anti-aliasing, gradients, blur, smooth vector edges, photorealism.
+

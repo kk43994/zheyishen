@@ -1,0 +1,19 @@
+Use case: logo-brand
+Asset type: square 300x300 publishing icon for the mobile life-journey roguelite 这一身; the generated source will be reduced from 1024x1024
+Input images:
+- Image 1 is the approved all-life title-cover environment. Preserve its lived-in Chinese life-object vocabulary, muted palette, hard-edged medium-fine pixel craft and ordinary human tone.
+- Image 2 is the canonical project style board. Use it only for palette, contour discipline and readable pixel-cluster scale.
+
+Primary request: create a dedicated square app icon, not a crop of the title screen. One ordinary black-haired Chinese man stands centered and faces slightly toward the viewer, wearing a plain dark sweater and dark trousers. Show his complete silhouette at about 56% of the image height so his pale face, black hair, dark clothing and posture remain recognizable at 48px. His posture is tired but still upright, human rather than heroic. A worn yellow raincoat rests across his shoulders and back as the single warm accent; do not repeat the raincoat elsewhere.
+
+Scene/backdrop: a compact dark charcoal worn floor with a soft warm pool of lamplight. Arrange exactly six large, distinct life-stage anchors in a loose asymmetric ring, with open negative space separating them from the man: (1) a blunt wooden toy sword beside a tight group of exactly five glass marbles, treated together as the childhood cluster; (2) one worn exercise book with a simple red cross mark and no writing; (3) one brass house key; (4) one loosened dark necktie attached to one blank work badge; (5) one unlabelled white medicine bottle; (6) one simple wooden walking cane. These are environmental anchors, not weapons or inventory slots. Keep each cluster visually simple and recognizable at 300px; do not add more loose objects, furniture or paper clutter.
+
+Style/medium: crisp hard-edged pixel-art illustration with medium-fine clusters, clear material separation and a limited muted palette. More legible and less coarse than a 32px combat sprite. Ink black, paper grey, worn red, raincoat yellow, hospital blue-grey, dusty green and muted wood. No smooth vector surfaces, no photorealism, no painterly blur.
+
+Composition/framing: square, centered, strong silhouette, important details inside the central 82% safe area. The man occupies about 56% of image height and remains the dominant first read; the life objects are the second read. Keep the outer corners calm and dark so platform masking will not remove important objects. Readable at 300px and still identifiable at 48px.
+
+Lighting/mood: quiet late-evening warmth inside a dark life archive; reflective, intimate and slightly worn, not horror and not fantasy.
+
+Text: none.
+
+Constraints: one person only; no title, Chinese characters, letters, numbers, logos, labels, UI, HUD, health bars, buttons, borders, frames, seals, watermarks or baked rounded corners. No monster, weapon combat pose, blood, skull, glowing magic, halo, railway tracks, road lines, six panels, repeated grid, checkerboard, vignette blur or cinematic depth of field. Do not make the character a child, superhero, businessman in a suit, elderly caricature or faceless shadow.

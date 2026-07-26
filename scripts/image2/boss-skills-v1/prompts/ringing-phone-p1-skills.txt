@@ -1,0 +1,7 @@
+Use case: stylized-concept
+Asset type: 2x2 pixel-art boss skill pose sheet for an action game
+Primary request: Preserve the exact single worn early smartphone, screen-forward. Four poses in reading order: phone tilted left with strong blocky vibration marks; phone tilted right with stronger asynchronous vibration marks; green call screen compressed inward as if being answered and held; screen turning urgent dark red with a missed-call mark.
+Style: crisp high-detail pixel art matching the references, boss-scale object, readable at 64px.
+Layout: exact 2x2 grid, exactly one complete phone per cell, consistent bezel, cracks and home button, generous gutters.
+Background: perfectly flat solid #ff00ff chroma key, no floor, shadows, scenery, labels, borders, or readable text.
+Avoid: modern bezel-less phone, hand, person, cables, extra phones, green background, smooth painting.

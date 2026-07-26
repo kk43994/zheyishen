@@ -1,0 +1,29 @@
+Use case: stylized-concept
+Asset type: four-stage detachable behind-hero effect sheet for item 33 in the Chinese pixel-art action game 《这一身》, targeting an exact 40x56 logical hero sprite
+Primary request: create one small old physical photo frame progressively erased across four animation stages for “朋友圈仅三天可见”; this is selective self-presentation and memory deletion, not a collection of floating photos and not a social-media interface
+
+Input images:
+Image 1 is the canonical palette, pixel density, hard outline and lived-in material reference.
+Image 2 is the approved hero front/back/left/right proportion reference. Use the front hero only as an invisible placement guide; do not draw the hero.
+Image 3 is the rejected previous source and a negative reference only. It failed because many large frames orbit the character together with lock, pause and visibility-control discs. Remove that entire language.
+Image 4 is the exact target progression and behind-shoulder occlusion guide. Its top row shows item-only geometry on key green; its bottom row shows how the hero must cover part of the frame because the effect is behind the body. Preserve the progression and small scale, not its exact colors.
+Image 5 is the rejected runtime review and a negative reference only. Its frame reads as a freestanding sign, easel and UI window. Do not reproduce the support bars or large hard rectangle.
+
+Canon event and irony: “第四天到来时，最早的那一天自动不见了。” The past still exists, but only a freshly selected three-day slice is allowed to remain visible. The visual should feel like an old family photo physically erased from other people's view, restrained and slightly uncomfortable rather than magical.
+
+Phase layout: strict 2x2 equal quadrants with generous green padding. Top-left stage 1, top-right stage 2, bottom-left stage 3, bottom-right stage 4. These are time phases, not viewing directions. No labels, separators, grid lines or extra variants.
+
+Stage identity and progression:
+- Stage 1: one intact but worn portrait frame, small and vertical, with chipped brown wood, muted glass/photo interior and no stand.
+- Stage 2: the same frame in the same scale, but its upper-right corner and the matching photo corner are cleanly missing as if deleted.
+- Stage 3: only two disconnected physical remnants remain: one short top wood segment and one short right-side rail. No intact photo panel.
+- Stage 4: the frame is almost gone; show only three to five isolated square deletion fragments with most of the quadrant empty.
+
+Placement and runtime intent: every stage will be reduced to one 40x56 cell and anchored behind the hero's viewer-right shoulder. Keep the source object compact and consistent, with no floor contact and no support. The hero will be composited over it later, so part of stages 1-3 must tolerate being hidden by the torso. The visible remainder should read as a personal old frame peeking from behind the body, never an independent prop beside the character.
+
+Scene/backdrop: perfectly flat solid #00ff00 chroma-key background, no shadow, gradient, texture, floor, lighting variation or green spill; use #00ff00 nowhere in the subject
+Style/medium: restrained Chinese indie-game pixel art, hard square clusters, deliberate one-pixel-equivalent wear, muted plum-charcoal outline, aged brown wood, faded gray-violet photo, dull paper highlight, maximum 7 subject colors, no antialiasing, no gradients, no blur
+Composition/framing: one centered compact stage object per quadrant, identical identity and scale before deletion, wide clean key-green gaps between quadrants
+Constraints: item/effect only; one frame identity; phase area must clearly and sharply decrease from stage 1 to stage 4; no inventory icon; no projectile; no hero, body, head, limbs or clothing; no text, logo or watermark
+Avoid: multiple frames, orbiting gallery, family-photo carousel, social-media feed, UI window, app card, lock icon, eye icon, visibility icon, pause button, circular control, frame counter, loading bar, progress bar, signpost, road sign, billboard, easel, tripod, support rod, furniture, portal, magic ring, aura, particles forming a halo, giant rectangle, photorealism, smooth vector edges
+Final gate: at exact scale the four frames must read in order as intact old portrait frame -> same frame missing one corner -> exactly two frame segments -> three-to-five deletion dots. The first three stages must sit partly behind the hero in composite. Any source that reads as several orbiting photos, a freestanding sign/easel, or a UI control panel is a failure.

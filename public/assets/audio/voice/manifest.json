@@ -1,0 +1,1259 @@
+[
+  {
+    "id": "narrator-opening",
+    "file": "assets/audio/voice/narrator-opening.mp3",
+    "role": "narrator",
+    "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
+    "model": "speech-2.8-hd",
+    "durationMs": 9936,
+    "bytes": 80916,
+    "sourceConcept": "narrator-custom-ordinary",
+    "provider": "MiniMax",
+    "delivery": {
+      "voice": "低沉中老年男声",
+      "tone": "白描，句尾轻收",
+      "emotion": "calm",
+      "speed": 0.84,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": [
+        "inhale",
+        "exhale",
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "narrator-start-breath",
+    "file": "assets/audio/voice/narrator-start-breath.mp3",
+    "role": "narrator",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_010",
+    "durationMs": 3175,
+    "bytes": 26253,
+    "sha256": "54b750c5e0a8f9c209c7c6fc6fbeaff5651fb0fd88ef07526e2560b2eb345f75",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "低沉中老年男声",
+      "tone": "像补记事实",
+      "emotion": "calm",
+      "speed": 0.88,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": []
+    }
+  },
+  {
+    "id": "child-under-bed",
+    "file": "assets/audio/voice/child-under-bed.mp3",
+    "role": "hero",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_011",
+    "durationMs": 3275,
+    "bytes": 26829,
+    "sha256": "0ffa59d46a7a1f1955bf219563cfafcb613f396e54aca5c3ebdc2e8541d54205",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "自然男童声",
+      "tone": "贴近耳语，疑问上扬很轻",
+      "emotion": "fearful",
+      "speed": 0.91,
+      "pitch": 1,
+      "intensity": "low",
+      "tags": [
+        "breath",
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "caregiver-lights-out",
+    "file": "assets/audio/voice/caregiver-lights-out.mp3",
+    "role": "caregiver",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_006",
+    "durationMs": 3825,
+    "bytes": 31437,
+    "sha256": "5319cdeddcbda082b55133b700552b4ca115d76eccb1e006838a733ac7228e0e",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "成年女声",
+      "tone": "门外日常叮嘱",
+      "emotion": "calm",
+      "speed": 0.98,
+      "pitch": 0,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "caregiver-no-monster",
+    "file": "assets/audio/voice/caregiver-no-monster.mp3",
+    "role": "caregiver",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_006",
+    "durationMs": 3750,
+    "bytes": 30861,
+    "sha256": "d4d3bd53263916b4ae05fcf159261d44fcd6e64acb4a109ed530ab6d2fc5f29c",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "成年女声",
+      "tone": "困倦但不嘲笑",
+      "emotion": "calm",
+      "speed": 0.94,
+      "pitch": 0,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "father-childhood-walk",
+    "file": "assets/audio/voice/father-childhood-walk.mp3",
+    "role": "father",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_025",
+    "durationMs": 2100,
+    "bytes": 17613,
+    "sha256": "537c90797f570cb2d190df0d21df4fcab989ad9c0eef4bdf5f6b319409e0ccf5",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "candidate-optimized",
+    "delivery": {
+      "voice": "克制中年男声",
+      "tone": "短句落下后转身",
+      "emotion": "calm",
+      "speed": 0.88,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": []
+    },
+    "candidateText": "走吧。",
+    "candidateQa": {
+      "transcript": "走吧",
+      "pronunciationErrorRate": 0.0
+    }
+  },
+  {
+    "id": "classmate-family-late",
+    "file": "assets/audio/voice/classmate-family-late.mp3",
+    "role": "classmate",
+    "voiceId": "clever_boy",
+    "model": "speech-2.8-hd",
+    "durationMs": 2952,
+    "bytes": 25044,
+    "sourceConcept": "boy-family-not-here",
+    "provider": "MiniMax",
+    "delivery": {
+      "voice": "自然男童声",
+      "tone": "随口询问，轻微上扬",
+      "emotion": "surprised",
+      "speed": 1.01,
+      "pitch": 1,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "school-gate-closing",
+    "file": "assets/audio/voice/school-gate-closing.mp3",
+    "role": "announcer",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_001",
+    "durationMs": 4975,
+    "bytes": 40653,
+    "sha256": "2eb322735a89eed2cb97ec167f476638d72c363eefe16c80606bd97adc26c674",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "校园广播女声",
+      "tone": "旧广播标准口径",
+      "emotion": "calm",
+      "speed": 0.98,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "school-bell-start",
+    "file": "assets/audio/voice/school-bell-start.mp3",
+    "role": "announcer",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_001",
+    "durationMs": 4525,
+    "bytes": 36909,
+    "sha256": "3e56cb0258d42a502b341cc1a6271120e12da5da0302eefee6baceb2f10d9f2e",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "校园广播女声",
+      "tone": "平直清楚",
+      "emotion": "calm",
+      "speed": 1,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "teacher-last-row",
+    "file": "assets/audio/voice/teacher-last-row.mp3",
+    "role": "teacher",
+    "voiceId": "female-chengshu",
+    "model": "speech-2.8-hd",
+    "durationMs": 3780,
+    "bytes": 31668,
+    "sourceConcept": "teacher-last-row",
+    "provider": "MiniMax",
+    "delivery": {
+      "voice": "成熟女教师声",
+      "tone": "平静点名，不带训斥腔",
+      "emotion": "calm",
+      "speed": 0.94,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": [
+        "clear-throat",
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "teacher-answer-format",
+    "file": "assets/audio/voice/teacher-answer-format.mp3",
+    "role": "teacher",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_002",
+    "durationMs": 4575,
+    "bytes": 37485,
+    "sha256": "7675a5d898bcf6e04c2acf690e20c44efe9e8b65609964ae89a78cbfd9fdb8ab",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "成熟女教师声",
+      "tone": "重复熟悉规定",
+      "emotion": "calm",
+      "speed": 0.98,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "classmate-score-whisper",
+    "file": "assets/audio/voice/classmate-score-whisper.mp3",
+    "role": "classmate",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_011",
+    "durationMs": 2675,
+    "bytes": 22221,
+    "sha256": "4a4acf0ae9ee65a3d2ec89ee3a6258ff5e8a14b1d52bf2d4691d5583cd48a808",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "少年男声",
+      "tone": "近处压低声音，不笑",
+      "emotion": "surprised",
+      "speed": 0.95,
+      "pitch": 1,
+      "intensity": "low",
+      "tags": []
+    }
+  },
+  {
+    "id": "teacher-paper-back",
+    "file": "assets/audio/voice/teacher-paper-back.mp3",
+    "role": "teacher",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_002",
+    "durationMs": 3250,
+    "bytes": 26829,
+    "sha256": "21d56b37846ac8b249177c4c7afcbe27d762b615361ae30be155f054681f4fe6",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "成熟女教师声",
+      "tone": "课堂顺手交代",
+      "emotion": "calm",
+      "speed": 1,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "father-for-your-good",
+    "file": "assets/audio/voice/father-for-your-good.mp3",
+    "role": "father",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_025",
+    "durationMs": 3700,
+    "bytes": 30285,
+    "sha256": "d69cc0901dad509f8ad3ee814534f2680d2aac840a2e30cecbf13a674191eb44",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "克制中年男声",
+      "tone": "不容讨论的家常话",
+      "emotion": "calm",
+      "speed": 0.86,
+      "pitch": -2,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "school-bell-end",
+    "file": "assets/audio/voice/school-bell-end.mp3",
+    "role": "announcer",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_001",
+    "durationMs": 5025,
+    "bytes": 40941,
+    "sha256": "4bb2899edb3c3e75fbcc9009eb6810a15d03fc3abdb304bca1bec004f80f120b",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "校园广播女声",
+      "tone": "标准播报，无重音",
+      "emotion": "calm",
+      "speed": 1,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "recruiter-arrival-time",
+    "file": "assets/audio/voice/recruiter-arrival-time.mp3",
+    "role": "recruiter",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_008",
+    "durationMs": 3650,
+    "bytes": 29997,
+    "sha256": "b11fb0de7147d7eec3bb77506ebf68c42c0c6c7a2b09d831871482828839dc18",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "职业女性声",
+      "tone": "礼貌快速的流程问题",
+      "emotion": "calm",
+      "speed": 1.04,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "landlord-rent-deposit",
+    "file": "assets/audio/voice/landlord-rent-deposit.mp3",
+    "role": "landlord",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_006",
+    "durationMs": 3475,
+    "bytes": 28557,
+    "sha256": "d36f63d2d251ea166f263f3cc3c8d5b5abac426e86bdf8850f828ccc7da1cd14",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "中年女声",
+      "tone": "直接报条件",
+      "emotion": "calm",
+      "speed": 1,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "last-bus-arrival",
+    "file": "assets/audio/voice/last-bus-arrival.mp3",
+    "role": "announcer",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_001",
+    "durationMs": 6075,
+    "bytes": 49293,
+    "sha256": "7792846069b5d1952d38f102152117ee1e91428e668d43040bde3a8c09ab2980",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "交通广播女声",
+      "tone": "标准站内播报",
+      "emotion": "calm",
+      "speed": 0.98,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "station-yellow-line",
+    "file": "assets/audio/voice/station-yellow-line.mp3",
+    "role": "announcer",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_001",
+    "durationMs": 4400,
+    "bytes": 36045,
+    "sha256": "517d9be7d0b42e2370ec94d80b6f6f64cdf71f9948c462017c1e737132cc2de9",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "交通广播女声",
+      "tone": "清楚的安全提醒",
+      "emotion": "calm",
+      "speed": 1.02,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "station-doors-closing",
+    "file": "assets/audio/voice/station-doors-closing.mp3",
+    "role": "announcer",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_001",
+    "durationMs": 3650,
+    "bytes": 29997,
+    "sha256": "33608ee7531db04a8e4f71eedee6160444a09de8399c9d31bc7f6c8def5e7f48",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "交通广播女声",
+      "tone": "略快但不制造恐慌",
+      "emotion": "calm",
+      "speed": 1.06,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "last-bus-departed",
+    "file": "assets/audio/voice/last-bus-departed.mp3",
+    "role": "announcer",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_001",
+    "durationMs": 5500,
+    "bytes": 44685,
+    "sha256": "39a2e8df403df1f90b878dbd4b9e433a552ecf4104836a8ac097f52409783208",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "交通广播女声",
+      "tone": "运营结束的标准口径",
+      "emotion": "calm",
+      "speed": 0.97,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "interview-thank-you",
+    "file": "assets/audio/voice/interview-thank-you.mp3",
+    "role": "recruiter",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_008",
+    "durationMs": 5325,
+    "bytes": 43245,
+    "sha256": "a9b10b84cd63fc396654f3cdde72763f32fbe635e5e3c627cb1fb8fd42a808e0",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "职业女性声",
+      "tone": "礼貌收尾，不暗示嘲讽",
+      "emotion": "calm",
+      "speed": 1,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "phone-wife-fridge",
+    "file": "assets/audio/voice/phone-wife-fridge.mp3",
+    "role": "wife",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_006",
+    "durationMs": 5825,
+    "bytes": 47277,
+    "sha256": "0155661c66fa13579ad1989f4597c512fef3210cbcddcb30c2ccca562a402858",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "三十岁左右成年女声",
+      "tone": "平、略疲，不埋怨",
+      "emotion": "calm",
+      "speed": 0.95,
+      "pitch": 0,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "phone-hospital-not-call",
+    "file": "assets/audio/voice/phone-hospital-not-call.mp3",
+    "role": "nurse",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_007",
+    "durationMs": 3450,
+    "bytes": 28269,
+    "sha256": "ed0636b2fb0d2216f9142bf3f0dcb8d97405040c46649ec2d05b2f68fd6e3278",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "忙碌护士女声",
+      "tone": "只陈述病人的原话，不加同情腔",
+      "emotion": "calm",
+      "speed": 1.02,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "phone-mother-didnt-ask",
+    "file": "assets/audio/voice/phone-mother-didnt-ask.mp3",
+    "role": "mother",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_002",
+    "durationMs": 4550,
+    "bytes": 37197,
+    "sha256": "276652aa57ed0a74ab1fa5ee7f7e414c4f8e659fb4363dcdd5e70174eaf6df07",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "六十岁左右女性声",
+      "tone": "轻声把父亲瞒着的事说出来，不哭",
+      "emotion": "sad",
+      "speed": 0.9,
+      "pitch": -1,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "phone-cannot-connect",
+    "file": "assets/audio/voice/phone-cannot-connect.mp3",
+    "role": "announcer",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_001",
+    "durationMs": 5175,
+    "bytes": 42093,
+    "sha256": "cd475e425ffe64b029c60dc69f18a0717c7a4a833af46a7e3f3154d86c473b4c",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "电话系统女声",
+      "tone": "合成提示，字头清晰",
+      "emotion": "calm",
+      "speed": 1,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "family-dinner-cold",
+    "file": "assets/audio/voice/family-dinner-cold.mp3",
+    "role": "family",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_006",
+    "durationMs": 4225,
+    "bytes": 34605,
+    "sha256": "1d88273d25317d21c7e5dd1b853a2b471346bd9557e75a51d147fa0bf8824232",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "成年女声",
+      "tone": "普通询问，句尾等待回答",
+      "emotion": "sad",
+      "speed": 0.92,
+      "pitch": -1,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "hospital-family-needed",
+    "file": "assets/audio/voice/hospital-family-needed.mp3",
+    "role": "nurse",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_007",
+    "durationMs": 6975,
+    "bytes": 56493,
+    "sha256": "13d5da81f192f83d34e6c5856a929f6be8607e2b06813412853ee69c6540d079",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "忙碌护士女声",
+      "tone": "礼貌、信息密度高",
+      "emotion": "calm",
+      "speed": 1.03,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "father-adult-phone",
+    "file": "assets/audio/voice/father-adult-phone.mp3",
+    "role": "father",
+    "voiceId": "ttv-voice-2026072409135526-TsjoP4Ow",
+    "model": "speech-2.8-hd",
+    "durationMs": 4104,
+    "bytes": 34260,
+    "sourceConcept": "father-custom-ordinary",
+    "provider": "MiniMax",
+    "delivery": {
+      "voice": "克制中老年男声",
+      "tone": "把需要收回句尾",
+      "emotion": "calm",
+      "speed": 0.84,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": [
+        "clear-throat",
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "phone-coworker-group",
+    "file": "assets/audio/voice/phone-coworker-group.mp3",
+    "role": "coworker",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_020",
+    "durationMs": 4200,
+    "bytes": 34317,
+    "sha256": "638b02a1c7d8109696a042c93fea72613007c055254380c7cdf3af5b877640ef",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "成年同事男声",
+      "tone": "快、客气，像补一条工作提醒",
+      "emotion": "calm",
+      "speed": 1.02,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "hero-not-busy",
+    "file": "assets/audio/voice/hero-not-busy.mp3",
+    "role": "hero",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_025",
+    "durationMs": 4495,
+    "bytes": 36621,
+    "sha256": "23f3a481e9a00c46cd6f95a55870b8bd9e83c82ffcff1bfcb363790a1fdee5bf",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "candidate-optimized",
+    "delivery": {
+      "voice": "成年主角男声",
+      "tone": "照着父亲的停顿说完，自己没有意识到",
+      "emotion": "calm",
+      "speed": 0.9,
+      "pitch": -1,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    },
+    "candidateText": "没事。<#0.42#>不忙。",
+    "candidateQa": {
+      "transcript": "没事不忙",
+      "pronunciationErrorRate": 0.0
+    }
+  },
+  {
+    "id": "hero-became-him",
+    "file": "assets/audio/voice/hero-became-him.mp3",
+    "role": "hero",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_029",
+    "durationMs": 3275,
+    "bytes": 26829,
+    "sha256": "ae2e19b9348b3a18811c5482acbfd503bab0ca5c932d64331d5be7c6e2136315",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "成年主角男声",
+      "tone": "先脱口而出，再听见自己",
+      "emotion": "fearful",
+      "speed": 0.84,
+      "pitch": -1,
+      "intensity": "low",
+      "tags": [
+        "exhale",
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "self-stand-straight",
+    "file": "assets/audio/voice/self-stand-straight.mp3",
+    "role": "hero",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_029",
+    "durationMs": 1875,
+    "bytes": 15885,
+    "sha256": "214c8b0961dd98f1d246f3fe9ae128e3f269544e681cc7da308e7041743f49f9",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "candidate-optimized",
+    "delivery": {
+      "voice": "成年主角男声",
+      "tone": "复刻父亲的短促节奏",
+      "emotion": "calm",
+      "speed": 0.88,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": []
+    },
+    "candidateText": "站好。",
+    "candidateQa": {
+      "transcript": "站好",
+      "pronunciationErrorRate": 0.0
+    }
+  },
+  {
+    "id": "self-for-your-good",
+    "file": "assets/audio/voice/self-for-your-good.mp3",
+    "role": "hero",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_029",
+    "durationMs": 3175,
+    "bytes": 26253,
+    "sha256": "7ecef330988b55e477cbb7afcc91a1d71c8a41bd40072be7a17fbc2965040bf9",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "成年主角男声",
+      "tone": "越平静越冷",
+      "emotion": "calm",
+      "speed": 0.86,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "office-badge-denied",
+    "file": "assets/audio/voice/office-badge-denied.mp3",
+    "role": "office",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_001",
+    "durationMs": 3725,
+    "bytes": 30573,
+    "sha256": "8cbc7d6956984351aa2b6936214cc808614569f450e6435115106e6f980fdad6",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "门禁系统女声",
+      "tone": "短促、字头清晰",
+      "emotion": "calm",
+      "speed": 1.04,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "office-meeting-continues",
+    "file": "assets/audio/voice/office-meeting-continues.mp3",
+    "role": "office",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_001",
+    "durationMs": 4250,
+    "bytes": 34893,
+    "sha256": "8ecb5b8fff794646fffc6269efd0c8a6992ca89dcc73fa16ebc4021ed5180c12",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "成年同事女声",
+      "tone": "隔门继续开会",
+      "emotion": "calm",
+      "speed": 1.02,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "manager-tonight-hard",
+    "file": "assets/audio/voice/manager-tonight-hard.mp3",
+    "role": "manager",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_025",
+    "durationMs": 4075,
+    "bytes": 33453,
+    "sha256": "6ed95ee4f1983346701f3f3bbee3794f34d239af00d73556ce593f41b456043e",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "成年经理男声",
+      "tone": "随口安排任务",
+      "emotion": "calm",
+      "speed": 1,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "bank-payment-due",
+    "file": "assets/audio/voice/bank-payment-due.mp3",
+    "role": "bank",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_001",
+    "durationMs": 5050,
+    "bytes": 41229,
+    "sha256": "ea85b899540639e6f0fdff995e0ce7df6755d5c7611c25a0b458cf27d96f5153",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "客服女声",
+      "tone": "标准提醒，不威胁",
+      "emotion": "calm",
+      "speed": 1,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "clinic-blood-pressure",
+    "file": "assets/audio/voice/clinic-blood-pressure.mp3",
+    "role": "doctor",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_007",
+    "durationMs": 4875,
+    "bytes": 39789,
+    "sha256": "1d3ec69af9de73db665505b2fbc71694881def46d0b0f4ebf3319c1afe89097a",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "中年医生女声",
+      "tone": "日常复测交代",
+      "emotion": "calm",
+      "speed": 0.98,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "coworker-cardboard-box",
+    "file": "assets/audio/voice/coworker-cardboard-box.mp3",
+    "role": "coworker",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_025",
+    "durationMs": 3775,
+    "bytes": 30861,
+    "sha256": "06fa97b0f4ca8b12b21910bfc580dd670b22ecbe20b446cc56faae4762038495",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "成年同事男声",
+      "tone": "真的不知道，轻微疑问",
+      "emotion": "surprised",
+      "speed": 0.98,
+      "pitch": 0,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "security-return-card",
+    "file": "assets/audio/voice/security-return-card.mp3",
+    "role": "security",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_025",
+    "durationMs": 3450,
+    "bytes": 28269,
+    "sha256": "e1632221bb6eab81c638aeecb6cea9f6b7cb36852adb808aac2f75f101fb1102",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "中年保安男声",
+      "tone": "办理流程，不抬高情绪",
+      "emotion": "calm",
+      "speed": 0.96,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "clinic-next-number",
+    "file": "assets/audio/voice/clinic-next-number.mp3",
+    "role": "nurse",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_007",
+    "durationMs": 6075,
+    "bytes": 49293,
+    "sha256": "7c551f1aea4f21bbb0160fb6ccb9506740ba79c17e71c592ed5780936f3d4d66",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "门诊叫号女声",
+      "tone": "重复劳动式清晰播报",
+      "emotion": "calm",
+      "speed": 1,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "pharmacist-after-meals",
+    "file": "assets/audio/voice/pharmacist-after-meals.mp3",
+    "role": "pharmacist",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_007",
+    "durationMs": 6350,
+    "bytes": 51597,
+    "sha256": "9a296f698e803c409c9f0c8ed224cae458d7b9786c17ef4d2dbe7db5b0f2131a",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "中年药师女声",
+      "tone": "清楚拆分服药步骤",
+      "emotion": "calm",
+      "speed": 0.96,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "neighbor-corridor-light",
+    "file": "assets/audio/voice/neighbor-corridor-light.mp3",
+    "role": "neighbor",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_006",
+    "durationMs": 5025,
+    "bytes": 40941,
+    "sha256": "256b23669e697d64e9686d194cde684644b569ebb20650cc3cb8883e646d3be4",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "年长邻居女声",
+      "tone": "隔门闲话，具体温和",
+      "emotion": "calm",
+      "speed": 0.92,
+      "pitch": -1,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "hospital-family-late",
+    "file": "assets/audio/voice/hospital-family-late.mp3",
+    "role": "nurse",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zf_007",
+    "durationMs": 3050,
+    "bytes": 25101,
+    "sha256": "dfeb163236051665c4efec2ccb9c049fd39aed8ef30bdfe8ae1cdedb07953f24",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "忙碌护士女声",
+      "tone": "确认流程，不带同情腔",
+      "emotion": "calm",
+      "speed": 1,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "light-room-keeper",
+    "file": "assets/audio/voice/light-room-keeper.mp3",
+    "role": "room-keeper",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_025",
+    "durationMs": 4150,
+    "bytes": 34029,
+    "sha256": "5801ede830271621f8603986349f1c42997e36e30563ae0c703493d4f90ef1a5",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "年长店主男声",
+      "tone": "平常招呼，留出坐下时间",
+      "emotion": "calm",
+      "speed": 0.88,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "light-room-left-this",
+    "file": "assets/audio/voice/light-room-left-this.mp3",
+    "role": "room-keeper",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_025",
+    "durationMs": 4225,
+    "bytes": 34605,
+    "sha256": "47eab81ea908b9d03a809f18d7eb6789a219da4f145e0e46b5436f6ad3b3d792",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "年长店主男声",
+      "tone": "看一眼物件，只说明来历，不神秘化",
+      "emotion": "calm",
+      "speed": 0.86,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": []
+    }
+  },
+  {
+    "id": "back-room-keeper",
+    "file": "assets/audio/voice/back-room-keeper.mp3",
+    "role": "room-keeper",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_025",
+    "durationMs": 4400,
+    "bytes": 36045,
+    "sha256": "e82dcea3833b9fc4a4da57f9102a4946ac048020cb4dcb3c00ae7f963a3d1b47",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "年长店主男声",
+      "tone": "说明交换条件，不诱惑",
+      "emotion": "calm",
+      "speed": 0.87,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "lamp-one-returned",
+    "file": "assets/audio/voice/lamp-one-returned.mp3",
+    "role": "lamp-keeper",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_010",
+    "durationMs": 3350,
+    "bytes": 27693,
+    "sha256": "0d7779bbea593d9f8fbfa45f219c9799ab5e9821e2b03e3979015ac770d949e2",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "低沉年长男声",
+      "tone": "保管员办理手续",
+      "emotion": "calm",
+      "speed": 0.82,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "lamp-pockets-empty",
+    "file": "assets/audio/voice/lamp-pockets-empty.mp3",
+    "role": "lamp-keeper",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_010",
+    "durationMs": 4525,
+    "bytes": 36909,
+    "sha256": "70c6e1651944a1c40e6d6d270157bee6d556265607b42a1a4d83ba477143750e",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "candidate-optimized",
+    "delivery": {
+      "voice": "低沉年长男声",
+      "tone": "不催促，句间留白",
+      "emotion": "calm",
+      "speed": 0.8,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    },
+    "candidateText": "口袋空了……再看看手里。",
+    "candidateQa": {
+      "transcript": "口袋空了再看看手里",
+      "pronunciationErrorRate": 0.0
+    }
+  },
+  {
+    "id": "narrator-final-breath",
+    "file": "assets/audio/voice/narrator-final-breath.mp3",
+    "role": "narrator",
+    "provider": "Kokoro",
+    "model": "Kokoro-82M-v1.1-zh",
+    "voiceId": "zm_010",
+    "durationMs": 5625,
+    "bytes": 45837,
+    "sha256": "2ca086539091ce8bdd0b6973d4619254cda0356d969395a04bc54bcf8aaeb38f",
+    "license": "Apache-2.0",
+    "source": "https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh",
+    "renderMode": "continuous-prosody",
+    "delivery": {
+      "voice": "低沉中老年男声",
+      "tone": "比开场更轻，句尾放下",
+      "emotion": "sad",
+      "speed": 0.78,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": [
+        "inhale",
+        "exhale",
+        "pause"
+      ]
+    }
+  }
+]

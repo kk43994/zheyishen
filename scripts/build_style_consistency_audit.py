@@ -240,7 +240,9 @@ def normalization_preview(
 def main() -> None:
     hero = crop_cells("src/assets/hero-style1-profiles/hero-idle.png", (40, 56), [0, 2, 4, 6])
     enemy_cells = [load(relative).crop((0, 0, 32, 32)) for relative in ENEMIES]
-    item_cells = crop_cells("src/assets/items/icons.png", (36, 36), list(range(74)))
+    item_manifest = json.loads((ROOT / "src/assets/items/icons.json").read_text())
+    item_count = len(item_manifest["index"])
+    item_cells = crop_cells("src/assets/items/icons.png", (36, 36), list(range(item_count)))
     runtime_props = crop_cells("src/assets/world/props.png", (40, 44), list(range(24)))
 
     candidate_relative = "output/imagegen/zhe-yi-shen-props-reference-v2/processed/props-six-stage-atlas.png"
@@ -290,7 +292,7 @@ def main() -> None:
     panel(draw, (568, 112, 1088, 302), "ENEMIES / actual idle frames / 32x32 / all 19")
     paste_cells(board, enemy_cells, (586, 152), scale=3, columns=10, stride=(104, 116))
 
-    panel(draw, (24, 438, 808, 660), "RUNTIME ITEMS / all 74 / 36x36")
+    panel(draw, (24, 438, 808, 660), f"RUNTIME ITEMS / all {item_count} / 36x36")
     paste_cells(board, item_cells, (40, 478), scale=2, columns=10, stride=(78, 76))
 
     panel(draw, (856, 438, 800, 318), "RUNTIME PROPS / 6 stages x 4 / 40x44")

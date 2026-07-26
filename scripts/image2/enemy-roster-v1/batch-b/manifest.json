@@ -1,0 +1,120 @@
+{
+  "version": "enemy-roster-v1-batch-b",
+  "date": "2026-07-25",
+  "scope": "Image2 concept and action foundations only; no runtime, wiki, or official-asset integration",
+  "remote": "landing002",
+  "route": "DMIT reverse tunnel to sub2 owner pool",
+  "method": "edit-with-project-references",
+  "model": "gpt-image-2",
+  "quality": "high",
+  "requestedSize": "1024x1024",
+  "sourceReturnedSize": "1254x1254",
+  "selectedSize": "1254x1254",
+  "selectedEncoding": "API-returned PNG preserved byte-for-byte",
+  "selectedProcessing": "none; each selected file is byte-identical to the accepted raw candidate",
+  "panelOrder": ["idle", "move", "attack-or-support", "hurt"],
+  "references": [
+    "output/art-style-reference-v1/canonical-style-board.png",
+    "output/imagegen/zhe-yi-shen-enemy-hybrid-v1/enemy-hybrid-contact.png"
+  ],
+  "outputDirectory": "output/imagegen/zhe-yi-shen-enemy-roster-v1/raw/batch-b",
+  "contactSheet": "batch-b-contact.png",
+  "assets": [
+    {
+      "id": "id-scanner",
+      "name": "识别中",
+      "prompt": "prompts/id-scanner-magenta-v2.txt",
+      "background": "#ff00ff",
+      "variants": ["id-scanner-v1.png", "id-scanner-v2.png"],
+      "selected": "id-scanner-selected.png",
+      "selectedFrom": "id-scanner-v2.png",
+      "sha256": "66626262b0ec7e11482bfd532990b0118bba0123995f4e7f5dfe41633eabea19",
+      "status": "approved",
+      "rejected": [
+        {
+          "file": "id-scanner-v1.png",
+          "reason": "Large keypad and card/cash-slot console read as an ATM instead of a company face-attendance terminal."
+        }
+      ],
+      "review": "V2 is a narrow portrait attendance terminal with top camera, empty green recognition bracket, thin post, small base, and preserved green scan beam."
+    },
+    {
+      "id": "task-simple",
+      "name": "简单处理一下",
+      "prompt": "prompts/task-simple-v1.txt",
+      "background": "#00ff00",
+      "variants": ["task-simple-v1.png"],
+      "selected": "task-simple-selected.png",
+      "selectedFrom": "task-simple-v1.png",
+      "sha256": "e40c6d98233d6a26b9bd3b8e424965fda9a1f3fafb41421356615c56a572a962",
+      "status": "approved",
+      "review": "Wide paired unread-message body; attack panel visibly breaks into two smaller child bubbles."
+    },
+    {
+      "id": "task-revise",
+      "name": "再改一版",
+      "prompt": "prompts/task-revise-v2.txt",
+      "background": "#00ff00",
+      "variants": ["task-revise-v1.png", "task-revise-v2.png"],
+      "selected": "task-revise-selected.png",
+      "selectedFrom": "task-revise-v2.png",
+      "sha256": "804b72e2d8f1d85923e6cdf39f39f9ed1561572f88e9175a7931365f156cf63a",
+      "status": "approved",
+      "rejected": [
+        {
+          "file": "task-revise-v1.png",
+          "reason": "Read as taped paper sheets and document boards; canon requires a distinct unread digital message body, not paper."
+        }
+      ],
+      "review": "V2 uses two rigid digital message windows; the damaged front layer falls while the older lit layer remains, clearly foreshadowing one revival."
+    },
+    {
+      "id": "task-deadline",
+      "name": "下周一前要",
+      "prompt": "prompts/task-deadline-v1.txt",
+      "background": "#00ff00",
+      "variants": ["task-deadline-v1.png"],
+      "selected": "task-deadline-selected.png",
+      "selectedFrom": "task-deadline-v1.png",
+      "sha256": "b5105414dbee29ee1064bfe110f0b8c8ab6c21eda70be466735cebecb57f35a2",
+      "status": "approved",
+      "review": "Circular timer fused to a pointed chat tail; advancing hand and old-red expiry state communicate countdown without digits."
+    },
+    {
+      "id": "task-sync",
+      "name": "先对齐一下",
+      "prompt": "prompts/task-sync-v1.txt",
+      "background": "#00ff00",
+      "variants": ["task-sync-v1.png"],
+      "selected": "task-sync-selected.png",
+      "selectedFrom": "task-sync-v1.png",
+      "sha256": "3077f555dc71a59e0a21f1c9ca208eddd90d2a01c40789dd0ac9623cc9305696",
+      "status": "approved",
+      "review": "Four-node message hub contracts its cable arms inward, directly expressing pull-and-synchronize support behavior."
+    },
+    {
+      "id": "meeting-door",
+      "name": "会议室的门",
+      "prompt": "prompts/meeting-door-v1.txt",
+      "background": "#00ff00",
+      "variants": ["meeting-door-v1.png"],
+      "selected": "meeting-door-selected.png",
+      "selectedFrom": "meeting-door-v1.png",
+      "sha256": "474a99c169e0bc0397c595c78bc9f4519676b8eb76da45273f1df139710aa5b3",
+      "status": "approved",
+      "review": "Stationary frosted-glass meeting-room door with two silhouettes behind it and a cold slowdown ring at the threshold."
+    },
+    {
+      "id": "checkup-report",
+      "name": "体检报告",
+      "prompt": "prompts/checkup-report-v1.txt",
+      "background": "#00ff00",
+      "variants": ["checkup-report-v1.png"],
+      "selected": "checkup-report-selected.png",
+      "selectedFrom": "checkup-report-v1.png",
+      "sha256": "0fab97cb7b5c08e52b5c53183f2c77c4340cc01e3238b52d2fb37b90f490f0d7",
+      "status": "approved",
+      "review": "Running medical clipboard with pulse graph; active panel opens and emits a neutral disable ring for the three-second buff lockout."
+    }
+  ]
+}

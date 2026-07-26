@@ -1,0 +1,16 @@
+Use case: stylized-concept
+Asset type: 32x32 game enemy action concept source
+Input images: Image 1 is the authoritative Zhe Yi Shen canonical style board for palette, outline, top-left light, and pixel density. Image 2 is the authoritative runtime enemy motion sheet for compact 32x32 silhouettes and readable action changes. Preserve that visual language; do not copy any existing creature.
+
+Create one strict 2x2 action sheet of the exact same enemy: "The Pot Reheated Twice". It is one ordinary battered family cooking pot, low and wide, with two short side handles and a mismatched lid. The metal has hospital-blue-grey cold areas, warm worn-brown staining, and a narrow old-red heat band near the bottom. No face, eyes, mouth, teeth, legs, tentacles, food character, or creature anatomy. It does not chase: it stays in place, slowly cools, hurts the player when fully cold, and can be reheated by standing beside it.
+
+Quadrants, fixed order:
+- top-left IDLE/HOT: pot stable and warm, lid seated, three compact pixel-steam curls, old-red heat band visible.
+- top-right HOVER/COOLING: same pot stationary, steam reduced to one curl, heat band dimmer and the lid slightly settled; no movement legs.
+- bottom-left ATTACK/COLD HAZARD: fully cold pot, no steam, blue-grey rim and a tight dark warning pulse around the body, communicating that neglect now causes damage. Do not make an ice monster.
+- bottom-right HURT/DEATH: pot dented from a hit, one handle bent, lid tipped beside it, last steam pixel gone; no spill, gore, fire, or explosion.
+
+Scene/backdrop: perfectly uniform solid pure #00ff00 chroma-key background in every pixel outside the sprites. No floor plane, no contact shadow, no cast shadow, no reflection, no background glow, no gradient, no texture.
+Style/medium: crisp chunky low-resolution pixel art designed to survive reduction into a 32x32 enemy frame; hard integer-like pixel clusters; 10-16 visible subject colors; one-logical-pixel deep ink outline; weaker internal lines; top-left light and lower-right shadow. Use deep ink, soft ink, hospital blue-grey, paper shadow, worn brown, and restrained old-red heat. Steam may use paper-light pixels with hard edges.
+Composition/framing: four equal quadrants, same low three-quarter-front camera, same scale and construction, each sprite centered independently with generous green padding and a stable bottom-center pot-base anchor. No cropping and no overlap across quadrants.
+Constraints: same single pot in all four poses; readable in 300 ms and distinct from a bowl, cauldron, furnace, or stove; no face, limbs, room, table, fire, flames, food, grid lines, quadrant borders, labels, captions, text, letters, numbers, watermark, UI, scenery, extra props, antialiasing, blur, gradients, semi-transparent edges, or #00ff00 inside the subject.

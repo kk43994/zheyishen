@@ -1,0 +1,17 @@
+Use case: stylized-concept
+Asset type: 32x32 enemy sprite action foundation, delivered as one 1024x1024 source sheet
+Input images: Image 1 is the mandatory canonical project style board; Image 2 is the approved runtime enemy-family action contact sheet. Match only their pixel grammar, palette discipline, outline, and lighting. Do not reuse the existing whisper/blob enemy.
+
+Create one youth-stage task-message enemy called "This Is Very Simple". It is an unread office message body, not paper and not a mouth. Its grayscale silhouette must be a WIDE, LOW, smooth rectangular chat bubble with one short tail and a bold central split seam. Two smaller complete bubble buds are visibly packed inside the parent shell, foreshadowing that killing it creates two children. Keep personification minimal: no face, no eyes, no teeth.
+
+Strict 2x2 quadrant order, same identity and scale in every quadrant:
+- top-left: idle, sealed parent bubble, two inner buds visible through two inset panels;
+- top-right: moving, low body hopping forward, tail trailing, still one wide parent;
+- bottom-left: attack/death-split concept, parent opens along the central seam and the two smaller sibling bubbles push apart left and right;
+- bottom-right: hurt, central seam cracked wider while the two inner buds remain intact.
+
+Composition: exactly four isolated figures, one centered in each quadrant, identical camera distance and three-quarter-front game-sprite perspective, generous pure-green clearance, no overlap.
+Scene/backdrop: perfectly flat uniform solid pure #00ff00 only.
+Style/medium: crisp chunky low-resolution pixel art, hard square pixels, one logical-pixel deep-ink outline, 10-16 colors, worn blue-grey office-message plastic with paper-cream highlights and one restrained old-red unread dot, top-left light.
+Constraints: distinguish this enemy by silhouette, not color; it must not resemble the other task enemies. No text, letters, digits, punctuation, mouth, flesh, speech cloud, whisper blob, human, paper sheet, cast shadow, floor, grid, panel divider, scenery, glow fog, watermark, anti-aliasing, gradients, blur, smooth vector edges, photorealism, unrelated icons.
+
