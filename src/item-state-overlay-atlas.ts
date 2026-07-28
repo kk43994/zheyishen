@@ -1,6 +1,7 @@
 import manifest from './assets/items/state-overlays.json';
 import type { HeroFacing } from './hero-morph';
 import type { ItemId } from './types';
+import { loadArtImage } from './art-runtime';
 
 const ATLAS_URL = new URL('./assets/items/state-overlays.png', import.meta.url).href;
 const CELL_WIDTH = manifest.cell.width;
@@ -21,41 +22,26 @@ class ItemStateOverlayAtlas {
   private readyPromise: Promise<void> | null = null;
 
   load(): void {
-    if (this.image) return;
-    const image = new Image();
-    image.decoding = 'async';
-    image.onload = () => {
+    if (this.image || this.readyPromise) return;
+    this.readyPromise = loadArtImage(ATLAS_URL).then((image) => {
       const expectedWidth = CELL_WIDTH * DIRECTIONS.length;
       const expectedHeight = CELL_HEIGHT * manifest.rowCount;
       if (image.naturalWidth !== expectedWidth || image.naturalHeight !== expectedHeight) {
-        console.warn(`Image2 状态层图集尺寸错误: ${image.naturalWidth}x${image.naturalHeight}`);
-        this.image = null;
-        return;
+        throw new Error(`Image2 状态层图集尺寸错误: ${image.naturalWidth}x${image.naturalHeight}`);
       }
+      this.image = image;
       this.loaded = true;
-    };
-    image.onerror = () => {
-      console.warn('Image2 状态层图集加载失败。');
+    }).catch((error: unknown) => {
+      console.error('Image2 状态层图集加载失败；完整美术闸门应阻断启动。');
       this.image = null;
-    };
-    image.src = ATLAS_URL;
-    this.image = image;
+      throw error;
+    });
   }
 
   whenReady(): Promise<void> {
     if (this.loaded) return Promise.resolve();
     this.load();
-    if (this.readyPromise) return this.readyPromise;
-    this.readyPromise = new Promise((resolve, reject) => {
-      const image = this.image;
-      if (!image) {
-        reject(new Error('Image2 状态层图集尚未初始化'));
-        return;
-      }
-      image.addEventListener('load', () => resolve(), { once: true });
-      image.addEventListener('error', () => reject(new Error('Image2 状态层图集加载失败')), { once: true });
-    });
-    return this.readyPromise;
+    return this.readyPromise ?? Promise.reject(new Error('Image2 状态层图集尚未初始化'));
   }
 
   slice(

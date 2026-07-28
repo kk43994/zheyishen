@@ -1,6 +1,7 @@
 import spriteManifest from './assets/items/equipment-sprites.json';
 import type { HeroFacing } from './hero-morph';
 import type { ItemId } from './types';
+import { loadArtImage } from './art-runtime';
 
 const SPRITES_URL = new URL('./assets/items/equipment-sprites.png', import.meta.url).href;
 const CELL_WIDTH = spriteManifest.cell.width;
@@ -20,41 +21,26 @@ class ItemEquipmentAtlas {
   private readyPromise: Promise<void> | null = null;
 
   load(): void {
-    if (this.image) return;
-    const image = new Image();
-    image.decoding = 'async';
-    image.onload = () => {
+    if (this.image || this.readyPromise) return;
+    this.readyPromise = loadArtImage(SPRITES_URL).then((image) => {
       const expectedWidth = CELL_WIDTH * DIRECTIONS.length;
       const expectedHeight = CELL_HEIGHT * spriteManifest.rows;
       if (image.naturalWidth !== expectedWidth || image.naturalHeight !== expectedHeight) {
-        console.warn(`Image2 \u9053\u5177\u56fe\u96c6\u5c3a\u5bf8\u9519\u8bef: ${image.naturalWidth}x${image.naturalHeight}`);
-        this.image = null;
-        return;
+        throw new Error(`Image2 \u9053\u5177\u56fe\u96c6\u5c3a\u5bf8\u9519\u8bef: ${image.naturalWidth}x${image.naturalHeight}`);
       }
+      this.image = image;
       this.loaded = true;
-    };
-    image.onerror = () => {
-      console.warn('Image2 \u9053\u5177\u56fe\u96c6\u52a0\u8f7d\u5931\u8d25\uff0c\u4fdd\u7559\u7a0b\u5e8f\u5316\u56de\u9000\u3002');
+    }).catch((error: unknown) => {
+      console.error('Image2 道具图集加载失败；完整美术闸门应阻断启动。');
       this.image = null;
-    };
-    image.src = SPRITES_URL;
-    this.image = image;
+      throw error;
+    });
   }
 
   whenReady(): Promise<void> {
     if (this.loaded) return Promise.resolve();
     this.load();
-    if (this.readyPromise) return this.readyPromise;
-    this.readyPromise = new Promise((resolve, reject) => {
-      const image = this.image;
-      if (!image) {
-        reject(new Error('Image2 \u9053\u5177\u56fe\u96c6\u5c1a\u672a\u521d\u59cb\u5316'));
-        return;
-      }
-      image.addEventListener('load', () => resolve(), { once: true });
-      image.addEventListener('error', () => reject(new Error('Image2 \u9053\u5177\u56fe\u96c6\u52a0\u8f7d\u5931\u8d25')), { once: true });
-    });
-    return this.readyPromise;
+    return this.readyPromise ?? Promise.reject(new Error('Image2 道具图集尚未初始化'));
   }
 
   slice(id: ItemId, facing: HeroFacing): HTMLCanvasElement | null {

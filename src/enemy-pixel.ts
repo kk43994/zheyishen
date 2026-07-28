@@ -1,4 +1,5 @@
 import type { EnemyType, EnemyUnit } from './types';
+import { loadArtImage } from './art-runtime';
 
 export const ENEMY_PIXEL_FRAME = 32;
 
@@ -186,7 +187,7 @@ class EnemyPixelAtlas {
 
   slice(asset: EnemyPixelAssetKey, motion: EnemyPixelMotion, frame: number): HTMLCanvasElement | null {
     const image = this.images.get(asset);
-    if (!this.loaded || !image) return null;
+    if (!image) return null;
     const count = MOTION_FRAMES[motion];
     const normalized = ((Math.trunc(frame) % count) + count) % count;
     const key = `${asset}:${motion}:${normalized}`;
@@ -216,39 +217,30 @@ class EnemyPixelAtlas {
   }
 
   private async load(): Promise<void> {
-    const results = await Promise.allSettled(ASSET_KEYS.map((asset) => this.loadImage(asset)));
-    const entries: Array<[EnemyPixelAssetKey, HTMLImageElement]> = [];
+    const results = await Promise.allSettled(ASSET_KEYS.map(async (asset) => {
+      const image = await this.loadImage(asset);
+      this.images.set(asset, image);
+      return image;
+    }));
     results.forEach((result, index) => {
       const asset = ASSET_KEYS[index]!;
-      if (result.status === 'fulfilled') {
-        entries.push([asset, result.value]);
-        return;
-      }
+      if (result.status === 'fulfilled') return;
       this.failed.add(asset);
-      console.warn(`跳过损坏的怪物像素图集 ${asset}，仅回退这一种怪物。`, result.reason);
+      console.error(`怪物像素图集 ${asset} 损坏；完整美术闸门应阻断启动。`, result.reason);
     });
-    this.images = new Map(entries);
-    this.loaded = entries.length > 0;
+    this.loaded = results.some((result) => result.status === 'fulfilled');
     this.loading = null;
   }
 
-  private loadImage(asset: EnemyPixelAssetKey): Promise<HTMLImageElement> {
-    return new Promise((resolve, reject) => {
-      const image = new Image();
-      image.decoding = 'async';
-      image.onload = () => {
-        const frameSize = assetFrameSize(asset);
-        const expectedWidth = frameSize * 4;
-        const expectedHeight = frameSize * Object.keys(MOTION_ROWS).length;
-        if (image.naturalWidth !== expectedWidth || image.naturalHeight !== expectedHeight) {
-          reject(new Error(`怪物图集尺寸错误 ${asset}: ${image.naturalWidth}x${image.naturalHeight}`));
-          return;
-        }
-        resolve(image);
-      };
-      image.onerror = () => reject(new Error(`无法加载怪物像素图集 ${asset}`));
-      image.src = ATLAS_URLS[asset];
-    });
+  private async loadImage(asset: EnemyPixelAssetKey): Promise<HTMLImageElement> {
+    const image = await loadArtImage(ATLAS_URLS[asset]);
+    const frameSize = assetFrameSize(asset);
+    const expectedWidth = frameSize * 4;
+    const expectedHeight = frameSize * Object.keys(MOTION_ROWS).length;
+    if (image.naturalWidth !== expectedWidth || image.naturalHeight !== expectedHeight) {
+      throw new Error(`怪物图集尺寸错误 ${asset}: ${image.naturalWidth}x${image.naturalHeight}`);
+    }
+    return image;
   }
 }
 
@@ -324,7 +316,7 @@ function spriteDisplaySize(
 export class PixelEnemyRenderer {
   constructor() {
     void enemyPixelAtlas.whenReady().catch((error: unknown) => {
-      console.warn('怪物像素图集加载失败，继续使用矢量怪物。', error);
+      console.error('怪物像素图集加载失败；完整美术闸门应阻断启动。', error);
     });
   }
 

@@ -172,9 +172,9 @@ const runtimeProofs = [
   ['readable projectile sprites scale independently from collision radius', [
     'const PROJECTILE_FORM_DISPLAY_SIZE:',
     'const displayCurve = PROJECTILE_FORM_DISPLAY_SIZE[visual.form]',
-    'marble: [14, 2.8, 18, 27]',
-    'key: [15, 3, 20, 31]',
-    'laugh: [9, 3.8, 15, 23]',
+    'marble: [13, 2.6, 17, 24]',
+    'key: [14, 2.8, 19, 28]',
+    'laugh: [9, 3.8, 15, 22]',
   ]],
   ['button projectile uses the recorded damage rather than the current base damage', [
     'this.buttonRecordedDamage > 0 ? this.buttonRecordedDamage : vector.damage',

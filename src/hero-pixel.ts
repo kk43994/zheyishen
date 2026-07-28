@@ -210,22 +210,27 @@ export class PixelHeroRenderer {
     void heroStyle1Atlas.whenReady()
       .then(() => this.clear())
       .catch((error: unknown) => {
-        console.warn('主角像素图集加载失败，继续使用程序化角色。', error);
+        console.error('主角像素图集加载失败；完整美术闸门应阻断启动。', error);
+      });
+    void heroStyle1Atlas.whenAllReady()
+      .then(() => this.clear())
+      .catch((error: unknown) => {
+        console.error('主角后续服装图集加载失败；完整美术闸门应阻断启动。', error);
       });
     void itemIconAtlas.whenReady()
       .then(() => this.clear())
       .catch((error: unknown) => {
-        console.warn('主角道具贴图加载失败，继续使用程序化道具。', error);
+        console.error('主角道具贴图加载失败；完整美术闸门应阻断启动。', error);
       });
     void itemEquipmentAtlas.whenReady()
       .then(() => this.clear())
       .catch((error: unknown) => {
-        console.warn('Image2 道具图集加载失败，继续使用程序化回退。', error);
+        console.error('Image2 道具图集加载失败；完整美术闸门应阻断启动。', error);
       });
     void itemStateOverlayAtlas.whenReady()
       .then(() => this.clear())
       .catch((error: unknown) => {
-        console.warn('Image2 状态层图集加载失败，继续使用程序化回退。', error);
+        console.error('Image2 状态层图集加载失败；完整美术闸门应阻断启动。', error);
       });
   }
 

@@ -12,6 +12,20 @@ npm run validate:release-icon
 python3 scripts/validate_runtime_art.py
 npm run validate:boss-skills
 python3 scripts/validate_mobile_ui.py
+npm run validate:projectiles
+npm run validate:late-bosses
+npm run validate:phone-story
+npm run validate:ledger
+npm run validate:fate-background
+npm run validate:fate-residue
+npm run validate:fate-age
+npm run validate:fate-randomness
+npm run validate:interactive-ai
+npm run validate:scene
+npm run validate:wiki-boss-gallery
+npm run validate:enemy-separation
+npm run validate:runtime-foundations
+npm run validate:art-gate
 npm run validate:childhood-boss
 npm run validate:childhood-enemies
 npm run validate:adulthood-enemies
@@ -33,6 +47,7 @@ rm -f \
   dist/assets/audio/voice/manifest.json \
   dist/assets/audio/voice/qa-report.json
 rm -rf dist/assets/audio/voice-concepts
+rm -rf dist/assets/audio/voice-review
 rm -f dist/assets/audio/ambience/*.wav
 
 npm run validate:release-budget

@@ -46,7 +46,7 @@ for (const [token, message] of [
   ['private showPhoneTranscript(caller: PhoneStoryStep, timer = 4.2)', '缺少长台词专用通话字幕状态'],
   ['this.showPhoneTranscript(caller);', '固定来电没有统一进入专用通话面板'],
   ['private renderPhoneTranscript(): void', '缺少可换行的通话字幕渲染层'],
-  ['this.wrapText(`「${transcript.text}」`, 180, 130, 260, 13, 2)', '通话长句没有两行排版约束'],
+  ['this.drawOutlinedWrapText(`「${transcript.text}」`, 180, 130, 260, 13, 2', '通话长句没有两行描边排版约束'],
   ['if (!active || this.paused || this.phoneTranscript) return;', '通话面板出现时仍会重复绘制普通语音字幕'],
   ['this.phoneStoryIndex = 8', '击败 Boss 后没有推进到第八通'],
   ['this.phoneTranscript = undefined;', '第七通字幕会残留到第八通掉落页'],

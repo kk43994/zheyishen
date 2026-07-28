@@ -17,14 +17,18 @@ WIKI=docs/这一身百科.html
 
 [ -f "$WIKI" ] || { echo "找不到 $WIKI"; exit 1; }
 
+echo "⓪ 重建并校验百科"
+npm run validate:wiki
+
 echo "① rsync docs/ → $HOST:$ROOT/docs/"
 rsync -az --delete docs/ "$HOST":"$ROOT"/docs/
 
 echo "② wiki-public 运行时文件与图集"
 ssh "$HOST" "set -e; cd $ROOT
   cp docs/*-v1.js wiki-public/
-  mkdir -p wiki-public/assets
+  mkdir -p wiki-public/assets wiki-public/wiki-data
   rsync -a docs/assets/ wiki-public/assets/
+  rsync -a --delete docs/wiki-data/ wiki-public/wiki-data/
   rsync -a --delete docs/enemy-portraits-v1/ wiki-public/enemy-portraits-v1/
   rsync -a --delete docs/item-manifestations-v1/ wiki-public/item-manifestations-v1/"
 

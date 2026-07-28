@@ -340,12 +340,9 @@ const BARE_ACTION_NICKNAME = /^(?:爱|总爱|老爱|只会|常|老|总)?(?:数|�
 export function isPersonLikeNickname(value: string): boolean {
   const nickname = value.trim();
   if (nickname.length < 2 || nickname.length > 7 || !/^[\p{Script=Han}]+$/u.test(nickname)) return false;
-  if (BARE_ACTION_NICKNAME.test(nickname) && !PERSON_NICKNAME_ENDING.test(nickname)) return false;
-  if (PERSON_NICKNAME_ENDING.test(nickname)
-    || PERSON_NICKNAME_PREFIX.test(nickname)
-    || PERSON_NICKNAME_DESCRIPTOR.test(nickname)
-    || /([\p{Script=Han}])\1/u.test(nickname)) return true;
-  return false;
+  // 这里只拦截明显的“动作标题”。外号是否自然、是否像在叫人交给生成提示词，
+  // 不再要求命中一小组固定前后缀而把整份出生档案判废。
+  return !BARE_ACTION_NICKNAME.test(nickname) || PERSON_NICKNAME_ENDING.test(nickname);
 }
 
 export function validateOriginProfile(value: unknown, expectedKind?: OriginKind): OriginProfile | null {
@@ -353,17 +350,24 @@ export function validateOriginProfile(value: unknown, expectedKind?: OriginKind)
   const title = readText(value.title, 2, 16);
   const nickname = readText(value.nickname, 2, 7);
   const nicknameReason = readText(value.nicknameReason, 8, 70);
-  const kind = typeof value.kind === 'string' && ORIGIN_KINDS.includes(value.kind as OriginKind)
+  const returnedKind = typeof value.kind === 'string' && ORIGIN_KINDS.includes(value.kind as OriginKind)
     ? value.kind as OriginKind : null;
+  // kind 是程序在请求前已经抽定的数值预算；模型写错标签时纠正标签，不重写整份故事。
+  const kind = expectedKind ?? returnedKind;
   const story = Array.isArray(value.story)
     ? value.story.map((entry) => readText(entry, 8, 100)).filter((entry): entry is string => Boolean(entry))
     : [];
-  const traits = Array.isArray(value.traits)
+  let traits = Array.isArray(value.traits)
     ? [...new Set(value.traits.filter((entry): entry is OriginTraitId => (
       typeof entry === 'string' && TRAIT_IDS.includes(entry as OriginTraitId)
     )))]
     : [];
-  const appearance = validateAppearance(value.appearance);
+  if (kind === 'ordinary') traits = [];
+  if (kind === 'favored') traits = traits.filter((id) => ORIGIN_TRAITS[id].tone !== 'negative');
+  if (kind === 'harsh') traits = traits.filter((id) => ORIGIN_TRAITS[id].tone !== 'positive');
+  traits = traits.slice(0, 2);
+  // 外观字段偶尔漏一项时使用标准出生体型，不让格式小错触发第二次大模型请求。
+  const appearance = validateAppearance(value.appearance) ?? { ...DEFAULT_APPEARANCE };
   const traitReasons = Array.isArray(value.traitReasons)
     ? value.traitReasons
       .map((entry) => readText(entry, 8, 44))
@@ -371,11 +375,19 @@ export function validateOriginProfile(value: unknown, expectedKind?: OriginKind)
       .slice(0, traits.length)
     : undefined;
   const storyLength = story.join('').length;
-  if (!title || !nickname || !isPersonLikeNickname(nickname) || !nicknameReason || !kind || (expectedKind && kind !== expectedKind) || story.length < 3 || story.length > 4 || storyLength < 120 || storyLength > 260 || traits.length > 2 || !appearance) return null;
-  if (kind === 'ordinary' && traits.length !== 0) return null;
-  if (kind === 'favored' && traits.some((id) => ORIGIN_TRAITS[id].tone === 'negative')) return null;
-  if (kind === 'harsh' && traits.some((id) => ORIGIN_TRAITS[id].tone === 'positive')) return null;
-  return { title, nickname, nicknameReason, story, kind, traits, traitReasons, appearance, source: 'gpt' };
+  // 运行时只守“能显示、能结算”的技术底线；篇章质量由提示词负责。
+  if (!title || !kind || story.length < 1 || storyLength < 24) return null;
+  return {
+    title,
+    ...(nickname && isPersonLikeNickname(nickname) ? { nickname } : {}),
+    ...(nicknameReason ? { nicknameReason } : {}),
+    story,
+    kind,
+    traits,
+    traitReasons,
+    appearance,
+    source: 'gpt',
+  };
 }
 
 function validateAppearance(value: unknown): AppearanceDNA | null {
@@ -413,5 +425,5 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function readText(value: unknown, min: number, max: number): string | null {
   if (typeof value !== 'string') return null;
   const text = value.trim();
-  return text.length >= min && text.length <= max ? text : null;
+  return text.length >= min ? text.slice(0, max) : null;
 }

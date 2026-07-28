@@ -1,9 +1,11 @@
 import { readFileSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
+import { parseFirstAIJson } from './src/ai-json';
 import { AI_SYSTEM_PROMPTS } from './src/ai-prompts';
 
 interface AiProfile { baseUrl: string; apiKey: string; model: string }
+const ORIGIN_AI_MODEL = 'doubao-seed-2-0-pro-260215';
 
 // ai-profiles.local.json 热切换：scripts/ai-switch.sh 改 active 后立即生效，无需重启。
 let profileCache: { mtimeMs: number; profile: AiProfile } | null = null;
@@ -31,20 +33,22 @@ function aiProxyPlugin(mode: string): Plugin {
   const fallback: AiProfile = {
     baseUrl: (env.ZHEYISHEN_AI_BASE_URL || process.env.ZHEYISHEN_AI_BASE_URL || env.BLOOD_MOON_AI_BASE_URL || process.env.BLOOD_MOON_AI_BASE_URL || 'https://ark.cn-beijing.volces.com/api/v3').replace(/\/$/, ''),
     apiKey: env.ZHEYISHEN_AI_API_KEY || process.env.ZHEYISHEN_AI_API_KEY || env.BLOOD_MOON_AI_API_KEY || process.env.BLOOD_MOON_AI_API_KEY || '',
-    model: env.ZHEYISHEN_AI_MODEL || process.env.ZHEYISHEN_AI_MODEL || env.BLOOD_MOON_AI_MODEL || process.env.BLOOD_MOON_AI_MODEL || 'doubao-seed-evolving',
+    model: env.ZHEYISHEN_AI_MODEL || process.env.ZHEYISHEN_AI_MODEL || env.BLOOD_MOON_AI_MODEL || process.env.BLOOD_MOON_AI_MODEL || 'doubao-seed-2-0-lite-260428',
   };
 
   const middleware = (req: any, res: any, next: () => void) => {
     const kind = req.url === '/api/ai/origin' ? 'origin'
       : req.url === '/api/ai/fate' ? 'fate'
         : req.url === '/api/ai/fate-options' ? 'fate-options'
-          : req.url === '/api/ai/fate-review' ? 'fate-review'
-            : req.url === '/api/ai/fate-style' ? 'fate-style'
-              : req.url === '/api/ai/fate-result' ? 'fate-result'
-                : req.url === '/api/ai/fate-free' ? 'fate-free' : null;
+          : req.url === '/api/ai/fate-free' ? 'fate-free'
+            : req.url === '/api/ai/fate-review' ? 'fate-review'
+              : req.url === '/api/ai/fate-result' ? 'fate-result' : null;
     if (!kind) return next();
     if (req.method !== 'POST') return sendJson(res, 405, { ok: false, error: 'method_not_allowed' });
-    const { baseUrl, apiKey, model } = loadActiveProfile(fallback);
+    const { baseUrl, apiKey, model: profileModel } = loadActiveProfile(fallback);
+    const model = profileModel.includes('doubao')
+      ? ORIGIN_AI_MODEL
+      : profileModel;
     if (!baseUrl || !apiKey) {
       console.info(`[AI] ${kind} skipped · backend not configured`);
       return sendJson(res, 503, { ok: false, error: 'ai_not_configured' });
@@ -65,8 +69,15 @@ function aiProxyPlugin(mode: string): Plugin {
           model,
           system,
           payload,
-          kind === 'fate-review' ? 0.1 : kind === 'fate-style' ? 0.65 : kind === 'fate-options' ? 0.7 : undefined,
-          kind === 'fate' ? 700 : kind === 'fate-options' ? 1000 : kind === 'fate-review' ? 220 : kind === 'fate-style' ? 420 : 900,
+          kind === 'fate-review' ? 0.1
+            : kind === 'fate' ? 0.55
+            : kind === 'fate-options' ? 0.45
+              : kind === 'fate-free' ? 0.55
+              : undefined,
+          kind === 'fate' ? 700
+          : kind === 'fate-options' ? 1000
+            : kind === 'fate-free' ? 760
+              : kind === 'fate-review' ? 220 : 900,
         );
         console.info(`[AI] ${requestId} ${kind} <- ${model} ${Date.now() - started}ms`);
         return sendJson(res, 200, { ok: true, data: upstream, model });
@@ -95,7 +106,7 @@ async function callChatCompletion(
   maxTokens = 900,
 ): Promise<unknown> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 42000);
+  const timeout = setTimeout(() => controller.abort(), 55000);
   try {
     const response = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
@@ -119,7 +130,7 @@ async function callChatCompletion(
     const envelope = JSON.parse(raw);
     const content = envelope?.choices?.[0]?.message?.content;
     if (typeof content !== 'string') throw new Error('upstream_missing_content');
-    return JSON.parse(content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, ''));
+    return parseFirstAIJson(content);
   } finally {
     clearTimeout(timeout);
   }

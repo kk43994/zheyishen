@@ -15,6 +15,7 @@ export type LifeSound =
 const VOLUME_KEY = 'zhe-yi-shen:volume';
 const LAST_VOLUME_KEY = 'zhe-yi-shen:last-audible-volume';
 const AUDIO_CHOICE_KEY = 'zhe-yi-shen:audio-choice';
+const DEFAULT_AUDIO_MIGRATION_KEY = 'zhe-yi-shen:default-audio-v2';
 const HAPTICS_KEY = 'zhe-yi-shen:haptics';
 const EFFECTS_VOLUME_KEY = 'zhe-yi-shen:effects-volume';
 const AMBIENCE_VOLUME_KEY = 'zhe-yi-shen:ambience-volume';
@@ -80,6 +81,25 @@ function readBoolean(key: string, fallback: boolean): boolean {
   }
 }
 
+function readInitialVolume(): number {
+  const stored = Math.max(0, Math.min(1, readNumber(VOLUME_KEY, 0.42)));
+  try {
+    if (localStorage.getItem(DEFAULT_AUDIO_MIGRATION_KEY) !== 'enabled') {
+      const restored = stored > 0
+        ? stored
+        : Math.max(0.08, Math.min(1, readNumber(LAST_VOLUME_KEY, 0.42)));
+      localStorage.setItem(DEFAULT_AUDIO_MIGRATION_KEY, 'enabled');
+      localStorage.setItem(AUDIO_CHOICE_KEY, 'enabled');
+      localStorage.setItem(VOLUME_KEY, restored.toFixed(2));
+      localStorage.setItem(LAST_VOLUME_KEY, restored.toFixed(2));
+      return restored;
+    }
+  } catch {
+    // Restricted WebViews may not expose persistent storage.
+  }
+  return stored;
+}
+
 function media(file: string): HTMLAudioElement {
   const element = document.createElement('audio');
   element.preload = 'auto';
@@ -88,7 +108,7 @@ function media(file: string): HTMLAudioElement {
 }
 
 export class LifeFeedback {
-  private volume = Math.max(0, Math.min(1, readNumber(VOLUME_KEY, 0.42)));
+  private volume = readInitialVolume();
   private effectsVolume = Math.max(0, Math.min(1, readNumber(EFFECTS_VOLUME_KEY, 1)));
   private ambienceVolume = Math.max(0, Math.min(1, readNumber(AMBIENCE_VOLUME_KEY, 1)));
   private voiceVolume = Math.max(0, Math.min(1, readNumber(VOICE_VOLUME_KEY, 1)));
@@ -162,15 +182,6 @@ export class LifeFeedback {
         voice: this.voiceVolume,
       },
     };
-  }
-
-  hasAudioChoice(): boolean {
-    try {
-      const choice = localStorage.getItem(AUDIO_CHOICE_KEY);
-      return choice === 'enabled' || choice === 'muted';
-    } catch {
-      return false;
-    }
   }
 
   audioEnabled(): boolean {
@@ -321,7 +332,7 @@ export class LifeFeedback {
   private ensureVoice(id: VoiceCueId): HTMLAudioElement {
     const cached = this.voicePlayers.get(id);
     if (cached) return cached;
-    const player = media(VOICE_CUES[id].file);
+    const player = media(VOICE_CUES[id].playbackFile ?? VOICE_CUES[id].file);
     this.voicePlayers.set(id, player);
     return player;
   }

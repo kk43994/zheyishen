@@ -1,4 +1,5 @@
 import type { BodyBuild, BodyStature, HeroFacing } from './hero-morph';
+import { loadArtImage } from './art-runtime';
 
 export type HeroMotion = 'idle' | 'walk' | 'attack' | 'hurt';
 
@@ -78,6 +79,7 @@ export class HeroStyle1Atlas {
   private frameCache = new Map<string, HTMLCanvasElement>();
   private failed = new Set<string>();
   private loading: Promise<void> | null = null;
+  private allLoading: Promise<void> | null = null;
   private loadGeneration = 0;
   private loaded = false;
 
@@ -89,6 +91,10 @@ export class HeroStyle1Atlas {
     if (this.loaded) return Promise.resolve();
     if (!this.loading) this.loading = this.load(this.loadGeneration);
     return this.loading;
+  }
+
+  whenAllReady(): Promise<void> {
+    return this.whenReady().then(() => this.allLoading ?? Promise.resolve());
   }
 
   slice(
@@ -192,25 +198,31 @@ export class HeroStyle1Atlas {
     this.frameCache.clear();
     this.failed.clear();
     this.loading = null;
+    this.allLoading = null;
     this.loaded = false;
   }
 
   private async load(generation: number): Promise<void> {
-    const [entries, raincoatEntries, uniformEntries, hairMaskEntries, partMaskEntries] = await Promise.all([
-      this.loadFamily(ATLAS_URLS, 'hero'),
+    const optionalFamilies = Promise.all([
       this.loadFamily(RAINCOAT_URLS, 'raincoat'),
       this.loadFamily(UNIFORM_URLS, 'uniform'),
+    ]);
+    this.allLoading = optionalFamilies.then(([raincoatEntries, uniformEntries]) => {
+      if (generation !== this.loadGeneration) return;
+      this.raincoatImages = new Map(raincoatEntries);
+      this.uniformImages = new Map(uniformEntries);
+    });
+    const [entries, hairMaskEntries, partMaskEntries] = await Promise.all([
+      this.loadFamily(ATLAS_URLS, 'hero'),
       this.loadFamily(HAIR_MASK_URLS, 'hair-mask'),
       this.loadFamily(PART_MASK_URLS, 'part-mask'),
     ]);
     if (generation !== this.loadGeneration) return;
     this.images = new Map(entries);
-    this.raincoatImages = new Map(raincoatEntries);
-    this.uniformImages = new Map(uniformEntries);
     this.hairMaskImages = new Map(hairMaskEntries);
     this.partMaskImages = new Map(partMaskEntries);
     this.loaded = this.images.size > 0;
-    if (!this.loaded) console.warn('主角像素图集全部不可用，继续使用程序化人物。');
+    if (!this.loaded) console.error('主角像素图集全部不可用；完整美术闸门应阻断启动。');
     this.loading = null;
   }
 
@@ -230,29 +242,22 @@ export class HeroStyle1Atlas {
       }
       const key = `${family}:${motion}`;
       this.failed.add(key);
-      console.warn(`跳过损坏的主角 ${family}/${motion} 图集，仅回退这一动作。`, result.reason);
+      console.error(`主角 ${family}/${motion} 图集损坏；完整美术闸门应阻断启动。`, result.reason);
     });
     return entries;
   }
 
-  private loadImage(motion: HeroMotion, url: string, family: string): Promise<HTMLImageElement> {
-    return new Promise((resolve, reject) => {
-      const image = new Image();
-      image.decoding = 'async';
-      image.onload = () => {
-        const expectedWidth = HERO_STYLE1_FRAME_WIDTH * HERO_STYLE1_MOTION_FRAMES[motion];
-        const expectedHeight = HERO_STYLE1_FRAME_HEIGHT * 4 * PROFILE_COUNT;
-        if (image.naturalWidth !== expectedWidth || image.naturalHeight !== expectedHeight) {
-          reject(new Error(
-            `Invalid ${motion} ${family} atlas size: ${image.naturalWidth}x${image.naturalHeight}`,
-          ));
-          return;
-        }
-        resolve(image);
-      };
-      image.onerror = () => reject(new Error(`Unable to load the ${motion} ${family} atlas`));
-      image.src = url;
-    });
+  private async loadImage(motion: HeroMotion, url: string, family: string): Promise<HTMLImageElement> {
+    const priority = family === 'raincoat' || family === 'uniform' ? 'background' : 'critical';
+    const image = await loadArtImage(url, priority);
+    const expectedWidth = HERO_STYLE1_FRAME_WIDTH * HERO_STYLE1_MOTION_FRAMES[motion];
+    const expectedHeight = HERO_STYLE1_FRAME_HEIGHT * 4 * PROFILE_COUNT;
+    if (image.naturalWidth !== expectedWidth || image.naturalHeight !== expectedHeight) {
+      throw new Error(
+        `Invalid ${motion} ${family} atlas size: ${image.naturalWidth}x${image.naturalHeight}`,
+      );
+    }
+    return image;
   }
 }
 

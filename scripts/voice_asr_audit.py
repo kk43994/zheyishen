@@ -18,7 +18,12 @@ NON_TEXT_RE = re.compile(r"[^\u4e00-\u9fffA-Za-z0-9]+")
 DIGIT_RE = re.compile(r"\d+")
 DIGITS = "零一二三四五六七八九"
 TO_SIMPLIFIED = OpenCC("t2s")
-MANUAL_REVIEW_IDS = {"teacher-last-row", "family-dinner-cold", "hero-became-him"}
+MANUAL_REVIEW_IDS = {
+    "teacher-last-row",
+    "landlord-rent-deposit",
+    "family-dinner-cold",
+    "hero-became-him",
+}
 
 
 def number_to_zh(value: str) -> str:

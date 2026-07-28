@@ -1,4 +1,5 @@
 import type { EnemyUnit } from './types';
+import { loadArtImage } from './art-runtime';
 
 export type BossSkillId =
   | 'closet-shadow' | 'closet-split' | 'closet-hands' | 'closet-slam'
@@ -126,7 +127,7 @@ class BossSkillAtlas {
     const skill = SKILLS[id];
     const asset = ASSETS[skill.asset];
     const image = this.images.get(skill.asset);
-    if (!this.loaded || !image) return null;
+    if (!image) return null;
     const frame = Math.max(0, Math.min(3, Math.trunc(frameIndex)));
     const key = `${id}:${frame}`;
     const cached = this.frames.get(key);
@@ -144,30 +145,25 @@ class BossSkillAtlas {
 
   private async load(): Promise<void> {
     const assets = Object.entries(ASSETS) as Array<[BossSkillAssetKey, BossSkillAssetSpec]>;
-    const results = await Promise.allSettled(assets.map(([key, spec]) => this.loadImage(key, spec)));
-    const entries: Array<[BossSkillAssetKey, HTMLImageElement]> = [];
+    const results = await Promise.allSettled(assets.map(async ([key, spec]) => {
+      const image = await this.loadImage(key, spec);
+      this.images.set(key, image);
+      return image;
+    }));
     results.forEach((result, index) => {
       const key = assets[index]![0];
-      if (result.status === 'fulfilled') entries.push([key, result.value]);
-      else console.warn(`Skipping unavailable boss skill atlas ${key}.`, result.reason);
+      if (result.status === 'rejected') console.warn(`Skipping unavailable boss skill atlas ${key}.`, result.reason);
     });
-    this.images = new Map(entries);
-    this.loaded = entries.length > 0;
+    this.loaded = results.some((result) => result.status === 'fulfilled');
     this.loading = null;
   }
 
-  private loadImage(key: BossSkillAssetKey, spec: BossSkillAssetSpec): Promise<HTMLImageElement> {
-    return new Promise((resolve, reject) => {
-      const element = new Image();
-      element.decoding = 'async';
-      element.onload = () => {
-        if (element.naturalWidth !== spec.frame * 4 || element.naturalHeight !== spec.frame * spec.rows) {
-          reject(new Error(`Boss skill atlas size mismatch: ${key}`));
-        } else resolve(element);
-      };
-      element.onerror = () => reject(new Error(`Boss skill atlas failed to load: ${key}`));
-      element.src = spec.url;
-    });
+  private async loadImage(key: BossSkillAssetKey, spec: BossSkillAssetSpec): Promise<HTMLImageElement> {
+    const element = await loadArtImage(spec.url);
+    if (element.naturalWidth !== spec.frame * 4 || element.naturalHeight !== spec.frame * spec.rows) {
+      throw new Error(`Boss skill atlas size mismatch: ${key}`);
+    }
+    return element;
   }
 }
 
@@ -184,6 +180,34 @@ const EIGHT_FRAME_SKILLS: Partial<Record<BossSkillId, EightFrameSpec>> = {
     url: new URL('./assets/enemies/boss-skills-v2/praise-slam-8f.png', import.meta.url).href,
     frame: 96, frames: 8, display: 192,
   },
+  'praise-p2-paper': {
+    url: new URL('./assets/enemies/boss-skills-v2/praise-p2-paper-8f.png', import.meta.url).href,
+    frame: 96, frames: 8, display: 192,
+  },
+  'praise-p2-optimize': {
+    url: new URL('./assets/enemies/boss-skills-v2/praise-p2-optimize-8f.png', import.meta.url).href,
+    frame: 96, frames: 8, display: 192,
+  },
+  'praise-p2-dismiss': {
+    url: new URL('./assets/enemies/boss-skills-v2/praise-p2-dismiss-8f.png', import.meta.url).href,
+    frame: 96, frames: 8, display: 192,
+  },
+  'praise-p2-one-seat': {
+    url: new URL('./assets/enemies/boss-skills-v2/praise-p2-one-seat-8f.png', import.meta.url).href,
+    frame: 96, frames: 8, display: 192,
+  },
+  'bus-depart': {
+    url: new URL('./assets/enemies/boss-skills-v2/bus-depart-8f.png', import.meta.url).href,
+    frame: 64, frames: 8, display: 144,
+  },
+  'keeper-name': {
+    url: new URL('./assets/enemies/boss-skills-v2/keeper-name-8f.png', import.meta.url).href,
+    frame: 64, frames: 8, display: 160,
+  },
+  'keeper-strip': {
+    url: new URL('./assets/enemies/boss-skills-v2/keeper-strip-8f.png', import.meta.url).href,
+    frame: 64, frames: 8, display: 160,
+  },
 };
 
 class EightFrameAtlas {
@@ -192,15 +216,11 @@ class EightFrameAtlas {
 
   constructor() {
     for (const [id, spec] of Object.entries(EIGHT_FRAME_SKILLS) as Array<[BossSkillId, EightFrameSpec]>) {
-      const image = new Image();
-      image.decoding = 'async';
-      image.onload = () => {
+      void loadArtImage(spec.url).then((image) => {
         if (image.naturalWidth === spec.frame * spec.frames && image.naturalHeight === spec.frame) {
           this.images.set(id, image);
         } else console.warn(`8f atlas size mismatch: ${id}`);
-      };
-      image.onerror = () => console.warn(`8f atlas failed: ${id}`);
-      image.src = spec.url;
+      }).catch(() => console.warn(`8f atlas failed: ${id}`));
     }
   }
 

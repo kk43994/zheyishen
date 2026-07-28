@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "note": "8-frame pilot atlases (horizontal strips), frame size matches boss-skills-v1",
+  "note": "8-frame atlases (horizontal strips), frame size matches boss-skills-v1 per skill",
   "skills": {
     "father-charge": {
       "atlas": "father-charge-8f.png",
@@ -22,6 +22,83 @@
       "sourceSheets": [
         "praise-slam-a.png",
         "praise-slam-b.png"
+      ]
+    },
+    "praise-p2-paper": {
+      "atlas": "praise-p2-paper-8f.png",
+      "frame": 96,
+      "frames": 8,
+      "display": 192,
+      "loop": false,
+      "sourceSheets": [
+        "praise-p2-paper-a.png",
+        "praise-p2-paper-b.png"
+      ]
+    },
+    "praise-p2-optimize": {
+      "atlas": "praise-p2-optimize-8f.png",
+      "frame": 96,
+      "frames": 8,
+      "display": 192,
+      "loop": false,
+      "sourceSheets": [
+        "praise-p2-optimize-a.png",
+        "praise-p2-optimize-b.png"
+      ]
+    },
+    "praise-p2-dismiss": {
+      "atlas": "praise-p2-dismiss-8f.png",
+      "frame": 96,
+      "frames": 8,
+      "display": 192,
+      "loop": false,
+      "sourceSheets": [
+        "praise-p2-dismiss-a.png",
+        "praise-p2-dismiss-b.png"
+      ]
+    },
+    "praise-p2-one-seat": {
+      "atlas": "praise-p2-one-seat-8f.png",
+      "frame": 96,
+      "frames": 8,
+      "display": 192,
+      "loop": false,
+      "sourceSheets": [
+        "praise-p2-one-seat-a.png",
+        "praise-p2-one-seat-b.png"
+      ]
+    },
+    "bus-depart": {
+      "atlas": "bus-depart-8f.png",
+      "frame": 64,
+      "frames": 8,
+      "display": 144,
+      "loop": false,
+      "sourceSheets": [
+        "bus-depart-a.png",
+        "bus-depart-b.png"
+      ]
+    },
+    "keeper-name": {
+      "atlas": "keeper-name-8f.png",
+      "frame": 64,
+      "frames": 8,
+      "display": 160,
+      "loop": false,
+      "sourceSheets": [
+        "keeper-name-a.png",
+        "keeper-name-b.png"
+      ]
+    },
+    "keeper-strip": {
+      "atlas": "keeper-strip-8f.png",
+      "frame": 64,
+      "frames": 8,
+      "display": 160,
+      "loop": false,
+      "sourceSheets": [
+        "keeper-strip-a.png",
+        "keeper-strip-b.png"
       ]
     }
   }

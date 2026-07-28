@@ -1,0 +1,229 @@
+{
+  "sampleRate": 22050,
+  "license": "Mixed project-authored procedural audio and curated CC0 field recordings; see each asset source.",
+  "sfx": {
+    "page": {
+      "file": "sfx/page.wav",
+      "seconds": 1.6,
+      "origin": "curated-field-recording",
+      "sha256": "83acda2bb2fe2be8245030844ce6380a96603066d401aff2c374a5200d9f0067",
+      "source": {
+        "title": "Page Turn",
+        "creator": "davidbain",
+        "provider": "Freesound via Openverse",
+        "openverseId": "ae81dc37-a10f-46f3-8619-9af22a898885",
+        "landing": "https://freesound.org/people/davidbain/sounds/136778",
+        "license": "CC0-1.0",
+        "sourceSha256": "bc0ff6820f91f8f161f6be5532c21377b54ddc07d5a8eb1eb3db5ef0055eb417"
+      }
+    },
+    "breath": {
+      "file": "sfx/breath.wav",
+      "seconds": 0.521,
+      "origin": "curated-field-recording",
+      "sha256": "4e7a5ae741aa3dee764281d48d27957cee4bb4de7924701f246d39d72776c488",
+      "source": {
+        "title": "Deep Inhale & Exhale 1",
+        "creator": "EverydayEldritch.com",
+        "provider": "Freesound via Openverse",
+        "openverseId": "1279607c-2721-44a4-bb60-aaf913251015",
+        "landing": "https://freesound.org/people/EverydayEldritch.com/sounds/615047",
+        "license": "CC0-1.0",
+        "sourceSha256": "687a8fac54be7f6dc1c5b3c234a2ca12403c69361503aedd9e234953774edbf3"
+      }
+    },
+    "hit": {
+      "file": "sfx/hit.wav",
+      "seconds": 0.31,
+      "origin": "curated-field-recording",
+      "sha256": "b5bebc5a45429551c72370c5f53475597d04b0124554a88b5b181107a16607cb",
+      "source": {
+        "title": "Blocking Arm With Hand",
+        "creator": "mmasonghi",
+        "provider": "Freesound via Openverse",
+        "openverseId": "d07f5bb7-a1fe-4d3a-89ad-ee86c548955b",
+        "landing": "https://freesound.org/people/mmasonghi/sounds/321810",
+        "license": "CC0-1.0",
+        "sourceSha256": "c187bcd1d83998a6854e7a0d95103580c796e1474410ca55d83641de454389d4"
+      }
+    },
+    "hurt": {
+      "file": "sfx/hurt.wav",
+      "seconds": 0.51,
+      "origin": "curated-field-recording",
+      "sha256": "00546c745508a3065f10e9317c5bc6d802be54b2e1c848cbdde506d8ad333d51",
+      "source": {
+        "title": "body_hit",
+        "creator": "insanity54",
+        "provider": "Freesound via Openverse",
+        "openverseId": "2651c4ac-55bc-480b-86a1-c31dd3004f92",
+        "landing": "https://freesound.org/people/insanity54/sounds/276600",
+        "license": "CC0-1.0",
+        "sourceSha256": "81f5997c3dc672d5a5dd259044ba16f8012da0fc402b6903ef42dc27bcaa36fb"
+      }
+    },
+    "coin": {
+      "file": "sfx/coin.wav",
+      "seconds": 0.53,
+      "origin": "curated-field-recording",
+      "sha256": "1be0ad2e953552e36f98a6ea26514d68ea2e5fae42ec5891549c9b4c41ecf385",
+      "source": {
+        "title": "Natural Metal Coin Sound 3",
+        "creator": "The-Sacha-Rush",
+        "provider": "Freesound via Openverse",
+        "openverseId": "64620b18-f5cb-4e6d-bdc8-8972917d9d19",
+        "landing": "https://freesound.org/people/The-Sacha-Rush/sounds/400113",
+        "license": "CC0-1.0",
+        "sourceSha256": "a8e6a0277fdd929d5a432860627e044b4437067f38dbc88c556b902493f31bf8"
+      }
+    },
+    "wear": {
+      "file": "sfx/wear.wav",
+      "seconds": 2.8,
+      "origin": "curated-field-recording",
+      "sha256": "fae7029e7289d38e23acf181a4771a30c259dea95ec1b1efba9f7d8eb6e195a5",
+      "source": {
+        "title": "Put on Raincoat with zipper",
+        "creator": "NachtmahrTV",
+        "provider": "Freesound via Openverse",
+        "openverseId": "0d007838-a9a7-43ef-9ef5-bf6c1c2228c4",
+        "landing": "https://freesound.org/people/NachtmahrTV/sounds/618114",
+        "license": "CC0-1.0",
+        "sourceSha256": "be0ef029896c984fcac9da86e3523afd4f01b5cc79007ea2768b7173e8ee9f6b"
+      }
+    },
+    "swallow": {
+      "file": "sfx/swallow.wav",
+      "seconds": 0.33,
+      "origin": "curated-field-recording",
+      "sha256": "a1d136ee00c89cbebf99f7662772baa11ffbbf14cf5bc271300adb9c63f41bfd",
+      "source": {
+        "title": "Liquid Swallow, Gulp, Throat",
+        "creator": "NicholasJudy567",
+        "provider": "Freesound via Openverse",
+        "openverseId": "f5d76b63-14e3-4c46-a82d-09c91f0d4443",
+        "landing": "https://freesound.org/people/NicholasJudy567/sounds/673738",
+        "license": "CC0-1.0",
+        "sourceSha256": "b01dcfaf4c60bebca59dcacc1d26b5ff5a51c47ab668ec50896ea0c2316a0ce3"
+      }
+    },
+    "exhale": {
+      "file": "sfx/exhale.wav",
+      "seconds": 1.46,
+      "origin": "curated-field-recording",
+      "sha256": "a8f58089171399251db21059cbb823a66a2bfbd96f3ef60f08a1f4b9b88c6c0e",
+      "source": {
+        "title": "Deep Inhale & Exhale 1",
+        "creator": "EverydayEldritch.com",
+        "provider": "Freesound via Openverse",
+        "openverseId": "1279607c-2721-44a4-bb60-aaf913251015",
+        "landing": "https://freesound.org/people/EverydayEldritch.com/sounds/615047",
+        "license": "CC0-1.0",
+        "sourceSha256": "687a8fac54be7f6dc1c5b3c234a2ca12403c69361503aedd9e234953774edbf3"
+      }
+    },
+    "boss": {
+      "file": "sfx/boss.wav",
+      "seconds": 1.15,
+      "origin": "project-authored-procedural"
+    },
+    "deny": {
+      "file": "sfx/deny.wav",
+      "seconds": 0.31,
+      "origin": "project-authored-procedural"
+    }
+  },
+  "ambience": {
+    "0": {
+      "file": "ambience/childhood-room.wav",
+      "seconds": 8,
+      "origin": "curated-field-recording",
+      "sha256": "835508f1d8af9fdcc138f8e48c6fe05a51154cf4c18a68a53dd48cd6ec1dff77",
+      "source": {
+        "title": "INT Rainy ambience (rain heard from inside a room)",
+        "creator": "Sayuri_Odin",
+        "provider": "Freesound via Openverse",
+        "openverseId": "b746d546-707c-4662-a010-6bc4e001a615",
+        "landing": "https://freesound.org/people/Sayuri_Odin/sounds/216134",
+        "license": "CC0-1.0",
+        "sourceSha256": "3da42a205347c7b5a44e81830a471895836636cda505a37644ddc8161bdf8699"
+      }
+    },
+    "1": {
+      "file": "ambience/classroom.wav",
+      "seconds": 8,
+      "origin": "curated-field-recording",
+      "sha256": "ace384cd8e5a32e8e9dd55292352f510fc6776932ae04b5a2f8a7c0680becfda",
+      "source": {
+        "title": "Classroom Ambience - High School Class",
+        "creator": "okieactor",
+        "provider": "Freesound via Openverse",
+        "openverseId": "b3572f02-df33-44ce-aca0-07bff0c6d8d2",
+        "landing": "https://freesound.org/people/okieactor/sounds/417041",
+        "license": "CC0-1.0",
+        "sourceSha256": "e3c94b9678d37134111a7d08f8c843be8c3caa489e192a62a9ad3a5c2a94795b"
+      }
+    },
+    "2": {
+      "file": "ambience/station.wav",
+      "seconds": 8,
+      "origin": "curated-field-recording",
+      "sha256": "33b904197688cc566e3bc89b18e0f3faaafb97295b1064caca114451e52b58b7",
+      "source": {
+        "title": "Underground Train Station Ambience",
+        "creator": "florianreichelt",
+        "provider": "Freesound via Openverse",
+        "openverseId": "325fa360-02a0-47f0-ad0d-157024c1c23a",
+        "landing": "https://freesound.org/people/florianreichelt/sounds/451720",
+        "license": "CC0-1.0",
+        "sourceSha256": "c4325a997efdf4997e9e03b4049c30f74f676f0aa592a640f169831a67609909"
+      }
+    },
+    "3": {
+      "file": "ambience/apartment.wav",
+      "seconds": 8,
+      "origin": "curated-field-recording",
+      "sha256": "1daffa96d134038acf175e23013df8a2becbd22f672fb2886504fc08bab5d0ff",
+      "source": {
+        "title": "Room Tone Apartment Small Bachelor",
+        "creator": "leonelmail",
+        "provider": "Freesound via Openverse",
+        "openverseId": "63e63843-1c05-47b3-a270-6c21d6ff0135",
+        "landing": "https://freesound.org/people/leonelmail/sounds/329568",
+        "license": "CC0-1.0",
+        "sourceSha256": "7fed2f5ab6ea19de51f0de71e31e124dee7399364d8e5821b87c31fdb4a9b0fb"
+      }
+    },
+    "4": {
+      "file": "ambience/office.wav",
+      "seconds": 8,
+      "origin": "curated-field-recording",
+      "sha256": "8336f9b1ea81af87f1a3dfe96d40450906b22192e45f2f8220b2375767423a30",
+      "source": {
+        "title": "Office Room Tone",
+        "creator": "holidayparade",
+        "provider": "Freesound via Openverse",
+        "openverseId": "214e7b59-acbb-4ee1-9d28-7bf3180f8950",
+        "landing": "https://freesound.org/people/holidayparade/sounds/278154",
+        "license": "CC0-1.0",
+        "sourceSha256": "dac00a4a8148270bdde8dfcc5fd5f06303852d9b3faa6bbce517a27df4293af1"
+      }
+    },
+    "5": {
+      "file": "ambience/hospital.wav",
+      "seconds": 8,
+      "origin": "curated-field-recording",
+      "sha256": "8fcacea67c29d18163929e36e9699b4bd28df4057ef2ca16f6bf5589111a4543",
+      "source": {
+        "title": "Fluorescent lamps in hospital 03",
+        "creator": "Daphne_in_Wonderland",
+        "provider": "Freesound via Openverse",
+        "openverseId": "475227e0-dfa2-4477-aef9-ee94fab66c96",
+        "landing": "https://freesound.org/people/Daphne_in_Wonderland/sounds/383484",
+        "license": "CC0-1.0",
+        "sourceSha256": "ddfa6fec50da89662e4d283f03547e49c83427c9a0f303ed4eb1ccbd0256819a"
+      }
+    }
+  },
+  "generatedAt": "2026-07-24T01:52:50.211Z"
+}

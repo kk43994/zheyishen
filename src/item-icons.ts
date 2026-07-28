@@ -3,6 +3,7 @@
 // icons.json 的 index 映射以 relics.ts 声明顺序为准；tiny 尺寸（物证栏）不走贴图。
 import iconManifest from './assets/items/icons.json';
 import type { ItemId } from './types';
+import { loadArtImage } from './art-runtime';
 
 const ICONS_URL = new URL('./assets/items/icons.png', import.meta.url).href;
 
@@ -18,41 +19,26 @@ class ItemIconAtlas {
   private readyPromise: Promise<void> | null = null;
 
   load(): void {
-    if (this.image) return;
-    const image = new Image();
-    image.decoding = 'async';
-    image.onload = () => {
+    if (this.image || this.readyPromise) return;
+    this.readyPromise = loadArtImage(ICONS_URL, 'critical').then((image) => {
       const expectedWidth = CELL * COLS;
       const expectedHeight = CELL * ROWS;
       if (image.naturalWidth !== expectedWidth || image.naturalHeight !== expectedHeight) {
-        console.warn(`道具图集尺寸错误: ${image.naturalWidth}x${image.naturalHeight}，期望 ${expectedWidth}x${expectedHeight}`);
-        this.image = null;
-        return;
+        throw new Error(`道具图集尺寸错误: ${image.naturalWidth}x${image.naturalHeight}，期望 ${expectedWidth}x${expectedHeight}`);
       }
+      this.image = image;
       this.loaded = true;
-    };
-    image.onerror = () => {
-      console.warn('道具图集加载失败，保留代码绘制回退。');
+    }).catch((error: unknown) => {
+      console.error('道具图集加载失败；完整美术闸门应阻断启动。');
       this.image = null;
-    };
-    image.src = ICONS_URL;
-    this.image = image;
+      throw error;
+    });
   }
 
   whenReady(): Promise<void> {
     if (this.loaded) return Promise.resolve();
     this.load();
-    if (this.readyPromise) return this.readyPromise;
-    this.readyPromise = new Promise((resolve, reject) => {
-      const image = this.image;
-      if (!image) {
-        reject(new Error('道具图集尚未初始化'));
-        return;
-      }
-      image.addEventListener('load', () => resolve(), { once: true });
-      image.addEventListener('error', () => reject(new Error('道具图集加载失败')), { once: true });
-    });
-    return this.readyPromise;
+    return this.readyPromise ?? Promise.reject(new Error('道具图集尚未初始化'));
   }
 
   slice(id: ItemId): HTMLCanvasElement | null {

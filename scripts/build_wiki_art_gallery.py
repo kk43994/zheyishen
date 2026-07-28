@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import base64
+import html
 import io
 import json
 import re
@@ -18,6 +19,8 @@ from PIL import Image
 WIKI = Path("docs/这一身百科.html")
 START = "<!-- ART-GALLERY-START -->"
 END = "<!-- ART-GALLERY-END -->"
+WIKI_DATA_DIR = Path("docs/wiki-data")
+WIKI_GIF_DIR = Path("docs/assets/wiki/gif")
 
 ENEMY_DIR = Path("src/assets/enemies")
 BOSS_SKILL_DIR = ENEMY_DIR / "boss-skills-v1"
@@ -228,11 +231,55 @@ BOSS_SKILL_NAMES = {
     "phone-p1-ring": "响铃", "phone-p1-answer": "接听", "phone-p1-missed": "未接",
     "phone-p2-ring": "分裂响铃", "phone-p2-answer": "分裂接听", "phone-p2-missed": "分裂未接",
     "collector-bill": "寄账单", "collector-drag": "上门拖拽", "collector-relocate": "换个门",
-    "keeper-name": "点名", "keeper-strip": "收灯", "keeper-dim": "吹灯",
+    "keeper-name": "灯来找你", "keeper-strip": "收灯", "keeper-dim": "吹灯",
     "coat-sleeve": "里面有人吗", "coat-double-sleeve": "两只袖子",
     "uniform-standard": "标准答案", "uniform-process": "过程没写", "uniform-pass": "卷子往后传",
     "bus-depart": "开走", "wet-shoes-hurry": "又跟近了", "box-count": "清点",
     "lantern-summon": "转起来", "lantern-summon-fast": "一生回来",
+}
+
+ENEMY_TIPS = {
+    "cry-moth": "鳞粉预警出现就离开落点，不必追着它绕圈。",
+    "fear": "听见吸气就拉开距离，别留在脉冲范围里。",
+    "hunger-shadow": "等它锁定方向后横向走，别顺着扑击路线逃。",
+    "red-mark": "第一次撞击后还会再扑一次；它后撤时准备横移。",
+    "whisper": "它贴身绕圈才会持续伤害，先拉开再处理。",
+    "others-paper": "离得越近伤害越快，保持远距用《一口气》拆掉。",
+    "sign-here": "离开缠脚范围即可恢复速度，先拉开距离。",
+    "id-scanner": "扫描线出现时上下换道，避免被标记后引来怪群。",
+    "missed-bus": "车道亮起后立刻上下离开；车只直穿，不会拐弯追你。",
+    "task-simple": "第一次击败会分裂，提前留出走位空间清两只子任务。",
+    "task-revise": "第一次归零只是“再开一版”，别把下一轮输出交给别的怪。",
+    "task-deadline": "优先击杀；八秒内没处理会直接扣走零钱。",
+    "task-sync": "它不打人但会把怪潮拉成团，怪多时优先处理。",
+    "missed-call": "离开铃声范围会重置扣血节拍，不要在圈内久留。",
+    "debt": "移动慢但贴身很痛，保持距离逐只清掉。",
+    "silence": "走出沉默场就能恢复速度，多只同场不会重复叠减速。",
+    "desk-lamp": "不要站在灯圈里换血；能腾出火力时尽早拆掉。",
+    "reheated-pot": "温度快空时走近并站定一秒重新加热，别让全场伤害启动。",
+    "badge-thief": "贴身会偷零钱，保持距离优先击杀。",
+    "meeting-door": "它不会攻击；离开停步范围就能恢复速度。",
+    "checkup-report": "避免接触，否则全部构筑会被封存三秒。",
+    "forgetter": "击退对它无效，用持续走位慢慢拉开处理。",
+    "empty-chair": "它会替怪物吸走自动攻击，尽早清掉或把真正威胁引到更近。",
+    "queue-screen": "走近屏幕可以无伤换位，别一直背着叫号方向逃。",
+    "others-family": "它只沿固定路线经过，侧移离开经过范围即可。",
+    "iv-stand": "存活越久跑得越快，出现后应尽早击杀。",
+}
+
+BOSS_TIPS = {
+    "coat-rack": "看红框横移，半血后双袖更宽；别踩袖击留下的湿渍。",
+    "closet-dark": "每招都有明确前摇和缺口；半血先处理分裂出的两只小怪。",
+    "uniform-answer": "找白色安全带、离开自己三秒前的路径、从推进墙的缺口穿过。",
+    "silent-father": "一阶段站在父亲背风侧的干地；二阶段借落地雨衣挡弹，等他发完脾气再输出。",
+    "last-bus": "离开锁定车道，等冲刺后的疲惫期追打；假刹车时别急着回位。",
+    "praise-chair": "加成和金饼都有后账；清不清小怪会改变二阶段招式威力，没有无代价答案。",
+    "wet-shoes": "少原地停留，绕开水脚印，并在它加速前尽快打掉。",
+    "ringing-phone": "接电话才能伤到它；挂断会生成未接来电，拖延只会把压力带进二阶段。",
+    "whose-box": "被点名的道具只有八秒保卫时间，看到标签立即集火纸箱。",
+    "debt-collector": "及时交钱或抢在倒计时结束前击败它；离开《上门》的拖拽圆域。",
+    "revolving-lantern": "站到灯影正在出怪的一侧能让伤害翻倍，优先打灯结束怪潮。",
+    "lamp-keeper": "它不可击杀；靠近灯光看清战场，逐件归还道具，最后主动放下《一口气》。",
 }
 
 PROP_STAGES = [
@@ -301,6 +348,29 @@ def img_tag(uri: str, width: int, alt: str) -> str:
     )
 
 
+def gif_tag(path: Path, width: int, alt: str) -> str:
+    if not path.exists():
+        raise AssertionError(f"百科 GIF 不存在：{path}")
+    relative = path.relative_to(Path("docs"))
+    return (
+        f'<img src="{relative.as_posix()}" alt="{html.escape(alt)}" loading="lazy" '
+        f'style="width:{width}px;max-width:100%;height:auto;'
+        'image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px">'
+    )
+
+
+def canonical_boss_asset(asset: str) -> str:
+    return {
+        "closet-dark": "closet-dark-hd",
+        "uniform-answer": "uniform-answer-hd",
+        "silent-father-p1": "silent-father-hd",
+        "silent-father-p2": "silent-father-p2-hd",
+        "last-bus": "last-bus-hd",
+        "debt-collector": "debt-collector-hd",
+        "lamp-keeper": "lamp-keeper-hd",
+    }.get(asset, asset)
+
+
 def boss_strip_tag(image: Image.Image, width: int, alt: str) -> str:
     return (
         f'<img src="{to_uri(image)}" alt="{alt}" loading="lazy" style="width:{width}px;max-width:100%;height:auto;'
@@ -319,17 +389,81 @@ def review_img_tag(path: Path, alt: str) -> str:
 
 
 def build_section() -> str:
+    item_data = json.loads((WIKI_DATA_DIR / "items.json").read_text(encoding="utf-8"))
+    enemy_data = json.loads((WIKI_DATA_DIR / "enemies.json").read_text(encoding="utf-8"))
+    boss_data = json.loads((WIKI_DATA_DIR / "bosses.json").read_text(encoding="utf-8"))
     parts: list[str] = [START]
     parts.append('<section class="entry" id="gallery">')
     parts.append('<p class="vol">附 卷</p>')
-    parts.append('<h2 class="serif">美术馆 · 实机资源</h2>')
+    parts.append('<h2 class="serif">实机图鉴 · 看懂角色与机制</h2>')
     parts.append(
-        '<p class="lede">除文末明确标注“未接入”的生产候选外，本页主体全部直接取自游戏运行时图集，不是概念稿。'
-        '六章现役敌怪、六只小 Boss 与六只章节 Boss 均采用"Image2 基底 + 程序合成动作"混合管线'
-        '（站立/移动/攻击三格真实姿态 + 受击红闪与残差溶解由程序推导）；'
-        '标题画、场景摆设、世界实体、道具图标、弹体、命中特效、房间、地面、卡框与结局画面同为混合管线产物；'
-        '主角基础身体由图集与部位遮罩驱动，道具体现由 Image2 四向/状态层与整数部位形变实时组合。</p>'
+        '<p class="lede">先看前面的核心循环、普通敌人和 Boss 卡，就能理解这款游戏怎样玩。'
+        '后面的完整动作、场景与特效图集是制作档案，供想继续查细节的读者展开阅读；'
+        '除明确标注“未接入”的候选外，画面均来自游戏现役资源。</p>'
     )
+    parts.append('<div class="stage-h"><h3>一局游戏的核心循环</h3>'
+                 f'<span class="cnt">{len(item_data["items"])} 件道具 · {len(item_data["combos"])} 个组合 · '
+                 f'{len(enemy_data)} 个现役普通敌怪 · {len(boss_data)} 个大小 Boss</span></div>')
+    parts.append(
+        '<div class="core-loop" aria-label="一局游戏的五步循环">'
+        '<div class="core-step"><span class="step-no">01 · 出生</span><b>AI 生成主角</b><p>每局都是不同家庭、地域与起点。</p></div>'
+        '<div class="core-step"><span class="step-no">02 · 走位</span><b>在怪潮里活下去</b><p>你控制移动，《一口气》自动攻击。</p></div>'
+        '<div class="core-step"><span class="step-no">03 · 回应</span><b>咽下或吐出命运</b><p>事情已经发生，回应方式由你选择。</p></div>'
+        '<div class="core-step"><span class="step-no">04 · 构筑</span><b>把经历穿上身</b><p>道具同时改变身体与唯一攻击。</p></div>'
+        '<div class="core-step"><span class="step-no">05 · 长大</span><b>进入下一段人生</b><p>场景、怪物与问题随年龄改变。</p></div>'
+        '</div>'
+        '<p class="reader-note"><b>读卡方法：</b>先看动画认出它，再看“会做什么”，最后看“怎么应对”。'
+        '精确数值保留在机制说明里，但不再抢占阅读顺序。</p>'
+    )
+    parts.append('<h4 style="margin:18px 0 8px">普通敌人 · 它做什么，你怎么躲</h4><div class="items">')
+    for enemy in enemy_data:
+        name = html.escape(enemy["name"])
+        stage = html.escape(enemy["stage"])
+        mechanic = html.escape(enemy["mechanic"])
+        note = html.escape(enemy.get("note") or "")
+        tip = html.escape(ENEMY_TIPS[enemy["id"]])
+        idle = gif_tag(
+            WIKI_GIF_DIR / "enemy" / f'{enemy["atlas"]}-idle.gif',
+            enemy["displaySize"],
+            f'{enemy["name"]} 待机动画',
+        )
+        parts.append(
+            '<article class="item beast">'
+            f'<div class="top"><div class="art">{idle}</div><div><div class="nm">{name}</div>'
+            f'<div class="bstat">{stage} · 普通敌人</div></div>'
+            f'<span class="q q2">{stage}</span></div>'
+            f'<div class="fx"><span class="entry-label">会做什么</span><span class="eff">{mechanic}</span>'
+            f'<span class="entry-label">怎么应对</span><span class="pos">{tip}</span>'
+            + (f'<span class="entry-label">它来自哪里</span><span class="iron">{note}</span>' if note else "")
+            + '</div></article>'
+        )
+    parts.append('</div>')
+    parts.append('<h4 style="margin:18px 0 8px">大小 Boss · 先读规则，再找窗口</h4><div class="items">')
+    for boss in boss_data:
+        name = html.escape(boss["name"])
+        stage = html.escape(boss["stage"])
+        phase_images = "".join(
+            gif_tag(
+                WIKI_GIF_DIR / "enemy" / f'{canonical_boss_asset(phase["asset"])}-idle.gif',
+                72,
+                f'{boss["name"]} {phase["label"]}',
+            )
+            for phase in boss["phases"]
+        )
+        mechanics = html.escape(boss["mechanics"])
+        skill_names = " · ".join(html.escape(skill["name"]) for skill in boss["skills"])
+        tip = html.escape(BOSS_TIPS[boss["id"]])
+        tier = "章节 Boss" if boss["tier"] == "chapter" else "小 Boss"
+        parts.append(
+            '<article class="item beast">'
+            f'<div class="top"><div class="art" style="display:flex;gap:4px">{phase_images}</div>'
+            f'<div><div class="nm">{name}</div><div class="bstat">{stage} · {tier}</div></div>'
+            f'<span class="q q3">{stage}</span></div>'
+            f'<div class="fx"><span class="entry-label">主要招式</span><span class="fl serif">{skill_names}</span>'
+            f'<span class="entry-label">核心规则</span><span class="eff">{mechanics}</span>'
+            f'<span class="entry-label">通关思路</span><span class="pos">{tip}</span></div></article>'
+        )
+    parts.append('</div>')
 
     # 标题画
     parts.append('<div class="stage-h"><h3>标题画</h3><span class="cnt">360×640 · 开屏背景</span></div>')
@@ -340,19 +474,19 @@ def build_section() -> str:
                  '<span class="cnt">40×56 帧 · 4 朝向 × 12 身形档，此处为正面平均档；'
                  '发色/衣着/伤痕由代码在帧上实时改写</span></div>')
     parts.append('<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end">')
-    for motion, count in HERO_MOTION_FRAMES.items():
-        frames = "".join(img_tag(to_uri(hero_frame(motion, i)), 60, f"主角 {motion} {i}") for i in range(count))
+    for motion in HERO_MOTION_FRAMES:
+        animation = gif_tag(WIKI_GIF_DIR / "hero" / f"hero-{motion}.gif", 120, f"主角 {motion} 动画")
+        raincoat_animation = gif_tag(
+            WIKI_GIF_DIR / "hero" / f"hero-{motion}-raincoat.gif",
+            120,
+            f"主角 {motion} 父亲的雨衣穿戴动画",
+        )
         parts.append(
             '<figure style="margin:0;text-align:center">'
-            f'<div style="display:flex;gap:4px">{frames}</div>'
-            f'<figcaption class="dim" style="font-size:12px;margin-top:4px">{HERO_MOTION_LABELS[motion]}</figcaption></figure>'
+            f'<div style="display:flex;gap:4px">{animation}{raincoat_animation}</div>'
+            f'<figcaption class="dim" style="font-size:12px;margin-top:4px">'
+            f'{HERO_MOTION_LABELS[motion]} · 基础 / 《父亲的雨衣》</figcaption></figure>'
         )
-    raincoat = img_tag(to_uri(hero_frame("idle", 0, overlay_raincoat=True)), 60, "父亲的雨衣 穿戴态")
-    parts.append(
-        '<figure style="margin:0;text-align:center">'
-        f'<div style="display:flex;gap:4px">{raincoat}</div>'
-        '<figcaption class="dim" style="font-size:12px;margin-top:4px">《父亲的雨衣》穿戴层</figcaption></figure>'
-    )
     parts.append("</div>")
 
     # 道具在主角身上的实机体现
@@ -388,7 +522,7 @@ def build_section() -> str:
                  '<th>站立</th><th>移动</th><th>攻击</th><th>受击</th><th>消散</th></tr></thead><tbody>')
     for asset, name, stage, frame_size, display_width in ENEMIES:
         cells = "".join(
-            f'<td>{img_tag(to_uri(enemy_frame(asset, motion, 1 if motion == "death" else 0, frame_size)), display_width, f"{name} {motion}")}</td>'
+            f'<td>{gif_tag(WIKI_GIF_DIR / "enemy" / f"{asset}-{motion}.gif", display_width, f"{name} {motion} 动画")}</td>'
             for motion in ENEMY_MOTION_ROWS
         )
         parts.append(f"<tr><td>{name}</td><td>{stage}</td>{cells}</tr>")
@@ -419,14 +553,31 @@ def build_section() -> str:
         parts.append(f'<h4 style="margin:20px 0 8px">{BOSS_FORM_NAMES[asset]}</h4>')
         parts.append('<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">')
         for row, skill_id in sorted(skills_by_asset.get(asset, [])):
-            strip = atlas.crop((0, row * frame_size, frame_size * 4, (row + 1) * frame_size))
             display_width = min(frame_size * 4, 384)
             parts.append(
                 '<figure style="margin:0;text-align:center">'
-                + boss_strip_tag(strip, display_width, f"{BOSS_SKILL_NAMES[skill_id]} 四帧动画")
+                + gif_tag(
+                    WIKI_GIF_DIR / "boss-skill" / f"{skill_id}.gif",
+                    display_width,
+                    f"{BOSS_SKILL_NAMES[skill_id]} 四帧动画",
+                )
                 + f'<figcaption class="dim" style="font-size:12px;margin-top:4px">《{BOSS_SKILL_NAMES[skill_id]}》 · 4 帧</figcaption></figure>'
             )
         parts.append('</div>')
+    v2_manifest = json.loads((ENEMY_DIR / "boss-skills-v2" / "manifest.json").read_text(encoding="utf-8"))
+    parts.append('<h4 style="margin:20px 0 8px">Boss 八帧正式演出</h4>'
+                 '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">')
+    for skill_id, spec in v2_manifest["skills"].items():
+        parts.append(
+            '<figure style="margin:0;text-align:center">'
+            + gif_tag(
+                WIKI_GIF_DIR / "boss-skill-8f" / f"{skill_id}.gif",
+                min(spec["frame"] * spec["frames"], 448),
+                f'{skill_id} 八帧正式动画',
+            )
+            + f'<figcaption class="dim" style="font-size:12px;margin-top:4px">{skill_id} · {spec["frames"]} 帧</figcaption></figure>'
+        )
+    parts.append('</div>')
 
     # 世界实体
     parts.append('<div class="stage-h"><h3>世界实体 · 门与灯</h3>'
@@ -531,6 +682,30 @@ def build_section() -> str:
             + f'<figcaption class="dim" style="font-size:12px;margin-top:4px">{name}</figcaption></figure>'
         )
     parts.append(f'<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end">{"".join(vfx_tiles)}</div>')
+    projectile_manifest = json.loads(Path("src/assets/vfx/projectile-anim.json").read_text(encoding="utf-8"))
+    hit_manifest = json.loads(Path("src/assets/vfx/hits.json").read_text(encoding="utf-8"))
+    save_manifest = json.loads(Path("src/assets/vfx/saves.json").read_text(encoding="utf-8"))
+    animated_vfx = []
+    for form in projectile_manifest["forms"]:
+        animated_vfx.append(
+            '<figure style="margin:0;text-align:center;width:92px">'
+            + gif_tag(WIKI_GIF_DIR / "projectile" / f"{form}.gif", 84, f"{form} 弹体动画")
+            + f'<figcaption class="dim" style="font-size:11px;margin-top:4px">{form}</figcaption></figure>'
+        )
+    for material in hit_manifest["materials"]:
+        animated_vfx.append(
+            '<figure style="margin:0;text-align:center;width:92px">'
+            + gif_tag(WIKI_GIF_DIR / "hit" / f"{material}.gif", 84, f"{material} 命中特效")
+            + f'<figcaption class="dim" style="font-size:11px;margin-top:4px">{material}</figcaption></figure>'
+        )
+    for kind in save_manifest["kinds"]:
+        animated_vfx.append(
+            '<figure style="margin:0;text-align:center;width:92px">'
+            + gif_tag(WIKI_GIF_DIR / "save" / f"{kind}.gif", 84, f"{kind} 免死演出")
+            + f'<figcaption class="dim" style="font-size:11px;margin-top:4px">{kind}</figcaption></figure>'
+        )
+    parts.append('<h4 style="margin:18px 0 8px">弹体、命中与免死 · 实时动画</h4>')
+    parts.append(f'<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start">{"".join(animated_vfx)}</div>')
 
     # 房间与地面
     parts.append('<div class="stage-h"><h3>房间内景与六章地面</h3>'
@@ -547,7 +722,7 @@ def build_section() -> str:
     for index, name in enumerate(("童年木地板", "少年水磨石", "青年机械地", "成年旧地毯", "中年医院地胶", "暮年夜路")):
         ground_tiles.append(
             '<figure style="margin:0;text-align:center">'
-            + img_tag(file_uri(Path("src/assets/world") / f"ground-{index}.png"), 96, name)
+            + img_tag(file_uri(Path("src/assets/world") / f"stage-floor-{index}.png"), 96, name)
             + f'<figcaption class="dim" style="font-size:11px;margin-top:4px">{name}</figcaption></figure>'
         )
     parts.append(f'<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-top:16px">{"".join(ground_tiles)}</div>')

@@ -10,6 +10,11 @@ const force = process.argv.includes('--force');
 const draft = process.argv.includes('--draft');
 const onlyArg = process.argv.find((argument) => argument.startsWith('--only='));
 const onlyIds = onlyArg ? new Set(onlyArg.slice('--only='.length).split(',').filter(Boolean)) : null;
+const revisionArg = process.argv.find((argument) => argument.startsWith('--revision='));
+const requestedRevision = revisionArg ? Number.parseInt(revisionArg.slice('--revision='.length), 10) : undefined;
+if (requestedRevision !== undefined && (!Number.isInteger(requestedRevision) || requestedRevision < 0)) {
+  throw new Error(`invalid asset revision: ${revisionArg}`);
+}
 
 function parseEnv(text) {
   return Object.fromEntries(text.split(/\r?\n/).flatMap((line) => {
@@ -58,7 +63,23 @@ const systemVoiceByRole = {
   neighbor: 'Chinese (Mandarin)_Kind-hearted_Antie',
 };
 
+// A role can contain several acoustically different real-world speakers.
+// Per-cue overrides keep those speakers distinct without widening the runtime
+// role union, which exists for narrative behavior rather than casting.
+const systemVoiceByCue = {
+  'phone-hospital-not-call': 'female-yujie-jingpin',
+  'hospital-family-needed': 'female-yujie-jingpin',
+  'clinic-next-number': 'female-yujie-jingpin',
+  'hospital-family-late': 'female-yujie-jingpin',
+  'office-meeting-continues': 'female-chengshu-jingpin',
+  'clinic-blood-pressure': 'Chinese (Mandarin)_Radio_Host',
+  'coworker-cardboard-box': 'Chinese (Mandarin)_Straightforward_Boy',
+  'security-return-card': 'Chinese (Mandarin)_Male_Announcer',
+  'pharmacist-after-meals': 'Chinese (Mandarin)_Gentleman',
+};
+
 function voiceFor(cue) {
+  if (systemVoiceByCue[cue.id]) return systemVoiceByCue[cue.id];
   if (cue.role === 'narrator' || cue.role === 'lamp-keeper') return narratorVoice || 'Chinese (Mandarin)_Southern_Young_Man';
   if (cue.role === 'father') return fatherVoice || 'Chinese (Mandarin)_Reliable_Executive';
   if (cue.role === 'hero') return cue.stage === 0 ? 'clever_boy' : 'Chinese (Mandarin)_Sincere_Adult';
@@ -136,6 +157,8 @@ for (const id of VOICE_CUE_IDS) {
   manifestById.set(id, {
     id, file: cue.file, role: cue.role, voiceId: voiceFor(cue), model: MODEL,
     provider: 'MiniMax', durationMs: generated.durationMs, bytes: generated.bytes.length, draft,
+    assetRevision: requestedRevision ?? manifestById.get(id)?.assetRevision ?? 0,
+    generatedAt: new Date().toISOString(),
     delivery: cue.delivery,
   });
   await writeManifest();

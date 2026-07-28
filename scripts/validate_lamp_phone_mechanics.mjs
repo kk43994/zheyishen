@@ -50,14 +50,17 @@ for (const [token, message] of [
   ['!this.visibleInLampLight(burst.x, burst.y, burst.radius + 8)', '圈外命中特效仍会泄露位置'],
   ["ctx.fillStyle = 'rgba(5,5,8,.68)'", '光圈外环境压暗不足或被移除'],
   ['private beginLampSeize(enemy: EnemyUnit)', '缺少《收灯》光圈收缴入口'],
-  ['timer: 3,', '《点名》选择窗口不是 3 秒'],
-  ['leftDistance < 34 || rightDistance < 34', '《点名》没有用走近物件完成选择'],
-  ['const stripSlot: 0 | 1 = keepSlot === 0 ? 1 : 0', '保留一件后没有归还另一件'],
+  ['timer: 6,', '《收灯》追光窗口不是 6 秒'],
+  ['speed: 62 * (1 + this.lampSeizeMisses * 0.3)', '躲过追光后下一轮没有加速 30%'],
+  ['const inLight = distance < LAMP_SEIZE_RADIUS', '追光没有使用正式曝光半径'],
+  ['seize.exposure += dt;', '被灯照住时没有累计曝光'],
+  ['seize.exposure = Math.max(0, seize.exposure - dt * 0.6);', '离开光圈后曝光没有逐渐衰减'],
+  ['if (seize.exposure >= LAMP_SEIZE_EXPOSURE)', '照满 1.5 秒没有触发收缴'],
   ["this.items = this.items.filter((_, itemIndex) => itemIndex !== stripAt)", '被收走的道具没有真实离开构筑'],
   ["enemy.type === 'lamp-keeper' && this.lampSeize", '《收灯》期间收灯人没有站定'],
-  ['enemy.y = this.darkCY - 108', '《点名》没有给人物和选项留出构图空间'],
-  ["ordered.find((index) => this.items[index] === 'fathers-raincoat')", '缺少父亲雨衣最后归还保底'],
-  ['this.finishLampCycle(enemy, otherIndex)', '雨衣与最后一件并存时没有先归还另一件'],
+  ['enemy.y = this.darkCY - 108', '《收灯》没有给人物和追光留出构图空间'],
+  ['return leftRaincoat - rightRaincoat || right - left;', '归还顺序没有把父亲雨衣保底排在最后'],
+  ["if (this.items[stripAt] === 'fathers-raincoat' && this.items.length === 1)", '最后只剩雨衣时没有进入最终剥离'],
   ['LAMP_SHADE_CAP', '收灯人召唤物缺少场上上限'],
   ["if (enemy.type === 'lamp-keeper') {", '收灯人不再永久不可伤'],
   ['private beginLampRelease(enemy: EnemyUnit)', '缺少最后一件离身后的主动收束阶段'],
@@ -80,9 +83,13 @@ for (const screen of ['phone-field', 'phone-answer', 'lamp-dark', 'lamp-choice']
 
 for (const [source, label] of [[canon, '正典'], [plan, '升级计划'], [wiki, '百科']]) {
   requireToken(source, '180–280', `${label}没有记录电话场上实体距离`);
-  requireToken(source, '3 秒', `${label}没有记录接听或点名的 3 秒决策`);
+  requireToken(source, '3 秒', `${label}没有记录电话接听的 3 秒决策`);
   requireToken(source, '雨衣', `${label}没有记录雨衣传承`);
 }
+requireToken(canon, '照满 1.5 秒', '正典没有记录追光曝光收缴门槛');
+requireToken(canon, '6 秒窗口', '正典没有记录追光闪避窗口');
+requireToken(plan, '照满 1.5 秒', '升级计划没有记录追光曝光收缴门槛');
+rejectToken(canon, '《点名》', '正典仍保留已经废除的《点名》二选一');
 rejectToken(canon, '| 13 | 新机制 | 电话实体系统', '正典仍把电话实体系统标成未做');
 rejectToken(canon, '| 16 | 新机制 | 二选一保留机制', '正典仍把《点名》标成未做');
 rejectToken(plan, '收灯人《灯下》《点名》、名册', '升级计划总待办仍包含已完成的收灯人机制');
@@ -92,7 +99,7 @@ console.log(JSON.stringify({
   valid: errors.length === 0,
   checks,
   phone: '180-280 场上来电 -> 三档闪烁/震动 -> 走近定身接听 -> 未接追击与强化',
-  lamp: '圈外敌弹不可见 -> 3 秒走近二选一 -> 真实归还一件 -> 雨衣最后归还 -> 主动放下且不能击杀',
+  lamp: '圈外敌弹不可见 -> 6 秒追光/1.5 秒曝光 -> 真实归还一件 -> 雨衣最后归还 -> 主动放下且不能击杀',
   errors,
 }, null, 2));
 

@@ -10,7 +10,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/平台-抖音互动空间-black?logo=tiktok&logoColor=white" alt="抖音互动空间" />
-  <img src="https://img.shields.io/badge/AI-doubao--seed--evolving-4a6b8a" alt="doubao" />
+  <img src="https://img.shields.io/badge/AI-doubao--seed--2.1--turbo-4a6b8a" alt="doubao" />
   <img src="https://img.shields.io/badge/TypeScript-5.x-3178c6?logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/Vite-7.x-646cff?logo=vite&logoColor=white" alt="Vite" />
   <img src="https://img.shields.io/badge/渲染-Canvas_2D-e34f26" alt="Canvas 2D" />
@@ -48,12 +48,12 @@
 ## 核心特性
 
 - **六章人生关卡**（童年至暮年）、无限地图自由走位、自动索敌攻击；环境摆设随年龄在奔跑中平滑渐变（床底立柱 → 课桌 → 齿轮 → 工位 → 床栏）
-- **74 件可穿戴人生道具**，叠加改变外貌、弹体形状、颜色、轨迹与生命周期；道具效果遵循「机制即隐喻」——先有隐喻，数值只是它的影子
+- **77 件可穿戴人生道具**，叠加改变外貌、弹体形状、颜色、轨迹与生命周期；道具效果遵循「机制即隐喻」——先有隐喻，数值只是它的影子
 - **12 个命名组合彩蛋**：集齐特定道具组合触发专属机制，奥义插画在战场上浮现 3.4 秒
 - **协同标签系统**：湿×冰、锋利×骨节、重×爆炸等词条化学反应，首次触发以「成双·」句式报幕
-- **写实的生成式命运连续剧**：AI 调用拆成「现实事件核心 → 咽下/吐出回应 → 独立现实审稿 → 文学化呈现 → 事实一致性复审」。事件先用白话讲清时间、地点、人物、动作与直接结果，因果成立后才允许灰色幽默与留白；人生记忆由程序直接从通过审查的正文生成，不能偷加新设定。上一次的选择成为下一次的起因，回应改变五毒与后续构筑
+- **写实的生成式命运连续剧**：AI 在后台执行「现实事件核心 → 咽下/吐出回应与剧情残留 → 独立现实审稿」，程序再把残留编译成白名单机制；命运触发时同步读取就绪牌，未就绪就立即使用人工保底。玩家亲口说的话沿所选咽/吐方向同步结算，AI 只异步补写不改机制的命运回响
 - **当铺 + 随机刷新的留灯间/里屋实体门**（限时存在，走进去触发）：里屋卖代价，留灯间存放被爱过的证据
-- **美术管线**：敌怪、场景摆设、道具图标、弹体与命中特效、房间内景、六章地面、卡框与结局画面都走「生图基底 + 程序规整」混合管线；主角人偶纯程序化（形变/穿戴依赖代码控帧）；AI 只能选择白名单模板，不能自由生成图像或数值
+- **美术管线**：敌怪、主角动作、场景摆设、道具图标、弹体与命中特效、房间内景、六章地面、卡框与结局画面都走「生图基底 + 程序规整」混合管线；形变/穿戴由代码控帧。启动时全部正式美术先限并发完整解码，再动态加载游戏模块；慢设备只看主题化装帧页，任何资源失败都阻断并提供重试，不向评委展示程序化降级画面
 
 <p align="center">
   <img src="src/assets/ui/combo-art.png" width="320" alt="十二组合奥义插画" /><br/>
@@ -80,12 +80,12 @@ cp .env.local.example .env.local
 npm run dev
 ```
 
-对局 AI 通过 Vite 后台代理调用，浏览器和构建产物拿不到密钥。默认走火山方舟直连 `doubao-seed-evolving`（与抖音互动空间 `tt.callAIChatCompletion` 同款 doubao；请求带 `thinking: disabled`，否则大提示词下推理会超过代理 42s 超时）。`ai-profiles.local.json` + `scripts/ai-switch.sh` 支持多端点热切换，改完立即生效无需重启 dev。后台日志会明确显示：
+对局 AI 通过 Vite 后台代理调用，浏览器和构建产物拿不到密钥。默认走火山方舟直连 `doubao-seed-2-0-lite-260428`（与抖音互动空间 `tt.callAIChatCompletion` 使用同一模型标识；请求带 `thinking: disabled`，避免大提示词下推理超过代理 42s 超时）。`ai-profiles.local.json` + `scripts/ai-switch.sh` 支持多端点热切换，改完立即生效无需重启 dev。后台日志会明确显示：
 
 ```text
-[AI] 使用 profile「ark」· doubao-seed-evolving @ https://ark.cn-beijing.volces.com/api/v3
-[AI] abc123 origin -> doubao-seed-evolving
-[AI] abc123 origin <- doubao-seed-evolving 12029ms
+[AI] 使用 profile「ark-douyin」· doubao-seed-2-0-lite-260428 @ https://ark.cn-beijing.volces.com/api/v3
+[AI] abc123 origin -> doubao-seed-2-0-lite-260428
+[AI] abc123 origin <- doubao-seed-2-0-lite-260428 11548ms
 ```
 
 出生档案没有可游玩的本地保底：未配置、超时、上游失败或输出未通过白名单时，开场停留在重试页（红线 ①）。命运事件保留本地故障保护，避免一局已开始后因临时断网丢档。
@@ -107,7 +107,7 @@ python3 scripts/build_wiki_art_gallery.py
 
 ## 声音资源管线
 
-游戏使用 16 个固定音效/环境循环和 51 条固定人物语音，运行时不调用 TTS。语音合同逐句记录音色定位、语调、情绪、语速、音高、强度与动作标签，发布前可在 `http://127.0.0.1:5173/voice-review.html` 逐条试听。
+游戏使用 16 个固定音效/环境循环和 53 条固定人物语音，运行时不调用 TTS。语音合同逐句记录音色定位、语调、情绪、语速、音高、强度与动作标签，发布前可在 `http://127.0.0.1:5173/voice-review.html` 逐条试听。
 
 ```bash
 # 拉取并制作 CC0 音效与环境循环
@@ -122,7 +122,7 @@ npm run generate:voice:local
 # 用 Whisper 反向转写，检查漏字、错音和异常语速
 npm run audit:voice
 
-# 发布前硬校验 16 个声音资源与 51 条语音
+# 发布前硬校验 16 个声音资源与 53 条语音
 npm run validate:sound
 npm run validate:voice:strict
 ```
@@ -134,10 +134,12 @@ npm run validate:voice:strict
 | 构建 | 命令 | AI 通道 | 用途 |
 | --- | --- | --- | --- |
 | 开发 | `npm run dev` | Vite 代理 → 方舟 | 本地迭代 |
-| 演示 | `npx vite build --mode demo` | Vite 代理 → 方舟 | 线上演示站 |
+| 演示 | `npm run build:demo` | Vite 代理 → 方舟 | 线上演示站，独立输出到 `dist-demo/` |
 | 平台 | `npm run package` | 仅 `tt.callAIChatCompletion` | 抖音上传包 |
 
-平台包（production 构建）中 Web 请求分支被常量折叠整体剔除，音频由 WebView 原生媒体元素读取包内相对资源，**产物内不含任何 `fetch` 调用**（平台审核红线）。上传包只保留玩家运行时，不包含美术/声音审阅页与生产清单；产物生成于 `release/zhe-yi-shen-mvp.zip`，压缩包根目录直接包含 `index.html`，平台校验上限 8MB。后台单独上传的 300 x 300 图标位于 `docs/promo/app-icon-300.png`，不重复塞入游戏包。
+演示站与平台包禁止共用输出目录：DMIT 只同步 `dist-demo/`，`npm run package` 可以独立重建 `dist/`，不会再覆盖待发布的演示版本。平台包（production 构建）中 Web 请求分支被常量折叠整体剔除，音频由 WebView 原生媒体元素读取包内相对资源，**产物内不含任何 `fetch` 调用**（平台审核红线）。上传包只保留玩家运行时，不包含美术/声音审阅页与生产清单；产物生成于 `release/zhe-yi-shen-mvp.zip`，压缩包根目录直接包含 `index.html`，平台校验上限 8MB。后台单独上传的 300 x 300 图标位于 `docs/promo/app-icon-300.png`，不重复塞入游戏包。
+
+手机打开演示站时默认使用全视口竖屏布局；受浏览器安全规则限制，系统级全屏在玩家第一次触碰游戏时申请，并在支持的浏览器中同时锁定竖屏。iOS Safari 不开放普通网页的自动全屏接口时，仍保持无桌面画框的全视口游玩。
 
 ## 文档
 

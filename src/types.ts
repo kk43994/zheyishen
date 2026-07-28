@@ -86,6 +86,7 @@ export interface OriginModifiers {
 }
 
 export type FateResponseEffect =
+  | 'none'
   | 'store_volleys'
   | 'returning_breath'
   | 'guard'
@@ -109,12 +110,45 @@ export interface FateFactEffect {
 
 export type FateStatKey = 'damage' | 'fireRate' | 'range' | 'width' | 'moveSpeed' | 'projSpeed';
 
+export type FateResidueCarrier = 'item' | 'body' | 'habit' | 'resource' | 'worn_item' | 'memory' | 'none';
+export type FateResidueMotif =
+  | 'guard'
+  | 'focus'
+  | 'scatter'
+  | 'haste'
+  | 'weight'
+  | 'reach'
+  | 'echo'
+  | 'store'
+  | 'return'
+  | 'release'
+  | 'debt'
+  | 'wound'
+  | 'recovery'
+  | 'possession'
+  | 'loss';
+export type FateResidueIntensity = 'normal' | 'wild' | 'rule_break';
+export type FateSettlementPrimary = 'item' | 'stats' | 'effect' | 'resource' | 'memory' | 'none';
+
+export interface FateSettlement {
+  version: 2;
+  evidence: string;
+  carrier: FateResidueCarrier;
+  motif: FateResidueMotif;
+  intensity: FateResidueIntensity;
+  recipeId: string;
+  primary: FateSettlementPrimary;
+  candidateItemId?: ItemId;
+}
+
 export interface FateResponse {
   label: string;
   hint: string;
   effect: FateResponseEffect;
   poison: Partial<PoisonVector>;
   stats?: Partial<Record<FateStatKey, number>>;
+  gainItemId?: ItemId;
+  settlement?: FateSettlement;
   result: string;
 }
 
@@ -142,6 +176,8 @@ export interface FateReceipt {
   event: FateEvent;
   direction: FateDirection;
   result: string;
+  /** 可选的异步文学回响，只用于展示，不进入正典记忆或机械结算。 */
+  echo?: string;
 }
 
 export interface LifeSnapshotItem {
@@ -167,6 +203,8 @@ export interface LifeSnapshot {
   poisons: PoisonVector;
   memories: string[];
   recentEvents: string[];
+  /** 最近已兑现的剧情配方；生成新回执时用于避免机械结果连续重复。 */
+  recentFateRecipes?: string[];
   fateItemCandidates: ItemId[];
   swallowCount: number;
   exhaleCount: number;

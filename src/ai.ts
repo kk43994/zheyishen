@@ -1,8 +1,72 @@
-import { validateFateEvent, validateFreeFateResponse } from './fate';
+import {
+  buildFateCandidateItemCatalog,
+  buildFreeFateMechanicBudget,
+  buildFateMechanicBudget,
+  validateFreeFateResponse,
+  validateFateEvent,
+} from './fate';
+import { parseFirstAIJson } from './ai-json';
 import { validateOriginProfile, type OriginWheels } from './origins';
-import type { FateDirection, FateEvent, FateResponse, LifeSnapshot, OriginKind, OriginProfile } from './types';
+import { recordTelemetry } from './telemetry';
+import type {
+  FateDirection,
+  FateEvent,
+  FateResponse,
+  FateSettlement,
+  ItemId,
+  LifeSnapshot,
+  OriginKind,
+  OriginProfile,
+} from './types';
 
 export type AIGenerationState = 'idle' | 'requesting' | 'gpt' | 'fallback' | 'error';
+export type AIDiagnosticStatus =
+  | 'idle'
+  | 'calling'
+  | 'streaming'
+  | 'returned'
+  | 'validated'
+  | 'rejected'
+  | 'unavailable'
+  | 'timeout'
+  | 'failed'
+  | 'invalid_json'
+  | 'aborted';
+
+export interface AIDiagnostic {
+  kind: keyof typeof AI_SYSTEM_PROMPTS | '';
+  transport: 'platform' | 'dev' | 'none';
+  status: AIDiagnosticStatus;
+  detail: string;
+  updatedAt: number;
+}
+
+let latestAIDiagnostic: AIDiagnostic = {
+  kind: '',
+  transport: 'none',
+  status: 'idle',
+  detail: '等待发起',
+  updatedAt: Date.now(),
+};
+
+function publishAIDiagnostic(
+  kind: keyof typeof AI_SYSTEM_PROMPTS,
+  transport: AIDiagnostic['transport'],
+  status: AIDiagnosticStatus,
+  detail: string,
+): void {
+  latestAIDiagnostic = {
+    kind,
+    transport,
+    status,
+    detail: detail.replace(/\s+/g, ' ').slice(0, 96),
+    updatedAt: Date.now(),
+  };
+}
+
+export function readAIDiagnostic(): AIDiagnostic {
+  return { ...latestAIDiagnostic };
+}
 
 interface AIEnvelope {
   ok?: boolean;
@@ -11,8 +75,18 @@ interface AIEnvelope {
   error?: string;
 }
 
-/** 抖音互动空间平台模型（火山方舟 doubao）——tt 路径与开发代理共用同款模型 */
-const PLATFORM_AI_MODEL = 'doubao-seed-evolving';
+/** 互动空间全链路统一使用 Seed 2.0 Pro，命运请求在战斗后台预生成。 */
+const PLATFORM_AI_MODELS = {
+  origin: 'doubao-seed-2-0-pro-260215',
+  default: 'doubao-seed-2-0-pro-260215',
+} as const;
+
+// 40 秒出生漫画完整播放后，仍给扫码宿主与 Seed 2.0 Pro 留出回调余量。
+const ORIGIN_AI_TIMEOUT_MS = 55_000;
+
+function platformModelFor(kind: keyof typeof AI_SYSTEM_PROMPTS): string {
+  return kind === 'origin' ? PLATFORM_AI_MODELS.origin : PLATFORM_AI_MODELS.default;
+}
 
 /** 与 vite.config.ts 中的系统提示词保持一致；生产环境（tt 路径）在客户端拼装。 */
 import { AI_SYSTEM_PROMPTS } from './ai-prompts';
@@ -24,8 +98,10 @@ interface TicAIChatOptions {
   messages: Array<{ role: 'system' | 'user'; content: string }>;
   temperature?: number;
   maxTokens?: number;
-  success: (res: { errMsg: string; data: string }) => void;
-  fail: (err: { errMsg: string; errorCode?: number }) => void;
+  onSSE?: (event: { eventName: string; data: string }) => void;
+  success?: (res: { errMsg: string; data: string }) => void;
+  fail: (err: { errMsg: string; errorCode?: number; errorType?: string }) => void;
+  complete?: () => void;
 }
 
 declare global {
@@ -34,57 +110,145 @@ declare global {
   }
 }
 
-function callPlatformAI(kind: keyof typeof AI_SYSTEM_PROMPTS, payload: unknown, timeoutMs: number): Promise<unknown> {
+function extractPlatformSSEText(data: string): string {
+  const normalized = data.trim().replace(/^data:\s*/i, '');
+  if (!normalized || normalized === '[DONE]') return '';
+  try {
+    const chunk = JSON.parse(normalized) as unknown;
+    if (typeof chunk === 'string') return chunk;
+    if (!chunk || typeof chunk !== 'object') return '';
+    const record = chunk as Record<string, any>;
+    const content = record.choices?.[0]?.delta?.content
+      ?? record.choices?.[0]?.message?.content
+      ?? record.delta?.content
+      ?? record.content;
+    return typeof content === 'string' ? content : '';
+  } catch {
+    // 平台也允许直接把文本片段放进 data；JSON 事件与纯文本两种格式都兼容。
+    return normalized;
+  }
+}
+
+function callPlatformAI(
+  kind: keyof typeof AI_SYSTEM_PROMPTS,
+  payload: unknown,
+  timeoutMs: number,
+  signal?: AbortSignal,
+): Promise<unknown> {
   return new Promise((resolve, reject) => {
+    const model = platformModelFor(kind);
+    const useStream = kind === 'origin';
+    if (signal?.aborted) {
+      publishAIDiagnostic(kind, 'platform', 'aborted', '请求在发出前已取消');
+      reject(new DOMException('ai_aborted', 'AbortError'));
+      return;
+    }
     const api = window.tt?.callAIChatCompletion;
     if (!api) {
+      publishAIDiagnostic(kind, 'platform', 'unavailable', '没有发现 tt.callAIChatCompletion');
       reject(new Error('tt.callAIChatCompletion unavailable'));
       return;
     }
+    publishAIDiagnostic(kind, 'platform', 'calling', `已发出 · ${model}`);
     let settled = false;
+    let streamedText = '';
+    const finish = (): void => {
+      window.clearTimeout(timer);
+      signal?.removeEventListener('abort', onAbort);
+    };
+    const onAbort = (): void => {
+      if (settled) return;
+      settled = true;
+      finish();
+      publishAIDiagnostic(kind, 'platform', 'aborted', '请求已取消');
+      reject(new DOMException('ai_aborted', 'AbortError'));
+    };
     const timer = window.setTimeout(() => {
-      if (!settled) { settled = true; reject(new Error('platform_ai_timeout')); }
+      if (!settled) {
+        settled = true;
+        finish();
+        publishAIDiagnostic(kind, 'platform', 'timeout', `${Math.round(timeoutMs / 1000)}秒未收到平台回调`);
+        reject(new Error('platform_ai_timeout'));
+      }
     }, timeoutMs);
+    signal?.addEventListener('abort', onAbort, { once: true });
+    const resolveText = (text: string): void => {
+      if (settled) return;
+      settled = true;
+      finish();
+      publishAIDiagnostic(kind, 'platform', 'returned', `平台已回调 · ${text.length}字`);
+      try {
+        resolve(parseFirstAIJson(text));
+      } catch {
+        publishAIDiagnostic(kind, 'platform', 'invalid_json', '平台已回调，但返回内容不是有效JSON');
+        reject(new Error('platform_ai_invalid_json'));
+      }
+    };
     api({
       type: 'text',
-      model: PLATFORM_AI_MODEL,
-      stream: false,
+      model,
+      stream: useStream,
       messages: [
         { role: 'system', content: AI_SYSTEM_PROMPTS[kind] },
         { role: 'user', content: `输入JSON：${JSON.stringify(payload)}` },
       ],
-      temperature: kind === 'fate-review' ? 0.1 : kind === 'fate-style' ? 0.65 : kind === 'fate-options' ? 0.7 : 0.9,
-      maxTokens: kind === 'fate' ? 700 : kind === 'fate-options' ? 1000 : kind === 'fate-review' ? 220 : kind === 'fate-style' ? 420 : 900,
-      success: (res) => {
-        if (settled) return;
-        settled = true;
-        window.clearTimeout(timer);
-        try {
-          const text = res.data.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
-          resolve(JSON.parse(text));
-        } catch {
-          reject(new Error('platform_ai_invalid_json'));
-        }
-      },
+      temperature: kind === 'fate-review' ? 0.1
+        : kind === 'fate' ? 0.55
+          : kind === 'fate-options' ? 0.45
+            : kind === 'fate-free' ? 0.55
+            : 0.9,
+      maxTokens: kind === 'fate' ? 700
+        : kind === 'fate-options' ? 1000
+          : kind === 'fate-free' ? 760
+            : kind === 'fate-review' ? 220
+              : kind === 'origin' ? 760 : 900,
+      ...(useStream ? {
+        onSSE: (event: { eventName: string; data: string }) => {
+          if (settled) return;
+          const chunk = extractPlatformSSEText(event.data);
+          if (chunk) {
+            streamedText += chunk;
+            publishAIDiagnostic(kind, 'platform', 'streaming', `正在接收 · ${streamedText.length}字`);
+          }
+          if (event.eventName === 'done' || event.data.trim() === '[DONE]') resolveText(streamedText);
+        },
+        complete: () => {
+          if (!settled) resolveText(streamedText);
+        },
+      } : {
+        success: (res: { errMsg: string; data: string }) => resolveText(res.data),
+      }),
       fail: (err) => {
         if (settled) return;
         settled = true;
-        window.clearTimeout(timer);
+        finish();
+        const code = err.errorCode === undefined ? '' : ` · ${err.errorCode}`;
+        const type = err.errorType ? ` · ${err.errorType}` : '';
+        publishAIDiagnostic(kind, 'platform', 'failed', `${err.errMsg || '平台调用失败'}${code}${type}`);
         reject(new Error(err.errMsg || 'platform_ai_failed'));
       },
     });
   });
 }
 
-async function requestAI(path: 'origin' | 'fate' | 'fate-options' | 'fate-review' | 'fate-style' | 'fate-result' | 'fate-free', payload: unknown, timeoutMs: number): Promise<unknown> {
+async function performAIRequest(
+  path: 'origin' | 'fate' | 'fate-options' | 'fate-free' | 'fate-review' | 'fate-result',
+  payload: unknown,
+  timeoutMs: number,
+  signal?: AbortSignal,
+): Promise<unknown> {
   // 生产（抖音互动空间）：平台 AI 服务，零网络请求；开发/线上 demo：vite 代理直连方舟。
   // 此分支在 production 构建中被常量折叠整体剔除，平台上传包内不含 fetch 调用（平台审核红线）；
   // 线上演示站用 `vite build --mode demo` 构建以保留代理路径。
   if (window.tt?.callAIChatCompletion) {
-    return callPlatformAI(path, payload, timeoutMs);
+    return callPlatformAI(path, payload, timeoutMs, signal);
   }
   if (import.meta.env.DEV || import.meta.env.MODE === 'demo') {
+    publishAIDiagnostic(path, 'dev', 'calling', `开发代理已发出 · ${platformModelFor(path)}`);
     const controller = new AbortController();
+    const abortFromParent = (): void => controller.abort();
+    if (signal?.aborted) controller.abort();
+    else signal?.addEventListener('abort', abortFromParent, { once: true });
     const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
     try {
       const response = await window.fetch(`/api/ai/${path}`, {
@@ -95,22 +259,83 @@ async function requestAI(path: 'origin' | 'fate' | 'fate-options' | 'fate-review
       });
       const envelope = await response.json().catch(() => ({})) as AIEnvelope;
       if (!response.ok || envelope.ok === false) throw new Error(envelope.error || `AI HTTP ${response.status}`);
+      publishAIDiagnostic(path, 'dev', 'returned', '开发代理已返回');
       return envelope.data ?? envelope;
+    } catch (error) {
+      publishAIDiagnostic(
+        path,
+        'dev',
+        controller.signal.aborted ? 'timeout' : 'failed',
+        error instanceof Error ? error.message : '开发代理调用失败',
+      );
+      throw error;
     } finally {
       window.clearTimeout(timeout);
+      signal?.removeEventListener('abort', abortFromParent);
     }
   }
   throw new Error('ai_unavailable');
 }
 
-export async function generateAIOrigin(runSeed: number, kind: OriginKind, requestNonce: string, wheels: OriginWheels): Promise<OriginProfile | null> {
+function classifyAIError(error: unknown, signal?: AbortSignal): string {
+  if (signal?.aborted || (error instanceof DOMException && error.name === 'AbortError')) return 'aborted';
+  const message = error instanceof Error ? error.message.toLowerCase() : '';
+  if (message.includes('timeout')) return 'timeout';
+  if (message.includes('invalid_json')) return 'invalid_json';
+  if (message.includes('unavailable') || message.includes('not configured')) return 'unavailable';
+  if (message.includes('http') || message.includes('upstream_')) return 'upstream';
+  return 'failed';
+}
+
+async function requestAI(
+  path: 'origin' | 'fate' | 'fate-options' | 'fate-free' | 'fate-review' | 'fate-result',
+  payload: unknown,
+  timeoutMs: number,
+  signal?: AbortSignal,
+): Promise<unknown> {
+  const started = performance.now();
   try {
-    const raw = await requestAI('origin', { runSeed, kind, requestNonce, wheels }, 48000);
+    const result = await performAIRequest(path, payload, timeoutMs, signal);
+    recordTelemetry('ai_request', {
+      kind: path,
+      model: platformModelFor(path),
+      status: 'ok',
+      latencyMs: Math.round(performance.now() - started),
+    });
+    return result;
+  } catch (error) {
+    recordTelemetry('ai_request', {
+      kind: path,
+      model: platformModelFor(path),
+      status: classifyAIError(error, signal),
+      latencyMs: Math.round(performance.now() - started),
+    });
+    throw error;
+  }
+}
+
+export async function generateAIOrigin(
+  runSeed: number,
+  kind: OriginKind,
+  requestNonce: string,
+  wheels: OriginWheels,
+  signal?: AbortSignal,
+): Promise<OriginProfile | null> {
+  try {
+    const raw = await requestAI('origin', { runSeed, kind, requestNonce, wheels }, ORIGIN_AI_TIMEOUT_MS, signal);
     const normalized = isRecord(raw) && typeof raw.story === 'string'
       ? { ...raw, story: raw.story.split(/\n\s*\n/).map((entry) => entry.trim()).filter(Boolean) }
       : raw;
-    return validateOriginProfile(normalized, kind);
+    const profile = validateOriginProfile(normalized, kind);
+    publishAIDiagnostic(
+      'origin',
+      window.tt?.callAIChatCompletion ? 'platform' : 'dev',
+      profile ? 'validated' : 'rejected',
+      profile ? '平台返回的档案已通过校验' : '平台已经返回，但档案规则校验未通过',
+    );
+    return profile;
   } catch (error) {
+    if (signal?.aborted || (error instanceof DOMException && error.name === 'AbortError')) return null;
     console.info('[AI] 出生档案生成失败', error instanceof Error ? error.message : error);
     return null;
   }
@@ -213,6 +438,7 @@ function normalizeAIFateOptions(value: unknown, core: AIFateCore): unknown {
 		memoryText: deriveFateMemory(core.fact),
 		swallow: normalizeAIResponse(value.swallow),
 		exhale: normalizeAIResponse(value.exhale),
+		source: 'gpt',
 	};
 }
 
@@ -247,14 +473,47 @@ function isGroundedFateNarrative(event: FateEvent): boolean {
 		&& !forcedLastOne.test(fullText);
 }
 
+function reviewFreeFateContinuity(
+  event: FateEvent,
+  playerText: string,
+  response: FateResponse,
+): FateRealityReview {
+  if (playerText.length >= 4 && response.result.includes(playerText)) {
+    return { valid: false, reason: 'result重复了玩家原话，结果卡会单独展示这句话' };
+  }
+  if (/(这句话留在了现场|事情没有因此改写|表达了自己的想法|现场陷入了沉默)$/.test(response.result)) {
+    return { valid: false, reason: 'result使用了万能收尾，没有写现场人物的直接反应' };
+  }
+  const positionPattern = /([\u4e00-\u9fa5]{1,6}?)(站|坐|守|待)在([^，。；]{1,16}?(?:前|旁|边|里|内|外|上|下|口|间|后))/g;
+  for (const match of event.fact.matchAll(positionPattern)) {
+    const actor = match[1] ?? '';
+    const verb = match[2] ?? '';
+    const place = match[3] ?? '';
+    if (!actor || actor.endsWith('他') || !verb || !place) continue;
+    const escapedPlace = place.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const heroMovedIntoOtherPosition = new RegExp(
+      `(?:${verb}在${escapedPlace}的他|他[^，。；]{0,10}${verb}在${escapedPlace})`,
+    );
+    if (heroMovedIntoOtherPosition.test(response.result)) {
+      return { valid: false, reason: `原文是${actor}${verb}在${place}，不能把这个位置改写成主角的位置` };
+    }
+  }
+  return { valid: true, reason: '通过' };
+}
+
 interface FateRealityReview {
 	valid: boolean;
 	reason: string;
 }
 
-async function reviewFateReality(snapshot: LifeSnapshot, event: FateEvent, sourceEvent?: FateEvent): Promise<FateRealityReview | null> {
+async function reviewFateReality(
+  snapshot: LifeSnapshot,
+  event: FateEvent,
+  sourceEvent?: FateEvent,
+  signal?: AbortSignal,
+): Promise<FateRealityReview | null> {
 	try {
-		const raw = await requestAI('fate-review', { snapshot, event, ...(sourceEvent ? { sourceEvent } : {}) }, 22000);
+		const raw = await requestAI('fate-review', { snapshot, event, ...(sourceEvent ? { sourceEvent } : {}) }, 10000, signal);
 		if (!isRecord(raw) || typeof raw.valid !== 'boolean') return null;
 		const reason = typeof raw.reason === 'string' ? raw.reason.trim().slice(0, 120) : '未说明原因';
 		if (!raw.valid) console.info('[AI] 命运事件未通过现实审稿', reason);
@@ -271,82 +530,140 @@ function deriveFateMemory(fact: string): string {
 	return memory.length <= 80 ? memory : `${memory.slice(0, 79)}…`;
 }
 
-async function styleFateNarrative(snapshot: LifeSnapshot, event: FateEvent): Promise<FateEvent | null> {
-	try {
-		const raw = await requestAI('fate-style', { snapshot, event }, 22000);
-		const displayFact = isRecord(raw) && typeof raw.displayFact === 'string'
-			? raw.displayFact.trim().replace(/\s+/g, '').slice(0, 120)
-			: '';
-		const styled = displayFact
-			? validateFateEvent({ ...event, fact: displayFact, memoryText: deriveFateMemory(displayFact) }, snapshot)
-			: null;
-		return styled && isGroundedFateNarrative(styled) ? styled : null;
-	} catch (error) {
-		console.info('[AI] 命运卡文学化暂不可用', error instanceof Error ? error.message : error);
-		return null;
-	}
-}
-
-export async function generateAIFate(snapshot: LifeSnapshot): Promise<FateEvent | null> {
+export async function generateAIFate(snapshot: LifeSnapshot, signal?: AbortSignal): Promise<FateEvent | null> {
 	// Fate is prefetched while the chapter is still running, so use that idle
 	// time to rewrite rejected drafts instead of showing a logically weak event.
 	const previousRejections: string[] = [];
-	for (let attempt = 1; attempt <= 4; attempt += 1) {
+	for (let attempt = 1; attempt <= 2; attempt += 1) {
+		if (signal?.aborted) return null;
 		try {
-			const rawCore = await requestAI('fate', { snapshot, previousRejections }, 29000);
+			const rawCore = await requestAI('fate', {
+				snapshot,
+				candidateItems: buildFateCandidateItemCatalog(snapshot),
+				previousRejections,
+			}, 14000, signal);
 			const core = validateAIFateCore(normalizeAIFateCore(rawCore, snapshot), snapshot);
 			if (!core || !isGroundedFateFact(core.fact)) {
 				previousRejections.push('事件核心没有写清现实中的时间、地点、人物、动作与直接结果');
-				console.info(`[AI] 命运事件核心未通过，正在重写 ${attempt}/4`);
+				console.info(`[AI] 命运事件核心未通过，正在重写 ${attempt}/2`);
 				continue;
 			}
-			const rawOptions = await requestAI('fate-options', { snapshot, event: core }, 25000);
-			const candidate = validateFateEvent(normalizeAIFateOptions(rawOptions, core), snapshot);
+			const rawOptions = await requestAI('fate-options', {
+				snapshot,
+				event: core,
+				mechanicBudget: buildFateMechanicBudget(snapshot, core.profile, core.fact),
+			}, 14000, signal);
+			const candidate = validateFateEvent(
+				normalizeAIFateOptions(rawOptions, core),
+				snapshot,
+				{ requireResidue: true },
+			);
 			const event = candidate ? { ...candidate, memoryText: deriveFateMemory(candidate.fact) } : null;
 			if (event && isGroundedFateNarrative(event)) {
-				const review = await reviewFateReality(snapshot, event);
+				const review = await reviewFateReality(snapshot, event, undefined, signal);
 				if (review?.valid) {
-					const styled = await styleFateNarrative(snapshot, event);
-					if (!styled) return event;
-					const styleReview = await reviewFateReality(snapshot, styled, event);
-					if (styleReview?.valid) return styled;
-					console.info('[AI] 文学化正文未通过事实复审，保留已通过的事实底稿');
 					return event;
 				}
 				previousRejections.push(review?.reason ?? '现实审稿没有返回明确通过结果');
 			} else {
 				previousRejections.push('场景、正文或两个回应没有通过基础写实与格式规则');
 			}
-			console.info(`[AI] 命运事件格式或现实逻辑未通过，正在重写 ${attempt}/4`);
+			console.info(`[AI] 命运事件格式或现实逻辑未通过，正在重写 ${attempt}/2`);
 		} catch (error) {
+			if (signal?.aborted) return null;
 			console.info(
-				`[AI] 命运事件请求失败 ${attempt}/4`,
+				`[AI] 命运事件请求失败 ${attempt}/2`,
 				error instanceof Error ? error.message : error,
 			);
 		}
 	}
-	console.info('[AI] 命运事件四次生成均未通过，回退到写实本地事件');
+	console.info('[AI] 命运事件两次生成均未通过，回退到写实本地事件');
   return null;
 }
 
 export async function generateAIFreeFate(payload: {
-  event: { id: string; title: string; fact: string };
+  event: FateEvent;
+  direction: FateDirection;
   playerText: string;
   snapshot: LifeSnapshot;
-}): Promise<{ direction: FateDirection; response: FateResponse } | null> {
-  try {
-    const raw = await requestAI('fate-free', payload, 25000);
-    return validateFreeFateResponse(raw);
-  } catch (error) {
-    console.info('[AI] 亲口回应未生成', error instanceof Error ? error.message : error);
-    return null;
+}): Promise<FateResponse | null> {
+  let previousRejection = '';
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      const mechanicBudget = buildFreeFateMechanicBudget(
+        payload.snapshot,
+        payload.event.profile,
+        payload.event.fact,
+        payload.playerText,
+      ) as { preferredRecipeId?: string };
+      const raw = await requestAI('fate-free', {
+        event: {
+          id: payload.event.id,
+          title: payload.event.title,
+          scene: payload.event.scene,
+          fact: payload.event.fact,
+          profile: payload.event.profile,
+        },
+        direction: payload.direction,
+        playerText: payload.playerText,
+        snapshot: payload.snapshot,
+        mechanicBudget,
+        previousRejection,
+      }, 16000);
+      const source = isRecord(raw) && isRecord(raw.response) ? raw.response : raw;
+      const response = validateFreeFateResponse(
+        normalizeAIResponse(source),
+        payload.snapshot,
+        payload.event.profile,
+        payload.event.fact,
+      );
+      if (response) {
+        const rawResidue = isRecord(source) && isRecord(source.residue) ? source.residue : undefined;
+        const rawRecipeId = rawResidue && typeof rawResidue.recipeId === 'string'
+          ? rawResidue.recipeId
+          : '';
+        if (rawRecipeId && rawRecipeId !== 'memory_only'
+          && response.settlement?.recipeId === 'memory_only') {
+          previousRejection = `你选择了${rawRecipeId}，但证据没有写出主角自己的具体载体，程序只能降级成memory_only。请让result与evidence明确写出主角的身体、习惯、穿戴物或账目变化；若做不到就主动选择memory_only。`;
+          console.info(`[AI] 亲口回应机械证据被降级，正在重写 ${attempt}/2`);
+          continue;
+        }
+        const continuity = reviewFreeFateContinuity(payload.event, payload.playerText, response);
+        if (!continuity.valid) {
+          previousRejection = continuity.reason;
+          console.info(`[AI] 亲口回应现场连续性未通过 ${attempt}/2`, continuity.reason);
+          continue;
+        }
+        const candidateEvent = { ...payload.event, [payload.direction]: response };
+        const review = await reviewFateReality(payload.snapshot, candidateEvent);
+        if (review?.valid) return response;
+        previousRejection = review?.reason
+          ?? '上一稿没有通过现实连续性审稿，请只写原场景人物位置与当场直接反应';
+      } else {
+        previousRejection = '上一稿没有通过剧情证据或格式校验，请换一种更直接、可验证的现场结果';
+      }
+      console.info(`[AI] 亲口回应未通过剧情结算校验 ${attempt}/2`);
+    } catch (error) {
+      console.info(
+        `[AI] 亲口回应请求失败 ${attempt}/2`,
+        error instanceof Error ? error.message : error,
+      );
+    }
   }
+  return null;
 }
 
 export async function generateAIFateResult(payload: {
   event: { id: string; title: string; fact: string };
   direction: FateDirection;
-  response: { label: string; effect: string; result: string };
+  playerText?: string;
+  response: {
+    label: string;
+    effect: string;
+    result: string;
+    settlement?: FateSettlement;
+    gainItemId?: ItemId;
+  };
   snapshot: LifeSnapshot;
 }): Promise<string | null> {
   try {

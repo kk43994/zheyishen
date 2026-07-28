@@ -1,12 +1,18 @@
-import { FATE_ITEM_IDS, ITEM_IDS } from './relics';
+import { FATE_ITEM_IDS, getItem, ITEM_IDS } from './relics';
+import { validateFateAge } from './life-stage';
 import type {
   FateDirection,
   FateEvent,
   FateFactEffect,
   FateProfile,
+  FateResidueCarrier,
+  FateResidueIntensity,
+  FateResidueMotif,
   FateResponse,
   FateResponseEffect,
   FateScene,
+  FateSettlement,
+  FateSettlementPrimary,
   FateStatKey,
   ItemId,
   LifeSnapshot,
@@ -19,6 +25,7 @@ interface LocalFateBlueprint extends Omit<FateEvent, 'source' | 'scene'> {
 }
 
 export const FATE_RESPONSE_EFFECTS: FateResponseEffect[] = [
+  'none',
   'store_volleys',
   'returning_breath',
   'guard',
@@ -36,11 +43,238 @@ export const FATE_RESPONSE_EFFECTS: FateResponseEffect[] = [
 export const FATE_PROFILES: FateProfile[] = ['微光', '交换', '诱惑', '反噬', '荒诞', '沉默'];
 export const POISON_KEYS: PoisonKey[] = ['greed', 'anger', 'delusion', 'pride', 'doubt'];
 
+interface FateMechanicRecipe {
+  id: string;
+  carrier: FateResidueCarrier[];
+  motif: FateResidueMotif[];
+  intensity: FateResidueIntensity;
+  primary: FateSettlementPrimary;
+  effect: FateResponseEffect;
+  stats?: Partial<Record<FateStatKey, number>>;
+  hint: string;
+}
+
+export interface FateCandidateItemCatalogEntry {
+  id: ItemId;
+  name: string;
+  summary: string;
+  acquisition: string;
+}
+
+const FATE_RECIPE_CARRIERS: FateResidueCarrier[] = ['item', 'body', 'habit', 'resource', 'worn_item', 'memory', 'none'];
+const FATE_RECIPE_MOTIFS: FateResidueMotif[] = [
+  'guard', 'focus', 'scatter', 'haste', 'weight', 'reach', 'echo', 'store',
+  'return', 'release', 'debt', 'wound', 'recovery', 'possession', 'loss',
+];
+const FATE_RECIPE_INTENSITIES: FateResidueIntensity[] = ['normal', 'wild', 'rule_break'];
+
+const FATE_MECHANIC_RECIPES: FateMechanicRecipe[] = [
+  {
+    id: 'memory_only', carrier: ['memory', 'none'], motif: ['echo', 'release', 'loss'],
+    intensity: 'normal', primary: 'memory', effect: 'none', hint: '只留下记忆',
+  },
+  {
+    id: 'guarded_breath', carrier: ['body', 'habit', 'worn_item'], motif: ['guard'],
+    intensity: 'normal', primary: 'effect', effect: 'guard', hint: '下一战开局获得护盾',
+  },
+  {
+    id: 'focused_breath', carrier: ['body', 'habit', 'worn_item'], motif: ['focus', 'reach'],
+    intensity: 'normal', primary: 'effect', effect: 'focus', hint: '弹体开始追踪',
+  },
+  {
+    id: 'scattered_breath', carrier: ['body', 'habit', 'worn_item'], motif: ['scatter'],
+    intensity: 'normal', primary: 'effect', effect: 'scatter', hint: '弹体增加，单发稍弱',
+  },
+  {
+    id: 'hurried_breath', carrier: ['body', 'habit'], motif: ['haste'],
+    intensity: 'normal', primary: 'effect', effect: 'haste', hint: '攻击间隔缩短',
+  },
+  {
+    id: 'heavy_breath', carrier: ['body', 'habit', 'worn_item'], motif: ['weight'],
+    intensity: 'normal', primary: 'effect', effect: 'heavy_breath', hint: '伤害提高，弹速降低',
+  },
+  {
+    id: 'stored_breath', carrier: ['habit', 'worn_item'], motif: ['store'],
+    intensity: 'normal', primary: 'effect', effect: 'store_volleys', hint: '下一战储存攻击',
+  },
+  {
+    id: 'returning_breath', carrier: ['habit', 'worn_item'], motif: ['return', 'echo'],
+    intensity: 'normal', primary: 'effect', effect: 'returning_breath', hint: '弹体开始折返',
+  },
+  {
+    id: 'delayed_wound', carrier: ['body', 'habit'], motif: ['wound', 'debt'],
+    intensity: 'normal', primary: 'effect', effect: 'delay_pain', hint: '下一次受伤延后',
+  },
+  {
+    id: 'released_wound', carrier: ['body', 'habit'], motif: ['release', 'wound'],
+    intensity: 'normal', primary: 'effect', effect: 'release_pain', hint: '生命越低，伤害越高',
+  },
+  {
+    id: 'recovered_breath', carrier: ['body', 'resource'], motif: ['recovery'],
+    intensity: 'normal', primary: 'resource', effect: 'heal', hint: '恢复生命',
+  },
+  {
+    id: 'returned_change', carrier: ['resource'], motif: ['recovery', 'possession'],
+    intensity: 'normal', primary: 'resource', effect: 'gain_coins', hint: '获得零钱',
+  },
+  {
+    id: 'body_on_credit', carrier: ['body', 'resource'], motif: ['debt', 'loss'],
+    intensity: 'wild', primary: 'effect', effect: 'trade_max_hp', hint: '最大生命换取强力攻击',
+  },
+  {
+    id: 'one_giant_breath', carrier: ['body', 'habit', 'worn_item'], motif: ['weight'],
+    intensity: 'wild', primary: 'stats', effect: 'heavy_breath',
+    stats: { damage: 100, fireRate: -45, width: 80, projSpeed: -35 },
+    hint: '伤害翻倍，弹体巨大，但攻击极慢',
+  },
+  {
+    id: 'needle_breath', carrier: ['body', 'habit', 'worn_item'], motif: ['focus', 'reach'],
+    intensity: 'wild', primary: 'stats', effect: 'focus',
+    stats: { damage: 60, range: 45, width: -55 },
+    hint: '伤害与射程暴涨，弹体收成细线',
+  },
+  {
+    id: 'swarm_breath', carrier: ['body', 'habit', 'worn_item'], motif: ['scatter', 'haste'],
+    intensity: 'wild', primary: 'stats', effect: 'scatter',
+    stats: { damage: -50, fireRate: 55, width: -35 },
+    hint: '攻击密如雨点，但每一发都很轻',
+  },
+  {
+    id: 'rooted_wall', carrier: ['body', 'habit', 'worn_item'], motif: ['guard', 'weight'],
+    intensity: 'wild', primary: 'stats', effect: 'guard',
+    stats: { damage: 55, width: 60, moveSpeed: -45 },
+    hint: '像墙一样沉重，攻击变宽，脚步几乎钉住',
+  },
+  {
+    id: 'returning_debt', carrier: ['habit', 'worn_item'], motif: ['return', 'debt'],
+    intensity: 'rule_break', primary: 'effect', effect: 'returning_breath',
+    stats: { range: 70, projSpeed: -40 },
+    hint: '每一发都远远离开，再慢慢折回来',
+  },
+  {
+    id: 'held_then_burst', carrier: ['habit', 'worn_item'], motif: ['store', 'release'],
+    intensity: 'rule_break', primary: 'effect', effect: 'store_volleys',
+    stats: { damage: 45, fireRate: -25 },
+    hint: '先把攻击存住，再一次吐出来',
+  },
+];
+
+const PROFILE_RECIPE_INTENSITIES: Record<FateProfile, FateResidueIntensity[]> = {
+  微光: ['normal'],
+  交换: ['normal', 'wild'],
+  诱惑: ['wild', 'rule_break'],
+  反噬: ['normal', 'wild', 'rule_break'],
+  荒诞: ['wild', 'rule_break'],
+  沉默: ['normal'],
+};
+
+function fateItemAcquisitionHint(id: ItemId): string {
+  const item = getItem(id);
+  const accountState = item.slot === 'shadow'
+    || /(会员|朋友圈|已读|账号|报告|验证|聊天|连续记录|头像|链接)/.test(item.name);
+  return accountState
+    ? '归属状态：result必须写明开通、续费、绑定、保存、收到或记入账号'
+    : '实物转移：result必须写明递给、交给、收下、带走、穿戴或放进口袋';
+}
+
+export function buildFateCandidateItemCatalog(snapshot: LifeSnapshot): FateCandidateItemCatalogEntry[] {
+  return snapshot.fateItemCandidates.map((id) => {
+    const item = getItem(id);
+    return {
+      id,
+      name: item.name,
+      summary: item.summary,
+      acquisition: fateItemAcquisitionHint(id),
+    };
+  });
+}
+
+export function buildFateMechanicBudget(snapshot: LifeSnapshot, profile: FateProfile, fact?: string): unknown {
+  const allowed = new Set(PROFILE_RECIPE_INTENSITIES[profile]);
+  const recipes = FATE_MECHANIC_RECIPES
+    .filter((recipe) => recipe.id === 'memory_only' || allowed.has(recipe.intensity))
+    .map((recipe) => ({
+      recipeId: recipe.id,
+      carrier: recipe.carrier,
+      motif: recipe.motif,
+      intensity: recipe.intensity,
+      outcome: recipe.hint,
+    }));
+  const itemRecipes = buildFateCandidateItemCatalog(snapshot)
+    .filter((item) => !fact || fact.includes(item.name))
+    .map((item) => {
+      return {
+        recipeId: `keep_item:${item.id}`,
+        carrier: ['item'],
+        motif: ['possession'],
+        intensity: 'normal',
+        outcome: `获得道具「${item.name}」`,
+        candidateItemId: item.id,
+        itemName: item.name,
+        itemSummary: item.summary,
+        acquisition: item.acquisition,
+      };
+    });
+  return {
+    rule: '每个回应只能选择一个recipeId；evidence必须逐字出现在该回应result中',
+    evidenceRules: {
+      habit: 'evidence本身必须含“以后/从此/每次/反复/一直/练成/习惯/继续/总是”之一',
+      body: 'evidence必须点名主角的身体部位或呼吸/气息/疼痛；result必须含以后/从此/一直/仍/留下/变得/练成/再也/开始之一，明确这是持续变化',
+      worn_item: 'evidence必须写明snapshot现有穿戴物发生裂、断、折、磨、缝、穿戴或继续保留',
+      resource: 'evidence必须点名钱款、硬币、费用、抵扣、余额、治疗、受伤或生命账目',
+      item: '必须遵守该候选的acquisition，且fact和result都出现完整itemName',
+      memory: '没有以上直接残留时必须选择memory_only',
+    },
+    recipes: [...recipes, ...itemRecipes],
+  };
+}
+
+export function buildFreeFateMechanicBudget(
+  snapshot: LifeSnapshot,
+  profile: FateProfile,
+  fact: string,
+  playerText: string,
+): unknown {
+  const budget = buildFateMechanicBudget(snapshot, profile, fact) as {
+    rule: string;
+    evidenceRules: Record<string, string>;
+    recipes: Array<{
+      recipeId: string;
+      carrier: FateResidueCarrier[];
+      motif: FateResidueMotif[];
+      intensity: FateResidueIntensity;
+      outcome: string;
+      candidateItemId?: ItemId;
+    }>;
+  };
+  const recentRecipes = new Set(snapshot.recentFateRecipes?.slice(-3) ?? []);
+  const recipes = budget.recipes.filter((recipe) => {
+    if (recipe.recipeId === 'memory_only' || recipe.recipeId.startsWith('keep_item:')) return true;
+    return !recentRecipes.has(recipe.recipeId);
+  });
+  const mechanicalRecipes = recipes.filter((recipe) => recipe.recipeId !== 'memory_only');
+  let varietyHash = snapshot.runSeed >>> 0;
+  for (const char of `${fact}；${playerText}`) {
+    varietyHash = Math.imul(varietyHash ^ char.charCodeAt(0), 0x45d9f3b) >>> 0;
+  }
+  const preferredRecipeId = mechanicalRecipes.length
+    ? mechanicalRecipes[varietyHash % mechanicalRecipes.length]!.recipeId
+    : 'memory_only';
+  return {
+    ...budget,
+    rule: `${budget.rule}；亲口回应只能从本次实际开放的recipes中选择，最近已兑现配方不会再次开放`,
+    contextRule: `属性、战斗机制、道具和记忆都可以兑现。属性或机制必须由同一现场的具体动作产生身体变化、穿戴物变化或明确持续习惯；道具必须已在fact现场并发生归属转移。接不上因果就选memory_only。玩家原话是「${playerText.slice(0, 24)}」`,
+    preferredRecipeId,
+    recentRecipes: [...recentRecipes],
+    recipes,
+  };
+}
+
 const noFact = (): FateFactEffect => ({ kind: 'none', amount: 0, item: null });
 
 const LOCAL_FATES: LocalFateBlueprint[] = [
   {
-    ages: ['童年'], id: 'wrong-answer-read', title: '红叉比名字大', profile: '反噬',
+    ages: ['少年'], id: 'wrong-answer-read', title: '红叉比名字大', profile: '反噬',
     fact: '小学数学课上，老师站在教室讲台前念出他的错误答案，全班笑了几声，他只好盯着练习本上的红叉。',
     memoryId: 'answer_read_aloud', memoryText: '错误答案被当众念过',
     unavoidable: { kind: 'damage', amount: 4, item: null },
@@ -49,14 +283,14 @@ const LOCAL_FATES: LocalFateBlueprint[] = [
   },
   {
     ages: ['童年'], id: 'uniform-too-small', title: '袖口又短了一截', profile: '交换',
-    fact: '开学前的早晨，他在家中穿衣镜前试旧校服，最下面的纽扣已经扣不上，家里人说再穿一年就换。',
+    fact: '一个冬天的早晨，他在家中穿衣镜前套上去年的旧毛衣，袖口已经露出一截手腕，家里人把毛衣下摆重新往下抻了抻。',
     memoryId: 'wore_small_clothes', memoryText: '穿过一件太小的衣服',
     unavoidable: { kind: 'lose_max_hp', amount: 2, item: null },
     swallow: response('把肚子收进去', '攻击变重，射速降低', 'heavy_breath', { greed: 1 }, '他吸着气扣好纽扣，走到楼下才敢慢慢呼出来。'),
     exhale: response('剪开袖口', '弹体分散并增加数量', 'scatter', { pride: 1 }, '家里人沿着袖口拆开两厘米缝线，他终于能把手腕伸直。'),
   },
   {
-    ages: ['童年', '少年'], id: 'everyone-laughed', title: '他们都笑了', profile: '荒诞',
+    ages: ['少年'], id: 'everyone-laughed', title: '他们都笑了', profile: '荒诞',
     fact: '一次课间，他在学校教室里被几名同学围着笑，直到有人指向他被剪坏的刘海，他才知道他们在笑什么。',
     memoryId: 'laughed_with_them', memoryText: '在不知道原因时跟着笑过',
     unavoidable: noFact(),
@@ -147,7 +381,7 @@ const LOCAL_FATES: LocalFateBlueprint[] = [
 
 const LOCAL_FATE_SCENES: Record<string, FateScene> = {
   'wrong-answer-read': { time: '小学的一节课上', place: '教室讲台前', people: '他、老师和全班同学' },
-  'uniform-too-small': { time: '开学前的早晨', place: '家中穿衣镜前', people: '他和家里人' },
+  'uniform-too-small': { time: '一个冬天的早晨', place: '家中穿衣镜前', people: '他和家里人' },
   'everyone-laughed': { time: '一次课间', place: '学校教室里', people: '他和周围的同学' },
   'letter-read-out': { time: '午休快结束时', place: '教室最后一排', people: '他和传信的同学' },
   'hair-must-be-black': { time: '周一上学时', place: '学校门口', people: '他和值日老师' },
@@ -175,7 +409,18 @@ export function generateLocalFateEvent(snapshot: LifeSnapshot, random: () => num
   });
 }
 
-export function validateFateEvent(value: unknown, snapshot: LifeSnapshot): FateEvent | null {
+export interface FateValidationOptions {
+  /** 读取已结算回执/当前命运牌时，允许命运中获得的道具已在玩家物品栏。 */
+  allowAlreadyOwnedFateItem?: boolean;
+  /** 新生成的 AI 回应必须携带可编译的剧情残留；旧存档和人工本地牌可走兼容字段。 */
+  requireResidue?: boolean;
+}
+
+export function validateFateEvent(
+  value: unknown,
+  snapshot: LifeSnapshot,
+  options: FateValidationOptions = {},
+): FateEvent | null {
   if (!isRecord(value)) return null;
   const id = readSlug(value.id, 3, 48);
   const title = readText(value.title, 2, 16);
@@ -185,12 +430,15 @@ export function validateFateEvent(value: unknown, snapshot: LifeSnapshot): FateE
     ? value.profile as FateProfile : null;
   const memoryId = readSlug(value.memoryId, 3, 48);
   const memoryText = readText(value.memoryText, 4, 80);
-  const unavoidable = validateFactEffect(value.unavoidable, snapshot);
-  const swallow = validateResponse(value.swallow);
-  const exhale = validateResponse(value.exhale);
-  if (!id || !title || !fact || !scene || !profile || !memoryId || !memoryText || !unavoidable || !swallow || !exhale) return null;
+  const unavoidable = validateFactEffect(value.unavoidable, snapshot, options);
+  if (!id || !title || !fact || !scene || !profile || !memoryId || !memoryText || !unavoidable) return null;
+  const swallow = validateResponse(value.swallow, snapshot, profile, options, fact);
+  const exhale = validateResponse(value.exhale, snapshot, profile, options, fact);
+  if (!swallow || !exhale) return null;
   if (swallow.label === exhale.label || snapshot.recentEvents.includes(id)) return null;
-  return { id, title, fact, scene, profile, memoryId, memoryText, unavoidable, swallow, exhale, source: 'gpt' };
+  const source: FateEvent['source'] = value.source === 'local' ? 'local' : 'gpt';
+  const event = { id, title, fact, scene, profile, memoryId, memoryText, unavoidable, swallow, exhale, source };
+  return validateFateAge(event, snapshot).valid ? event : null;
 }
 
 function defaultFateScene(snapshot: LifeSnapshot): FateScene {
@@ -246,25 +494,183 @@ function validateStats(value: unknown): Partial<Record<FateStatKey, number>> | u
   return stats;
 }
 
-function validateResponse(value: unknown): FateResponse | null {
+function carrierHasConcreteEvidence(
+  carrier: FateResidueCarrier,
+  evidence: string,
+  result: string,
+  snapshot: LifeSnapshot,
+  candidateItemId?: ItemId,
+): boolean {
+  if (carrier === 'memory' || carrier === 'none') return true;
+  if (carrier === 'item') {
+    if (!candidateItemId) return false;
+    const name = getItem(candidateItemId).name;
+    const transferContext = result.replace(name, '');
+    return result.includes(name)
+      && /(递给|交给|塞进.{0,4}手|收下|带走|留下|拿走|披上|戴上|穿上|装进|放进.{0,4}口袋|开通|续费|绑定|保存|收到|领取|记入|写入|加入.{0,4}账号)/.test(transferContext);
+  }
+  if (carrier === 'resource') {
+    return /(钱|零钱|硬币|金额|费用|付费|逾期费|退款|退回|找回|抵扣|余额|扣款|付款|账|治疗|休息|受伤|伤口|生命|医药费|住院)/.test(evidence);
+  }
+  if (carrier === 'worn_item') {
+    return snapshot.items.some((item) => result.includes(item.name))
+      && /(裂|断|折|磨|缝|戴|穿|系|贴|仍|继续|留下)/.test(evidence);
+  }
+  if (carrier === 'habit') return /(以后|从此|每次|反复|一直|练|习惯|继续|总是)/.test(evidence);
+  if (carrier === 'body') {
+    return /(呼吸|气息|喉|肺|眼|手|脚|腿|背|身体|伤|疼|血|步子|声音)/.test(evidence)
+      && /(以后|从此|一直|仍|留下|变得|练成|再也|开始)/.test(result);
+  }
+  return false;
+}
+
+function validateSettlement(
+  value: unknown,
+  result: string,
+  snapshot: LifeSnapshot,
+  profile: FateProfile,
+  options: FateValidationOptions,
+  fact: string,
+): {
+  settlement: FateSettlement;
+  effect: FateResponseEffect;
+  stats?: Partial<Record<FateStatKey, number>>;
+  gainItemId?: ItemId;
+  hint: string;
+} | null {
+  if (!isRecord(value)) return null;
+  const evidence = readText(value.evidence, 4, 60);
+  const recipeId = typeof value.recipeId === 'string' && /^[a-z0-9_:-]{3,80}$/i.test(value.recipeId)
+    ? value.recipeId
+    : null;
+  const carrier = typeof value.carrier === 'string' && FATE_RECIPE_CARRIERS.includes(value.carrier as FateResidueCarrier)
+    ? value.carrier as FateResidueCarrier
+    : null;
+  const motif = typeof value.motif === 'string' && FATE_RECIPE_MOTIFS.includes(value.motif as FateResidueMotif)
+    ? value.motif as FateResidueMotif
+    : null;
+  const intensity = typeof value.intensity === 'string' && FATE_RECIPE_INTENSITIES.includes(value.intensity as FateResidueIntensity)
+    ? value.intensity as FateResidueIntensity
+    : null;
+  if (!evidence || !recipeId || !carrier || !motif || !intensity || !result.includes(evidence)) return null;
+  const abstractMaterialEvidence = carrier !== 'memory' && carrier !== 'none'
+    && /(勇敢|懦弱|难过|开心|选择面对|心里变|仿佛|似乎|明白了)/.test(evidence);
+
+  if (recipeId.startsWith('keep_item:')) {
+    const itemId = recipeId.slice('keep_item:'.length);
+    const candidateItemId = typeof value.candidateItemId === 'string' ? value.candidateItemId : itemId;
+    if (carrier !== 'item' || motif !== 'possession' || intensity !== 'normal'
+      || !ITEM_IDS.includes(candidateItemId as ItemId)) return null;
+    const typedItemId = candidateItemId as ItemId;
+    const itemName = getItem(typedItemId).name;
+    if (itemId !== typedItemId
+      || !snapshot.fateItemCandidates.includes(typedItemId)
+      || !fact.includes(itemName)
+      || (!options.allowAlreadyOwnedFateItem && snapshot.items.some((item) => item.id === typedItemId))
+      || !carrierHasConcreteEvidence(carrier, evidence, result, snapshot, typedItemId)) return null;
+    return {
+      settlement: {
+        version: 2, evidence, carrier, motif, intensity, recipeId,
+        primary: 'item', candidateItemId: typedItemId,
+      },
+      effect: 'none',
+      gainItemId: typedItemId,
+      hint: `获得道具「${getItem(typedItemId).name}」`,
+    };
+  }
+
+  const recipe = FATE_MECHANIC_RECIPES.find((entry) => entry.id === recipeId);
+  if (!recipe
+    || recipe.intensity !== intensity
+    || !recipe.carrier.includes(carrier)
+    || !recipe.motif.includes(motif)
+    || (recipe.id !== 'memory_only' && !PROFILE_RECIPE_INTENSITIES[profile].includes(intensity))) return null;
+  if (recipe.id !== 'memory_only'
+    && (abstractMaterialEvidence || !carrierHasConcreteEvidence(carrier, evidence, result, snapshot))) {
+    return {
+      settlement: {
+        version: 2,
+        evidence,
+        carrier: 'memory',
+        motif: 'echo',
+        intensity: 'normal',
+        recipeId: 'memory_only',
+        primary: 'memory',
+      },
+      effect: 'none',
+      hint: '只留下记忆',
+    };
+  }
+  return {
+    settlement: {
+      version: 2, evidence, carrier, motif, intensity, recipeId, primary: recipe.primary,
+    },
+    effect: recipe.effect,
+    stats: recipe.stats ? { ...recipe.stats } : undefined,
+    hint: recipe.hint,
+  };
+}
+
+function validateResponse(
+  value: unknown,
+  snapshot?: LifeSnapshot,
+  profile?: FateProfile,
+  options: FateValidationOptions = {},
+  fact = '',
+): FateResponse | null {
   if (!isRecord(value)) return null;
   const label = readText(value.label, 2, 14);
+  const result = readText(value.result, 6, 90);
+  const poison = validatePoison(value.poison);
+  if (!label || !result || !poison) return null;
+
+  const rawSettlement = value.residue ?? value.settlement;
+  const compiled = snapshot && profile
+    ? validateSettlement(rawSettlement, result, snapshot, profile, options, fact)
+    : null;
+  if (compiled) {
+    return {
+      label,
+      hint: compiled.hint,
+      effect: compiled.effect,
+      result,
+      poison,
+      stats: compiled.stats,
+      gainItemId: compiled.gainItemId,
+      settlement: compiled.settlement,
+    };
+  }
+  if (options.requireResidue) return null;
+
   const hint = readText(value.hint, 3, 36);
   const effect = typeof value.effect === 'string' && FATE_RESPONSE_EFFECTS.includes(value.effect as FateResponseEffect)
     ? value.effect as FateResponseEffect : null;
-  const result = readText(value.result, 6, 90);
-  const poison = validatePoison(value.poison);
   const stats = validateStats(value.stats);
-  if (!label || !hint || !effect || !result || !poison) return null;
-  return { label, hint, effect, result, poison, stats };
+  const gainItemId = snapshot
+    && typeof value.gainItemId === 'string'
+    && FATE_ITEM_IDS.includes(value.gainItemId as ItemId)
+    && snapshot.fateItemCandidates.includes(value.gainItemId as ItemId)
+    && (options.allowAlreadyOwnedFateItem || !snapshot.items.some((item) => item.id === value.gainItemId))
+    ? value.gainItemId as ItemId
+    : undefined;
+  if (!hint || !effect) return null;
+  return { label, hint, effect, result, poison, stats, gainItemId };
 }
 
-export function validateFreeFateResponse(value: unknown): { direction: FateDirection; response: FateResponse } | null {
+export function validateFreeFateResponse(
+  value: unknown,
+  snapshot: LifeSnapshot,
+  profile: FateProfile,
+  fact: string,
+): FateResponse | null {
   if (!isRecord(value)) return null;
-  const direction = value.direction === 'swallow' || value.direction === 'exhale' ? value.direction : null;
-  const response = validateResponse(isRecord(value.response) ? value.response : value);
-  if (!direction || !response) return null;
-  return { direction, response };
+  return validateResponse(
+    isRecord(value.response) ? value.response : value,
+    snapshot,
+    profile,
+    { requireResidue: true },
+    fact,
+  );
 }
 
 function validatePoison(value: unknown): Partial<PoisonVector> | null {
@@ -277,7 +683,11 @@ function validatePoison(value: unknown): Partial<PoisonVector> | null {
   return Object.keys(result).length <= 2 ? result : null;
 }
 
-function validateFactEffect(value: unknown, snapshot: LifeSnapshot): FateFactEffect | null {
+function validateFactEffect(
+  value: unknown,
+  snapshot: LifeSnapshot,
+  options: FateValidationOptions,
+): FateFactEffect | null {
   if (!isRecord(value) || typeof value.kind !== 'string' || typeof value.amount !== 'number' || !Number.isInteger(value.amount)) return null;
   const item = value.item === null ? null : typeof value.item === 'string' && ITEM_IDS.includes(value.item as ItemId) ? value.item as ItemId : undefined;
   if (item === undefined) return null;
@@ -289,19 +699,25 @@ function validateFactEffect(value: unknown, snapshot: LifeSnapshot): FateFactEff
   if (value.kind === 'gain_item' && value.amount === 0 && item !== null
     && FATE_ITEM_IDS.includes(item)
     && snapshot.fateItemCandidates.includes(item)
-    && !snapshot.items.some((entry) => entry.id === item)) {
+    && (options.allowAlreadyOwnedFateItem || !snapshot.items.some((entry) => entry.id === item))) {
     return { kind: 'gain_item', amount: 0, item };
   }
   return null;
 }
 
 function cloneEvent(event: FateEvent): FateEvent {
+  const cloneResponse = (value: FateResponse): FateResponse => ({
+    ...value,
+    poison: { ...value.poison },
+    stats: value.stats ? { ...value.stats } : undefined,
+    settlement: value.settlement ? { ...value.settlement } : undefined,
+  });
   return {
     ...event,
     scene: { ...event.scene },
     unavoidable: { ...event.unavoidable },
-    swallow: { ...event.swallow, poison: { ...event.swallow.poison } },
-    exhale: { ...event.exhale, poison: { ...event.exhale.poison } },
+    swallow: cloneResponse(event.swallow),
+    exhale: cloneResponse(event.exhale),
   };
 }
 

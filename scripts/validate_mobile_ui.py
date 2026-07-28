@@ -8,6 +8,8 @@ PROJECT_DIR = Path(__file__).resolve().parent.parent
 GAME_SOURCE = PROJECT_DIR / "src" / "game.ts"
 THEME_SOURCE = PROJECT_DIR / "src" / "ui-theme.ts"
 STYLE_SOURCE = PROJECT_DIR / "src" / "style.css"
+INDEX_SOURCE = PROJECT_DIR / "index.html"
+MAIN_SOURCE = PROJECT_DIR / "src" / "main.ts"
 ORIGINS_SOURCE = PROJECT_DIR / "src" / "origins.ts"
 AI_PROMPTS_SOURCE = PROJECT_DIR / "src" / "ai-prompts.ts"
 AUDIO_SOURCE = PROJECT_DIR / "src" / "audio.ts"
@@ -22,19 +24,26 @@ def fail(message: str) -> None:
 game = GAME_SOURCE.read_text(encoding="utf-8")
 theme = THEME_SOURCE.read_text(encoding="utf-8")
 style = STYLE_SOURCE.read_text(encoding="utf-8")
+index = INDEX_SOURCE.read_text(encoding="utf-8")
+main = MAIN_SOURCE.read_text(encoding="utf-8")
 origins = ORIGINS_SOURCE.read_text(encoding="utf-8")
 ai_prompts = AI_PROMPTS_SOURCE.read_text(encoding="utf-8")
 audio = AUDIO_SOURCE.read_text(encoding="utf-8")
 audio_platform = AUDIO_PLATFORM_SOURCE.read_text(encoding="utf-8")
 
-seven_pixel_font = re.compile(r"(?<![0-9])(?:bold\s+)?7px")
+# Only inspect canvas font assignments. A broad ``7px`` search also matches
+# layout declarations such as ``padding:7px`` and turns harmless spacing
+# changes into release blockers.
+seven_pixel_font = re.compile(r"(?:ctx\.)?font\s*=\s*[`'\"](?:bold\s+)?7px\b")
 for path, source in ((GAME_SOURCE, game), (THEME_SOURCE, theme)):
     match = seven_pixel_font.search(source)
     if match:
         line = source.count("\n", 0, match.start()) + 1
         fail(f"7px canvas text returned at {path.relative_to(PROJECT_DIR)}:{line}")
 
-for forbidden_copy in ("AI正在", "AI生成中", "AI实时生成", "本地保底"):
+# “AI生成/正在生成”是互动空间要求的用户可见披露，不再视为工程文案。
+# 这里只拦截会暴露内部降级策略、代理路径或认证头的真实实现细节。
+for forbidden_copy in ("本地保底", "/api/ai/", "Authorization: Bearer"):
     if forbidden_copy in game:
         fail(f"engineering copy leaked into game UI source: {forbidden_copy}")
 
@@ -95,6 +104,25 @@ for rule in required_style_rules:
 if re.search(r"@media\s*\(min-width:\s*700px\)[\s\S]*?#app\s*\{\s*width:\s*360px", style):
     fail("desktop media query must not shrink the game back to its logical width")
 
+for token in (
+    'name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"',
+    'name="mobile-web-app-capable" content="yes"',
+    'name="apple-mobile-web-app-capable" content="yes"',
+    'name="apple-mobile-web-app-status-bar-style" content="black-translucent"',
+):
+    if token not in index:
+        fail(f"mobile fullscreen document contract missing: {token}")
+for token in (
+    "function installMobileFullscreenIntent(): void",
+    "'(max-width: 768px) and (pointer: coarse)'",
+    "root.requestFullscreen({ navigationUI: 'hide' })",
+    "document.addEventListener('pointerdown', enterFullscreen, true)",
+    ".lock?.('portrait')",
+    "installMobileFullscreenIntent();",
+):
+    if token not in main:
+        fail(f"mobile first-touch fullscreen contract missing: {token}")
+
 pause_hit = re.search(
     r"PAUSE_BUTTON_HIT_RECT\s*=\s*\{[^}]*width:\s*(\d+)[^}]*height:\s*(\d+)",
     game,
@@ -133,8 +161,8 @@ if "const FATE_FREE_CANCEL_DELAY = 4" not in game or "cancelFreeResponseWait" no
     fail("free-text fate responses need a short-wait escape back to standard choices")
 if "const ORIGIN_LONG_WAIT_SECONDS = 30" not in game:
     fail("birth registration must expose its in-world retry action after 30 seconds")
-if "把这一页重新摊开" not in game or "this.originLongWaitReady()" not in game:
-    fail("birth registration is missing the long-wait retry action")
+if "这页仍在登记，不会重复发起请求" not in game or "this.aiOriginState === 'error'" not in game:
+    fail("birth registration does not prevent overlapping long-wait retries")
 if "this.originRequestId !== requestId" not in game:
     fail("a late birth request can overwrite the page after the player retries")
 if "'无法选择', 29" in game:
@@ -147,9 +175,9 @@ if "动宾短语" in nickname_wheel or "物件名" in nickname_wheel or "网络I
     fail("birth nickname wheel still permits action phrases or non-person labels")
 for token in (
     "const nickname = readText(value.nickname, 2, 7)",
-    "!isPersonLikeNickname(nickname)",
     "const BARE_ACTION_NICKNAME",
-    "if (BARE_ACTION_NICKNAME.test(nickname) && !PERSON_NICKNAME_ENDING.test(nickname)) return false",
+    "return !BARE_ACTION_NICKNAME.test(nickname) || PERSON_NICKNAME_ENDING.test(nickname)",
+    "nickname && isPersonLikeNickname(nickname)",
 ):
     if token not in origins:
         fail(f"birth nickname runtime contract missing: {token}")

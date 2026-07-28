@@ -1,10 +1,25 @@
-import { generateAIFate, generateAIFateResult, generateAIFreeFate, generateAIOrigin, type AIGenerationState } from './ai';
+import {
+  generateAIFate,
+  generateAIFateResult,
+  generateAIFreeFate,
+  generateAIOrigin,
+  readAIDiagnostic,
+  type AIGenerationState,
+} from './ai';
+import { productionArtStageReady, warmProductionArtForStage } from './art-preload';
+import {
+  loadArtImage,
+  loadedArtImage,
+  reportArtFrameDuration,
+  setArtGameplayActive,
+} from './art-runtime';
 import { LifeFeedback } from './audio-runtime';
 import {
   PixelEnemyRenderer,
   resolveEnemyPixelAsset,
   type EnemyPixelAssetKey,
 } from './enemy-pixel';
+import { separateCircularBodies } from './enemy-separation';
 import {
   PixelBossSkillRenderer,
   bossSkillLoops,
@@ -22,9 +37,18 @@ import {
   isFateItemAgeAppropriate,
 } from './life-stage';
 import { DEFAULT_APPEARANCE, commitOriginWheels, getOriginModifiers, getOriginTrait, rollOriginWheels } from './origins';
+import { completeFirstRunGuide, hasCompletedFirstRunGuide } from './onboarding';
 import { FATE_ITEM_IDS, getItem, ITEM_IDS, STORY_ITEM_IDS } from './relics';
 import { appendLifeLedger, readLifeLedger, type LifeLedgerEntry } from './run-ledger';
-import { clearRunCheckpoint, readRunCheckpoint, writeRunCheckpoint, type RunCheckpoint } from './run-checkpoint';
+import { notifyCodexRunEnded, openItemCodex, recordItemAcquired } from './item-codex';
+import { recordTelemetry } from './telemetry';
+import {
+  RUN_CHECKPOINT_VERSION,
+  clearRunCheckpoint,
+  readRunCheckpoint,
+  writeRunCheckpoint,
+  type RunCheckpoint,
+} from './run-checkpoint';
 import {
   createDangerBand,
   dangerBandHits,
@@ -313,15 +337,14 @@ const JOYSTICK_SAFE_BOTTOM = 548;
 const TITLE_COVER_URL = new URL('./assets/ui/title-life-clutter.png', import.meta.url).href;
 const TITLE_START_RECT = { x: 72, y: 470, width: 216, height: 58 } as const;
 const TITLE_AUDIO_RECT = { x: 290, y: 16, width: 54, height: 30 } as const;
+const TITLE_CODEX_RECT = { x: 16, y: 16, width: 54, height: 30 } as const;
+const RESULT_CODEX_RECT = { x: 70, y: 572, width: 220, height: 26 } as const;
 const ORIGIN_CONTINUE_RECT = { x: 64, y: 570, width: 232, height: 42 } as const;
-const ORIGIN_RETRY_RECT = { x: 64, y: 558, width: 232, height: 42 } as const;
 const ORIGIN_LEDGER_RECT = { x: 222, y: 532, width: 106, height: 25 } as const;
 const LEDGER_OLDER_RECT = { x: 22, y: 566, width: 88, height: 38 } as const;
 const LEDGER_CLOSE_RECT = { x: 120, y: 566, width: 120, height: 38 } as const;
 const LEDGER_NEWER_RECT = { x: 250, y: 566, width: 88, height: 38 } as const;
 const ORIGIN_LONG_WAIT_SECONDS = 30;
-const AUDIO_PROMPT_ENABLE_RECT = { x: 38, y: 356, width: 136, height: 48 } as const;
-const AUDIO_PROMPT_MUTE_RECT = { x: 186, y: 356, width: 136, height: 48 } as const;
 const ONE_MORE_CONTINUE_RECT = { x: 30, y: 394, width: 142, height: 58 } as const;
 const ONE_MORE_SLEEP_RECT = { x: 188, y: 394, width: 142, height: 58 } as const;
 const LAMP_RELEASE_RECT = { x: 72, y: 394, width: 216, height: 58 } as const;
@@ -528,6 +551,10 @@ const COMBO_DEFS: readonly ComboDef[] = [
   { name: '他当年也是这样站着的', artKey: 'stood-the-same-way', items: ['broken-spine', 'fathers-raincoat'], line: '身后浮现同样弯腰的轮廓，雨下得更密' },
 ];
 
+// Ⅳ 级遗物两条获取线的正典池（openSpecialRoom 与物证册来源提示共用，防止两处漂移）
+const BACK_ROOM_POOL: readonly ItemId[] = ['broken-spine', 'spent-decade', 'painless-night', 'third-pill', 'loan-contract', 'name-sold', 'ktv-song'];
+const LIGHT_ROOM_POOL: readonly ItemId[] = ['baby-tooth', 'missing-photo', 'moms-bowl', 'ruma-msg', 'held-elevator', 'old-door-lock', 'breath-on-glass'];
+
 // 延迟出膛的子弹（五连发的后四发、AI 的复读回声）
 interface PendingShot {
   delay: number;
@@ -704,6 +731,36 @@ interface HeroState {
 
 type FateDestination = 'advance' | 'battle' | 'shop';
 
+type FatePrefetchStatus = 'warming' | 'ready' | 'failed';
+
+interface FatePrefetchSlot {
+  encounterIndex: number;
+  runSerial: number;
+  generationId: number;
+  status: FatePrefetchStatus;
+  fallback: FateEvent;
+  event?: FateEvent;
+  controller?: AbortController;
+}
+
+interface BackgroundFateTask {
+  requestId: number;
+  runSerial: number;
+  encounterIndex: number;
+  event: FateEvent;
+  direction: FateDirection;
+  playerText: string;
+  snapshot: LifeSnapshot;
+  status: 'requesting' | 'retry';
+  retryAt: number;
+  attempts: number;
+}
+
+interface BackgroundFateReady {
+  task: BackgroundFateTask;
+  response: FateResponse;
+}
+
 interface FateBuildState {
   damageMul: number;
   intervalMul: number;
@@ -752,10 +809,8 @@ export class ZheYiShenGame {
   private pixelXiaoZhang = new PixelXiaoZhangRenderer();
   private feedback = new LifeFeedback();
   private worldProps = worldPropAtlas;
-  private titleCover = new Image();
+  private titleCover: HTMLImageElement | null = null;
   private state: ScreenState = 'title';
-  private audioPromptOpen = false;
-  private audioPromptStartedAt = 0;
   private hero: HeroState = { hp: 80, maxHp: 80, block: 0, coins: 4 };
   private items: ItemId[] = [];
   private origin?: OriginProfile;
@@ -764,6 +819,7 @@ export class ZheYiShenGame {
   private originElapsed = 0;
   private originAttempt = 0;
   private originRequestId = 0;
+  private originAbortController?: AbortController;
   private ledgerEntries: LifeLedgerEntry[] = readLifeLedger();
   private originLedgerOpen = false;
   private ledgerPage = 0;
@@ -772,7 +828,7 @@ export class ZheYiShenGame {
   private aiOriginState: AIGenerationState = 'idle';
   private aiFateState: AIGenerationState = 'idle';
   private fateGenerationId = 0;
-  /** >=0 时表示命运事件正在 AI 生成中：battle 顶部打字机文字，就绪后才弹纸窗 */
+  /** 保留给按关卡节奏出现的剧情预兆，不再代表 AI 加载状态。 */
   private fateIncomingStart = -1;
   /** 新技能场地残留：湿渍（晾不干）与水渍脚印（又下雨了），世界坐标 */
   private wetPatches: Array<{ x: number; y: number; radius: number; life: number; maxLife: number }> = [];
@@ -796,9 +852,9 @@ export class ZheYiShenGame {
     life: number; maxLife: number; size: number; color: string;
     gravity: number; drag: number;
   }> = [];
-  /** AI 就绪但当下不在 battle 时暂存，回到 battle 再弹纸窗 */
+  /** 兼容审计入口；正常流程的命运牌在触发帧同步展示。 */
   private pendingFateOpen?: { event: FateEvent; fromAI: boolean };
-  private prefetchedFate?: { encounterIndex: number; promise: Promise<FateEvent | null> };
+  private prefetchedFate?: FatePrefetchSlot;
   private poisons: PoisonVector = { ...EMPTY_POISONS };
   private memories: string[] = [];
   private fateReceipts: FateReceipt[] = [];
@@ -839,6 +895,8 @@ export class ZheYiShenGame {
   private rewardAcquire?: { id: ItemId; index: number; timer: number; total: number; destination: RewardDestination };
   private encounterIndex = 0;
   private battleTime = 0;
+  private firstRunGuideActive = !hasCompletedFirstRunGuide();
+  private auditFirstRunGuide = false;
   private shotTimer = 0;
   private holdTimer = 0;
   private heldVolleys = 0;
@@ -930,6 +988,7 @@ export class ZheYiShenGame {
   private caption = '';
   private captionTime = 0;
   private transitionTimer = 0;
+  private waitingForStageArt = false;
   private darkActive = false;
   private darkR = 9999;
   private darknessStartedAt = 0;
@@ -1013,6 +1072,10 @@ export class ZheYiShenGame {
   private fateFreeWaiting = false;
   private fateFreeWaitElapsed = 0;
   private fateFreeRequestId = 0;
+  private backgroundFateTask?: BackgroundFateTask;
+  private backgroundFateReady?: BackgroundFateReady;
+  private fateResultReturn: 'destination' | 'battle' = 'destination';
+  private fateDisplayEncounterIndex?: number;
   private fateAnim = 0;
   private fateExitTimer = 0;
   private fateResultMinTimer = 0;
@@ -1061,6 +1124,8 @@ export class ZheYiShenGame {
   private oneMoreOpeningTimer = 0;
   // —— 青年到中年的传承线《一起入职的小张》——
   private helpedXiaoZhang = false;
+  /** 本局跨人生首次收录进物证册的件数（结算页展示）。 */
+  private codexNewCount = 0;
   private xiaoZhangBetrayed = false;
   private xiaoZhangDecision: 'none' | 'helped' | 'declined' = 'none';
   private xiaoZhangSpawned = false;
@@ -1090,7 +1155,7 @@ export class ZheYiShenGame {
   private tauntTimer = 8;
   private billTimer = 0;
   private takeoutTick = 2;
-  /** HiDPI 整数渲染倍率（1–3），构造时按 devicePixelRatio 定死。 */
+  /** HiDPI 整数渲染倍率（1–3），保持高密度手机上的完整原生清晰度。 */
   private renderScale = 1;
   private stunTimer = 0;
   // —— 青年《你很优秀》：他夸你，加成是真的 ——
@@ -1155,9 +1220,8 @@ export class ZheYiShenGame {
     const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) throw new Error('当前设备不支持 Canvas 2D');
     this.ctx = ctx;
-    // HiDPI：手机是 2x/3x 屏，360×640 的 1x 背板会被 CSS 非整数放大导致整屏发糊。
-    // 背板按整数倍 DPR 放大、ctx 全局等比缩放——所有既有 360×640 坐标不变，
-    // 像素画以整数倍放大保持硬边（imageSmoothing 已关）。上限 3 防超大屏爆显存。
+    // 背板按整数倍 DPR 放大，所有既有 360×640 坐标不变。
+    // 最高保留 3x，确保高密度手机上的美术清晰度不做任何降级。
     const dpr = Math.min(3, Math.max(1, Math.floor(window.devicePixelRatio || 1)));
     this.renderScale = dpr;
     canvas.width = W * dpr;
@@ -1167,14 +1231,17 @@ export class ZheYiShenGame {
     this.transitionFrame = document.createElement('canvas');
     this.transitionFrame.width = W * dpr;
     this.transitionFrame.height = H * dpr;
-    this.titleCover.decoding = 'async';
-    this.titleCover.src = TITLE_COVER_URL;
+    this.titleCover = loadedArtImage(TITLE_COVER_URL);
+    if (!this.titleCover) {
+      void loadArtImage(TITLE_COVER_URL, 'critical').then((image) => {
+        this.titleCover = image;
+      });
+    }
     this.installInput();
     this.installTestHooks();
     // 断点恢复：无审计参数时，启动即尝试恢复上一局（豆抖平台可能中途断连）。
     // 恢复沿用存档里已 AI 生成的出生，不是新造出生，不触碰"每局 AI 出生"红线。
     const bootParams = new URLSearchParams(window.location.search);
-    if (bootParams.has('audio-prompt')) this.audioPromptOpen = true;
     if (!bootParams.has('audit') && !bootParams.has('audit-screen')) {
       this.tryResumeFromCheckpoint();
     }
@@ -1207,28 +1274,13 @@ export class ZheYiShenGame {
         return;
       }
       if (this.state === 'title') {
-        if (this.audioPromptOpen) {
-          if (pointInRect(p, AUDIO_PROMPT_ENABLE_RECT)) {
-            this.feedback.setAudioEnabled(true);
-            this.audioPromptOpen = false;
-            this.feedback.play('page');
-            this.startRun();
-          } else if (pointInRect(p, AUDIO_PROMPT_MUTE_RECT)) {
-            this.feedback.setAudioEnabled(false);
-            this.audioPromptOpen = false;
-            this.startRun();
-          }
-          return;
-        }
         if (pointInRect(p, TITLE_AUDIO_RECT)) {
           this.feedback.setAudioEnabled(!this.feedback.audioEnabled());
           if (this.feedback.audioEnabled()) this.feedback.play('page');
+        } else if (pointInRect(p, TITLE_CODEX_RECT)) {
+          this.openCodexOverlay();
         } else if (pointInRect(p, TITLE_START_RECT)) {
-          if (this.feedback.hasAudioChoice()) this.startRun();
-          else {
-            this.audioPromptOpen = true;
-            this.audioPromptStartedAt = performance.now();
-          }
+          this.startRun();
         }
         return;
       }
@@ -1236,6 +1288,8 @@ export class ZheYiShenGame {
         if (pointInPaddedRect(p, RESULT_TAB_RECT, 0, 8)) {
           const index = this.clamp(Math.floor((p.x - RESULT_TAB_RECT.x) / (RESULT_TAB_RECT.width / 4)), 0, 3);
           this.resultTab = RESULT_TABS[index]!;
+        } else if (pointInRect(p, RESULT_CODEX_RECT)) {
+          this.openCodexOverlay();
         } else if (pointInRect(p, RESULT_RESTART_RECT)) this.startRun();
         return;
       }
@@ -1261,7 +1315,7 @@ export class ZheYiShenGame {
           }
           return;
         }
-        if (this.aiOriginState === 'error' || this.originLongWaitReady()) this.retryOrigin();
+        if (this.aiOriginState === 'error') this.retryOrigin();
         else if (this.aiOriginState === 'gpt') {
           if (this.originStoryComplete()) this.openInitialItemReward();
           else this.originElapsed = this.originStoryDuration();
@@ -1545,20 +1599,11 @@ export class ZheYiShenGame {
         return;
       }
       if (this.state === 'title' && (event.key === 'Enter' || event.key === ' ')) {
-        if (this.audioPromptOpen) {
-          this.feedback.setAudioEnabled(true);
-          this.audioPromptOpen = false;
-          this.feedback.play('page');
-          this.startRun();
-        } else if (this.feedback.hasAudioChoice()) this.startRun();
-        else {
-          this.audioPromptOpen = true;
-          this.audioPromptStartedAt = performance.now();
-        }
+        this.startRun();
         return;
       }
       if (this.state === 'origin' && (event.key === 'Enter' || event.key === ' ')) {
-        if (this.aiOriginState === 'error' || this.originLongWaitReady()) this.retryOrigin();
+        if (this.aiOriginState === 'error') this.retryOrigin();
         else if (this.aiOriginState === 'gpt') {
           if (this.originStoryComplete()) this.openInitialItemReward();
           else this.originElapsed = this.originStoryDuration();
@@ -1803,10 +1848,17 @@ export class ZheYiShenGame {
     const screen = this.state;
     if (screen !== 'battle' && screen !== 'fateEvent' && screen !== 'itemReward'
       && screen !== 'shop' && screen !== 'specialRoom') return null;
-    // 命运牌是异步生成的：正文未落定（或正在播放结果动画）时不存，避免恢复出空事件。
-    if (screen === 'fateEvent' && (!this.currentFate || this.fateResultDirection)) return null;
+    // 命运牌展示后正文已经冻结；选择结算完成便可以保存，避免结果动画期间退出后重新选择。
+    if (screen === 'fateEvent' && !this.currentFate) return null;
+    const preparedSlot = this.prefetchedFate?.encounterIndex === this.encounterIndex
+      && this.prefetchedFate.runSerial === this.runSerial
+      ? this.prefetchedFate
+      : undefined;
+    const preparedEvent = preparedSlot?.status === 'ready' && preparedSlot.event
+      ? preparedSlot.event
+      : preparedSlot?.fallback;
     return {
-      version: 1,
+      version: RUN_CHECKPOINT_VERSION,
       savedAt: Date.now(),
       screen,
       runSeed: this.runSeed,
@@ -1845,8 +1897,19 @@ export class ZheYiShenGame {
       battleTime: this.battleTime,
       permanentHpLost: this.permanentHpLost,
       currentFate: this.currentFate,
+      preparedFate: preparedEvent ? { encounterIndex: this.encounterIndex, event: preparedEvent } : undefined,
+      pendingFreeFate: this.backgroundFateTask ? {
+        encounterIndex: this.backgroundFateTask.encounterIndex,
+        event: this.backgroundFateTask.event,
+        direction: this.backgroundFateTask.direction,
+        playerText: this.backgroundFateTask.playerText,
+        fateItemCandidates: [...this.backgroundFateTask.snapshot.fateItemCandidates],
+      } : undefined,
       fateDestination: this.fateDestination,
       fateResultDirection: this.fateResultDirection,
+      fateResultReturn: this.fateResultReturn,
+      fatePlayerText: this.fatePlayerText || undefined,
+      fateDisplayEncounterIndex: this.fateDisplayEncounterIndex,
       initialItemReward: this.initialItemReward,
       rewardTitle: this.rewardTitle,
       rewardReturn: this.rewardReturn,
@@ -1875,6 +1938,16 @@ export class ZheYiShenGame {
       Math.round(checkpoint.hero.hp),
       checkpoint.hero.coins,
       checkpoint.currentFate?.title ?? '',
+      checkpoint.fateResultDirection ?? '',
+      checkpoint.preparedFate ? `${checkpoint.preparedFate.event.source}:${checkpoint.preparedFate.event.id}` : '',
+      checkpoint.pendingFreeFate
+        ? `${checkpoint.pendingFreeFate.encounterIndex}:${checkpoint.pendingFreeFate.event.id}:${checkpoint.pendingFreeFate.direction}`
+        : '',
+      checkpoint.fateResultReturn ?? 'destination',
+      checkpoint.fatePlayerText ?? '',
+      checkpoint.memories.length,
+      checkpoint.fateReceipts.length,
+      checkpoint.fateReceipts[checkpoint.fateReceipts.length - 1]?.echo ?? '',
       checkpoint.itemRewardChoices.join(','),
       checkpoint.shopOffers.map((offer) => `${offer.item}:${offer.sold ? 1 : 0}`).join(','),
       checkpoint.specialRoomOffers.join(','),
@@ -1889,6 +1962,7 @@ export class ZheYiShenGame {
 
   /** 把快照写回对局字段，并按画面重建场景。任何异常由调用方兜底清档回标题。 */
   private applyCheckpoint(checkpoint: RunCheckpoint): void {
+    this.prefetchedFate?.controller?.abort();
     this.runSerial += 1;
     this.fateGenerationId += 1; // 作废任何在飞的命运异步请求
     this.fateIncomingStart = -1;
@@ -1958,6 +2032,11 @@ export class ZheYiShenGame {
     this.specialRoomPreviousLifeItem = checkpoint.specialRoomPreviousLifeItem;
     this.fateDestination = checkpoint.fateDestination;
     this.currentFate = checkpoint.currentFate;
+    this.backgroundFateTask = undefined;
+    this.backgroundFateReady = undefined;
+    this.fateResultReturn = checkpoint.fateResultReturn ?? 'destination';
+    this.fateDisplayEncounterIndex = checkpoint.fateDisplayEncounterIndex;
+    this.fatePlayerText = checkpoint.fatePlayerText ?? '';
     // 清空一切瞬态战场对象
     this.enemies = [];
     this.enemyDeaths = [];
@@ -1975,15 +2054,18 @@ export class ZheYiShenGame {
     switch (checkpoint.screen) {
       case 'battle':
         this.startStage(true); // 重建敌人/计时，跳过一次性入场经济
+        this.battleTime = checkpoint.battleTime;
+        if (STAGES[this.encounterIndex]?.end === 'fate' || STAGES[this.encounterIndex]?.end === 'final') {
+          this.restorePreparedFate(checkpoint.preparedFate?.event);
+        }
         break;
       case 'fateEvent':
-        this.aiFateState = this.currentFate ? 'gpt' : 'fallback';
-        this.fateResultDirection = undefined;
+        this.aiFateState = this.currentFate?.source === 'gpt' ? 'gpt' : 'fallback';
+        this.fateResultDirection = checkpoint.fateResultDirection;
         this.fateResultTimer = 0;
-        this.fateAnim = 0;
+        this.fateAnim = this.fateResultDirection ? 1 : 0;
         this.fateExitTimer = 0;
         this.fateResultMinTimer = 0;
-        this.fatePlayerText = '';
         this.state = 'fateEvent';
         break;
       case 'itemReward':
@@ -1991,6 +2073,29 @@ export class ZheYiShenGame {
       case 'specialRoom':
         this.state = checkpoint.screen;
         break;
+    }
+    if (checkpoint.pendingFreeFate) {
+      const pending = checkpoint.pendingFreeFate;
+      const requestId = ++this.fateFreeRequestId;
+      const snapshot = this.buildLifeSnapshotForEncounter(
+        pending.encounterIndex,
+        pending.fateItemCandidates,
+      );
+      const task: BackgroundFateTask = {
+        requestId,
+        runSerial: this.runSerial,
+        encounterIndex: pending.encounterIndex,
+        event: pending.event,
+        direction: pending.direction,
+        playerText: pending.playerText,
+        snapshot,
+        status: 'requesting',
+        retryAt: 0,
+        attempts: 0,
+      };
+      this.backgroundFateTask = task;
+      this.aiFateState = 'requesting';
+      this.launchBackgroundFateTask(task);
     }
   }
 
@@ -2017,10 +2122,15 @@ export class ZheYiShenGame {
   private startRun(fixedSeed?: number, auditBypassOrigin = false): void {
     clearRunCheckpoint();
     this.lastCheckpointKey = '';
+    this.codexNewCount = 0;
     this.feedback.play('page');
     this.resetMovementInput();
     this.resetFateInput();
+    this.prefetchedFate?.controller?.abort();
+    this.originAbortController?.abort();
+    this.originAbortController = undefined;
     this.runSerial += 1;
+    this.fateGenerationId += 1;
     this.paused = false;
     this.pauseTab = 'body';
     this.resultTab = 'seal';
@@ -2044,6 +2154,10 @@ export class ZheYiShenGame {
     this.aiFateState = 'idle';
     this.prefetchedFate = undefined;
     this.state = 'origin';
+    recordTelemetry('run_started', {
+      runSeed: this.runSeed >>> 0,
+      requestedOriginKind: this.requestedOriginKind,
+    });
     const startingHp = 80;
     this.hero = {
       hp: startingHp,
@@ -2071,6 +2185,12 @@ export class ZheYiShenGame {
     this.fateDestination = 'advance';
     this.fateResultDirection = undefined;
     this.fateResultTimer = 0;
+    this.backgroundFateTask = undefined;
+    this.backgroundFateReady = undefined;
+    this.fateResultReturn = 'destination';
+    this.fateDisplayEncounterIndex = undefined;
+    this.fatePlayerText = '';
+    this.fateFreeRequestId += 1;
     this.fateBuild = { ...EMPTY_FATE_BUILD };
     this.fateDelayReady = false;
     this.firstFateDamageReduction = 0;
@@ -2300,7 +2420,7 @@ export class ZheYiShenGame {
       this.originElapsed = this.originStoryDuration();
       return;
     }
-    void this.hydrateOrigin(this.runSerial, this.requestedOriginKind, originRequestId);
+    this.launchOriginHydration(originRequestId);
   }
 
   private pickOriginKind(): OriginKind {
@@ -2311,20 +2431,42 @@ export class ZheYiShenGame {
     return 'harsh';
   }
 
-  private async hydrateOrigin(runSerial: number, kind: OriginKind, requestId: number): Promise<void> {
+  private launchOriginHydration(requestId: number): void {
+    this.originAbortController?.abort();
+    const controller = new AbortController();
+    this.originAbortController = controller;
+    void this.hydrateOrigin(this.runSerial, this.requestedOriginKind, requestId, controller);
+  }
+
+  private async hydrateOrigin(
+    runSerial: number,
+    kind: OriginKind,
+    requestId: number,
+    controller: AbortController,
+  ): Promise<void> {
     const wheels = rollOriginWheels(() => this.random());
-    for (let attempt = 1; attempt <= 2; attempt += 1) {
-      if (this.runSerial !== runSerial || this.originRequestId !== requestId || this.state !== 'origin') return;
+    // 出生只请求一次：内容质量由提示词保证，本地只做可显示/可结算的宽松归一化。
+    // 真正的接口或 JSON 故障才交给玩家显式重试，不在后台悄悄再等一轮。
+    for (let attempt = 1; attempt <= 1; attempt += 1) {
+      if (controller.signal.aborted
+        || this.runSerial !== runSerial
+        || this.originRequestId !== requestId
+        || this.state !== 'origin') return;
       this.originAttempt = attempt;
       const nonce = `${runSerial}-${attempt}-${Date.now().toString(36)}`;
-      const generated = await generateAIOrigin(this.runSeed, kind, nonce, wheels);
-      if (this.runSerial !== runSerial || this.originRequestId !== requestId || this.state !== 'origin') return;
+      const generated = await generateAIOrigin(this.runSeed, kind, nonce, wheels, controller.signal);
+      if (controller.signal.aborted
+        || this.runSerial !== runSerial
+        || this.originRequestId !== requestId
+        || this.state !== 'origin') return;
       if (generated) {
         commitOriginWheels(wheels);
         this.applyGeneratedOrigin(generated);
+        if (this.originAbortController === controller) this.originAbortController = undefined;
         return;
       }
     }
+    if (this.originAbortController === controller) this.originAbortController = undefined;
     this.aiOriginState = 'error';
     this.originElapsed = 0;
   }
@@ -2349,17 +2491,56 @@ export class ZheYiShenGame {
   }
 
   private retryOrigin(): void {
-    if (this.state !== 'origin'
-      || (this.aiOriginState !== 'error' && !this.originLongWaitReady())) return;
+    if (this.state !== 'origin' || this.aiOriginState !== 'error') return;
     const requestId = ++this.originRequestId;
     this.aiOriginState = 'requesting';
     this.originElapsed = 0;
     this.originAttempt = 0;
-    void this.hydrateOrigin(this.runSerial, this.requestedOriginKind, requestId);
+    this.launchOriginHydration(requestId);
   }
 
   private originLongWaitReady(): boolean {
     return this.aiOriginState === 'requesting' && this.originElapsed >= ORIGIN_LONG_WAIT_SECONDS;
+  }
+
+  private originAIDiagnosticLine(): string {
+    const diagnostic = readAIDiagnostic();
+    if (diagnostic.kind !== 'origin') return 'AI接入 · 等待发起出生档案请求';
+    const transport = diagnostic.transport === 'platform' ? '平台' : diagnostic.transport === 'dev' ? '开发代理' : '接口';
+    const labels: Record<typeof diagnostic.status, string> = {
+      idle: '等待发起',
+      calling: '请求已发出',
+      streaming: '正在接收生成片段',
+      returned: '已收到回调',
+      validated: '档案校验通过',
+      rejected: '已返回但校验未通过',
+      unavailable: '未发现 tt 接口',
+      timeout: '等待平台回调超时',
+      failed: '平台调用失败',
+      invalid_json: '返回内容不是JSON',
+      aborted: '请求已取消',
+    };
+    const detail = diagnostic.detail ? ` · ${diagnostic.detail}` : '';
+    return `AI接入 · ${transport}${labels[diagnostic.status]}${detail}`;
+  }
+
+  private drawAIDiagnosticBadge(x: number, y: number, width: number): void {
+    const ctx = this.ctx;
+    const diagnostic = readAIDiagnostic();
+    const isError = ['rejected', 'unavailable', 'timeout', 'failed', 'invalid_json'].includes(diagnostic.status);
+    const tone = isError ? UI_PALETTE.oldRed : '#4f6470';
+    ctx.save();
+    ctx.fillStyle = 'rgba(235, 226, 208, 0.78)';
+    ctx.fillRect(x, y, width, 20);
+    ctx.strokeStyle = tone;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x + 0.5, y + 0.5, width - 1, 19);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = tone;
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.fillText(this.fitText(this.originAIDiagnosticLine(), width - 14), x + width / 2, y + 10);
+    ctx.restore();
   }
 
   private openInitialItemReward(): void {
@@ -2466,6 +2647,12 @@ export class ZheYiShenGame {
     this.resetMovementInput();
     this.resetFateInput();
     this.state = 'battle';
+    recordTelemetry('stage_started', {
+      runSeed: this.runSeed >>> 0,
+      chapterIndex: this.encounterIndex,
+      age: AGE_LABELS[this.encounterIndex] ?? 'unknown',
+      resumed: resume,
+    });
     this.stageDisabledItems.clear();
     this.wetPatches = [];
     this.wetFootprints = [];
@@ -2630,6 +2817,11 @@ export class ZheYiShenGame {
     this.voiceEnemyKills = {};
     this.feedback.setAmbience(this.encounterIndex);
     this.feedback.preloadVoices(STAGE_VOICE_PRELOADS[this.encounterIndex] ?? []);
+    if (this.encounterIndex < STAGES.length - 1) {
+      void warmProductionArtForStage(this.encounterIndex + 1).catch((error: unknown) => {
+        console.error('下一章正式美术预热失败；后台完整美术闸门会阻断继续展示。', error);
+      });
+    }
     this.borrowedStat = undefined;
     this.syncBinderCardsFromInventory();
     // 一次性入场经济：扣费、进场掉血、翻卡加成只在首次进入本阶段结算。
@@ -2791,6 +2983,26 @@ export class ZheYiShenGame {
   private stageEndReward(skipRest = false): void {
     const stage = STAGES[this.encounterIndex];
     if (!stage || stage.end === 'final') return;
+    const nextStageIndex = this.encounterIndex + 1;
+    if (!productionArtStageReady(nextStageIndex)) {
+      // 罕见的低速解码只会延长章节过场，不会让下一章以缺图或程序化回退
+      // 进入画面。0.35 秒对应过场末段仍完整可见的位置。
+      this.transitionTimer = 0.35;
+      if (!this.waitingForStageArt) {
+        this.waitingForStageArt = true;
+        void warmProductionArtForStage(nextStageIndex)
+          .then(() => {
+            this.waitingForStageArt = false;
+            this.transitionTimer = Math.min(this.transitionTimer, 0.01);
+          })
+          .catch((error: unknown) => {
+            this.waitingForStageArt = false;
+            console.error('下一章正式美术未能完成，拒绝进入降级画面。', error);
+          });
+      }
+      return;
+    }
+    this.waitingForStageArt = false;
     if (!skipRest) this.healHero(6);
     if (stage.end === 'fate') {
       this.openFate('advance');
@@ -2923,6 +3135,10 @@ export class ZheYiShenGame {
 
   private openFreeInput(): void {
     if (this.freeInputWrap || this.fateFreeWaiting || !this.currentFate) return;
+    if (this.backgroundFateTask) {
+      this.say('上一句话还在后台落成回执');
+      return;
+    }
     if (this.hasItem('name-sold') && !this.hasItem('revoked-badge')) {
       this.say('名字卖掉了 · 开不了口');
       return;
@@ -2930,74 +3146,180 @@ export class ZheYiShenGame {
     const wrap = document.createElement('div');
     wrap.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,5,8,.74);z-index:50;';
     const box = document.createElement('div');
-    box.style.cssText = 'background:#14141a;border:1px solid #77727b;padding:18px;width:280px;font-family:sans-serif;';
+    box.style.cssText = 'background:#14141a;border:1px solid #77727b;padding:18px;width:300px;font-family:sans-serif;';
     const title = document.createElement('div');
     title.textContent = '他张了张嘴——你替他说：';
     title.style.cssText = 'color:#e8e1d3;font-size:13px;margin-bottom:10px;';
     const input = document.createElement('input');
     input.maxLength = 24;
     input.placeholder = '写下他的回应（24字内）';
-    input.style.cssText = 'width:100%;box-sizing:border-box;background:#0c0d11;border:1px solid #55525b;color:#e8e1d3;padding:8px;font-size:13px;outline:none;';
+    input.autocomplete = 'off';
+    input.style.cssText = 'width:100%;box-sizing:border-box;background:#0c0d11;border:1px solid #55525b;color:#e8e1d3;padding:10px;font-size:16px;outline:none;';
+    const hint = document.createElement('div');
+    hint.textContent = '选择这句话是咽下压力，还是把边界说出来';
+    hint.style.cssText = 'color:#9e99a3;font-size:11px;line-height:1.5;margin-top:8px;';
     const row = document.createElement('div');
-    row.style.cssText = 'display:flex;gap:8px;margin-top:12px;';
+    row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;';
+    const swallow = document.createElement('button');
+    swallow.textContent = '咽下地说';
+    swallow.style.cssText = 'min-height:44px;background:#4f6470;border:0;color:#f0e9dc;padding:9px;font-size:13px;';
+    const exhale = document.createElement('button');
+    exhale.textContent = '吐出来说';
+    exhale.style.cssText = 'min-height:44px;background:#8d4a58;border:0;color:#f0e9dc;padding:9px;font-size:13px;';
     const cancel = document.createElement('button');
     cancel.textContent = '算了';
-    cancel.style.cssText = 'flex:1;background:#2c2c33;border:none;color:#a7a3ab;padding:9px;font-size:13px;';
-    const ok = document.createElement('button');
-    ok.textContent = '说出口';
-    ok.style.cssText = 'flex:1;background:#8d4a58;border:none;color:#f0e9dc;padding:9px;font-size:13px;';
-    row.append(cancel, ok);
-    box.append(title, input, row);
+    cancel.style.cssText = 'width:100%;margin-top:8px;background:#2c2c33;border:none;color:#a7a3ab;padding:7px;font-size:12px;';
+    row.append(swallow, exhale);
+    box.append(title, input, hint, row, cancel);
     wrap.append(box);
     document.body.append(wrap);
     this.freeInputWrap = wrap;
     input.focus();
-    cancel.onclick = () => this.closeFreeInput();
-    ok.onclick = () => {
+    cancel.addEventListener('click', () => this.closeFreeInput());
+    const submit = (direction: FateDirection): void => {
       const text = input.value.trim();
-      if (!text) return;
-      wrap.remove();
-      this.freeInputWrap = undefined;
-      this.submitFreeResponse(text);
-    };
-    input.onkeydown = (keyEvent) => {
-      keyEvent.stopPropagation();
-      if (keyEvent.key === 'Enter') ok.click();
-    };
-  }
-
-  private submitFreeResponse(text: string): void {
-    const event = this.currentFate;
-    if (!event || this.fateResultDirection) return;
-    this.fateFreeWaiting = true;
-    this.fateFreeWaitElapsed = 0;
-    const requestId = ++this.fateFreeRequestId;
-    const serial = this.runSerial;
-    void generateAIFreeFate({
-      event: { id: event.id, title: event.title, fact: event.fact },
-      playerText: text,
-      snapshot: this.buildLifeSnapshot(),
-    }).then((outcome) => {
-      if (requestId !== this.fateFreeRequestId || this.runSerial !== serial || this.state !== 'fateEvent'
-        || this.fateResultDirection || this.currentFate !== event || !this.fateFreeWaiting) return;
-      this.fateFreeWaiting = false;
-      this.fateFreeWaitElapsed = 0;
-      if (!outcome) {
-        this.say('话在喉咙里转了一圈，没说出口');
+      if (!text) {
+        input.focus();
         return;
       }
-      this.memories.push(`他亲口说：「${text}」`);
-      this.fatePlayerText = text;
-      if (this.hasItem('ai-chat') && outcome.response.stats) {
-        const halved: typeof outcome.response.stats = {};
-        for (const [statKey, statValue] of Object.entries(outcome.response.stats) as Array<[FateStatKey, number]>) {
-          const cut = Math.trunc(statValue / 2);
-          if (cut !== 0) halved[statKey] = cut;
-        }
-        outcome.response = { ...outcome.response, stats: Object.keys(halved).length ? halved : undefined };
-      }
-      this.resolveFate(outcome.direction, outcome.response);
+      this.closeFreeInput();
+      this.submitFreeResponse(text, direction);
+    };
+    swallow.addEventListener('click', () => submit('swallow'));
+    exhale.addEventListener('click', () => submit('exhale'));
+    input.addEventListener('keydown', (keyEvent) => {
+      keyEvent.stopPropagation();
+      if (keyEvent.key === 'Escape') this.closeFreeInput();
+      if (keyEvent.key === 'Enter' && !keyEvent.isComposing) submit('exhale');
     });
+  }
+
+  private submitFreeResponse(text: string, direction: FateDirection): void {
+    const event = this.currentFate;
+    if (!event || this.fateResultDirection) return;
+    const requestId = ++this.fateFreeRequestId;
+    this.fateFreeWaiting = false;
+    this.fateFreeWaitElapsed = 0;
+    const spoken = text.replace(/\s+/g, ' ').slice(0, 24);
+    this.memories.push(`他亲口说：「${spoken}」`);
+    if (this.memories.length > 14) this.memories = this.memories.slice(-14);
+    const task: BackgroundFateTask = {
+      requestId,
+      runSerial: this.runSerial,
+      encounterIndex: this.encounterIndex,
+      event,
+      direction,
+      playerText: spoken,
+      snapshot: this.buildLifeSnapshot(),
+      status: 'requesting',
+      retryAt: 0,
+      attempts: 0,
+    };
+    this.backgroundFateTask = task;
+    this.backgroundFateReady = undefined;
+    this.fatePlayerText = '';
+    recordTelemetry('fate_free_queued', {
+      runSeed: this.runSeed >>> 0,
+      chapterIndex: this.encounterIndex,
+      direction,
+    });
+    this.say('这句话已经说出口 · 回执会在后台写完');
+    this.continueAfterQueuedFate();
+    this.launchBackgroundFateTask(task);
+  }
+
+  private continueAfterQueuedFate(): void {
+    const destination = this.fateDestination;
+    this.resetFateInput();
+    this.currentFate = undefined;
+    this.aiFateState = 'requesting';
+    this.fateResultDirection = undefined;
+    this.fateDragX = 0;
+    if (destination === 'shop') {
+      this.resetMovementInput();
+      this.setupShop();
+      this.state = 'shop';
+    } else if (destination === 'battle') {
+      this.resetMovementInput();
+      this.state = 'battle';
+    } else {
+      this.advanceStage();
+    }
+    this.lastCheckpointKey = '';
+  }
+
+  private launchBackgroundFateTask(task: BackgroundFateTask): void {
+    if (this.backgroundFateTask !== task || task.status === 'requesting' && task.attempts > 0) return;
+    task.status = 'requesting';
+    task.attempts += 1;
+    task.retryAt = 0;
+    void generateAIFreeFate({
+      event: task.event,
+      direction: task.direction,
+      playerText: task.playerText,
+      snapshot: task.snapshot,
+    }).then((response) => {
+      if (this.backgroundFateTask !== task
+        || this.runSerial !== task.runSerial
+        || this.fateFreeRequestId !== task.requestId) return;
+      if (response) {
+        this.backgroundFateReady = { task, response };
+        this.aiFateState = 'gpt';
+        this.lastCheckpointKey = '';
+        recordTelemetry('fate_free_ready', {
+          runSeed: this.runSeed >>> 0,
+          chapterIndex: task.encounterIndex,
+          direction: task.direction,
+          recipeId: response.settlement?.recipeId ?? 'none',
+          attempts: task.attempts,
+        });
+        this.maybePresentBackgroundFateResult();
+        return;
+      }
+      task.status = 'retry';
+      task.retryAt = this.visualTime + Math.min(18, 4 + task.attempts * 4);
+      this.aiFateState = 'error';
+      this.lastCheckpointKey = '';
+      this.say('回执暂时卡住 · 正在后台重写');
+      recordTelemetry('fate_free_retry', {
+        runSeed: this.runSeed >>> 0,
+        chapterIndex: task.encounterIndex,
+        attempts: task.attempts,
+      });
+    });
+  }
+
+  private updateBackgroundFate(): void {
+    const task = this.backgroundFateTask;
+    if (task?.status === 'retry' && this.visualTime >= task.retryAt) {
+      this.launchBackgroundFateTask(task);
+    }
+    this.maybePresentBackgroundFateResult();
+  }
+
+  private maybePresentBackgroundFateResult(): void {
+    const ready = this.backgroundFateReady;
+    if (!ready || this.state !== 'battle' || this.paused
+      || this.xiaoZhangPrompt || this.oneMorePrompt || this.lampReleaseReady
+      || this.comboReveal || this.screenTransition) return;
+    const { task, response } = ready;
+    if (this.backgroundFateTask !== task || this.runSerial !== task.runSerial) return;
+    this.backgroundFateReady = undefined;
+    this.backgroundFateTask = undefined;
+    this.resetMovementInput();
+    this.resetFateInput();
+    this.currentFate = { ...task.event, [task.direction]: response };
+    this.fateDestination = 'battle';
+    this.fateResultReturn = 'battle';
+    this.fateDisplayEncounterIndex = task.encounterIndex;
+    this.fatePlayerText = task.playerText;
+    this.fateResultDirection = undefined;
+    this.fateAnim = 1;
+    this.fateExitTimer = 0;
+    this.fateResultMinTimer = 0;
+    this.state = 'fateEvent';
+    this.resolveFate(task.direction, response);
+    this.lastCheckpointKey = '';
   }
 
   private applyFateStats(stats?: Partial<Record<FateStatKey, number>>): void {
@@ -3023,6 +3345,7 @@ export class ZheYiShenGame {
 
   private fateResponseMechanics(response: FateResponse): string {
     const effects: Record<FateResponse['effect'], string> = {
+      none: '',
       store_volleys: '下一战储存攻击',
       returning_breath: '弹体折返',
       guard: '下一战开局护盾',
@@ -3036,7 +3359,8 @@ export class ZheYiShenGame {
       heal: '恢复生命',
       trade_max_hp: '最大生命-5 · 伤害提高',
     };
-    return [effects[response.effect], this.fateStatsLine(response.stats)].filter(Boolean).join(' · ');
+    const itemLine = response.gainItemId ? `获得 · ${getItem(response.gainItemId).name}` : '';
+    return [itemLine, effects[response.effect], this.fateStatsLine(response.stats)].filter(Boolean).join(' · ') || '只留下记忆';
   }
 
   private fateFactLine(event: FateEvent): string {
@@ -3261,6 +3585,7 @@ export class ZheYiShenGame {
           this.enemies.push(this.createSeekingEnemy('lamp-keeper', this.darkCX, this.darkCY - 130));
           this.caption = '「到点了。」';
           this.captionTime = 4.5;
+          this.playVoiceOnce('lamp-time-up');
         }
       }
     } else if (this.battleTime >= stage.duration) {
@@ -3459,7 +3784,9 @@ export class ZheYiShenGame {
   }
 
   private frame(time: number): void {
+    setArtGameplayActive(this.state === 'battle' && this.transitionTimer <= 0 && !this.paused);
     if (!this.lastTime) this.lastTime = time;
+    else reportArtFrameDuration(time - this.lastTime);
     const delta = Math.min(0.05, (time - this.lastTime) / 1000) * this.auditTimeScale;
     this.lastTime = time;
     this.accumulator += delta;
@@ -3477,6 +3804,7 @@ export class ZheYiShenGame {
     if (this.pendingFateOpen && this.state === 'battle') this.presentPendingFate();
     this.maybePersistCheckpoint();
     this.visualTime += dt;
+    this.updateBackgroundFate();
     this.flushScheduledVoices();
     if (this.voiceCaption) {
       this.voiceCaption.time = Math.max(0, this.voiceCaption.time - dt);
@@ -3704,6 +4032,16 @@ export class ZheYiShenGame {
     }
 
     this.battleTime += dt;
+    if (this.firstRunGuideActive && this.encounterIndex === 0 && this.battleTime >= 12) {
+      this.firstRunGuideActive = false;
+      if (!this.auditFirstRunGuide) {
+        completeFirstRunGuide();
+        recordTelemetry('tutorial_completed', {
+          runSeed: this.runSeed >>> 0,
+          seconds: 12,
+        });
+      }
+    }
     if (this.hasItem('stone-schoolbag')) this.schoolbagBurdenTime = Math.min(180, this.schoolbagBurdenTime + dt);
     this.updatePraisePaperZones(dt);
     this.updateHeroMovement(dt);
@@ -6562,25 +6900,7 @@ export class ZheYiShenGame {
       }
     }
     this.updateAdulthoodEnemyHazards(dt);
-    for (let i = 0; i < this.enemies.length; i += 1) {
-      const a = this.enemies[i]!;
-      if (a.dead) continue;
-      for (let j = i + 1; j < this.enemies.length; j += 1) {
-        const b = this.enemies[j]!;
-        if (b.dead) continue;
-        const dx = b.x - a.x;
-        const dy = b.y - a.y;
-        const minDist = (a.radius + b.radius) * 0.72;
-        const d = Math.hypot(dx, dy);
-        if (d > 0.01 && d < minDist) {
-          const push = ((minDist - d) / d) * 0.5;
-          a.x -= dx * push;
-          a.y -= dy * push;
-          b.x += dx * push;
-          b.y += dy * push;
-        }
-      }
-    }
+    separateCircularBodies(this.enemies);
   }
 
   private heroInDeskLampAura(): boolean {
@@ -7417,6 +7737,7 @@ export class ZheYiShenGame {
     this.playBossAnimation(enemy, 'keeper-name', 2.2);
     this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 30, '#cbb98f', `收灯 ·《${getItem(this.items[stripAt]!).name}》`);
     this.say('该还这一件了。');
+    this.playVoiceOnce('lamp-return-due');
   }
 
   private updateLampSeize(enemy: EnemyUnit, dt: number): void {
@@ -8148,46 +8469,78 @@ export class ZheYiShenGame {
       poisons: { ...this.poisons },
       memories: this.memories.slice(-10),
       recentEvents: this.fateReceipts.slice(-4).map((receipt) => receipt.event.id),
+      recentFateRecipes: this.fateReceipts
+        .slice(-3)
+        .map((receipt) => receipt.event[receipt.direction].settlement?.recipeId)
+        .filter((recipeId): recipeId is string => Boolean(recipeId)),
       fateItemCandidates: this.pickFateItemCandidates(),
       swallowCount: this.stats.swallowed,
       exhaleCount: this.stats.exhaled,
     };
   }
 
+  private buildLifeSnapshotForEncounter(
+    encounterIndex: number,
+    fateItemCandidates: ItemId[],
+  ): LifeSnapshot {
+    const current = this.buildLifeSnapshot();
+    const stage = STAGES[encounterIndex];
+    const stageCanon = LIFE_STAGE_CANON[encounterIndex] ?? LIFE_STAGE_CANON[LIFE_STAGE_CANON.length - 1]!;
+    return {
+      ...current,
+      chapterIndex: encounterIndex,
+      chapter: stage?.chapter ?? '这一生',
+      age: AGE_LABELS[encounterIndex] ?? '晚年',
+      stageFocus: stageCanon.focus,
+      stageBossMeaning: stageCanon.bossMeaning,
+      fateItemCandidates: [...fateItemCandidates],
+    };
+  }
+
   private pickFateItemCandidates(): ItemId[] {
-    if (this.fateReceipts.some((receipt) => receipt.event.unavoidable.kind === 'gain_item')) return [];
+    if (this.fateReceipts.some((receipt) => (
+      receipt.event.unavoidable.kind === 'gain_item'
+      || Boolean(receipt.event[receipt.direction].gainItemId)
+    ))) return [];
     const available = FATE_ITEM_IDS.filter((id) => !this.items.includes(id) && isFateItemAgeAppropriate(id, this.encounterIndex));
     if (!available.length) return [];
     const start = ((this.runSeed ^ Math.imul(this.encounterIndex + 1, 0x45d9f3b)) >>> 0) % available.length;
     return Array.from({ length: Math.min(3, available.length) }, (_, index) => available[(start + index) % available.length]!);
   }
 
+  private generateFateFallback(snapshot: LifeSnapshot): FateEvent {
+    // 命运保底使用独立随机流，预取时机不会改变战斗掉落、刷怪或商店结果。
+    let state = (snapshot.runSeed ^ Math.imul(snapshot.chapterIndex + 1, 0x6d2b79f5) ^ 0x51f15e5d) >>> 0;
+    const random = (): number => {
+      state = (state + 0x6d2b79f5) >>> 0;
+      let value = state;
+      value = Math.imul(value ^ (value >>> 15), value | 1);
+      value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+      return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+    };
+    return generateLocalFateEvent(snapshot, random);
+  }
+
   private openFate(destination: FateDestination): void {
     this.feedback.play('page', 0.9);
     this.fateDestination = destination;
     const snapshot = this.buildLifeSnapshot();
-    const fallback = generateLocalFateEvent(snapshot, () => this.random());
-    const prefetched = this.prefetchedFate?.encounterIndex === this.encounterIndex ? this.prefetchedFate.promise : null;
+    const prefetched = this.prefetchedFate?.encounterIndex === this.encounterIndex
+      && this.prefetchedFate.runSerial === this.runSerial
+      ? this.prefetchedFate
+      : undefined;
+    const generated = prefetched?.status === 'ready' && prefetched.event
+      ? validateFateEvent(prefetched.event, snapshot)
+      : null;
+    const fallback = prefetched?.fallback ?? this.generateFateFallback(snapshot);
+    prefetched?.controller?.abort();
     this.prefetchedFate = undefined;
-    const generationId = ++this.fateGenerationId;
+    this.fateGenerationId += 1;
     this.currentFate = undefined;
-    this.aiFateState = 'requesting';
-    // 无感加载：AI 在写这件事的时候不进纸窗，战斗照常。
-    // 顶部挂一行打字机字，事实落纸（AI 就绪）那一刻才弹出纸张窗口。
-    this.fateIncomingStart = this.battleTime;
-    // 章末等待期（advance）不再放新怪；终章战斗（battle）保持原节奏
-    if (destination === 'advance') this.spawnPause = Math.max(this.spawnPause, 999);
-    void (async () => {
-      const generated = await (prefetched ?? generateAIFate(snapshot));
-      if (generationId !== this.fateGenerationId) return;
-      let currentGenerated = generated ? validateFateEvent(generated, snapshot) : null;
-      if (generated && prefetched && !currentGenerated) currentGenerated = await generateAIFate(snapshot);
-      if (generationId !== this.fateGenerationId) return;
-      // 就绪结果暂存：battle 中立即弹纸窗；若等待期间流转到了别的画面
-      // （章末三选一/商店等），等回到 battle 的下一帧再弹。
-      this.pendingFateOpen = { event: currentGenerated ?? fallback, fromAI: Boolean(currentGenerated) };
-      if (this.state === 'battle') this.presentPendingFate();
-    })();
+    this.fateIncomingStart = -1;
+    const selected = generated ?? fallback;
+    this.pendingFateOpen = { event: selected, fromAI: selected.source === 'gpt' };
+    this.presentPendingFate();
   }
 
   private presentPendingFate(): void {
@@ -8199,6 +8552,8 @@ export class ZheYiShenGame {
     this.resetFateInput();
     this.fateResultDirection = undefined;
     this.fateResultTimer = 0;
+    this.fateResultReturn = 'destination';
+    this.fateDisplayEncounterIndex = undefined;
     this.closeFreeInput();
     this.fateAnim = 0;
     this.fateExitTimer = 0;
@@ -8207,19 +8562,61 @@ export class ZheYiShenGame {
     this.state = 'fateEvent';
     this.currentFate = pending.event;
     this.aiFateState = pending.fromAI ? 'gpt' : 'fallback';
+    recordTelemetry('fate_presented', {
+      runSeed: this.runSeed >>> 0,
+      chapterIndex: this.encounterIndex,
+      source: pending.fromAI ? 'gpt' : 'fallback',
+      profile: pending.event.profile,
+    });
     this.applyFateFact(this.currentFate);
   }
 
-  private prepareFate(): void {
+  private prepareFate(preparedFallback?: FateEvent): void {
+    this.prefetchedFate?.controller?.abort();
     const snapshot = this.buildLifeSnapshot();
     const encounterIndex = this.encounterIndex;
+    const runSerial = this.runSerial;
+    const generationId = ++this.fateGenerationId;
+    const fallback = preparedFallback ?? this.generateFateFallback(snapshot);
+    const controller = new AbortController();
+    const slot: FatePrefetchSlot = {
+      encounterIndex,
+      runSerial,
+      generationId,
+      status: 'warming',
+      fallback,
+      controller,
+    };
     this.aiFateState = 'requesting';
-    const promise = generateAIFate(snapshot);
-    this.prefetchedFate = { encounterIndex, promise };
-    void promise.then((event) => {
-      if (this.prefetchedFate?.encounterIndex !== encounterIndex) return;
-      this.aiFateState = event ? 'gpt' : 'fallback';
+    this.prefetchedFate = slot;
+    void generateAIFate(snapshot, controller.signal).then((event) => {
+      if (this.prefetchedFate !== slot
+        || this.runSerial !== runSerial
+        || this.fateGenerationId !== generationId) return;
+      const validated = event ? validateFateEvent(event, snapshot) : null;
+      slot.status = validated ? 'ready' : 'failed';
+      slot.event = validated ?? undefined;
+      this.aiFateState = validated ? 'gpt' : 'fallback';
     });
+  }
+
+  private restorePreparedFate(prepared?: FateEvent): void {
+    const snapshot = this.buildLifeSnapshot();
+    const validated = prepared ? validateFateEvent(prepared, snapshot) : null;
+    if (!validated || validated.source === 'local') {
+      this.prepareFate(validated ?? undefined);
+      return;
+    }
+    const generationId = ++this.fateGenerationId;
+    this.prefetchedFate = {
+      encounterIndex: this.encounterIndex,
+      runSerial: this.runSerial,
+      generationId,
+      status: 'ready',
+      fallback: this.generateFateFallback(snapshot),
+      event: validated,
+    };
+    this.aiFateState = 'gpt';
   }
 
   private applyFateFact(event: FateEvent): void {
@@ -8249,13 +8646,15 @@ export class ZheYiShenGame {
     this.feedback.play(direction === 'swallow' ? 'swallow' : 'exhale', 1.1);
     this.feedback.vibrate(direction === 'swallow' ? 24 : [10, 24, 10]);
     const power = direction === 'swallow' ? this.originModifiers.swallowPowerMul * (this.hasItem('abstract-lv10') ? 0.9 : 1) : 1;
-    this.applyFateResponseEffect(response.effect, power);
+    this.applyFateResponseEffect(response.effect, power, this.fateResultReturn === 'battle');
     this.adjustPoisons(response.poison);
     this.applyFateStats(response.stats);
+    if (response.gainItemId && !this.items.includes(response.gainItemId)) this.acquireItem(response.gainItemId);
     if (this.hasItem('ai-chat')) this.healHero(4);
     this.memories.push(`《${event.title}》他${custom ? '亲口回应' : '选择'}了「${response.label}」`);
     if (this.memories.length > 14) this.memories = this.memories.slice(-14);
-    if (custom) this.currentFate = { ...event, [direction]: custom };
+    const resolvedEvent = custom ? { ...event, [direction]: custom } : event;
+    if (custom) this.currentFate = resolvedEvent;
     this.stats.fateChoices += 1;
     if (direction === 'swallow') {
       this.stats.swallowed += 1;
@@ -8281,20 +8680,35 @@ export class ZheYiShenGame {
       }
       this.releaseRetractedVoice();
     }
-    this.fateReceipts.push({ event, direction, result: response.result });
+    this.fateReceipts.push({ event: resolvedEvent, direction, result: response.result });
+    recordTelemetry('fate_choice', {
+      runSeed: this.runSeed >>> 0,
+      chapterIndex: this.encounterIndex,
+      source: event.source,
+      direction,
+      custom: Boolean(custom),
+      recipeId: response.settlement?.recipeId ?? 'legacy',
+    });
     this.resetFateInput();
     this.fateResultDirection = direction;
     this.fateExitTimer = 0.35;
     this.fateResultMinTimer = 1.1;
     this.fateDragX = direction === 'swallow' ? -150 : 150;
     this.burst('word', this.heroX, this.heroY - 58, 72, direction === 'swallow' ? '#7d91a5' : '#b65d67', direction === 'swallow' ? '咽下' : '吐出');
-    if (event.source === 'gpt') {
+    if (event.source === 'gpt' || custom) {
       const serial = this.runSerial;
       const receiptIndex = this.fateReceipts.length - 1;
       void generateAIFateResult({
         event: { id: event.id, title: event.title, fact: event.fact },
         direction,
-        response: { label: response.label, effect: response.effect, result: response.result },
+        ...(custom && this.fatePlayerText ? { playerText: this.fatePlayerText } : {}),
+        response: {
+          label: response.label,
+          effect: response.effect,
+          result: response.result,
+          settlement: response.settlement,
+          gainItemId: response.gainItemId,
+        },
         snapshot: this.buildLifeSnapshot(),
       }).then((text) => {
         const receipt = this.fateReceipts[receiptIndex];
@@ -8303,19 +8717,26 @@ export class ZheYiShenGame {
           this.caption = text;
           this.captionTime = 7;
         }
-        this.memories.push(text);
-        if (this.memories.length > 14) this.memories = this.memories.slice(-14);
+        receipt.echo = text;
       });
     }
   }
 
-  private applyFateResponseEffect(effect: FateEvent['swallow']['effect'], power: number): void {
+  private applyFateResponseEffect(
+    effect: FateEvent['swallow']['effect'],
+    power: number,
+    applyToActiveBattle = false,
+  ): void {
     if (effect === 'store_volleys') this.fateBuild.storedVolleys = Math.min(8, this.fateBuild.storedVolleys + Math.max(2, Math.round(2 * power)));
     if (effect === 'returning_breath') {
       this.fateBuild.returning = true;
       this.fateBuild.damageMul *= 1.03;
     }
-    if (effect === 'guard') this.fateBuild.openingBlock = Math.min(24, this.fateBuild.openingBlock + Math.round(5 * power));
+    if (effect === 'guard') {
+      const block = Math.round(5 * power);
+      if (applyToActiveBattle) this.hero.block = Math.min(24, this.hero.block + block);
+      else this.fateBuild.openingBlock = Math.min(24, this.fateBuild.openingBlock + block);
+    }
     if (effect === 'focus') {
       this.fateBuild.homingAdd = Math.min(0.22, this.fateBuild.homingAdd + 0.055 * power);
       this.fateBuild.widthMul *= 0.97;
@@ -8348,12 +8769,21 @@ export class ZheYiShenGame {
 
   private completeFateDestination(): void {
     const destination = this.fateDestination;
+    const returnToBattle = this.fateResultReturn === 'battle';
     this.resetFateInput();
     this.closeFreeInput();
     this.currentFate = undefined;
     this.aiFateState = 'idle';
     this.fateResultDirection = undefined;
     this.fateDragX = 0;
+    this.fateResultReturn = 'destination';
+    this.fateDisplayEncounterIndex = undefined;
+    this.fatePlayerText = '';
+    if (returnToBattle) {
+      this.resetMovementInput();
+      this.state = 'battle';
+      return;
+    }
     if (destination === 'shop') {
       this.resetMovementInput();
       this.setupShop();
@@ -8412,6 +8842,20 @@ export class ZheYiShenGame {
     }
   }
 
+  private openCodexOverlay(): void {
+    this.feedback.play('page');
+    openItemCodex({
+      combos: COMBO_DEFS,
+      sourceHint: (id) => {
+        if (BACK_ROOM_POOL.includes(id)) return '来源：里屋';
+        if (LIGHT_ROOM_POOL.includes(id)) return '来源：留灯间';
+        const item = getItem(id);
+        return item.quality === 5 ? '人生必经' : `来源：人生途中 · ${item.qualityName}`;
+      },
+      playPageSound: () => this.feedback.play('page'),
+    });
+  }
+
   private acquireItem(id: ItemId): void {
     if (this.items.includes(id)) return;
     this.items.push(id);
@@ -8420,6 +8864,7 @@ export class ZheYiShenGame {
     this.feedback.play('wear', getItem(id).quality >= 4 ? 1.25 : 0.9);
     this.feedback.vibrate(12);
     this.stats.itemsTaken += 1;
+    if (recordItemAcquired(id, this.origin?.nickname ?? '')) this.codexNewCount += 1;
     if (id === 'small-uniform') this.changeMaxHp(-6);
     if (id === 'nameless-tie') this.changeMaxHp(-10);
     if (id === 'eyebrow-razor') this.changeMaxHp(-8);
@@ -8545,12 +8990,10 @@ export class ZheYiShenGame {
     this.resetMovementInput();
     this.resetSpecialRoomHold();
     this.specialRoomKind = kind ?? this.pickSpecialKind();
-    // Ⅳ 级遗物的两条获取线：留灯间=被爱过的证据；里屋=透支自己
-    const backPool: ItemId[] = ['broken-spine', 'spent-decade', 'painless-night', 'third-pill', 'loan-contract', 'name-sold', 'ktv-song'];
+    // Ⅳ 级遗物的两条获取线：留灯间=被爱过的证据；里屋=透支自己。
     // 父亲的雨衣不在池内：它是少年章击败沉默的父亲后的固定掉落，
     // 提前从留灯间拿到会把"他捡起那件雨衣穿上"那一刻的分量抢跑。
-    const lightPool: ItemId[] = ['baby-tooth', 'missing-photo', 'moms-bowl', 'ruma-msg', 'held-elevator', 'old-door-lock', 'breath-on-glass'];
-    const roomPool = (this.specialRoomKind === 'back' ? backPool : lightPool).filter((id) => !this.items.includes(id));
+    const roomPool = (this.specialRoomKind === 'back' ? BACK_ROOM_POOL : LIGHT_ROOM_POOL).filter((id) => !this.items.includes(id));
     this.specialRoomPreviousLifeItem = undefined;
     if (this.specialRoomKind === 'light') {
       const previousLife = this.ledgerEntries[0];
@@ -8623,7 +9066,9 @@ export class ZheYiShenGame {
   private recordRunInLedger(won: boolean): void {
     if (this.ledgerRecordedForCurrentRun || !this.origin) return;
     const reachedStage = Math.max(0, Math.min(AGE_LABELS.length - 1, this.encounterIndex));
-    const lastEcho = this.fateReceipts[this.fateReceipts.length - 1]?.result
+    const lastReceipt = this.fateReceipts[this.fateReceipts.length - 1];
+    const lastEcho = lastReceipt?.echo
+      || lastReceipt?.result
       || this.memories[this.memories.length - 1]
       || (won ? '这一口气终于松开了。' : '没有留下最后一句。');
     const nearby = this.nearestEnemy(this.heroX, this.heroY);
@@ -8641,9 +9086,19 @@ export class ZheYiShenGame {
     };
     this.ledgerEntries = appendLifeLedger(entry);
     this.ledgerRecordedForCurrentRun = true;
+    notifyCodexRunEnded();
   }
 
   private endRun(won: boolean): void {
+    recordTelemetry('run_ended', {
+      runSeed: this.runSeed >>> 0,
+      won,
+      chapterIndex: this.encounterIndex,
+      age: AGE_LABELS[Math.max(0, Math.min(AGE_LABELS.length - 1, this.encounterIndex))] ?? 'unknown',
+      fateChoices: this.stats.fateChoices,
+      items: this.items.length,
+      kills: this.stats.kills,
+    });
     this.recordRunInLedger(won);
     this.resetMovementInput();
     this.resetFateInput();
@@ -9289,7 +9744,6 @@ export class ZheYiShenGame {
     if (this.state === 'battle' && !this.paused) this.renderLowHealthWarning();
     if (!this.paused && (this.state === 'battle' || this.state === 'fateEvent')) this.renderPauseButton();
     if (this.paused) this.renderPauseOverlay();
-    if (this.state === 'title' && this.audioPromptOpen) this.renderAudioPrompt();
     this.renderScreenTransition();
     if (import.meta.env.DEV) {
       const now = performance.now();
@@ -10667,7 +11121,7 @@ export class ZheYiShenGame {
     const ctx = this.ctx;
     ctx.fillStyle = '#121318';
     ctx.fillRect(0, 0, W, H);
-    if (this.titleCover.complete && this.titleCover.naturalWidth === W && this.titleCover.naturalHeight === H) {
+    if (this.titleCover?.complete && this.titleCover.naturalWidth === W && this.titleCover.naturalHeight === H) {
       ctx.save();
       ctx.globalAlpha = this.clamp(intro / 0.55, 0, 1);
       ctx.imageSmoothingEnabled = false;
@@ -10743,40 +11197,16 @@ export class ZheYiShenGame {
       this.feedback.audioEnabled() ? '声音开' : '声音关',
       this.feedback.audioEnabled() ? UI_PALETTE.hospitalBlueGray : '#57585d',
     );
-  }
-
-  private renderAudioPrompt(): void {
-    const ctx = this.ctx;
-    const elapsed = Math.max(0, (performance.now() - this.audioPromptStartedAt) / 1000);
-    const appear = this.reducedMotion ? 1 : this.clamp(elapsed / 0.24, 0, 1);
-    const eased = 1 - (1 - appear) * (1 - appear);
-    ctx.fillStyle = `rgba(5,5,8,${(0.82 * eased).toFixed(3)})`;
-    ctx.fillRect(0, 0, W, H);
-    ctx.save();
-    ctx.translate(0, Math.round((1 - eased) * 12));
-    ctx.globalAlpha = eased;
-    drawCutCornerPanel(ctx, 24, 188, 312, 248, '#17181d', UI_PALETTE.hospitalBlueGray, 4, 2);
-    ctx.textAlign = 'center';
+    this.drawBreathActionButton(TITLE_CODEX_RECT, '物证册', UI_PALETTE.oldRed);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(8, 8, 12, 0.78)';
+    ctx.fillRect(229, 591, 119, 29);
+    ctx.strokeStyle = UI_PALETTE.paperDim;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(229.5, 591.5, 118, 28);
     ctx.fillStyle = UI_PALETTE.paperLight;
-    ctx.font = `bold 18px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillText('要听见这一生吗', 180, 232);
-    ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `11px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText('广播、电话和没说完的话，会在对应的人生现场出现。推荐开启，才能听全叙事线索。', 180, 266, 264, 17, 3);
-    ctx.fillStyle = '#8f8990';
-    ctx.font = `9px ${UI_FONT_STACK}`;
-    ctx.fillText('只播放预置音频，不使用麦克风', 180, 326);
-
-    this.drawBreathActionButton(AUDIO_PROMPT_ENABLE_RECT, '听见这一生', UI_PALETTE.hospitalBlueGray);
-    this.drawBreathActionButton(AUDIO_PROMPT_MUTE_RECT, '安静地开始', '#606168');
-    ctx.textAlign = 'center';
-    const recommendX = AUDIO_PROMPT_ENABLE_RECT.x + AUDIO_PROMPT_ENABLE_RECT.width / 2;
-    ctx.fillStyle = UI_PALETTE.oldRed;
-    ctx.fillRect(recommendX - 27, AUDIO_PROMPT_ENABLE_RECT.y - 19, 54, 14);
-    ctx.fillStyle = UI_PALETTE.night;
-    ctx.font = `bold 8px ${UI_FONT_STACK}`;
-    ctx.fillText('推荐开启', recommendX, AUDIO_PROMPT_ENABLE_RECT.y - 9);
-    ctx.restore();
+    ctx.font = `bold 18px ${UI_FONT_STACK}`;
+    ctx.fillText('AI生成内容', 342, 613);
   }
 
   private renderOrigin(): void {
@@ -11075,8 +11505,14 @@ export class ZheYiShenGame {
     ctx.font = `9px ${UI_FONT_STACK}`;
     ctx.fillText(this.originAttempt > 1 ? '上一页没赶上，登记处正在重写' : '家庭、地方和外号都由这一局生成', 180, 513);
     ctx.fillText('没有完成登记，就不会拿假故事开局', 180, 532);
+    this.drawAIDiagnosticBadge(28, 540, 304);
     if (this.originLongWaitReady()) {
-      this.drawBreathActionButton(ORIGIN_RETRY_RECT, '把这一页重新摊开', UI_PALETTE.oldRed);
+      ctx.fillStyle = UI_PALETTE.oldRed;
+      ctx.font = `9px ${UI_ARCHIVE_FONT_STACK}`;
+      ctx.fillText('这页仍在登记，不会重复发起请求', 180, 568);
+      ctx.fillStyle = '#766f64';
+      ctx.font = `8px ${UI_FONT_STACK}`;
+      ctx.fillText('明确失败后才会出现重试入口', 180, 586);
     } else {
       ctx.fillStyle = UI_PALETTE.oldRed;
       ctx.font = `9px ${UI_ARCHIVE_FONT_STACK}`;
@@ -11099,6 +11535,7 @@ export class ZheYiShenGame {
     ctx.fillStyle = UI_PALETTE.ink; ctx.font = `bold 19px ${UI_ARCHIVE_FONT_STACK}`; ctx.fillText('这一生还没有写下来', 180, 284);
     ctx.fillStyle = '#625b51'; ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
     this.wrapText('没有使用兜底人物，也不会带着假故事开局。', 180, 322, 260, 16, 2);
+    this.drawAIDiagnosticBadge(28, 348, 304);
     this.drawBreathActionButton({ x: 73, y: 395, width: 214, height: 70 }, '重新等他出生', UI_PALETTE.hospitalBlueGray);
     ctx.fillStyle = '#766f64'; ctx.font = `9px ${UI_FONT_STACK}`; ctx.fillText('Enter / 空格也可重试', 180, 501);
   }
@@ -11250,13 +11687,14 @@ export class ZheYiShenGame {
     const ctx = this.ctx;
     const direction = this.fateResultDirection;
     if (!direction) return;
+    const displayEncounterIndex = this.fateDisplayEncounterIndex ?? this.encounterIndex;
     const response = event[direction];
     const accent = direction === 'swallow' ? UI_PALETTE.hospitalBlueGray : UI_PALETTE.oldRed;
     const fadeIn = this.clamp((1.1 - this.fateResultMinTimer) / 0.3, 0, 1);
     applyPixelDiscipline(ctx);
     ctx.fillStyle = UI_PALETTE.night;
     ctx.fillRect(0, 0, W, H);
-    drawLifeChapterTrack(ctx, 30, 72, 300, 8, this.encounterIndex + 1, '降生|童年|少年|青年|成年|中年|老年|死亡', 0);
+    drawLifeChapterTrack(ctx, 30, 72, 300, 8, displayEncounterIndex + 1, '降生|童年|少年|青年|成年|中年|老年|死亡', 0);
     ctx.save();
     ctx.globalAlpha = fadeIn;
     drawArchiveFrame(ctx, 20, 184, 320, 258, UI_PALETTE.paper, UI_PALETTE.ink, accent);
@@ -11270,7 +11708,7 @@ export class ZheYiShenGame {
     ctx.font = `9px ${UI_FONT_STACK}`;
     sceneArt.drawFateProfile(ctx, event.profile, 31, 198, 28, 0.88);
     ctx.fillText(
-      this.fitText(`${AGE_LABELS[this.encounterIndex] ?? '这一生'} · ${event.title}`, 164),
+      this.fitText(`${AGE_LABELS[displayEncounterIndex] ?? '这一生'} · ${event.title}`, 164),
       66,
       214,
     );
@@ -11293,15 +11731,25 @@ export class ZheYiShenGame {
     }
     ctx.fillStyle = '#3f3a34';
     ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText(response.result, 180, cursorY, 276, 16, 4);
-    drawStitchDivider(ctx, 56, 393, 248, 'horizontal', '#81786b', 5, 4);
+    this.wrapText(response.result, 180, cursorY, 276, 16, 3);
+    drawStitchDivider(ctx, 56, 374, 248, 'horizontal', '#81786b', 5, 4);
     ctx.textAlign = 'left';
     ctx.fillStyle = '#725e3e';
     ctx.font = `bold 9px ${UI_FONT_STACK}`;
-    ctx.fillText('留下', 48, 416);
+    ctx.fillText('因果', 48, 396);
     ctx.fillStyle = '#514b43';
     ctx.font = `9px ${UI_FONT_STACK}`;
-    ctx.fillText(this.fitText(this.fateResponseMechanics(response), 230), 88, 416);
+    ctx.fillText(
+      this.fitText(response.settlement ? `「${response.settlement.evidence}」` : '旧回执 · 未记录剧情证据', 230),
+      88,
+      396,
+    );
+    ctx.fillStyle = '#725e3e';
+    ctx.font = `bold 9px ${UI_FONT_STACK}`;
+    ctx.fillText('留下', 48, 419);
+    ctx.fillStyle = '#514b43';
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    ctx.fillText(this.fitText(this.fateResponseMechanics(response), 230), 88, 419);
     ctx.restore();
 
     if (this.fateResultMinTimer <= 0) {
@@ -11327,6 +11775,8 @@ export class ZheYiShenGame {
     this.renderComboReveal();
     this.renderOriginBadge();
     this.renderHud();
+    this.renderBackgroundFateStatus();
+    this.renderFirstRunGuide();
     this.renderEdgeHint(this.worldDoor?.x, this.worldDoor?.y, this.worldDoor?.kind === 'light' ? '#e5c96f' : '#c3ccd1');
     this.renderEdgeHint(this.worldStall?.x, this.worldStall?.y, '#d5b45f');
     this.renderEdgeHint(this.worldReward?.x, this.worldReward?.y, '#e5c96f');
@@ -11359,6 +11809,45 @@ export class ZheYiShenGame {
     this.renderXiaoZhangPrompt();
     this.renderOneMoreGamePrompt();
     this.renderLampReleasePrompt();
+  }
+
+  private renderBackgroundFateStatus(): void {
+    const task = this.backgroundFateTask;
+    if (!task) return;
+    const ctx = this.ctx;
+    const dots = '.'.repeat(1 + Math.floor(this.visualTime * 2) % 3);
+    const label = task.status === 'retry' ? `AI生成重试中${dots}` : `AI正在生成回执${dots}`;
+    ctx.save();
+    drawCutCornerPanel(ctx, 112, 70, 136, 24, 'rgba(18,18,24,.88)', UI_PALETTE.hospitalBlueGray, 3, 1);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = UI_PALETTE.paperLight;
+    ctx.font = `bold 8px ${UI_FONT_STACK}`;
+    ctx.fillText(label, 180, 85);
+    ctx.restore();
+  }
+
+  private renderFirstRunGuide(): void {
+    if (!this.firstRunGuideActive || this.encounterIndex !== 0 || this.battleTime >= 12) return;
+    const ctx = this.ctx;
+    const step = this.battleTime < 4 ? 0 : this.battleTime < 8 ? 1 : 2;
+    const lines = [
+      ['先学会走', '按住左下圆盘拖动 · 键盘可用 WASD'],
+      ['这口气会自己找路', '攻击会自动寻找最近的敌人'],
+      ['随时翻开这一身', '右上角暂停 · 查看物证与命运回执'],
+    ] as const;
+    const [title, detail] = lines[step]!;
+    ctx.save();
+    drawCutCornerPanel(ctx, 38, 514, 284, 48, 'rgba(18,18,24,.92)', UI_PALETTE.hospitalBlueGray, 3, 1);
+    ctx.fillStyle = UI_PALETTE.oldRed;
+    ctx.fillRect(50, 525, 3, 24);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = UI_PALETTE.paperLight;
+    ctx.font = `bold 10px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText(title, 62, 532);
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.fillText(detail, 62, 549);
+    ctx.restore();
   }
 
   private renderXiaoZhangPrompt(): void {
@@ -13550,6 +14039,11 @@ export class ZheYiShenGame {
   }
 
   private visibleInLampLight(x: number, y: number, margin = 0): boolean {
+    // Canvas 会裁掉屏幕外像素，但仍会执行完整的精灵、路径和状态绘制。
+    // 保守保留至少 96px 外延，只有整个视觉范围都在屏幕外时才跳过；
+    // 游戏模拟、敌人数量、粒子数量与最终可见画面均不改变。
+    const screenMargin = Math.max(96, margin);
+    if (x + screenMargin < 0 || x - screenMargin > W || y + screenMargin < 0 || y - screenMargin > H) return false;
     if (!this.darkActive || this.darkR >= 320) return true;
     return Math.hypot(x - this.darkCX, y - this.darkCY) <= Math.max(70, this.darkR) + margin;
   }
@@ -16028,6 +16522,12 @@ export class ZheYiShenGame {
       this.resultWon ? '他没有赢，只是终于松了这一口气。' : '他没有走完，但已经走过的都算数。',
       180, 600,
     );
+    ctx.fillStyle = this.codexNewCount > 0 ? UI_PALETTE.raincoatYellow : UI_PALETTE.paperDim;
+    ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText(
+      this.codexNewCount > 0 ? `物证册 · 本局新收录 ${this.codexNewCount} 件` : '物证册 · 翻看这一身',
+      180, RESULT_CODEX_RECT.y + 17,
+    );
   }
 
   private renderResultSeal(): void {
@@ -17392,7 +17892,16 @@ export class ZheYiShenGame {
         cancelAvailable: this.fateFreeWaitElapsed >= FATE_FREE_CANCEL_DELAY,
       },
       fateBuild: this.fateBuild,
-      fateReceipts: this.fateReceipts.map((receipt) => ({ id: receipt.event.id, direction: receipt.direction, result: receipt.result })),
+      fateReceipts: this.fateReceipts.map((receipt) => {
+        const response = receipt.event[receipt.direction];
+        return {
+          id: receipt.event.id,
+          direction: receipt.direction,
+          result: receipt.result,
+          recipeId: response.settlement?.recipeId ?? 'legacy',
+          mechanics: this.fateResponseMechanics(response),
+        };
+      }),
       items: this.items,
       combos: this.activeComboNames(),
       enemyMechanics: {
@@ -18003,13 +18512,25 @@ export class ZheYiShenGame {
           if (RESULT_TABS.includes(resultTab as ResultTab)) this.resultTab = resultTab as ResultTab;
         } else {
           const auditScreen = auditParams.get('audit-screen');
-          if (auditScreen === 'reward' || auditScreen === 'shop' || auditScreen === 'boss' || auditScreen === 'fate' || auditScreen === 'ai-fate' || auditScreen === 'projectile' || auditScreen === 'ledger' || auditScreen === 'memory-recall'
+          if (auditScreen === 'tutorial' || auditScreen === 'reward' || auditScreen === 'shop' || auditScreen === 'boss' || auditScreen === 'fate' || auditScreen === 'ai-fate' || auditScreen === 'projectile' || auditScreen === 'ledger' || auditScreen === 'memory-recall'
             || auditScreen === 'xiao-prompt' || auditScreen === 'xiao-ally' || auditScreen === 'xiao-seat' || auditScreen === 'xiao-box'
             || auditScreen === 'box-count' || auditScreen === 'box-countdown'
             || auditScreen === 'phone-field' || auditScreen === 'phone-answer' || auditScreen === 'phone-story' || auditScreen === 'phone-final'
             || auditScreen === 'lamp-dark' || auditScreen === 'lamp-choice') {
             this.runSeed = 0x20260722;
             this.rngState = this.runSeed;
+            if (auditScreen === 'fate' || auditScreen === 'ai-fate') {
+              const requestedFateSeed = auditParams.get('audit-seed');
+              const parsedFateSeed = requestedFateSeed === null ? Number.NaN : Number(requestedFateSeed);
+              const entropy = new Uint32Array(1);
+              globalThis.crypto?.getRandomValues(entropy);
+              const generatedFateSeed = entropy[0]
+                || ((Date.now() ^ Math.floor(performance.now() * 1000)) >>> 0);
+              this.runSeed = Number.isFinite(parsedFateSeed)
+                ? (parsedFateSeed >>> 0)
+                : generatedFateSeed;
+              this.rngState = this.runSeed;
+            }
             this.encounterIndex = 2;
             const auditAge = Number.parseInt(auditParams.get('audit-age') ?? '', 10);
             if (Number.isFinite(auditAge)) {
@@ -18021,7 +18542,25 @@ export class ZheYiShenGame {
             const auditCoins = Number.parseInt(auditParams.get('coins') ?? '', 10);
             if (Number.isFinite(auditCoins)) this.hero.coins = Math.max(0, Math.min(99, auditCoins));
             this.items = ['front-desk-letter', 'eyebrow-razor'];
-            if (auditScreen === 'memory-recall') {
+            if (auditScreen === 'tutorial') {
+              this.items = [];
+              this.encounterIndex = 0;
+              this.startStage();
+              this.firstRunGuideActive = true;
+              this.auditFirstRunGuide = true;
+              const tutorialSecond = Number.parseFloat(auditParams.get('tutorial-second') ?? '0.5');
+              this.battleTime = this.clamp(Number.isFinite(tutorialSecond) ? tutorialSecond : 0.5, 0, 11.8);
+              this.spawnPause = 999;
+              this.enemies = [];
+              const target = this.createSeekingEnemy('cry-moth', this.heroX, this.heroY - 144);
+              target.speed = 0;
+              target.attackCooldown = 99;
+              this.enemies.push(target);
+              this.shotTimer = 999;
+              this.projectiles = [];
+              this.pendingShots = [];
+              this.auditBossArtActive = true;
+            } else if (auditScreen === 'memory-recall') {
               this.items = [];
               this.encounterIndex = 2;
               this.startStage();
@@ -18316,12 +18855,85 @@ export class ZheYiShenGame {
               this.fateResultDirection = undefined;
               this.state = 'fateEvent';
             } else {
-              this.enemies = [];
-              this.state = 'battle';
-              this.openFate('advance');
+              const auditSnapshot = this.buildLifeSnapshot();
+              const residueItemId = auditParams.get('audit-residue') === '1'
+                ? auditSnapshot.fateItemCandidates[0]
+                : undefined;
+              if (residueItemId) {
+                const residueItem = getItem(residueItemId);
+                const residueIsAccountState = residueItem.slot === 'shadow'
+                  || /(会员|朋友圈|已读|账号|报告|验证|聊天|连续记录|头像|链接)/.test(residueItem.name);
+                const residueResult = residueIsAccountState
+                  ? `班主任在他手机上确认「${residueItem.name}」已经开通，他保存了页面回执。`
+                  : `班主任把${residueItem.name}递给他，他收下后装进口袋。`;
+                const residueEvidence = residueIsAccountState
+                  ? `${residueItem.name}」已经开通`
+                  : `${residueItem.name}递给他`;
+                const residueFact = residueIsAccountState
+                  ? `放学时，班主任在教室门口叫住他，让他看手机上待确认的「${residueItem.name}」页面。`
+                  : `放学时，班主任在教室门口叫住他，把刚捡到的${residueItem.name}放在讲台上。`;
+                const auditResidueFate = validateFateEvent({
+                  id: 'audit-residue-receipt',
+                  title: '袖口掉下一件东西',
+                  fact: residueFact,
+                  scene: { time: '放学时', place: '学校教室门口', people: '他和班主任' },
+                  profile: '交换',
+                  memoryId: 'audit_residue_receipt',
+                  memoryText: `有人把${residueItem.name}交还给他`,
+                  unavoidable: { kind: 'none', amount: 0, item: null },
+                  swallow: {
+                    label: '只记住名字',
+                    poison: { doubt: 1 },
+                    result: '他把那个名字又念了一遍，然后空着手走出教室。',
+                    residue: {
+                      carrier: 'memory',
+                      motif: 'echo',
+                      intensity: 'normal',
+                      evidence: '把那个名字又念了一遍',
+                      recipeId: 'memory_only',
+                    },
+                  },
+                  exhale: {
+                    label: '把东西收好',
+                    poison: { pride: 1 },
+                    result: residueResult,
+                    residue: {
+                      carrier: 'item',
+                      motif: 'possession',
+                      intensity: 'normal',
+                      evidence: residueEvidence,
+                      recipeId: `keep_item:${residueItemId}`,
+                      candidateItemId: residueItemId,
+                    },
+                  },
+                  source: 'local',
+                }, auditSnapshot, { requireResidue: true });
+                if (auditResidueFate) {
+                  this.currentFate = auditResidueFate;
+                  this.aiFateState = 'gpt';
+                  this.fateDestination = 'advance';
+                  this.fateAnim = 1;
+                  this.fateResultDirection = undefined;
+                  this.state = 'fateEvent';
+                }
+              }
+              if (!this.currentFate) {
+                this.enemies = [];
+                this.state = 'battle';
+                this.openFate('advance');
+              }
             }
           }
         }
+      }
+      const auditFateResult = auditParams.get('audit-fate-result');
+      if ((auditFateResult === 'swallow' || auditFateResult === 'exhale')
+        && this.state === 'fateEvent'
+        && this.currentFate
+        && !this.fateResultDirection) {
+        this.resolveFate(auditFateResult);
+        this.fateExitTimer = 0;
+        this.fateResultMinTimer = 0;
       }
       if (auditParams.get('audit-joystick') === 'edge' && this.state === 'battle') {
         this.joyPointerId = 999;

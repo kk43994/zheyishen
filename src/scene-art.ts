@@ -1,3 +1,5 @@
+import { loadArtImage } from './art-runtime';
+
 const ROOM_URLS = {
   lamp: new URL('./assets/rooms/lamp.png', import.meta.url).href,
   inner: new URL('./assets/rooms/inner.png', import.meta.url).href,
@@ -22,10 +24,9 @@ type RoomArt = keyof typeof ROOM_URLS;
 type EndingArt = keyof typeof ENDING_URLS;
 
 function loadImage(url: string, onload: (image: HTMLImageElement) => void): void {
-  const image = new Image();
-  image.decoding = 'async';
-  image.onload = () => onload(image);
-  image.src = url;
+  void loadArtImage(url).then(onload).catch((error: unknown) => {
+    console.error('正式场景美术加载失败；完整美术闸门应阻断启动。', error);
+  });
 }
 
 class SceneArt {

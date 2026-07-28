@@ -1,5 +1,7 @@
 // UI 纹理与饰件：image2 基底 + scripts/process_ui_textures.py 规整产物。
-// 全部为可选增强：未加载完成时所有绘制函数保持原样，不产生任何视觉变化。
+// 正式入口由完整美术闸门保证这些纹理已解码；null 分支只供开发期诊断。
+import { loadArtImage } from './art-runtime';
+
 const PAPER_URL = new URL('./assets/ui/paper-texture.png', import.meta.url).href;
 const NIGHT_URL = new URL('./assets/ui/night-texture.png', import.meta.url).href;
 const CORNER_URL = new URL('./assets/ui/corner-ornament.png', import.meta.url).href;
@@ -25,10 +27,9 @@ const STAMP_BUTTON_INDEX: Record<StampButtonState, number> = {
 };
 
 function loadImage(url: string, onload: (image: HTMLImageElement) => void): void {
-  const image = new Image();
-  image.decoding = 'async';
-  image.onload = () => onload(image);
-  image.src = url;
+  void loadArtImage(url, 'critical').then(onload).catch((error: unknown) => {
+    console.error('正式 UI 纹理加载失败；完整美术闸门应阻断启动。', error);
+  });
 }
 
 class UiTextures {

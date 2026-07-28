@@ -86,7 +86,7 @@ requireToken(game, "shooting ? 'shoot' : 'follow'", '友军没有按射击冷却
 requireToken(game, "action ?? (hostile ? 'backstab' : 'idle')", '岗位幸存者没有切换背刺动作');
 requireToken(pixelRuntime, "export type XiaoZhangPixelAction = 'idle' | 'follow' | 'shoot' | 'backstab'", '小张图集缺少四行动作合同');
 requireToken(pixelRuntime, "new URL('./assets/characters/xiao-zhang.png'", '小张渲染器没有引用正式图集');
-requireToken(pixelRuntime, 'Xiao Zhang Image2 atlas failed to load; using code-drawn fallback.', '小张图集缺少损坏回退');
+requireToken(pixelRuntime, 'the production art gate must block startup.', '小张图集失败没有遵守正式美术阻断策略');
 
 let atlasManifest;
 try {
@@ -126,7 +126,7 @@ console.log(JSON.stringify({
   valid: errors.length === 0,
   storyline: '青年帮助选择 -> 不可受击纸团友军 -> 岗位幸存者背刺 -> 中年工牌纸箱与领带',
   checks: 68,
-  artStatus: '独立 Image2 64×64 四行动作图集已接入；等待、跟随、投纸、背刺均由运行时消费，代码绘制仅作损坏回退',
+  artStatus: '独立 Image2 64×64 四行动作图集已接入；等待、跟随、投纸、背刺均由运行时消费，正式入口由完整美术闸门保护',
   errors,
 }, null, 2));
 

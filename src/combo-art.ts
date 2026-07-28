@@ -1,7 +1,8 @@
 // 组合彩蛋奥义插画：image2 基底 + scripts/process_combo_art.py 规整产物。
-// 图集缺失或尺寸不符时静默降级（演出退回文字字幕）。
+// 正式入口由完整美术闸门保证图集可用；缺失时阻断启动，不向玩家降级展示。
 // 清单走构建期 JSON 内联——平台规范禁止一切运行时网络请求（fetch/XHR）。
 import comboArtManifest from './assets/ui/combo-art.json';
+import { loadArtImage } from './art-runtime';
 
 const ART_URL = new URL('./assets/ui/combo-art.png', import.meta.url).href;
 
@@ -23,9 +24,7 @@ class ComboArtAtlas {
     const manifest = comboArtManifest as ComboArtManifest;
     this.manifest = manifest;
     this.missing = new Set(manifest.missing ?? []);
-    const image = new Image();
-    image.decoding = 'async';
-    image.onload = () => {
+    void loadArtImage(ART_URL).then((image) => {
       const rows = Math.ceil(manifest.keys.length / manifest.cols);
       if (image.naturalWidth !== manifest.cellWidth * manifest.cols
         || image.naturalHeight !== manifest.cellHeight * rows) {
@@ -33,9 +32,7 @@ class ComboArtAtlas {
         return;
       }
       this.image = image;
-    };
-    image.onerror = () => console.warn('奥义插画图集加载失败，演出退回文字。');
-    image.src = ART_URL;
+    }).catch(() => console.error('奥义插画图集加载失败；完整美术闸门应阻断启动。'));
   }
 
   get cellSize(): { width: number; height: number } | null {

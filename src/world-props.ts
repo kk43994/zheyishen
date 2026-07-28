@@ -1,5 +1,7 @@
 // 场景摆设贴图：image2 基底 + scripts/process_image2_props.py 规整产物。
 // 图集 6 行（章节）x 4 列（变体），单元格 40x44，精灵底部居中锚定。
+import { loadArtImage } from './art-runtime';
+
 const PROPS_URL = new URL('./assets/world/props.png', import.meta.url).href;
 
 export const PROP_VARIANTS = 4;
@@ -25,18 +27,14 @@ class StageClutterFloorSet {
   load(): void {
     STAGE_FLOOR_URLS.forEach((url, index) => {
       if (this.images[index]) return;
-      const image = new Image();
-      image.decoding = 'async';
-      image.onload = () => {
+      void loadArtImage(url).then((image) => {
         if (image.naturalWidth !== STAGE_FLOOR_W || image.naturalHeight !== STAGE_FLOOR_H) {
           console.warn(`第 ${index + 1} 章背景尺寸错误: ${image.naturalWidth}x${image.naturalHeight}`);
           return;
         }
+        this.images[index] = image;
         this.loaded.add(index);
-      };
-      image.onerror = () => console.warn(`第 ${index + 1} 章人生背景加载失败，继续使用地面色带回退。`);
-      image.src = url;
-      this.images[index] = image;
+      }).catch(() => console.error(`第 ${index + 1} 章人生背景加载失败；完整美术闸门应阻断启动。`));
     });
   }
 
@@ -60,18 +58,14 @@ class WorldPropAtlas {
 
   load(): void {
     if (this.image) return;
-    const image = new Image();
-    image.decoding = 'async';
-    image.onload = () => {
+    void loadArtImage(PROPS_URL, 'critical').then((image) => {
       if (image.naturalWidth !== CELL_W * PROP_VARIANTS || image.naturalHeight !== CELL_H * STAGE_ROWS) {
         console.warn(`场景摆设图集尺寸错误: ${image.naturalWidth}x${image.naturalHeight}`);
         return;
       }
+      this.image = image;
       this.loaded = true;
-    };
-    image.onerror = () => console.warn('场景摆设图集加载失败，继续使用程序化摆设回退。');
-    image.src = PROPS_URL;
-    this.image = image;
+    }).catch(() => console.error('场景摆设图集加载失败；完整美术闸门应阻断启动。'));
   }
 
   slice(stageIndex: number, variant: number): HTMLCanvasElement | null {
@@ -114,18 +108,14 @@ class WorldEntityAtlas {
 
   load(): void {
     if (this.image) return;
-    const image = new Image();
-    image.decoding = 'async';
-    image.onload = () => {
+    void loadArtImage(ENTITIES_URL, 'critical').then((image) => {
       if (image.naturalWidth !== ENTITY_CELL_W * ENTITY_COUNT || image.naturalHeight !== ENTITY_CELL_H) {
         console.warn(`世界实体图集尺寸错误: ${image.naturalWidth}x${image.naturalHeight}`);
         return;
       }
+      this.image = image;
       this.loaded = true;
-    };
-    image.onerror = () => console.warn('世界实体图集加载失败，继续使用程序化实体回退。');
-    image.src = ENTITIES_URL;
-    this.image = image;
+    }).catch(() => console.error('世界实体图集加载失败；完整美术闸门应阻断启动。'));
   }
 
   slice(kind: WorldEntityKind): HTMLCanvasElement | null {
@@ -166,18 +156,14 @@ class WorldPlinthAtlas {
 
   load(): void {
     if (this.image) return;
-    const image = new Image();
-    image.decoding = 'async';
-    image.onload = () => {
+    void loadArtImage(PLINTHS_URL, 'critical').then((image) => {
       if (image.naturalWidth !== PLINTH_CELL_W * PLINTH_COUNT || image.naturalHeight !== PLINTH_CELL_H) {
         console.warn(`道具台图集尺寸错误: ${image.naturalWidth}x${image.naturalHeight}`);
         return;
       }
+      this.image = image;
       this.loaded = true;
-    };
-    image.onerror = () => console.warn('道具台图集加载失败，继续使用程序化道具台回退。');
-    image.src = PLINTHS_URL;
-    this.image = image;
+    }).catch(() => console.error('道具台图集加载失败；完整美术闸门应阻断启动。'));
   }
 
   slice(kind: WorldPlinthKind): HTMLCanvasElement | null {

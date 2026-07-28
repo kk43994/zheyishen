@@ -16,7 +16,10 @@ import type {
   SpecialRoomKind,
 } from './types';
 
-const STORAGE_KEY = 'zys-run-checkpoint-v1';
+export const RUN_CHECKPOINT_VERSION = 2 as const;
+export const RUN_CHECKPOINT_STORAGE_KEY = 'zys-run-checkpoint-v2';
+const LEGACY_STORAGE_KEYS = ['zys-run-checkpoint-v1'] as const;
+const INVALID_BACKUP_KEY = 'zys-run-checkpoint-invalid-backup-v1';
 const CHECKPOINT_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
 export type CheckpointScreen = 'origin' | 'battle' | 'fateEvent' | 'itemReward' | 'shop' | 'specialRoom';
@@ -54,6 +57,19 @@ export interface CheckpointRewardAcquire {
   destination: CheckpointRewardDestination;
 }
 
+export interface CheckpointPreparedFate {
+  encounterIndex: number;
+  event: FateEvent;
+}
+
+export interface CheckpointPendingFreeFate {
+  encounterIndex: number;
+  event: FateEvent;
+  direction: FateDirection;
+  playerText: string;
+  fateItemCandidates: ItemId[];
+}
+
 export interface CheckpointPersistentState {
   firstFateDamageReduction: number;
   strainTendency: number;
@@ -76,7 +92,7 @@ export interface CheckpointPersistentState {
 }
 
 export interface RunCheckpoint {
-  version: 1;
+  version: typeof RUN_CHECKPOINT_VERSION;
   savedAt: number;
   screen: CheckpointScreen;
   runSeed: number;
@@ -98,8 +114,16 @@ export interface RunCheckpoint {
   /** 累计永久损失的最大生命（病历本伤害加成的依据）。旧档缺省 0。 */
   permanentHpLost: number;
   currentFate?: FateEvent;
+  /** 已完成校验、可以在触发帧同步消费的命运牌；不保存进行中的请求。 */
+  preparedFate?: CheckpointPreparedFate;
+  /** 玩家已经亲口说出、但 AI 回执尚未兑现的命运；恢复后会在后台重新请求。 */
+  pendingFreeFate?: CheckpointPendingFreeFate;
   fateDestination: CheckpointFateDestination;
   fateResultDirection?: FateDirection;
+  /** 后台回执关闭后只回战斗，不得再次推进关卡。 */
+  fateResultReturn?: 'destination' | 'battle';
+  fatePlayerText?: string;
+  fateDisplayEncounterIndex?: number;
   initialItemReward: boolean;
   rewardTitle: string;
   rewardReturn: 'battle' | 'advance';
@@ -285,14 +309,15 @@ function validationSnapshot(
     poisons,
     memories: memories.slice(-10),
     recentEvents: [],
+    recentFateRecipes: [],
     fateItemCandidates: [...FATE_ITEM_IDS],
     swallowCount: stats.swallowed,
     exhaleCount: stats.exhaled,
   };
 }
 
-function parseCheckpoint(value: unknown): RunCheckpoint | null {
-  if (!isRecord(value) || value.version !== 1) return null;
+export function parseRunCheckpoint(value: unknown): RunCheckpoint | null {
+  if (!isRecord(value) || (value.version !== 1 && value.version !== RUN_CHECKPOINT_VERSION)) return null;
   const savedAt = finite(value.savedAt, 0, 0, Number.MAX_SAFE_INTEGER);
   if (savedAt <= 0 || Date.now() - savedAt > CHECKPOINT_MAX_AGE) return null;
   const screen = typeof value.screen === 'string' && SCREENS.includes(value.screen as CheckpointScreen)
@@ -322,19 +347,82 @@ function parseCheckpoint(value: unknown): RunCheckpoint | null {
     .filter((line) => memories.includes(line));
   const stats = runStats(value.stats);
   const snapshot = validationSnapshot(runSeed, encounterIndex, hero, items, poisons, memories, stats);
+  const fateResultReturn = value.fateResultReturn === 'battle' ? 'battle' : 'destination';
+  const fatePlayerText = typeof value.fatePlayerText === 'string'
+    ? value.fatePlayerText.trim().replace(/\s+/g, ' ').slice(0, 24)
+    : '';
+  const fateDisplayEncounterIndex = value.fateDisplayEncounterIndex === undefined
+    ? undefined
+    : integer(value.fateDisplayEncounterIndex, encounterIndex, 0, 5);
 
   const receiptValues = Array.isArray(value.fateReceipts) ? value.fateReceipts.slice(-8) : [];
   const fateReceipts: FateReceipt[] = [];
   for (const entry of receiptValues) {
     if (!isRecord(entry)) return null;
-    const event = validateFateEvent(entry.event, snapshot);
+    let event = validateFateEvent(entry.event, snapshot, { allowAlreadyOwnedFateItem: true });
+    if (!event) {
+      for (let historicalIndex = 0; historicalIndex < LIFE_STAGE_CANON.length; historicalIndex += 1) {
+        const historicalSnapshot = validationSnapshot(
+          runSeed,
+          historicalIndex,
+          hero,
+          items,
+          poisons,
+          memories,
+          stats,
+        );
+        event = validateFateEvent(entry.event, historicalSnapshot, { allowAlreadyOwnedFateItem: true });
+        if (event) break;
+      }
+    }
     const direction = entry.direction === 'swallow' || entry.direction === 'exhale' ? entry.direction : null;
     const result = typeof entry.result === 'string' ? entry.result.trim().slice(0, 120) : '';
+    const echo = typeof entry.echo === 'string' ? entry.echo.trim().slice(0, 90) : '';
     if (!event || !direction || !result) return null;
-    fateReceipts.push({ event, direction, result });
+    fateReceipts.push({ event, direction, result, echo: echo || undefined });
   }
-  const currentFate = value.currentFate === undefined ? undefined : validateFateEvent(value.currentFate, snapshot) ?? undefined;
+  const currentFateSnapshot = fateResultReturn === 'battle' && fateDisplayEncounterIndex !== undefined
+    ? validationSnapshot(runSeed, fateDisplayEncounterIndex, hero, items, poisons, memories, stats)
+    : snapshot;
+  const currentFate = value.currentFate === undefined
+    ? undefined
+    : validateFateEvent(value.currentFate, currentFateSnapshot, { allowAlreadyOwnedFateItem: true }) ?? undefined;
   if (screen === 'fateEvent' && !currentFate) return null;
+  let preparedFate: CheckpointPreparedFate | undefined;
+  if (isRecord(value.preparedFate)) {
+    const preparedEncounterIndex = integer(value.preparedFate.encounterIndex, encounterIndex, 0, 5);
+    const preparedEvent = preparedEncounterIndex === encounterIndex
+      ? validateFateEvent(value.preparedFate.event, snapshot)
+      : null;
+    if (preparedEvent) preparedFate = { encounterIndex: preparedEncounterIndex, event: preparedEvent };
+  }
+  let pendingFreeFate: CheckpointPendingFreeFate | undefined;
+  if (isRecord(value.pendingFreeFate)) {
+    const pendingEncounterIndex = integer(value.pendingFreeFate.encounterIndex, encounterIndex, 0, 5);
+    const pendingSnapshot = validationSnapshot(runSeed, pendingEncounterIndex, hero, items, poisons, memories, stats);
+    const pendingEvent = validateFateEvent(
+      value.pendingFreeFate.event,
+      pendingSnapshot,
+      { allowAlreadyOwnedFateItem: true },
+    );
+    const pendingDirection = value.pendingFreeFate.direction === 'swallow'
+      || value.pendingFreeFate.direction === 'exhale'
+      ? value.pendingFreeFate.direction
+      : null;
+    const pendingPlayerText = typeof value.pendingFreeFate.playerText === 'string'
+      ? value.pendingFreeFate.playerText.trim().replace(/\s+/g, ' ').slice(0, 24)
+      : '';
+    if (pendingEvent && pendingDirection && pendingPlayerText) {
+      pendingFreeFate = {
+        encounterIndex: pendingEncounterIndex,
+        event: pendingEvent,
+        direction: pendingDirection,
+        playerText: pendingPlayerText,
+        fateItemCandidates: itemIds(value.pendingFreeFate.fateItemCandidates, 3)
+          .filter((id) => FATE_ITEM_IDS.includes(id)),
+      };
+    }
+  }
 
   const fateDestination = typeof value.fateDestination === 'string' && FATE_DESTINATIONS.includes(value.fateDestination as CheckpointFateDestination)
     ? value.fateDestination as CheckpointFateDestination
@@ -346,7 +434,7 @@ function parseCheckpoint(value: unknown): RunCheckpoint | null {
   const rewardReturn = value.rewardReturn === 'battle' ? 'battle' : 'advance';
 
   return {
-    version: 1,
+    version: RUN_CHECKPOINT_VERSION,
     savedAt,
     screen,
     runSeed,
@@ -366,8 +454,13 @@ function parseCheckpoint(value: unknown): RunCheckpoint | null {
     battleTime: finite(value.battleTime, 0, 0, 600),
     permanentHpLost: finite(value.permanentHpLost, 0, 0, 999),
     currentFate,
+    preparedFate,
+    pendingFreeFate,
     fateDestination,
     fateResultDirection,
+    fateResultReturn,
+    fatePlayerText: fatePlayerText || undefined,
+    fateDisplayEncounterIndex,
     initialItemReward: value.initialItemReward === true,
     rewardTitle: typeof value.rewardTitle === 'string' ? value.rewardTitle.trim().slice(0, 64) : '',
     rewardReturn,
@@ -389,20 +482,36 @@ function parseCheckpoint(value: unknown): RunCheckpoint | null {
 }
 
 export function readRunCheckpoint(): RunCheckpoint | null {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = parseCheckpoint(JSON.parse(raw));
-    if (!parsed) window.localStorage.removeItem(STORAGE_KEY);
-    return parsed;
-  } catch {
-    return null;
+  for (const key of [RUN_CHECKPOINT_STORAGE_KEY, ...LEGACY_STORAGE_KEYS]) {
+    try {
+      const raw = window.localStorage.getItem(key);
+      if (!raw) continue;
+      const parsed = parseRunCheckpoint(JSON.parse(raw));
+      if (parsed) {
+        if (key !== RUN_CHECKPOINT_STORAGE_KEY) writeRunCheckpoint(parsed);
+        return parsed;
+      }
+      window.localStorage.setItem(INVALID_BACKUP_KEY, JSON.stringify({
+        rejectedAt: Date.now(),
+        sourceKey: key,
+        raw: raw.slice(0, 256_000),
+      }));
+      window.localStorage.removeItem(key);
+    } catch {
+      // A malformed or inaccessible entry must not prevent checking the next
+      // legacy key. The run remains playable even when storage is disabled.
+    }
   }
+  return null;
 }
 
 export function writeRunCheckpoint(checkpoint: RunCheckpoint): boolean {
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(checkpoint));
+    window.localStorage.setItem(RUN_CHECKPOINT_STORAGE_KEY, JSON.stringify({
+      ...checkpoint,
+      version: RUN_CHECKPOINT_VERSION,
+    }));
+    for (const key of LEGACY_STORAGE_KEYS) window.localStorage.removeItem(key);
     return true;
   } catch {
     return false;
@@ -411,7 +520,8 @@ export function writeRunCheckpoint(checkpoint: RunCheckpoint): boolean {
 
 export function clearRunCheckpoint(): void {
   try {
-    window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(RUN_CHECKPOINT_STORAGE_KEY);
+    for (const key of LEGACY_STORAGE_KEYS) window.localStorage.removeItem(key);
   } catch {
     // Some embedded browsers disable storage; the run remains playable without resume.
   }

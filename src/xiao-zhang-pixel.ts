@@ -1,4 +1,5 @@
 import manifest from './assets/characters/xiao-zhang.json';
+import { loadArtImage } from './art-runtime';
 
 export type XiaoZhangPixelAction = 'idle' | 'follow' | 'shoot' | 'backstab';
 
@@ -13,24 +14,19 @@ class XiaoZhangPixelAtlas {
   private loaded = false;
 
   constructor() {
-    const image = new Image();
-    image.decoding = 'async';
-    image.onload = () => {
+    void loadArtImage(ATLAS_URL).then((image) => {
       const expectedWidth = FRAME_WIDTH * manifest.columns;
       const expectedHeight = FRAME_HEIGHT * Object.keys(ACTIONS).length;
       if (image.naturalWidth !== expectedWidth || image.naturalHeight !== expectedHeight) {
         console.warn(`Xiao Zhang atlas size mismatch: ${image.naturalWidth}x${image.naturalHeight}`);
-        this.image = null;
         return;
       }
+      this.image = image;
       this.loaded = true;
-    };
-    image.onerror = () => {
-      console.warn('Xiao Zhang Image2 atlas failed to load; using code-drawn fallback.');
+    }).catch(() => {
+      console.error('Xiao Zhang Image2 atlas failed to load; the production art gate must block startup.');
       this.image = null;
-    };
-    image.src = ATLAS_URL;
-    this.image = image;
+    });
   }
 
   slice(action: XiaoZhangPixelAction, frame: number): HTMLCanvasElement | null {

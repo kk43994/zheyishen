@@ -6,12 +6,25 @@ const ROOT = resolve(import.meta.dirname, '..');
 const manifestPath = resolve(ROOT, 'public/assets/audio/sound-manifest.json');
 const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
 const platformAudioSource = await readFile(resolve(ROOT, 'src/audio-platform.ts'), 'utf8');
+const bufferedAudioSource = await readFile(resolve(ROOT, 'src/audio.ts'), 'utf8');
+const gameSource = await readFile(resolve(ROOT, 'src/game.ts'), 'utf8');
 const entries = [
   ...Object.entries(manifest.sfx ?? {}).map(([id, value]) => [`sfx:${id}`, value]),
   ...Object.entries(manifest.ambience ?? {}).map(([id, value]) => [`ambience:${id}`, value]),
 ];
 
 if (entries.length !== 16) throw new Error(`expected 16 sound assets, received ${entries.length}`);
+for (const [name, source] of [['platform', platformAudioSource], ['buffered', bufferedAudioSource]]) {
+  if (!source.includes("DEFAULT_AUDIO_MIGRATION_KEY = 'zhe-yi-shen:default-audio-v2'")) {
+    throw new Error(`${name} audio runtime does not migrate the release default to enabled`);
+  }
+  if (!source.includes('private volume = readInitialVolume()')) {
+    throw new Error(`${name} audio runtime does not initialize the enabled default`);
+  }
+}
+if (gameSource.includes('audioPromptOpen') || gameSource.includes('安静地开始')) {
+  throw new Error('title flow still blocks on the removed audio-choice prompt');
+}
 
 let totalBytes = 0;
 let productionAmbienceBytes = 0;

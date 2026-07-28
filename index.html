@@ -4,13 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <meta name="theme-color" content="#09090d" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=" />
     <title>这一身</title>
   </head>
   <body>
     <main id="app" aria-label="这一身互动体验">
       <canvas id="game-canvas" width="360" height="640" tabindex="0" role="application" aria-label="这一身互动区域，触摸拖动移动，也可使用方向键或 WASD"></canvas>
-      <div id="loading" role="status">正在等他出生…</div>
+      <div id="loading" role="status" aria-live="polite">
+        <span class="ai-generated-label">AI生成内容</span>
+        <div class="loading-card">
+          <span class="loading-kicker">互动档案 · 分页装订</span>
+          <strong>正在把这一身穿完整</strong>
+          <div class="loading-track" aria-hidden="true"><i data-art-progress></i></div>
+          <span class="loading-detail" data-art-detail>打开档案 · 0%</span>
+          <small>六章正式美术全部装订完成后才进入，不展示程序化降级画面</small>
+        </div>
+      </div>
     </main>
     <noscript>需要启用 JavaScript 才能进入挑战。</noscript>
     <script type="module" src="/src/main.ts"></script>

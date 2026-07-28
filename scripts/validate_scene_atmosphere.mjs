@@ -110,7 +110,7 @@ if (!worldSource) {
 if (!telegraphSource) {
   errors.push('renderBossTelegraph method not found');
 } else {
-  for (const token of ['edge: \'#df4d70\'', 'const segment = Math.min(11', 'distance += 42']) {
+  for (const token of ['edge: \'#df4d70\'', 'const chevronSpan = Math.min(band * 0.6, 11)', 'distance += 42']) {
     if (!telegraphSource.includes(token)) errors.push(`directional warning readability token missing: ${token}`);
   }
   for (const token of [

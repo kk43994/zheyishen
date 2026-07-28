@@ -1,5 +1,5 @@
 // 战斗 VFX 贴图：image2 基底 + scripts/process_vfx_ui_pack.py 规整产物。
-// 全部为可选增强：图集未加载时调用方保持程序化绘制，不产生任何视觉变化。
+// 正式入口由完整美术闸门保证这些图集已解码；null 分支只供开发期诊断。
 import projectilesManifest from './assets/vfx/projectiles.json';
 import projectileAnimManifest from './assets/vfx/projectile-anim.json';
 import hitsManifest from './assets/vfx/hits.json';
@@ -8,6 +8,7 @@ import synergyManifest from './assets/vfx/synergy.json';
 import statusManifest from './assets/vfx/status.json';
 import poisonManifest from './assets/ui/poison.json';
 import joystickManifest from './assets/ui/joystick.json';
+import { loadArtImage } from './art-runtime';
 
 const PROJECTILES_URL = new URL('./assets/vfx/projectiles.png', import.meta.url).href;
 const PROJECTILE_ANIM_URL = new URL('./assets/vfx/projectile-anim.png', import.meta.url).href;
@@ -30,39 +31,25 @@ class SpriteAtlas {
   constructor(private url: string, private manifest: GridManifest) {}
 
   load(): void {
-    if (this.image) return;
-    const image = new Image();
-    image.decoding = 'async';
-    image.onload = () => {
+    if (this.image || this.readyPromise) return;
+    this.readyPromise = loadArtImage(this.url, 'critical').then((image) => {
       const { cell, cols, rows } = this.manifest;
       if (image.naturalWidth !== cell * cols || image.naturalHeight !== cell * rows) {
-        console.warn(`VFX 图集尺寸错误: ${this.url} ${image.naturalWidth}x${image.naturalHeight}`);
-        return;
+        throw new Error(`VFX 图集尺寸错误: ${this.url} ${image.naturalWidth}x${image.naturalHeight}`);
       }
+      this.image = image;
       this.loaded = true;
-    };
-    image.onerror = () => {
+    }).catch((error: unknown) => {
       console.warn(`VFX 图集加载失败: ${this.url}`);
       this.image = null;
-    };
-    image.src = this.url;
-    this.image = image;
+      throw error;
+    });
   }
 
   whenReady(): Promise<void> {
     if (this.loaded) return Promise.resolve();
     this.load();
-    if (this.readyPromise) return this.readyPromise;
-    this.readyPromise = new Promise((resolve, reject) => {
-      const image = this.image;
-      if (!image) {
-        reject(new Error(`VFX 图集尚未初始化: ${this.url}`));
-        return;
-      }
-      image.addEventListener('load', () => resolve(), { once: true });
-      image.addEventListener('error', () => reject(new Error(`VFX 图集加载失败: ${this.url}`)), { once: true });
-    });
-    return this.readyPromise;
+    return this.readyPromise ?? Promise.reject(new Error(`VFX 图集尚未初始化: ${this.url}`));
   }
 
   get ready(): boolean { return this.loaded; }

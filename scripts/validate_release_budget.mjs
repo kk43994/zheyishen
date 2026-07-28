@@ -34,6 +34,7 @@ const forbiddenPresent = records
   .map((record) => record.path)
   .filter((path) => forbidden.includes(path)
     || path.startsWith('assets/audio/voice-concepts/')
+    || path.startsWith('assets/audio/voice-review/')
     || /^assets\/audio\/ambience\/.*\.wav$/i.test(path));
 
 if (forbiddenPresent.length) {

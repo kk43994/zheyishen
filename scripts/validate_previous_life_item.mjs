@@ -72,10 +72,14 @@ for (const [token, message] of [
 const voiceManifest = JSON.parse(voiceManifestText);
 const voiceQa = JSON.parse(voiceQaText);
 const voiceEntry = voiceManifest.find((entry) => entry.id === 'light-room-left-this');
+const keeperVoiceEntry = voiceManifest.find((entry) => entry.id === 'light-room-keeper');
 const qaEntry = voiceQa.find((entry) => entry.id === 'light-room-left-this');
 checks += 5;
 if (voiceEntry?.file !== 'assets/audio/voice/light-room-left-this.mp3') errors.push('看守人音频清单缺少正式 MP3');
-if (voiceEntry?.provider !== 'Kokoro' || voiceEntry?.voiceId !== 'zm_025') errors.push('看守人录音没有沿用留灯间既有音色');
+if (!keeperVoiceEntry
+  || voiceEntry?.provider !== keeperVoiceEntry.provider
+  || voiceEntry?.voiceId !== keeperVoiceEntry.voiceId
+) errors.push('看守人录音没有沿用留灯间既有音色');
 if (voiceEntry?.bytes < 512 || voiceEntry?.durationMs < 400) errors.push('看守人录音文件数据无效');
 if (qaEntry?.pronunciationErrorRate !== 0 || qaEntry?.status !== 'pass') errors.push('看守人录音未通过发音 QA');
 if (qaEntry?.expected !== '有人把它留在这儿了') errors.push('看守人录音 QA 正典文本不一致');
@@ -93,7 +97,7 @@ console.log(JSON.stringify({
   checks,
   flow: 'latest ledger -> random ordinary item -> light-room slot 1 -> optional normal pickup -> current memory',
   fixedStoryItems: 'excluded to preserve current-run chapter inheritance',
-  audio: 'light-room-left-this: Kokoro zm_025; pronunciation QA pass',
+  audio: `light-room-left-this: ${voiceEntry?.provider ?? 'unknown'} ${voiceEntry?.voiceId ?? 'unknown'}; pronunciation QA pass`,
   errors,
 }, null, 2));
 

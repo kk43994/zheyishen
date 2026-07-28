@@ -5,11 +5,10 @@
 抠绿/连通域/硬 alpha 逻辑与 scripts/image2/boss-skills-v1/build_atlases.py、
 scripts/process_vfx_ui_pack.py 同源（底边对齐，帧内边留 3px，禁触边）。
 
-产出：
-  src/assets/enemies/boss-skills-v2/father-charge-8f.png  (8x64 = 512x64)
-  src/assets/enemies/boss-skills-v2/praise-slam-8f.png    (8x96 = 768x96)
+产出（每招一条，帧尺寸与 v1 同招一致）：
+  src/assets/enemies/boss-skills-v2/<skill>-8f.png   (frame*8 x frame 横条)
   src/assets/enemies/boss-skills-v2/manifest.json
-  src/assets/enemies/boss-skills-v2/preview-*.png         (4x 放大暗底预览条)
+  src/assets/enemies/boss-skills-v2/preview-*.png    (4x 放大暗底预览条)
 
 用法：python3 scripts/image2/boss-skills-v2/process.py
 """
@@ -28,10 +27,27 @@ OUT_DIR = ROOT / "src/assets/enemies/boss-skills-v2"
 CLEAR = (0, 0, 0, 0)
 
 # (招式id, 帧尺寸=与 v1 同招一致, 展示尺寸, [图A, 图B])
+# 帧尺寸对照 boss-skills-v1/manifest.json：praise-p2*=96/192, bus=64/144,
+# keeper=64/160, father p2=64/96。
 SKILLS = [
     ("father-charge", 64, 96, ["father-charge-a", "father-charge-b"]),
     ("praise-slam", 96, 192, ["praise-slam-a", "praise-slam-b"]),
+    ("praise-p2-paper", 96, 192, ["praise-p2-paper-a", "praise-p2-paper-b"]),
+    ("praise-p2-optimize", 96, 192, ["praise-p2-optimize-a", "praise-p2-optimize-b"]),
+    ("praise-p2-dismiss", 96, 192, ["praise-p2-dismiss-a", "praise-p2-dismiss-b"]),
+    ("praise-p2-one-seat", 96, 192, ["praise-p2-one-seat-a", "praise-p2-one-seat-b"]),
+    ("bus-depart", 64, 144, ["bus-depart-a", "bus-depart-b"]),
+    ("keeper-name", 64, 160, ["keeper-name-a", "keeper-name-b"]),
+    ("keeper-strip", 64, 160, ["keeper-strip-a", "keeper-strip-b"]),
+    ("father-tantrum", 64, 96, ["father-tantrum-a", "father-tantrum-b"]),
+    ("father-tears", 64, 96, ["father-tears-a", "father-tears-b"]),
 ]
+
+# 目检确认 A/B 表体型漂移、需要跨表归一的招式（试点两招与收灯的帧4/5姿态差是合法的）
+NORMALIZE_SHEET_B = {
+    "praise-p2-paper", "praise-p2-optimize", "praise-p2-dismiss",
+    "praise-p2-one-seat", "bus-depart", "keeper-name",
+}
 
 
 def strip_green(image: Image.Image) -> Image.Image:
@@ -130,13 +146,32 @@ def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     manifest: dict = {
         "schemaVersion": 1,
-        "note": "8-frame pilot atlases (horizontal strips), frame size matches boss-skills-v1",
+        "note": "8-frame atlases (horizontal strips), frame size matches boss-skills-v1 per skill",
         "skills": {},
     }
     for skill_id, frame, display, sheets in SKILLS:
+        missing = [sheet for sheet in sheets if not (RAW_DIR / f"{sheet}.png").exists()]
+        if missing:
+            print(f"{skill_id}: raw missing ({', '.join(missing)}), skip", flush=True)
+            continue
         cells: list[Image.Image] = []
         for sheet in sheets:
             cells.extend(extract_frames(RAW_DIR / f"{sheet}.png"))
+        # 跨表归一（仅对确认漂移的招式）：帧4(A末)与帧5(B首)本应几乎同姿态，
+        # 生图仍常在两张表之间漂移主体比例。以两帧主体高度比把 B 表四帧预缩放
+        # 对齐 A 表，再做全局适配。NEAREST 保持硬 alpha 以过 validate_frame。
+        if skill_id in NORMALIZE_SHEET_B and len(cells) == 8:
+            ratio = cells[3].height / cells[4].height
+            if abs(ratio - 1) > 0.06:
+                ratio = max(0.75, min(1.35, ratio))
+                cells[4:] = [
+                    cell.resize(
+                        (max(1, round(cell.width * ratio)), max(1, round(cell.height * ratio))),
+                        Image.Resampling.NEAREST,
+                    )
+                    for cell in cells[4:]
+                ]
+                print(f"{skill_id}: sheet-B rescaled x{ratio:.3f} to match sheet A", flush=True)
         # 整招统一缩放比例：以最大帧撑满 frame-6，避免逐帧归一化造成体型呼吸
         max_size = max(8, frame - 6)
         scale = min(max_size / max(c.width for c in cells), max_size / max(c.height for c in cells))
