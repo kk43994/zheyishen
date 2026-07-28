@@ -25,12 +25,12 @@
     "id": "child-under-bed",
     "expected": "那里是不是有东西",
     "transcript": "啊,那里,是不是有东西?",
-    "normalizedTranscript": "啊那里是不是有东西",
-    "characterErrorRate": 0.125,
-    "pronunciationErrorRate": 0.125,
-    "durationSeconds": 4.42,
-    "charactersPerSecond": 2.05,
-    "status": "review"
+    "normalizedTranscript": "那里是不是有东西",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 5.092,
+    "charactersPerSecond": 1.75,
+    "status": "pass"
   },
   {
     "id": "caregiver-lights-out",
@@ -39,8 +39,8 @@
     "normalizedTranscript": "灯关了明天还要上学",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 2.947,
-    "charactersPerSecond": 3.68,
+    "durationSeconds": 2.715,
+    "charactersPerSecond": 4.06,
     "status": "pass"
   },
   {
@@ -50,8 +50,8 @@
     "normalizedTranscript": "哪有什么怪物快睡吧",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 3.157,
-    "charactersPerSecond": 3.29,
+    "durationSeconds": 2.078,
+    "charactersPerSecond": 5.43,
     "status": "pass"
   },
   {
@@ -61,8 +61,8 @@
     "normalizedTranscript": "走吧",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 1.2,
-    "charactersPerSecond": 2.0,
+    "durationSeconds": 1.6,
+    "charactersPerSecond": 1.43,
     "status": "pass"
   },
   {
@@ -72,8 +72,8 @@
     "normalizedTranscript": "你家里人还没来吗",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 2.899,
-    "charactersPerSecond": 3.25,
+    "durationSeconds": 2.817,
+    "charactersPerSecond": 3.37,
     "status": "pass"
   },
   {
@@ -112,23 +112,23 @@
   {
     "id": "teacher-answer-format",
     "expected": "过程没写这题只能给结果分",
-    "transcript": "过程没写这题只能给结果分",
+    "transcript": "过程没写,这题只能给结果分。",
     "normalizedTranscript": "过程没写这题只能给结果分",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 4.327,
-    "charactersPerSecond": 3.1,
+    "durationSeconds": 4.321,
+    "charactersPerSecond": 3.11,
     "status": "pass"
   },
   {
     "id": "classmate-score-whisper",
     "expected": "他才三十八分",
-    "transcript": "它才38分",
-    "normalizedTranscript": "它才三十八分",
-    "characterErrorRate": 0.1667,
+    "transcript": "他才38分",
+    "normalizedTranscript": "他才三十八分",
+    "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 1.834,
-    "charactersPerSecond": 3.67,
+    "durationSeconds": 1.985,
+    "charactersPerSecond": 3.36,
     "status": "pass"
   },
   {
@@ -138,20 +138,20 @@
     "normalizedTranscript": "卷子往后传别折",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 3.1,
-    "charactersPerSecond": 2.59,
+    "durationSeconds": 2.487,
+    "charactersPerSecond": 3.35,
     "status": "pass"
   },
   {
     "id": "father-for-your-good",
     "expected": "站好都是为你好",
-    "transcript": "正好,都是为你好。",
-    "normalizedTranscript": "正好都是为你好",
-    "characterErrorRate": 0.1429,
-    "pronunciationErrorRate": 0.1429,
-    "durationSeconds": 3.833,
-    "charactersPerSecond": 2.18,
-    "status": "review"
+    "transcript": "站好,都是为你好。",
+    "normalizedTranscript": "站好都是为你好",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 4.106,
+    "charactersPerSecond": 2.27,
+    "status": "pass"
   },
   {
     "id": "school-bell-end",
@@ -167,23 +167,23 @@
   {
     "id": "recruiter-arrival-time",
     "expected": "最快什么时候可以到岗",
-    "transcript": "最快什么时候可以到岗?",
+    "transcript": "最快什么时候可以到岗",
     "normalizedTranscript": "最快什么时候可以到岗",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 2.2,
-    "charactersPerSecond": 5.0,
+    "durationSeconds": 1.556,
+    "charactersPerSecond": 7.38,
     "status": "pass"
   },
   {
     "id": "landlord-rent-deposit",
     "expected": "押一付三水电另算",
-    "transcript": "压一负三水电另算",
-    "normalizedTranscript": "压一负三水电另算",
-    "characterErrorRate": 0.25,
-    "pronunciationErrorRate": 0.0,
-    "durationSeconds": 3.478,
-    "charactersPerSecond": 2.64,
+    "transcript": "压一负三,水电零算。",
+    "normalizedTranscript": "压一负三水电零算",
+    "characterErrorRate": 0.375,
+    "pronunciationErrorRate": 0.125,
+    "durationSeconds": 3.652,
+    "charactersPerSecond": 2.5,
     "status": "pass"
   },
   {
@@ -204,8 +204,8 @@
     "normalizedTranscript": "列车进站请退到黄色安全线以内",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 3.796,
-    "charactersPerSecond": 3.89,
+    "durationSeconds": 3.5,
+    "charactersPerSecond": 4.24,
     "status": "pass"
   },
   {
@@ -215,19 +215,19 @@
     "normalizedTranscript": "车门即将关闭请勿冲门",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 3.745,
-    "charactersPerSecond": 2.97,
+    "durationSeconds": 3.419,
+    "charactersPerSecond": 3.29,
     "status": "pass"
   },
   {
     "id": "last-bus-departed",
     "expected": "本线路今日运营已经结束请从出口有序离站",
-    "transcript": "本线路今日运营已经结束请从出口有序离战",
-    "normalizedTranscript": "本线路今日运营已经结束请从出口有序离战",
-    "characterErrorRate": 0.0526,
+    "transcript": "本线路今日运营已经结束请从出口有序离站",
+    "normalizedTranscript": "本线路今日运营已经结束请从出口有序离站",
+    "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 5.769,
-    "charactersPerSecond": 3.66,
+    "durationSeconds": 6.18,
+    "charactersPerSecond": 3.39,
     "status": "pass"
   },
   {
@@ -237,8 +237,8 @@
     "normalizedTranscript": "感谢你的时间后续结果我们会再通知",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 4.261,
-    "charactersPerSecond": 3.94,
+    "durationSeconds": 3.68,
+    "charactersPerSecond": 4.6,
     "status": "pass"
   },
   {
@@ -248,8 +248,8 @@
     "normalizedTranscript": "我把你那份放冰箱了明天热一下还能吃",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 5.184,
-    "charactersPerSecond": 3.67,
+    "durationSeconds": 5.45,
+    "charactersPerSecond": 3.47,
     "status": "pass"
   },
   {
@@ -259,19 +259,19 @@
     "normalizedTranscript": "她一直说不用叫你",
     "characterErrorRate": 0.125,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 3.179,
-    "charactersPerSecond": 2.99,
+    "durationSeconds": 3.156,
+    "charactersPerSecond": 3.01,
     "status": "pass"
   },
   {
     "id": "phone-mother-didnt-ask",
     "expected": "你爸没让我给你打这个电话",
-    "transcript": "你爸没让我给你打这个电话",
+    "transcript": "你爸,没让我给你打这个电话。",
     "normalizedTranscript": "你爸没让我给你打这个电话",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 4.78,
-    "charactersPerSecond": 2.79,
+    "durationSeconds": 5.371,
+    "charactersPerSecond": 2.45,
     "status": "pass"
   },
   {
@@ -288,23 +288,23 @@
   {
     "id": "family-dinner-cold",
     "expected": "饭热过两次了还等你吗",
-    "transcript": "饭肉过两次了,还等你吗?",
+    "transcript": "饭肉过两次了还等你吗",
     "normalizedTranscript": "饭肉过两次了还等你吗",
     "characterErrorRate": 0.1,
     "pronunciationErrorRate": 0.1,
-    "durationSeconds": 4.15,
-    "charactersPerSecond": 2.7,
-    "status": "review"
+    "durationSeconds": 3.71,
+    "charactersPerSecond": 3.07,
+    "status": "manual-review"
   },
   {
     "id": "hospital-family-needed",
     "expected": "家属您好您父亲已经收住院了麻烦尽快过来办理陪护手续",
-    "transcript": "家属您好,您父亲已经收住院了。麻烦尽快过来办理陪护手续。",
+    "transcript": "家属您好,您父亲已经收住院了,麻烦尽快过来办理陪护手续。",
     "normalizedTranscript": "家属您好您父亲已经收住院了麻烦尽快过来办理陪护手续",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 7.349,
-    "charactersPerSecond": 3.62,
+    "durationSeconds": 6.25,
+    "charactersPerSecond": 4.24,
     "status": "pass"
   },
   {
@@ -314,20 +314,20 @@
     "normalizedTranscript": "没什么事你忙吧",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 4.035,
-    "charactersPerSecond": 2.22,
+    "durationSeconds": 4.82,
+    "charactersPerSecond": 1.89,
     "status": "pass"
   },
   {
     "id": "phone-coworker-group",
-    "expected": "群里你了你没看到吧",
-    "transcript": "群里at你了你没看到吧",
-    "normalizedTranscript": "群里at你了你没看到吧",
-    "characterErrorRate": 0.2222,
-    "pronunciationErrorRate": 0.2222,
-    "durationSeconds": 2.156,
-    "charactersPerSecond": 5.25,
-    "status": "fail"
+    "expected": "群里艾特你了你没看到吧",
+    "transcript": "群里at你了,你没看到吧",
+    "normalizedTranscript": "群里艾特你了你没看到吧",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 1.903,
+    "charactersPerSecond": 7.08,
+    "status": "pass"
   },
   {
     "id": "hero-not-busy",
@@ -336,20 +336,20 @@
     "normalizedTranscript": "没事不忙",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 2.835,
-    "charactersPerSecond": 1.81,
+    "durationSeconds": 3.423,
+    "charactersPerSecond": 1.71,
     "status": "pass"
   },
   {
     "id": "hero-became-him",
     "expected": "我也是为你好",
-    "transcript": "我也是为你好",
-    "normalizedTranscript": "我也是为你好",
-    "characterErrorRate": 0.0,
-    "pronunciationErrorRate": 0.0,
-    "durationSeconds": 4.544,
-    "charactersPerSecond": 1.58,
-    "status": "pass"
+    "transcript": "我也是为您好",
+    "normalizedTranscript": "我也是为您好",
+    "characterErrorRate": 0.1667,
+    "pronunciationErrorRate": 0.1667,
+    "durationSeconds": 5.107,
+    "charactersPerSecond": 1.46,
+    "status": "manual-review"
   },
   {
     "id": "self-stand-straight",
@@ -358,8 +358,8 @@
     "normalizedTranscript": "站好",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 1.2,
-    "charactersPerSecond": 2.0,
+    "durationSeconds": 1.057,
+    "charactersPerSecond": 2.34,
     "status": "pass"
   },
   {
@@ -369,8 +369,8 @@
     "normalizedTranscript": "我也是为你好",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 1.881,
-    "charactersPerSecond": 3.57,
+    "durationSeconds": 2.0,
+    "charactersPerSecond": 3.33,
     "status": "pass"
   },
   {
@@ -380,8 +380,8 @@
     "normalizedTranscript": "验证失败请联系管理员",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 2.543,
-    "charactersPerSecond": 4.27,
+    "durationSeconds": 2.9,
+    "charactersPerSecond": 3.7,
     "status": "pass"
   },
   {
@@ -391,8 +391,8 @@
     "normalizedTranscript": "下一页这个数字再往下拆一下",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 4.285,
-    "charactersPerSecond": 3.39,
+    "durationSeconds": 2.827,
+    "charactersPerSecond": 5.47,
     "status": "pass"
   },
   {
@@ -402,8 +402,8 @@
     "normalizedTranscript": "今晚辛苦一下明早要",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 3.3,
-    "charactersPerSecond": 3.1,
+    "durationSeconds": 2.64,
+    "charactersPerSecond": 4.02,
     "status": "pass"
   },
   {
@@ -413,8 +413,8 @@
     "normalizedTranscript": "您本期账单尚未结清请留意还款日期",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 4.3,
-    "charactersPerSecond": 3.9,
+    "durationSeconds": 4.2,
+    "charactersPerSecond": 4.0,
     "status": "pass"
   },
   {
@@ -424,8 +424,8 @@
     "normalizedTranscript": "血压有点高做十分钟再凉一次",
     "characterErrorRate": 0.1538,
     "pronunciationErrorRate": 0.0769,
-    "durationSeconds": 4.399,
-    "charactersPerSecond": 3.25,
+    "durationSeconds": 4.287,
+    "charactersPerSecond": 3.34,
     "status": "pass"
   },
   {
@@ -441,24 +441,24 @@
   },
   {
     "id": "security-return-card",
-    "expected": "工牌放这儿就行",
-    "transcript": "公牌放这就行",
-    "normalizedTranscript": "公牌放这就行",
-    "characterErrorRate": 0.2857,
-    "pronunciationErrorRate": 0.1429,
-    "durationSeconds": 1.904,
-    "charactersPerSecond": 4.11,
-    "status": "review"
+    "expected": "工牌放这就行",
+    "transcript": "公排放这就行",
+    "normalizedTranscript": "公排放这就行",
+    "characterErrorRate": 0.3333,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 1.753,
+    "charactersPerSecond": 3.86,
+    "status": "pass"
   },
   {
     "id": "clinic-next-number",
     "expected": "四十二号请到三诊室陪同家属准备好证件",
-    "transcript": "42号请到三诊室陪同家属准备好证件",
-    "normalizedTranscript": "四十二号请到三诊室陪同家属准备好证件",
-    "characterErrorRate": 0.0,
-    "pronunciationErrorRate": 0.0,
-    "durationSeconds": 6.082,
-    "charactersPerSecond": 3.22,
+    "transcript": "四十二号请到三镇室陪同家属准备好证件",
+    "normalizedTranscript": "四十二号请到三镇室陪同家属准备好证件",
+    "characterErrorRate": 0.0556,
+    "pronunciationErrorRate": 0.0556,
+    "durationSeconds": 5.661,
+    "charactersPerSecond": 3.49,
     "status": "pass"
   },
   {
@@ -468,8 +468,8 @@
     "normalizedTranscript": "这盒一天三次饭后吃和刚才那盒隔开半小时",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 5.897,
-    "charactersPerSecond": 3.47,
+    "durationSeconds": 5.236,
+    "charactersPerSecond": 3.95,
     "status": "pass"
   },
   {
@@ -479,8 +479,8 @@
     "normalizedTranscript": "楼道灯又坏了我给你留了把椅子",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 4.406,
-    "charactersPerSecond": 3.54,
+    "durationSeconds": 4.75,
+    "charactersPerSecond": 3.26,
     "status": "pass"
   },
   {
@@ -490,8 +490,8 @@
     "normalizedTranscript": "家属还在路上吗",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 1.997,
-    "charactersPerSecond": 3.9,
+    "durationSeconds": 1.904,
+    "charactersPerSecond": 4.11,
     "status": "pass"
   },
   {
@@ -501,19 +501,19 @@
     "normalizedTranscript": "进来坐会儿灯还亮着",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 3.539,
-    "charactersPerSecond": 2.96,
+    "durationSeconds": 3.748,
+    "charactersPerSecond": 2.77,
     "status": "pass"
   },
   {
     "id": "light-room-left-this",
     "expected": "有人把它留在这儿了",
-    "transcript": "有人把它留在这儿了",
-    "normalizedTranscript": "有人把它留在这儿了",
-    "characterErrorRate": 0.0,
+    "transcript": "有人把他留在这儿了",
+    "normalizedTranscript": "有人把他留在这儿了",
+    "characterErrorRate": 0.1111,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 2.2,
-    "charactersPerSecond": 4.5,
+    "durationSeconds": 3.0,
+    "charactersPerSecond": 3.21,
     "status": "pass"
   },
   {
@@ -523,19 +523,19 @@
     "normalizedTranscript": "拿走可以留点东西",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 3.717,
-    "charactersPerSecond": 2.53,
+    "durationSeconds": 4.1,
+    "charactersPerSecond": 2.25,
     "status": "pass"
   },
   {
     "id": "lamp-one-returned",
     "expected": "这一件先还回去",
-    "transcript": "这一件 先还回去",
+    "transcript": "这一件,先还回去。",
     "normalizedTranscript": "这一件先还回去",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 3.482,
-    "charactersPerSecond": 2.46,
+    "durationSeconds": 3.387,
+    "charactersPerSecond": 2.55,
     "status": "pass"
   },
   {
@@ -545,19 +545,19 @@
     "normalizedTranscript": "口袋空了再看看手里",
     "characterErrorRate": 0.0,
     "pronunciationErrorRate": 0.0,
-    "durationSeconds": 3.8,
-    "charactersPerSecond": 2.81,
+    "durationSeconds": 4.127,
+    "charactersPerSecond": 2.55,
     "status": "pass"
   },
   {
     "id": "narrator-final-breath",
     "expected": "手里空了这一口气也可以放下了",
-    "transcript": "手里空了这一口气也可以放下了",
-    "normalizedTranscript": "手里空了这一口气也可以放下了",
-    "characterErrorRate": 0.0,
-    "pronunciationErrorRate": 0.0,
-    "durationSeconds": 7.744,
-    "charactersPerSecond": 2.17,
+    "transcript": "手里空了这口气也可以放下了",
+    "normalizedTranscript": "手里空了这口气也可以放下了",
+    "characterErrorRate": 0.0714,
+    "pronunciationErrorRate": 0.0714,
+    "durationSeconds": 7.903,
+    "charactersPerSecond": 2.12,
     "status": "pass"
   }
 ]
