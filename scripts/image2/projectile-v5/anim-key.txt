@@ -1,0 +1,9 @@
+Create one cohesive four-frame game projectile animation sheet from the supplied references.
+
+Reference order:
+1. Canonical style board: match the game's hard-edged pixel language and dark outline weight.
+2. Current projectile atlas: negative scale reference only; reject its tiny, weak key.
+3. Approved only-key item art: preserve the unmistakable antique brass key identity.
+4. Projectile-v5 forms sheet: match its oversized brass key, red tassel and aggressive speed-chip language exactly.
+
+Output exactly four isolated frames in a clean 2x2 grid on perfectly flat pure #00FF00, with no dividers. The same oversized antique brass key spins clockwise: upper-left points right, upper-right tilts down-right, lower-left points down, lower-right tilts down-left. Keep the bow, shaft, teeth and short red tassel identical in all frames. The key must fill 84-90% of every quadrant, use a thick near-black brown outline, large gold highlight planes and two or three detached brass speed chips. No tiny inventory icon, no lock, no keyring, no text, no border, no shadow, no transparency.

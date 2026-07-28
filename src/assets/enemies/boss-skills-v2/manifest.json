@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "note": "8-frame pilot atlases (horizontal strips), frame size matches boss-skills-v1",
+  "skills": {
+    "father-charge": {
+      "atlas": "father-charge-8f.png",
+      "frame": 64,
+      "frames": 8,
+      "display": 96,
+      "loop": false,
+      "sourceSheets": [
+        "father-charge-a.png",
+        "father-charge-b.png"
+      ]
+    },
+    "praise-slam": {
+      "atlas": "praise-slam-8f.png",
+      "frame": 96,
+      "frames": 8,
+      "display": 192,
+      "loop": false,
+      "sourceSheets": [
+        "praise-slam-a.png",
+        "praise-slam-b.png"
+      ]
+    }
+  }
+}

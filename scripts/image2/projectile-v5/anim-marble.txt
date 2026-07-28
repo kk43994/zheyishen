@@ -1,0 +1,9 @@
+Create one cohesive four-frame game projectile animation sheet from the supplied references.
+
+Reference order:
+1. Canonical style board: match the game's hard-edged pixel language and dark outline weight.
+2. Current projectile atlas: negative scale reference only; reject its tiny dark marble.
+3. Approved marble item art: preserve the literal round glass-marble identity.
+4. Projectile-v5 combat sheet: match its huge amber-and-teal glass marble exactly.
+
+Output exactly four isolated frames in a clean 2x2 grid on perfectly flat pure #00FF00, with no dividers. Every frame is the same huge perfectly round glass marble at the same position and size. Animate only its internal amber-and-teal S-shaped ribbon and two white glints rotating clockwise through four phases. Keep the outer circular silhouette completely stable, 78-84% of each quadrant, with a thick blue-black outline. Add at most two tiny angular glint sparks outside the sphere. It must read as a literal toy marble at 28x28, not a planet, eye, bubble or magic orb. No text, border, shadow or transparency.

@@ -1,0 +1,17 @@
+Create one 2x2 game-projectile source sheet by editing from the supplied project references.
+
+Reference order:
+1. Canonical project style board: hard pixel clusters, dark outline and worn fairytale materials.
+2. Current projectile atlas: negative reference. Reject its tiny bone row, repeated drops, pale hand-like cone and weak empty echo rings.
+3-6. Approved item sheets for the baby tooth, always crying, breath on glass and AI echo: borrow identity only.
+
+Output: exactly four isolated high-impact projectiles on perfectly flat pure #00FF00, clean 2x2 grid, no dividers. Every sprite faces right, fills at least 82% of its quadrant and remains readable at 28x28.
+
+Quadrants:
+1. BONE: a brutal ivory three-segment tooth-and-bone drill bolt, largest segment as a pointed front, cracked warm-bone texture, dark umber outline, two ivory chips in its wake. Not a neat medical diagram.
+2. TEAR: one enormous glossy indigo-blue tear projectile tilted into flight, white eye-like highlight, deep navy outline, two small water blades trailing. Emotional and heavy, not cute.
+3. CONE: a broad short condensation blast, bright moon-white center, jagged icy-blue outer edge, forked wake and a blunt wall of fog at the front. It should cover a wide lane like a shotgun blast, not resemble a hand or fish.
+4. ECHO: three offset copies of one mint-white breath projectile overlapping into a single aggressive forward chain, each copy darker and more transparent-looking by stepped solid colors. No empty rings, no chat icon.
+
+Use dramatic asymmetric shapes, saturated accents and thick outlines. Each effect must carry a visible forward strike direction.
+Avoid: tiny particles as the main subject, pale-on-pale, smooth transparency, anti-aliasing, gradients, bloom haze, text, UI, scenery, borders, watermark, shadows on green.

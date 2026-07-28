@@ -1,6 +1,7 @@
 // 战斗 VFX 贴图：image2 基底 + scripts/process_vfx_ui_pack.py 规整产物。
 // 全部为可选增强：图集未加载时调用方保持程序化绘制，不产生任何视觉变化。
 import projectilesManifest from './assets/vfx/projectiles.json';
+import projectileAnimManifest from './assets/vfx/projectile-anim.json';
 import hitsManifest from './assets/vfx/hits.json';
 import savesManifest from './assets/vfx/saves.json';
 import synergyManifest from './assets/vfx/synergy.json';
@@ -9,6 +10,7 @@ import poisonManifest from './assets/ui/poison.json';
 import joystickManifest from './assets/ui/joystick.json';
 
 const PROJECTILES_URL = new URL('./assets/vfx/projectiles.png', import.meta.url).href;
+const PROJECTILE_ANIM_URL = new URL('./assets/vfx/projectile-anim.png', import.meta.url).href;
 const HITS_URL = new URL('./assets/vfx/hits.png', import.meta.url).href;
 const SAVES_URL = new URL('./assets/vfx/saves.png', import.meta.url).href;
 const SYNERGY_URL = new URL('./assets/vfx/synergy.png', import.meta.url).href;
@@ -149,6 +151,37 @@ class SpriteAtlas {
 }
 
 export const projectileAtlas = new SpriteAtlas(PROJECTILES_URL, projectilesManifest as GridManifest);
+export const projectileAnimAtlas = new SpriteAtlas(PROJECTILE_ANIM_URL, projectileAnimManifest as GridManifest);
+// v5 铺开：全部 18 种形态都有 4 帧飞行循环（2026-07-26 打样确认后扩全）。
+// breath0/2/3 是呼吸凝实态专属行（"breath" 行=态1），恢复"雾→珠"的成长表达。
+const PROJECTILE_IMAGE2_ANIMATED_FORMS = new Set([
+  'breath', 'marble', 'key', 'slash',
+  'rain', 'tear', 'ice', 'laugh', 'serial', 'paper', 'razor',
+  'lens', 'sound', 'link', 'button', 'stone', 'cone', 'stamp',
+  'breath0', 'breath2', 'breath3',
+]);
+
+/** 呼吸凝实态 0-3 → 帧动画行名（态1 复用 "breath" 行）。 */
+export function breathAnimForm(firmnessState: number): string {
+  return firmnessState <= 0 ? 'breath0' : firmnessState === 1 ? 'breath' : firmnessState === 2 ? 'breath2' : 'breath3';
+}
+
+/** 弹体 v5 飞行帧动画：4 帧循环 @10fps。没有该形态的帧时返回 null，调用方回落静态图。 */
+export function projectileFlightFrame(
+  form: string,
+  time: number,
+  seed: number,
+  color?: string,
+  tintStrength = 0.22,
+): HTMLCanvasElement | null {
+  const manifest = projectileAnimManifest as GridManifest & { forms?: string[] };
+  if (!PROJECTILE_IMAGE2_ANIMATED_FORMS.has(form) || !manifest.forms?.includes(form)) return null;
+  const frame = Math.floor(time * 10 + seed) % 4;
+  const name = `${form}${frame}`;
+  return color
+    ? projectileAnimAtlas.outlinedTinted(name, color, tintStrength)
+    : projectileAnimAtlas.named(name);
+}
 export const hitAtlas = new SpriteAtlas(HITS_URL, hitsManifest as GridManifest);
 export const saveAtlas = new SpriteAtlas(SAVES_URL, savesManifest as GridManifest);
 export const synergyAtlas = new SpriteAtlas(SYNERGY_URL, synergyManifest as GridManifest);
@@ -180,6 +213,7 @@ export function hitFrame(material: HitMaterial, progress: number): HTMLCanvasEle
 }
 
 projectileAtlas.load();
+projectileAnimAtlas.load();
 hitAtlas.load();
 saveAtlas.load();
 synergyAtlas.load();

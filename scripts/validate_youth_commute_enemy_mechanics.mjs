@@ -91,7 +91,7 @@ for (const [token, message] of [
   ["'missed-bus': 'last-bus'", '普通错过的车没有映射 64px 正式图集'],
   ["'last-bus': 'last-bus-hd'", '末班车小 Boss 没有映射高清图集'],
   ["'last-bus-hd': 144", '末班车小 Boss 显示尺寸不是 144px'],
-  ["'last-bus': 64", '普通错过的车显示尺寸不是 64px'],
+  ["'last-bus': 68", '普通错过的车显示尺寸不是 68px'],
 ] ) requireToken(enemyPixel, token, message);
 
 for (const [source, label] of [[canon, '正典'], [plan, '升级计划']]) {

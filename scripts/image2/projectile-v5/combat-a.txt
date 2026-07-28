@@ -1,0 +1,17 @@
+Create one 2x2 game-projectile source sheet by editing from the supplied project references.
+
+Reference order:
+1. Canonical project style board: hard pixels and worn material texture.
+2. Current projectile atlas: negative reference. Reject the small brown crescent, hairline needle, quiet blue marble and generic ice cluster.
+3-6. Approved wooden sword, eyebrow razor, marble and freezer item sheets: preserve their recognizable identity.
+
+Output: exactly four isolated combat projectiles on perfectly flat pure #00FF00, clean 2x2 grid, no dividers. Each fills 84-92% of its quadrant width and 58-82% height, with a thick dark outline and exaggerated silhouette that survives 28x28.
+
+Quadrants:
+1. WOOD SLASH: a massive blunt cream-and-warm-wood crescent strike, about 2.6 times wider than tall, thick splintered brown underside, broken rear edge, three large wood chips and two short impact cuts. It is the wooden sword's swing force, not a flying sword.
+2. RAZOR EDGE: an extremely long silver-white cutting streak with a thick gunmetal lower edge, cyan lightning glint at the front and two clean parallel after-cuts. Thin relative to the others but never a one-pixel line.
+3. MARBLE: one oversized literal glass marble with a vivid amber-and-turquoise cat-eye swirl, glossy white highlight, near-black outline and two angular ricochet sparks. It should look heavy enough to crack the screen.
+4. FREEZER: a compressed white breath core trapped inside a huge jagged cyan frost cage, four outward ice spikes, deep teal outline and two square frost chunks behind it. Not a decorative snowflake.
+
+Every cell should feel like a different arcade special attack, not inventory iconography.
+Avoid: small icons, pale uniform palette, cloud blob, flying sword object, razor handle, planet, jewel, snowflake, smooth vector art, anti-aliasing, gradients, bloom haze, scenery, UI, text, watermark.

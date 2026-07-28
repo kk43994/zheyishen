@@ -123,8 +123,10 @@ if joystick_values["JOYSTICK_SAFE_BOTTOM"] + 38 > 594:
     fail("joystick base can overlap the bottom breath panel")
 if "this.updateJoystickInput(p.x, p.y)" not in game or "JOYSTICK_INPUT_RADIUS / distance" not in game:
     fail("joystick input must keep circular clamping")
-if "if (event.pointerType === 'mouse') return;" not in game:
-    fail("desktop mouse input must not activate the mobile joystick")
+# 2026-07-26 用户裁决翻转：桌面鼠标拖动必须能启动摇杆（"移动 bug"报告——
+# 评委/桌面预览用鼠标拖动主角不动会被当成坏档）。旧规则"mouse return"作废。
+if "if (event.pointerType === 'mouse') return;" in game:
+    fail("desktop mouse drag must also drive the joystick (user ruling 2026-07-26)")
 if "canvas.dataset.gameState = this.renderGameState()" not in game:
     fail("development builds must expose the runtime snapshot on the game canvas")
 if "const FATE_FREE_CANCEL_DELAY = 4" not in game or "cancelFreeResponseWait" not in game:

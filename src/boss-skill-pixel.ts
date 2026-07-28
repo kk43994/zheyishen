@@ -173,6 +173,65 @@ class BossSkillAtlas {
 
 const bossSkillAtlas = new BossSkillAtlas();
 
+/** v2 8 帧试点：横排条带图集，存在则优先于 v1 四帧 */
+interface EightFrameSpec { url: string; frame: number; frames: number; display: number }
+const EIGHT_FRAME_SKILLS: Partial<Record<BossSkillId, EightFrameSpec>> = {
+  'father-charge': {
+    url: new URL('./assets/enemies/boss-skills-v2/father-charge-8f.png', import.meta.url).href,
+    frame: 64, frames: 8, display: 96,
+  },
+  'praise-p2-slam': {
+    url: new URL('./assets/enemies/boss-skills-v2/praise-slam-8f.png', import.meta.url).href,
+    frame: 96, frames: 8, display: 192,
+  },
+};
+
+class EightFrameAtlas {
+  private images = new Map<BossSkillId, HTMLImageElement>();
+  private frames = new Map<string, HTMLCanvasElement>();
+
+  constructor() {
+    for (const [id, spec] of Object.entries(EIGHT_FRAME_SKILLS) as Array<[BossSkillId, EightFrameSpec]>) {
+      const image = new Image();
+      image.decoding = 'async';
+      image.onload = () => {
+        if (image.naturalWidth === spec.frame * spec.frames && image.naturalHeight === spec.frame) {
+          this.images.set(id, image);
+        } else console.warn(`8f atlas size mismatch: ${id}`);
+      };
+      image.onerror = () => console.warn(`8f atlas failed: ${id}`);
+      image.src = spec.url;
+    }
+  }
+
+  slice(id: BossSkillId, progress: number): { image: HTMLCanvasElement; display: number } | null {
+    const spec = EIGHT_FRAME_SKILLS[id];
+    const image = this.images.get(id);
+    if (!spec || !image) return null;
+    // 8 帧非匀速曲线：前摇 0-2 帧拖住、爆发 3-5 帧、收势 6-7 缓出
+    const eased = progress < 0.42
+      ? (progress / 0.42) * 3
+      : progress < 0.72
+        ? 3 + ((progress - 0.42) / 0.3) * 3
+        : 6 + ((progress - 0.72) / 0.28) * 2;
+    const frame = Math.max(0, Math.min(spec.frames - 1, Math.floor(eased)));
+    const key = `${id}:${frame}`;
+    const cached = this.frames.get(key);
+    if (cached) return { image: cached, display: spec.display };
+    const canvas = document.createElement('canvas');
+    canvas.width = spec.frame;
+    canvas.height = spec.frame;
+    const ctx = canvas.getContext('2d', { alpha: true });
+    if (!ctx) return null;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(image, frame * spec.frame, 0, spec.frame, spec.frame, 0, 0, spec.frame, spec.frame);
+    this.frames.set(key, canvas);
+    return { image: canvas, display: spec.display };
+  }
+}
+
+const eightFrameAtlas = new EightFrameAtlas();
+
 export class PixelBossSkillRenderer {
   constructor() {
     void bossSkillAtlas.whenReady().catch((error: unknown) => console.warn('Boss skill atlases unavailable.', error));
@@ -185,13 +244,20 @@ export class PixelBossSkillRenderer {
     frame: number,
     faceLeft: boolean,
     displayScale = 1,
+    progress?: number,
   ): boolean {
-    const sprite = bossSkillAtlas.slice(id, frame);
+    // v2 8 帧优先：progress 已知时用连续曲线选帧，动作更顺
+    const sprite = (progress !== undefined ? eightFrameAtlas.slice(id, progress) : null)
+      ?? bossSkillAtlas.slice(id, frame);
     if (!sprite) return false;
     target.save();
     target.imageSmoothingEnabled = false;
     target.translate(Math.round(enemy.x), Math.round(enemy.y));
-    target.scale(faceLeft ? -1 : 1, 1);
+    // 挤压拉伸：爆发帧（2）沿水平微拉伸、垂直微压，收势帧（3）反向回弹——
+    // 幅度控制在 ±6%，像素画上读作"发力"而不是"变形"。
+    const stretchX = frame === 2 ? 1.06 : frame === 3 ? 0.97 : 1;
+    const stretchY = frame === 2 ? 0.95 : frame === 3 ? 1.03 : 1;
+    target.scale((faceLeft ? -1 : 1) * stretchX, stretchY);
     const display = Math.max(1, Math.round(sprite.display * displayScale));
     const offset = Math.floor(display / 2);
     target.drawImage(sprite.image, -offset, -offset, display, display);

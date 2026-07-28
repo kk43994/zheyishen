@@ -118,27 +118,29 @@ export function renderDangerBand(ctx: CanvasRenderingContext2D, band: DangerBand
     return;
   }
   if (band.warn > 0) {
-    // 前摇：描边 + 斜纹。安全带必须**看得出来是一条带**，否则玩家只能靠躲开红的去推断，
+    // 前摇：贴花语言——上下浓、中间透的纵向渐变 + 连续双层边线。
+    // 安全带必须**看得出来是一条带**，否则玩家只能靠躲开红的去推断，
     // 读不出"哪条是对的"——那就不是《标准答案》，只是躲弹幕。
-    ctx.globalAlpha = band.safe ? 0.85 : 0.7;
-    ctx.strokeStyle = band.color;
-    ctx.lineWidth = band.safe ? 3 : 2;
+    const gradient = ctx.createLinearGradient(0, top, 0, top + band.height);
+    gradient.addColorStop(0, band.color + (band.safe ? '55' : '44'));
+    gradient.addColorStop(0.5, band.color + (band.safe ? '2e' : '14'));
+    gradient.addColorStop(1, band.color + (band.safe ? '55' : '44'));
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = gradient;
+    ctx.fillRect(left, top, width, band.height);
+    ctx.globalAlpha = 0.4;
+    ctx.strokeStyle = '#171013';
+    ctx.lineWidth = 4;
     ctx.strokeRect(left, top, width, band.height);
-    ctx.globalAlpha = band.safe ? 0.3 : 0.22;
-    ctx.fillStyle = band.color;
-    if (band.safe) {
-      // 安全带用实底，和不安全带的斜纹在纹理上就分开，不只靠颜色
-      ctx.fillRect(left, top, width, band.height);
-    } else {
-      for (let x = left; x < left + width; x += 14) {
-        ctx.fillRect(Math.round(x), top, 6, band.height);
-      }
-    }
+    ctx.globalAlpha = band.safe ? 0.9 : 0.68;
+    ctx.strokeStyle = band.color;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(left, top, width, band.height);
   } else if (band.active > 0 && !band.safe) {
-    ctx.globalAlpha = 0.42;
+    ctx.globalAlpha = 0.46;
     ctx.fillStyle = band.color;
     ctx.fillRect(left, top, width, band.height);
-    ctx.globalAlpha = 0.9;
+    ctx.globalAlpha = 0.92;
     ctx.fillRect(left, top, width, 2);
     ctx.fillRect(left, top + band.height - 2, width, 2);
   } else if (band.active > 0 && band.safe) {

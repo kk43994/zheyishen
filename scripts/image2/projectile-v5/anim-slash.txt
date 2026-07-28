@@ -1,0 +1,9 @@
+Create one cohesive four-frame game projectile animation sheet from the supplied references.
+
+Reference order:
+1. Canonical style board: match the game's hard-edged pixel language and outline density.
+2. Current projectile atlas: negative scale reference only; reject its thin pale crescent.
+3. Approved wooden-sword item art: preserve warm toy-wood color and blunt emotional character.
+4. Projectile-v5 wooden-slash sheet: use its enormous crescent-shaped wooden shockwave as the exact family target.
+
+Output exactly four isolated frames in a clean 2x2 grid on perfectly flat pure #00FF00, with no dividers. Each frame is the same enormous right-facing blunt wooden crescent shockwave, filling 88-94% of its quadrant width and 72-82% height. Keep the main crescent silhouette stable while three chunky wood splinters and one bright cream impact band move slightly backward across the four frames. Thick near-black brown outline, warm honey wood, deep brown underside, two bold grain cuts. This is a projectile slash wave, never a moon, feather, banana, claw, sword or wooden board. No text, border, shadow or transparency.

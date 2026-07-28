@@ -1,0 +1,17 @@
+Create one 2x2 game-projectile source sheet by editing from the supplied project references.
+
+Reference order:
+1. Canonical project style board: keep its hard pixel clusters and worn material texture.
+2. Current projectile atlas: negative reference. Do not repeat the tiny pale paper, weak blue drop, thin cyan brackets or small key.
+3-6. Approved item sheets for the letter, raincoat, retracted voice and only key: preserve their literal identities and colors.
+
+Output: exactly four isolated projectiles on perfectly flat pure #00FF00 in a clean 2x2 grid, no dividers. Every sprite faces right, fills 82-90% of the quadrant, has a thick dark outline and remains unmistakable at 28x28.
+
+Quadrants:
+1. PAPER: an oversized cream folded-paper spear with a dark sepia fold, torn forked wake and one blunt red archive-seal slash. It must read as paper cutting through air, not a tiny envelope.
+2. RAIN: a huge saturated cobalt raindrop projectile stretched forward like a water comet, white inner highlight, navy outline, two detached spray chunks behind it. Not a small vertical droplet.
+3. SOUND: a violent turquoise sound projectile with a bright white compressed core and three thick expanding crescent arcs packed closely behind it. The arcs are chunky local energy, not UI brackets or a screen-wide ring.
+4. KEY: one literal oversized old rental-room key in rich antique brass, clear round bow, thick shaft and one large tooth, thrown horizontally with two short gold motion cuts and one red-brown tassel flick. The key itself is the projectile.
+
+Use independent saturated identities: cream/red, cobalt/white, turquoise/ink, brass/red-brown. Make each silhouette feel like a special attack.
+Avoid: moon-white sameness, small icons, weak outlines, readable words, app UI, progress symbols, smooth vector shapes, anti-aliasing, gradients, bloom haze, scenery, shadow on green, watermark.

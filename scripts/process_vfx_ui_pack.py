@@ -163,6 +163,27 @@ def full_scene(name: str, out: Path, size: tuple[int, int], colors: int = 24, da
 
 # ── 各族 ──────────────────────────────────────────────────────────
 
+ANIM_FORMS = ("breath", "marble", "key", "slash",
+              "rain", "tear", "ice", "laugh", "serial", "paper", "razor",
+              "lens", "sound", "link", "button", "stone", "cone", "stamp",
+              # 呼吸凝实态追加在尾部，不挪动前 18 行索引；"breath" 行充当态1
+              "breath0", "breath2", "breath3")
+
+
+def do_proj_anim() -> bool:
+    """弹体 v5 飞行帧动画：每形态 4 帧循环，行=形态、列=帧。"""
+    specs = [(f"proj-anim-{form}", frame) for form in ANIM_FORMS for frame in range(4)]
+    ok = build_grid_atlas(specs, cell=28, cols=4, out_png=ASSETS / "vfx/projectile-anim.png",
+                          out_json=ASSETS / "vfx/projectile-anim.json", logical=26, colors=8, soft=True)
+    if ok:
+        manifest = json.loads((ASSETS / "vfx/projectile-anim.json").read_text())
+        manifest["index"] = {f"{form}{frame}": row * 4 + frame
+                            for row, form in enumerate(ANIM_FORMS) for frame in range(4)}
+        manifest["forms"] = list(ANIM_FORMS)
+        (ASSETS / "vfx/projectile-anim.json").write_text(json.dumps(manifest), encoding="utf-8")
+    return ok
+
+
 def do_proj() -> bool:
     specs = [
         ("proj-breath", 0), ("proj-breath", 1), ("proj-breath", 2), ("proj-breath", 3),
@@ -429,7 +450,7 @@ def do_promos() -> bool:
 
 
 FAMILIES = {
-    "proj": do_proj, "hits": do_hits, "saves": do_saves, "syn": do_syn, "status": do_status,
+    "proj": do_proj, "proj-anim": do_proj_anim, "hits": do_hits, "saves": do_saves, "syn": do_syn, "status": do_status,
     "poison": do_poison, "frames": do_frames, "archive": do_archive, "rooms": do_rooms,
     "grounds": do_grounds, "chapters": do_chapters, "fates": do_fates, "endings": do_endings,
     "promos": do_promos,

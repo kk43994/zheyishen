@@ -1,0 +1,17 @@
+Create one 2x2 game-projectile source sheet by editing from the supplied project references.
+
+Reference order:
+1. Canonical project style board: hard pixels and dark fairytale material language.
+2. Current projectile atlas: negative reference. Reject the quiet grey capsule, chat bubble, coin-like button and ordinary chain icon.
+3-6. Approved name-sold, typing-indicator, loose-button and bargain-link item sheets: preserve their identity but transform them into aggressive projectiles.
+
+Output: exactly four isolated combat projectiles on perfectly flat pure #00FF00, clean 2x2 grid, no dividers. Each fills at least 82% of its quadrant, uses thick dark outlines and stays readable at 28x28.
+
+Quadrants:
+1. SERIAL: a brutal gunmetal rectangular round with a white hot front, three black barcode cuts, one crimson regulation stripe and two identical square exhaust blocks. Perfectly machined and threatening, not a medicine capsule.
+2. TYPING: three enormous square white impact dots punching forward in a tight row, enclosed by one dark vibrating pressure shell with cyan edge breaks. It must read as held-back words becoming a barrage, not a speech bubble UI.
+3. BUTTON: one literal oversized worn uniform button with two deep holes, brass-brown rim and a thick moon-white pressure halo torn open at the front. The button is clearly the hard core of the extra shot.
+4. LINK: two huge incomplete chain links, one blood-red and one antique gold, interlocked around a bright white breath core; visible broken gap, angular forward spark and heavy dark outline. Assistance weaponized, not a shopping logo.
+
+Use distinct palettes and violent forward weight. Do not soften them into cute inventory icons.
+Avoid: muted grey sameness, tiny object, readable text, chat window, currency sign, app icon, smooth vector art, anti-aliasing, gradients, bloom haze, scenery, border, watermark.

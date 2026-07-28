@@ -270,9 +270,23 @@ const DISPLAY_SIZE_OVERRIDES: Partial<Record<EnemyPixelAssetKey, number>> = {
   'whose-box': 80,
   'iv-stand': 72,           // 输液架细高
   'window-desk': 96,
-  'last-bus': 64,           // 错过的车（小怪）
+  'last-bus': 68,           // 错过的车——虽是小怪，也是一辆车
   'coat-rack': 96,
-  'others-paper': 48,
+  // 小怪层级细分：炮灰 36-40 / 标准 44-48 / 重型（有身高或体积语义的物件）52+
+  // 尺寸跟形象走：一枚红叉就该比一把椅子小，一团沉默就该压得住空气
+  'fear': 46,               // 床边的那团黑，孩子眼里不小
+  'red-mark': 36,           // 一枚批改红叉，轻而尖
+  'whisper': 44,            // 一句飘着的闲话
+  'clockwork': 44,          // 一枚齿轮
+  'debt': 42,               // 一张催缴单
+  'cry-moth': 36,           // 扑灯的蛾，最小的怪
+  'hunger-shadow': 38,      // 一只空奶瓶
+  'missed-call': 40,        // 一条未接来电
+  'silence': 52,            // 没人说话——沉默要压得住饭桌
+  'badge-thief': 52,        // 裁员那天抱走的纸箱
+  'forgetter': 48,
+  'empty-chair': 56,        // 一把空椅子，有椅背的高度
+  'others-paper': 52,       // 凑到脸前的那张纸
   'sign-here': 40,
   'id-scanner': 64,
   'task-simple': 40,
@@ -280,12 +294,12 @@ const DISPLAY_SIZE_OVERRIDES: Partial<Record<EnemyPixelAssetKey, number>> = {
   'task-deadline': 40,
   'task-sync': 40,
   'wet-shoes': 72,
-  'desk-lamp': 40,
+  'desk-lamp': 48,          // 台灯有灯杆高度
   'reheated-pot': 48,
   'meeting-door': 80,
-  'checkup-report': 40,
-  'queue-screen': 48,
-  'others-family': 48,
+  'checkup-report': 44,
+  'queue-screen': 56,       // 立式叫号屏，比坐着的人高
+  'others-family': 56,      // 提着果篮的成年人
   'revolving-lantern': 96,
   'praise-chair-p1': 128,
   'praise-chair-p2': 192,

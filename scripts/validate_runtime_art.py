@@ -574,8 +574,9 @@ def main() -> None:
         validate_grid(f"src/assets/ui/{family}.png", f"src/assets/ui/{family}.json")
     validate_combo()
 
+    # title-life-night 与 ground-0..5 是旧夜间时代资产，2026-07-26 归档至
+    # output/imagegen/legacy-night-era/（与「非夜间」正典冲突且未被运行时引用）
     fixed_sizes = {
-        "src/assets/ui/title-life-night.png": (360, 640),
         "src/assets/ui/paper-texture.png": (192, 192),
         "src/assets/ui/night-texture.png": (192, 192),
         "src/assets/ui/desk-texture.png": (192, 192),
@@ -598,7 +599,6 @@ def main() -> None:
         "src/assets/ui/ending-table.png": (360, 640),
         "src/assets/ui/ending-lampman.png": (360, 640),
         **{f"src/assets/world/stage-floor-{index}.png": (360, 640) for index in range(6)},
-        **{f"src/assets/world/ground-{index}.png": (128, 128) for index in range(6)},
     }
     for relative, expected in fixed_sizes.items():
         require_size(relative, expected)
@@ -610,7 +610,7 @@ def main() -> None:
         "src/assets/ui/button-stamp-states.png",
         "src/assets/ui/receipt-edge.png", "src/assets/ui/archive-deco.png",
         "src/assets/ui/poison.png", "src/assets/ui/joystick.png",
-        "src/assets/vfx/projectiles.png", "src/assets/vfx/hits.png",
+        "src/assets/vfx/projectiles.png", "src/assets/vfx/projectile-anim.png", "src/assets/vfx/hits.png",
         "src/assets/vfx/saves.png", "src/assets/vfx/synergy.png", "src/assets/vfx/status.png",
     ]
     for relative in transparent_assets:
@@ -619,7 +619,6 @@ def main() -> None:
     for relative in (
         "src/assets/ui/paper-texture.png", "src/assets/ui/night-texture.png",
         "src/assets/ui/desk-texture.png", "src/assets/ui/static-texture.png",
-        *(f"src/assets/world/ground-{index}.png" for index in range(6)),
     ):
         validate_seam(relative)
 

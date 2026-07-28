@@ -1,0 +1,14 @@
+Create one 2x2 candidate sheet for the wooden-sword projectile effect by editing from the supplied project references.
+
+Reference order:
+1. Canonical project style board: hard pixel clusters and worn dark-fairytale texture.
+2. Current projectile atlas: negative reference. Its small brown crescent has too little impact and must not be repeated.
+3. Approved wooden sword equipment: borrow the blunt childhood wood identity, not the literal weapon silhouette.
+4. New combat-a sheet: preserve its selected exaggerated cream-and-wood attack language.
+
+Output: four isolated variations of the SAME wooden breath slash in a clean 2x2 grid on perfectly flat pure #00FF00, no dividers. Every variation faces right and fills 88-94% of quadrant width and 58-72% height.
+
+The approved concept is a massive blunt crescent pressure strike caused by swinging a wooden sword. Cream-white breath forms the bright cutting mass; a thick splintered warm-brown underside makes the wood material undeniable; the rear edge is broken and concave; the front is a broad blunt wedge rather than a sharp blade. Include exactly three large detached wood chips and two short impact cuts. Strong charcoal-brown outline, dramatic asymmetric silhouette, readable after reduction to 28x28.
+
+It is an attack effect, not the wooden sword itself.
+Avoid: full sword, handle, hilt, thin sword slash, small crescent, banana, feather, wing, cloud ball, round puff, soft magic arc, pale low contrast, smooth vector art, anti-aliasing, gradients, bloom haze, scenery, UI, text, watermark.

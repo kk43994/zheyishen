@@ -1,0 +1,11 @@
+Create a projectile art-style audition sheet for the game Zhe Yi Shen. This is a candidate only, not a runtime atlas.
+
+Use the references for identity and game context. The current bright projectile-v5 sheets are a negative color reference: keep their large readable silhouettes, but reject glossy JRPG magic, neon saturation, polished gemstones and clean fantasy ornament.
+
+Draw exactly four isolated right-facing projectiles in a clean 2x2 grid on perfectly flat pure #00FF00, with no dividers:
+upper-left: a huge blunt wooden-sword shockwave, broad horizontal cutting arc with a warm wood underside and three chunky splinters, never a moon or flying sword;
+upper-right: one literal old brass key with a short faded-red cloth tie, thrown hard with two blunt speed chips;
+lower-left: one literal childhood glass marble with a simple faded teal and old-amber internal ribbon, unmistakably a toy marble;
+lower-right: one battered cream speech-impact plaque with a dark ink rim and faded seal-red back burst, blank center reserved for the runtime Chinese character Ha.
+
+STYLE A - DIRTY LIFE ARCHIVE, RECOMMENDED: soot-black and charcoal outlines, nicotine-stained paper cream, oxidized brass, faded hospital teal, restrained seal red. High value contrast but controlled saturation. Thick irregular ink edge, chipped pigment, scuffed material, coarse screen-print texture and a few large pixel clusters. The objects should feel recovered from a damaged personal archive, then weaponized. Bold, heavy and emotionally worn, not cute, shiny, magical, ornate or photorealistic. Every silhouette fills 82-90% of its quadrant and survives reduction to 28x28. No text, letters, numbers, UI, border, shadow, transparency or extra objects.

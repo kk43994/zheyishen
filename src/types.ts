@@ -390,6 +390,9 @@ export interface EnemyUnit {
   attackSafeAngle?: number;
   /** 《换个门》：上门催收自上次换门后累计承受的伤害。 */
   relocateDamage?: number;
+  /** 《换个门》演出起点；只参与旧门到新门的局部残影，不参与碰撞。 */
+  relocateFromX?: number;
+  relocateFromY?: number;
   /** Dedicated boss-skill sprite sequence; independent from contact attacks. */
   bossAnim?: string;
   bossAnimTimer?: number;
@@ -399,6 +402,14 @@ export interface EnemyUnit {
   bossAnimFrame?: number;
   /** 末班车冲撞：本次冲刺是否已命中。冲撞是接触即判定，一次冲刺只打一次。 */
   dashHit?: boolean;
+  /** 突进平滑：机制位置瞬移后渲染位置的残余偏移，每帧指数衰减归零 */
+  renderLagX?: number;
+  renderLagY?: number;
+  /** 《灯影戏》：影子怪——半透纯黑剪影，被命中一次才现形 */
+  shadowVeil?: boolean;
+  /** 《晚点》：末班车假刹车（一场一次） */
+  busFeint?: boolean;
+  busFeintDone?: boolean;
   /** 湿鞋：当前这次连续停步是否已经加过一档；重新移动后才会复位。 */
   wetShoesStopCharged?: boolean;
   /** 走马灯召出来的：灯被打灭时这些同时消失（影子没了）。 */
@@ -514,7 +525,7 @@ export interface Projectile {
 
 export interface BurstEffect {
   id: number;
-  kind: 'ring' | 'hit' | 'word' | 'door' | 'frame' | 'sigh' | 'syn';
+  kind: 'ring' | 'hit' | 'word' | 'door' | 'frame' | 'sigh' | 'syn' | 'star' | 'split-spark';
   /** 命中材质选择 hits 行；syn 时为 ice/crack/collapse/arc。 */
   material?: string;
   x: number;

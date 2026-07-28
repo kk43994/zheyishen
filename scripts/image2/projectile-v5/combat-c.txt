@@ -1,0 +1,17 @@
+Create one 2x2 game-projectile source sheet by editing from the supplied project references.
+
+Reference order:
+1. Canonical project style board: hard pixels, old-red archive ink and worn material texture.
+2. Current projectile atlas: negative reference. Reject the tiny red scribble, dull pebble, round lens icon and small pale 哈.
+3-6. Approved failed-verification, stone-schoolbag, cracked-glasses and five-ha item sheets: preserve their emotional identity.
+
+Output: exactly four isolated combat projectiles on perfectly flat pure #00FF00, clean 2x2 grid, no dividers. Each fills 84-92% of its quadrant and remains bold at 28x28.
+
+Quadrants:
+1. STAMP: a huge dark-crimson failed-access stamp projectile, rectangular ink slab tilted forward, exploding ragged ink corners and a bold abstract blocked-door slash. No readable words; it should feel like a red verdict hitting the target.
+2. STONE: a low heavy charcoal meteor made from compressed breath and stone, bright cream pressure core, cracked warm-grey shell, flat crushing underside and three large debris chunks. Not a harmless pebble.
+3. LENS: a long shattered glass-lens blade, asymmetric cyan refraction split, white cutting core, near-black frame fragment and three prismatic shards. It must read as broken glasses turned into a beam, not a circular lens icon.
+4. LAUGH BASE: a huge explosive moon-white speech-breath burst with a deep old-red rear shadow, jagged four-direction impact silhouette and a clean broad center reserved for the deterministic Chinese 哈 glyph. The generated source must contain no letter itself.
+
+Use old-red, charcoal/cream, cyan/black and moon-white/red as distinct aggressive palettes.
+Avoid: small icons, dull palette, readable text, pre-rendered Chinese glyph, cute bubble, smooth vector art, anti-aliasing, gradients, bloom haze, scenery, UI, border, watermark.

@@ -1,0 +1,17 @@
+Create one 2x2 game-projectile source sheet by editing from the supplied project references.
+
+Reference order:
+1. Canonical project style board: keep the hard hand-built pixel clusters and worn dark-fairytale material language, but deliberately raise the combat energy far above the quiet UI art.
+2. Current projectile atlas: negative reference for scale only. Reject its small pale blobs, weak silhouettes, muted colors and low visual weight.
+3. Current approved breath family: preserve the idea of one exhaled breath becoming progressively more solid, not its timid size.
+
+Output: exactly four isolated projectiles in a clean 2x2 grid on perfectly flat pure #00FF00. No dividers. Every projectile faces right, fills 82-88% of its quadrant width and 58-76% of its quadrant height, and survives nearest-neighbor reduction to 28x28.
+
+Quadrants, left-to-right then top-to-bottom, are four power states of the same breath:
+1. TORN BREATH: a violently torn S-shaped moon-white gust with three thick separated chunks and a sharp forward hook. Pale mint edge, charcoal rear pixels. Not a faint scribble.
+2. VORTEX BREATH: a dense turbulent breath sphere with a visible spiral core, two ripped backward fins and a dark slate outline. It must feel fist-sized and forceful.
+3. COMET BREATH: a compressed pearl-white orb with a short triangular impact tail, two forward speed wedges and a thick blue-grey outline. Clearly directional, not a round idle icon.
+4. BREAKTHROUGH BREATH: a brilliant white core inside a large hard pearl shell, four asymmetric pressure spikes and a short split shock tail. This is the strongest ordinary shot and must look almost like a small finishing move.
+
+Style: high-impact arcade combat sprite inside this game's pixel language; 5-7 value steps; thick dark outline; bright white core plus mint/slate accent; crisp square pixels; dramatic asymmetric silhouettes.
+Avoid: tiny object, soft fog haze, low contrast, four similar circles, smooth vector art, anti-aliasing, gradient background, glow outside the projectile, scenery, UI, frame, text, letters, numbers, watermark, shadow on green.

@@ -35,7 +35,7 @@ import {
 import { comboArtAtlas } from './combo-art';
 import { itemIconAtlas } from './item-icons';
 import { planFiveShotBurst, resolveProjectileTrail, selectBaseProjectileForm } from './projectile-item-signatures';
-import { projectileAtlas, hitFrame, saveFrame, synergyAtlas, statusAtlas, poisonAtlas, joystickAtlas, type HitMaterial, type SaveKind } from './vfx-sprites';
+import { projectileAtlas, projectileAnimAtlas, projectileFlightFrame, breathAnimForm, hitFrame, saveFrame, synergyAtlas, statusAtlas, poisonAtlas, joystickAtlas, type HitMaterial, type SaveKind } from './vfx-sprites';
 import { sceneArt } from './scene-art';
 import { overlayPanelTexture, uiTextures } from './ui-textures';
 import { POISON_LABELS } from './types';
@@ -105,7 +105,7 @@ const RAIN_DIR_Y = Math.sin(1.15);
 const RAIN_DRY_LENGTH = 150;
 const RAIN_DRY_HALF_WIDTH = 44;
 /** 走马灯怪潮的性能兜底：雪球是设计，但敌人分离是 O(n²)，到顶只停止新增、不删已有。 */
-const LANTERN_HORDE_CAP = 100;
+const LANTERN_HORDE_CAP = 140;
 /** 走马灯只回放进入暮年前的五章；转速只改变频率和批量，不得改变人生顺序。 */
 const LANTERN_PREVIOUS_LIFE_ROSTER: readonly (readonly EnemyType[])[] = [
   ['cry-moth', 'fear', 'hunger-shadow'],
@@ -145,9 +145,16 @@ const PHONE_STORY_VOICE: Partial<Record<PhoneStoryStep, VoiceCueId>> = {
 const PHONE_REPEAT_CALLERS = ['wife', 'mother', 'coworker', 'hospital'] as const;
 const PHONE_CALLERS = [...PHONE_STORY_STEPS] as const;
 type PhoneCaller = typeof PHONE_CALLERS[number];
+const PHONE_PHASE_ONE_RING_WINDOW = 5;
+const PHONE_PHASE_TWO_RING_WINDOW = 4;
+const PHONE_ANSWER_DURATION = 3;
+const PHONE_RESOLUTION_DURATION = 0.72;
+const PHONE_PHASE_TWO_PROXY_SCALE = 0.96;
 /** 收灯人的影子上限：它没有“打掉源头清场”的出路，不封顶会形成无解雪球。 */
 const LAMP_SHADE_CAP = 6;
 const LAMP_CYCLE_INTERVAL = 8.5;
+const LAMP_SEIZE_RADIUS = 46;
+const LAMP_SEIZE_EXPOSURE = 1.5;
 const LAMP_STRIP_TO_RELEASE_DELAY = 1.4;
 const LAMP_RELEASE_CONFIRM_DELAY = 1.5;
 const BUS_BODY_HALF_LENGTH = 46;
@@ -167,7 +174,7 @@ const PRAISE_SLAM_RADIUS = 230;
 const COAT_SLEEVE_REACH = 165;
 const COAT_SLEEVE_HALF_WIDTH = 26;
 const COAT_DOUBLE_SLEEVE_HALF_WIDTH = 46;
-/** 童年大 Boss：三招共用锁点几何；视觉可以夸张，判定必须只落在这些局部边界内。 */
+/** 童年大 Boss：四招共用锁点几何；视觉可以夸张，判定必须只落在这些局部边界内。 */
 const CLOSET_ATTACK_INTERVAL = 3.8;
 const CLOSET_PHASE_TWO_INTERVAL = 3.25;
 const CLOSET_SHADOW_WINDUP = 0.85;
@@ -274,7 +281,11 @@ const HUNGER_SHADOW_DASH_DURATION = 0.48;
 const HUNGER_SHADOW_DASH_SPEED = 245;
 const HUNGER_SHADOW_DASH_HALF_WIDTH = 18;
 /** 《上门》是以催收人自身为圆心的拖行，不是朝玩家方向挥出的一条车道。 */
+const COLLECTOR_BILL_DURATION = 3.5;
+const COLLECTOR_BILL_COIN_COST = 2;
+const COLLECTOR_BILL_HP_COST = 8;
 const COLLECTOR_DRAG_RADIUS = 280;
+const COLLECTOR_RELOCATE_DAMAGE_RATIO = 0.14;
 const HERO_SCREEN_X = 180;
 const HERO_SCREEN_Y = 310;
 // 主角稍微收小一点：把体量感让给怪物——大多数"困难"都该比一个人高。
@@ -350,9 +361,10 @@ const SPECIAL_HOLD_MS = 600;
  */
 const VOICE_CAPTION_Y: Partial<Record<ScreenState, number>> = {
   battle: 442,
-  fateEvent: 486,
+  // 纸窗上缘之上：486 会压住底部咽下/吐出按钮与「亲口说」
+  fateEvent: 96,
   shop: 486,
-  specialRoom: 486,
+  specialRoom: 168, // 货架背景区——486 会压住镜中预演卡的交换信息
   itemReward: 486,
   origin: 492,
   result: 430,
@@ -473,18 +485,19 @@ const PROJECTILE_FLAG_LABELS: Record<ProjectileMechanicFlag, string> = {
  * 弹体显示全局抬升：主角 49px、怪 40–160px 的世界里，10–15px 的弹没有视觉权重。
  * 只动显示，碰撞半径不动——手感不变。
  */
-const PROJECTILE_DISPLAY_LIFT = 1.45;
+const PROJECTILE_DISPLAY_LIFT = 1.12;
 /** 实物弹自旋速率（rad/s）：钥匙、弹珠这类"被扔出去的东西"该转起来。刀刃类沿弹道朝向，不转。 */
 const PROJECTILE_SPIN: Partial<Record<ProjectileForm, number>> = {
   key: 5, bone: 6, marble: 7.5, button: 6, stone: 3.5, link: 4, laugh: 2.2,
 };
 const PROJECTILE_FORM_DISPLAY_SIZE: Partial<Record<ProjectileForm, readonly [number, number, number, number]>> = {
-  paper: [13, 2.2, 17, 28], rain: [11, 2.4, 15, 26], sound: [13, 2.4, 18, 30],
-  key: [15, 3, 20, 31], tear: [11, 2.4, 15, 25], cone: [16, 2.6, 21, 34],
-  slash: [18, 2.5, 23, 35], razor: [15, 2.3, 19, 28], marble: [14, 2.8, 18, 27],
-  ice: [14, 2.5, 19, 30], serial: [14, 2.3, 18, 27], typing: [16, 2.5, 21, 36],
-  button: [13, 2.2, 17, 25], link: [14, 2.3, 18, 28], stamp: [15, 2.3, 19, 29],
-  stone: [14, 2.5, 19, 31], lens: [15, 2.4, 19, 30], laugh: [9, 3.8, 15, 23],
+  // v5.1 弹不压怪：上限整体回收——弹是主角的"手"，不能盖过站在场上的"人"
+  paper: [13, 2.2, 17, 26], rain: [11, 2.4, 15, 24], sound: [13, 2.4, 18, 28],
+  key: [14, 2.8, 19, 28], tear: [11, 2.4, 15, 23], cone: [16, 2.6, 21, 32],
+  slash: [18, 2.5, 23, 33], razor: [15, 2.3, 19, 27], marble: [13, 2.6, 17, 24],
+  ice: [14, 2.5, 18, 27], serial: [14, 2.3, 18, 25], typing: [16, 2.5, 21, 30],
+  button: [12, 2.2, 16, 22], link: [14, 2.3, 18, 26], stamp: [15, 2.3, 19, 27],
+  stone: [14, 2.4, 18, 27], lens: [15, 2.4, 19, 28], laugh: [9, 3.8, 15, 22],
 };
 
 const INHERITED_PROJECTILE_ITEM_IDS: readonly ItemId[] = [
@@ -759,6 +772,32 @@ export class ZheYiShenGame {
   private aiOriginState: AIGenerationState = 'idle';
   private aiFateState: AIGenerationState = 'idle';
   private fateGenerationId = 0;
+  /** >=0 时表示命运事件正在 AI 生成中：battle 顶部打字机文字，就绪后才弹纸窗 */
+  private fateIncomingStart = -1;
+  /** 新技能场地残留：湿渍（晾不干）与水渍脚印（又下雨了），世界坐标 */
+  private wetPatches: Array<{ x: number; y: number; radius: number; life: number; maxLife: number }> = [];
+  private wetFootprints: Array<{ x: number; y: number; life: number; stepped: boolean }> = [];
+  /** 《画大饼》：场上的饼与欠下的饼账 */
+  private bingDrop?: { x: number; y: number; life: number };
+  private bingDebt = 0;
+  private bingPenaltyTimer = 0;
+  private bingDropTimer = 0;
+  /** 《贴封条》：被临时封存的道具与剩余时间 */
+  private sealedItem?: ItemId;
+  private sealedTimer = 0;
+  private sealTimer = 0;
+  /** 《利息》：寄账单拖一轮涨一点身体代价 */
+  private collectorBillInterest = 0;
+  /** 技能隐喻字幕：一局每句只说一次 */
+  private attackLoreSeen = new Set<string>();
+  /** Boss 技能像素粒子（世界坐标） */
+  private pixelParticles: Array<{
+    x: number; y: number; vx: number; vy: number;
+    life: number; maxLife: number; size: number; color: string;
+    gravity: number; drag: number;
+  }> = [];
+  /** AI 就绪但当下不在 battle 时暂存，回到 battle 再弹纸窗 */
+  private pendingFateOpen?: { event: FateEvent; fromAI: boolean };
   private prefetchedFate?: { encounterIndex: number; promise: Promise<FateEvent | null> };
   private poisons: PoisonVector = { ...EMPTY_POISONS };
   private memories: string[] = [];
@@ -897,14 +936,15 @@ export class ZheYiShenGame {
   private darkCX = 0;
   private darkCY = 0;
   private lampSpawned = false;
-  private lampChoice?: {
-    indices: [number, number];
-    items: [ItemId, ItemId];
-    x: [number, number];
-    y: number;
+  /** 《收灯》：灯光圈追踪玩家，照满则收走一件道具。misses 越多光圈越快——躲得过一晚，躲不过一世 */
+  private lampSeize?: {
+    x: number; y: number;
+    stripAt: number;
+    exposure: number;
     timer: number;
-    total: number;
+    speed: number;
   };
+  private lampSeizeMisses = 0;
   private lampItemsToReturnTotal = 0;
   private lampFinalStripTimer = 0;
   private lampReleaseReady = false;
@@ -1072,6 +1112,14 @@ export class ZheYiShenGame {
   private phoneMissed = 0;
   private phoneCalls: Array<{ x: number; y: number }> = [];
   private phoneAnswerTarget = -1;
+  /** 接通或未接后短暂保留多部电话的结算残像，避免夸张堆叠瞬间蒸发。 */
+  private phoneResolution?: {
+    calls: Array<{ x: number; y: number }>;
+    answeredIndex: number;
+    phaseTwo: boolean;
+    life: number;
+    duration: number;
+  };
   private phoneRelief = 0;
   /** 下一通固定剧情编号：0-5 一阶段，6 二阶段，7 表示七通战斗来电已结束。 */
   private phoneStoryIndex = 0;
@@ -1241,7 +1289,7 @@ export class ZheYiShenGame {
           return;
         }
         this.originBadgeExpanded = false;
-        if (event.pointerType === 'mouse') return;
+        // 鼠标同触屏：桌面预览/评委开桌面时按住拖动也要能走，不能只留 WASD
         if (this.joyPointerId !== -1) return;
         this.joyPointerId = event.pointerId;
         this.joyStartX = p.x;
@@ -1843,6 +1891,8 @@ export class ZheYiShenGame {
   private applyCheckpoint(checkpoint: RunCheckpoint): void {
     this.runSerial += 1;
     this.fateGenerationId += 1; // 作废任何在飞的命运异步请求
+    this.fateIncomingStart = -1;
+    this.pendingFateOpen = undefined;
     this.runSeed = checkpoint.runSeed;
     this.rngState = checkpoint.rngState;
     this.encounterIndex = checkpoint.encounterIndex;
@@ -1914,6 +1964,7 @@ export class ZheYiShenGame {
     this.lanternHandoff = undefined;
     this.projectiles = [];
     this.bursts = [];
+    this.pixelParticles = [];
     this.pendingShots = [];
     this.coinDrops = [];
     this.prefetchedFate = undefined;
@@ -2006,6 +2057,7 @@ export class ZheYiShenGame {
     this.lanternHandoff = undefined;
     this.projectiles = [];
     this.bursts = [];
+    this.pixelParticles = [];
     this.shopOffers = [];
     this.shopFeedback = undefined;
     this.specialRoomOffers = [];
@@ -2082,12 +2134,15 @@ export class ZheYiShenGame {
     this.darkR = 9999;
     this.darknessStartedAt = 0;
     this.lampSpawned = false;
-    this.lampChoice = undefined;
+    this.lampSeize = undefined;
+    this.lampSeizeMisses = 0;
     this.lampItemsToReturnTotal = 0;
     this.lampFinalStripTimer = 0;
     this.lampReleaseReady = false;
     this.lampReleaseTimer = 0;
     this.finalFateTriggered = false;
+    this.fateIncomingStart = -1;
+    this.pendingFateOpen = undefined;
     this.hurtCooldown = 0;
     this.screenShake = 0;
     this.rewardReturn = 'advance';
@@ -2139,6 +2194,17 @@ export class ZheYiShenGame {
     this.xiaoZhangPrompt = false;
     this.xiaoZhangFocus = 0;
     this.stageDisabledItems.clear();
+    this.wetPatches = [];
+    this.wetFootprints = [];
+    this.bingDrop = undefined;
+    this.bingDebt = 0;
+    this.bingPenaltyTimer = 0;
+    this.bingDropTimer = 0;
+    this.sealedItem = undefined;
+    this.sealedTimer = 0;
+    this.sealTimer = 0;
+    this.collectorBillInterest = 0;
+    this.attackLoreSeen.clear();
     this.boxSavedItem = undefined;
     this.divorceUsedStage = false;
     this.divorceDeferredDamage = 0;
@@ -2195,6 +2261,7 @@ export class ZheYiShenGame {
     this.phoneMissed = 0;
     this.phoneCalls = [];
     this.phoneAnswerTarget = -1;
+    this.phoneResolution = undefined;
     this.phoneRelief = 0;
     this.phoneStoryIndex = 0;
     this.phoneActiveStoryIndex = -1;
@@ -2400,11 +2467,23 @@ export class ZheYiShenGame {
     this.resetFateInput();
     this.state = 'battle';
     this.stageDisabledItems.clear();
+    this.wetPatches = [];
+    this.wetFootprints = [];
+    this.bingDrop = undefined;
+    this.bingDebt = 0;
+    this.bingPenaltyTimer = 0;
+    this.bingDropTimer = 0;
+    this.sealedItem = undefined;
+    this.sealedTimer = 0;
+    this.sealTimer = 0;
+    this.collectorBillInterest = 0;
+    this.attackLoreSeen.clear();
     this.boxSavedItem = undefined;
     this.hero.block = this.fateBuild.openingBlock;
     this.bowlWarmthBlock = 0;
     this.projectiles = [];
     this.bursts = [];
+    this.pixelParticles = [];
     this.enemies = [];
     this.enemyDeaths = [];
     this.lanternHandoff = undefined;
@@ -2453,7 +2532,8 @@ export class ZheYiShenGame {
     this.darkR = 9999;
     this.darknessStartedAt = 0;
     this.lampSpawned = false;
-    this.lampChoice = undefined;
+    this.lampSeize = undefined;
+    this.lampSeizeMisses = 0;
     this.lampItemsToReturnTotal = 0;
     this.lampFinalStripTimer = 0;
     this.lampReleaseReady = false;
@@ -2468,6 +2548,7 @@ export class ZheYiShenGame {
     this.phoneMissed = 0;
     this.phoneCalls = [];
     this.phoneAnswerTarget = -1;
+    this.phoneResolution = undefined;
     this.phoneRelief = 0;
     this.phoneStoryIndex = 0;
     this.phoneActiveStoryIndex = -1;
@@ -2475,6 +2556,8 @@ export class ZheYiShenGame {
     this.phoneTranscript = undefined;
     this.lastPhoneCaller = undefined;
     this.finalFateTriggered = false;
+    this.fateIncomingStart = -1;
+    this.pendingFateOpen = undefined;
     this.fateDelayReady = this.fateBuild.delayFirstHit;
     if (this.fateBuild.storedVolleys > 0) {
       this.holdTimer = 0.7;
@@ -2662,6 +2745,17 @@ export class ZheYiShenGame {
   private clearFinishedStage(): void {
     this.projectiles = [];
     this.stageDisabledItems.clear();
+    this.wetPatches = [];
+    this.wetFootprints = [];
+    this.bingDrop = undefined;
+    this.bingDebt = 0;
+    this.bingPenaltyTimer = 0;
+    this.bingDropTimer = 0;
+    this.sealedItem = undefined;
+    this.sealedTimer = 0;
+    this.sealTimer = 0;
+    this.collectorBillInterest = 0;
+    this.attackLoreSeen.clear();
     this.boxSavedItem = undefined;
     this.xiaoZhangPrompt = false;
     this.xiaoZhangWorld = undefined;
@@ -3324,7 +3418,19 @@ export class ZheYiShenGame {
     }
     this.updateFatherWeather(dt);
     if (this.dangerBands.length) {
+      // 判分线落笔瞬间：warn 归零翻转为生效时，沿带喷红笔屑（安全带不喷）
+      const armedBands = this.dangerBands.filter((band) => band.warn > 0 && band.warn - dt <= 0 && !band.safe);
       this.dangerBands = updateDangerBands(this.dangerBands, dt);
+      for (const band of armedBands) {
+        const step = Math.max(46, band.halfWidth / 4);
+        for (let x = band.centerX - band.halfWidth + step / 2; x < band.centerX + band.halfWidth; x += step) {
+          if (Math.abs(x - this.heroX) > 240) continue;
+          this.spawnPixelParticles({
+            x, y: band.y, count: 3, angle: -Math.PI / 2, spread: 2.6, speed: 55,
+            life: 0.45, size: 2, color: band.color, gravity: 110, drag: 2,
+          });
+        }
+      }
       for (const band of this.dangerBands) {
         if (dangerBandHits(band, this.heroX, this.heroY)) {
           band.hit = true;
@@ -3368,6 +3474,7 @@ export class ZheYiShenGame {
   private update(dt: number): void {
     if (this.paused) return;
     if (this.auditBossArtActive) return;
+    if (this.pendingFateOpen && this.state === 'battle') this.presentPendingFate();
     this.maybePersistCheckpoint();
     this.visualTime += dt;
     this.flushScheduledVoices();
@@ -3384,7 +3491,57 @@ export class ZheYiShenGame {
     if (this.screenShake > 0) this.screenShake = Math.max(0, this.screenShake - dt);
     if (this.eliteAlertTime > 0) this.eliteAlertTime = Math.max(0, this.eliteAlertTime - dt);
     this.bursts.forEach((burst) => (burst.life -= dt));
+    this.updatePixelParticles(dt);
+    if (this.bingPenaltyTimer > 0) this.bingPenaltyTimer = Math.max(0, this.bingPenaltyTimer - dt);
+    // 走马灯飞向收灯人的路上：一路撒灯火，"那盏灯往黑处飘去了"
+    if (this.lanternHandoff && !this.reducedMotion) {
+      const pose = this.lanternHandoffPose();
+      if (pose && Math.floor(this.battleTime * 10) !== Math.floor((this.battleTime - dt) * 10)) {
+        this.spawnPixelParticles({
+          x: pose.x, y: pose.y + 6, count: 2, angle: Math.PI / 2, spread: 1.6,
+          speed: 22, life: 0.8, size: 2, color: '#e2985c', gravity: 26, drag: 1.4,
+        });
+      }
+    }
+    if (this.wetPatches.length) {
+      for (const patch of this.wetPatches) {
+        patch.life -= dt;
+        if (patch.life > 0 && Math.hypot(this.heroX - patch.x, this.heroY - patch.y) < patch.radius) {
+          this.heroSlowTimer = Math.max(this.heroSlowTimer, 0.22);
+        }
+      }
+      this.wetPatches = this.wetPatches.filter((patch) => patch.life > 0);
+    }
+    if (this.wetFootprints.length) {
+      for (const footprint of this.wetFootprints) {
+        footprint.life -= dt;
+        if (!footprint.stepped && footprint.life > 0
+          && Math.hypot(this.heroX - footprint.x, this.heroY - footprint.y) < 15) {
+          footprint.stepped = true;
+          // 踩到水渍打滑：沿行进方向的垂直向小偏移
+          const slipAngle = Math.atan2(this.heroY - footprint.y, this.heroX - footprint.x) + Math.PI / 2;
+          this.heroX += Math.cos(slipAngle) * 9;
+          this.heroY += Math.sin(slipAngle) * 9;
+          this.heroSlowTimer = Math.max(this.heroSlowTimer, 0.28);
+          this.burst('word', this.heroX, this.heroY - 36, 20, '#7fa3ad', '滑了一下');
+        }
+      }
+      this.wetFootprints = this.wetFootprints.filter((footprint) => footprint.life > 0);
+    }
+    // 《贴封条》恢复
+    if (this.sealedTimer > 0) {
+      this.sealedTimer -= dt;
+      if (this.sealedTimer <= 0 && this.sealedItem) {
+        this.stageDisabledItems.delete(this.sealedItem);
+        this.burst('word', this.heroX, this.heroY - 44, 22, '#d7bd73', '封条撕了');
+        this.sealedItem = undefined;
+      }
+    }
     this.bursts = this.bursts.filter((burst) => burst.life > 0);
+    if (this.phoneResolution) {
+      this.phoneResolution.life = Math.max(0, this.phoneResolution.life - dt);
+      if (this.phoneResolution.life <= 0) this.phoneResolution = undefined;
+    }
     if (this.saveEffect) {
       this.saveEffect.timer -= dt;
       if (this.saveEffect.timer <= 0) this.saveEffect = null;
@@ -3674,13 +3831,35 @@ export class ZheYiShenGame {
     if (this.billTimer > 0) {
       this.billTimer -= dt;
       if (this.billTimer <= 0) {
-        if (this.hero.coins >= 2) {
-          this.hero.coins -= 2;
+        this.collectorBillInterest += 1;
+        if (this.collectorBillInterest === 2) this.sayLore('collector-interest', '他把单子压在抽屉最底下。第二个月，它自己变厚了。');
+        if (this.hero.coins >= COLLECTOR_BILL_COIN_COST) {
+          this.hero.coins -= COLLECTOR_BILL_COIN_COST;
           this.say('账单已划扣 · -2零钱');
+          this.burst('ring', this.heroX, this.heroY - 12, 76, '#d7bd73');
+          this.spawnPixelParticles({ x: this.heroX, y: this.heroY - 16, count: 10, angle: -Math.PI / 2, spread: 1.2, speed: 100, life: 0.6, size: 2, color: '#d7bd73', gravity: 200, drag: 1.2 });
+          this.burst('word', this.heroX, this.heroY - 54, 30, '#d5885f', '-2零钱');
+          this.feedback.vibrate([18, 28, 18]);
         } else {
           this.hurtCooldown = 0;
-          this.hurtHero(8, '下个月账单');
+          this.hurtHero(COLLECTOR_BILL_HP_COST + this.collectorBillInterest, '下个月账单');
+          if (this.collectorBillInterest > 0) this.burst('word', this.heroX, this.heroY - 66, 26, '#c9856a', `滞纳金 +${this.collectorBillInterest}`);
           this.say('没钱 · 拿身体抵');
+          this.burst('ring', this.heroX, this.heroY - 12, 92, '#d94b61');
+          this.spawnPixelParticles({ x: this.heroX, y: this.heroY - 12, count: 20, speed: 120, life: 0.55, size: 2, color: '#d94b61', gravity: 100, drag: 2 });
+          this.spawnPixelParticles({ x: this.heroX, y: this.heroY - 12, count: 6, speed: 55, life: 0.3, size: 3, color: '#f6dfd4', drag: 3 });
+          for (let index = 0; index < 8; index += 1) {
+            const angle = (index / 8) * Math.PI * 2 + 0.2;
+            this.burst(
+              'hit',
+              this.heroX + Math.cos(angle) * 34,
+              this.heroY - 12 + Math.sin(angle) * 34,
+              20 + (index % 3) * 5,
+              index % 2 === 0 ? '#ef5364' : '#d5885f',
+            );
+          }
+          this.screenShake = Math.max(this.screenShake, 0.28);
+          this.feedback.vibrate([32, 42, 55]);
         }
       }
     }
@@ -4324,7 +4503,9 @@ export class ZheYiShenGame {
       });
     }
     this.burst('ring', this.heroX, this.heroY - 14, 150, '#ded7ca');
-    this.screenShake = Math.max(this.screenShake, 2.5);
+    // screenShake 单位是秒：全向释放给 0.3s（与 boss 命中同级）。
+    // 旧值 2.5 会让每 1.5s 一次的三拍释放把全屏抖动变成常驻。
+    this.screenShake = Math.max(this.screenShake, 0.3);
     this.sigh(1.8);
   }
 
@@ -4934,7 +5115,8 @@ export class ZheYiShenGame {
             projectile.ricochetDepth = (projectile.ricochetDepth ?? 0) + 1;
             projectile.visual.trail = 'ricochet';
             ricocheted = true;
-            this.burst('ring', enemy.x, enemy.y, 18, '#cfe4ea');
+            // 机制记号：弹射转向瞬间的星闪
+            this.burst('star', enemy.x, enemy.y, 16, '#e8e0c8');
           }
         }
         if (this.hasItem('bargain-link')
@@ -4966,6 +5148,8 @@ export class ZheYiShenGame {
             projectile.hitTerminated = true;
             break;
           }
+          // 机制记号：穿透——穿过敌人继续飞时留一圈小涟漪
+          this.burst('ring', enemy.x, enemy.y, 12, '#b9c8cc');
         }
       }
 
@@ -5041,6 +5225,8 @@ export class ZheYiShenGame {
     if (projectile.splitDepth > 0 || projectile.splitChance <= 0 || this.random() >= projectile.splitChance) return;
     projectile.splitChance = 0;
     for (const offset of [-0.45, 0.45]) spawned.push(this.makeChildProjectile(projectile, angle + offset));
+    // 机制记号：分裂瞬间迸开一圈小碎光
+    this.burst('split-spark', projectile.x, projectile.y, 14, projectile.color);
   }
 
   private makeChildProjectile(parent: Projectile, angle: number): Projectile {
@@ -5137,6 +5323,12 @@ export class ZheYiShenGame {
       const dx = this.heroX - enemy.x;
       const dy = this.heroY - enemy.y;
       const dist = Math.hypot(dx, dy) || 1;
+      // 突进渲染偏移衰减：约 0.12s 追平机制位置
+      if (enemy.renderLagX || enemy.renderLagY) {
+        const lagDecay = Math.exp(-dt * 16);
+        enemy.renderLagX = Math.abs((enemy.renderLagX ?? 0) * lagDecay) < 0.5 ? 0 : (enemy.renderLagX ?? 0) * lagDecay;
+        enemy.renderLagY = Math.abs((enemy.renderLagY ?? 0) * lagDecay) < 0.5 ? 0 : (enemy.renderLagY ?? 0) * lagDecay;
+      }
       if (enemy.slowTimer !== undefined && enemy.slowTimer > 0) enemy.slowTimer -= dt;
       if (enemy.freezeTimer !== undefined && enemy.freezeTimer > 0) enemy.freezeTimer -= dt;
       if (enemy.paralyzeTimer !== undefined && enemy.paralyzeTimer > 0) enemy.paralyzeTimer -= dt;
@@ -5162,6 +5354,10 @@ export class ZheYiShenGame {
       if (enemy.bossAnimTimer !== undefined && enemy.bossAnimTimer > 0) {
         enemy.bossAnimTimer = Math.max(0, enemy.bossAnimTimer - dt);
         if (enemy.bossAnimTimer <= 0) {
+          if (enemy.bossAnim === 'collector-relocate') {
+            enemy.relocateFromX = undefined;
+            enemy.relocateFromY = undefined;
+          }
           enemy.bossAnim = undefined;
           enemy.bossAnimDuration = undefined;
           enemy.bossAnimLoop = undefined;
@@ -5274,6 +5470,8 @@ export class ZheYiShenGame {
               if (this.hurtHero(enemy.damage, enemy.name)) {
                 this.screenShake = Math.max(this.screenShake, 0.16);
                 this.burst('ring', this.heroX, this.heroY - 8, 46, '#b9a68d');
+                this.spawnPixelParticles({ x: this.heroX, y: this.heroY, count: 14, speed: 140, life: 0.5, size: 2, color: '#d3b65f', drag: 2.6 });
+                this.spawnPixelParticles({ x: this.heroX, y: this.heroY + 8, count: 8, speed: 90, life: 0.55, size: 2, color: '#7c8894', gravity: 110, drag: 2 });
               }
             }
           }
@@ -5645,6 +5843,14 @@ export class ZheYiShenGame {
           // 转阶段：他拍了一下桌子，站起来，椅子长在背上，那些裂口全是嘴
           enemy.phase = 2;
           enemy.phaseFlashTimer = 1.2;
+          this.spawnPixelParticles({ x: enemy.x, y: enemy.y, count: 20, speed: 120, speedVar: 0.6, life: 0.6, size: 2, color: '#c9a24a', drag: 2.8 });
+          // 《画大饼》清算：吃过几张饼，二阶段就连本带利多疼几秒
+          if (this.bingDebt > 0) {
+            this.bingPenaltyTimer = this.bingDebt * 4;
+            this.burst('word', this.heroX, this.heroY - 52, 30, '#c66c5a', `连本带利 · 易伤${this.bingDebt * 4}秒`);
+            this.sayLore('bing-settle', '离职那天他算得很清：你笑过几次，都折成了钱。');
+          }
+          this.bingDrop = undefined;
           enemy.radius = 58; // 体型飙升：全游戏最大的怪
           enemy.speed = 30;
           this.praisePaperZones = [];
@@ -5745,6 +5951,7 @@ export class ZheYiShenGame {
         if (!phoneP2 && enemy.hp <= enemy.maxHp * 0.5 && this.phoneStoryIndex >= 6) {
           enemy.phase = 2;
           enemy.phaseFlashTimer = 1.1;
+          this.spawnPixelParticles({ x: enemy.x, y: enemy.y, count: 20, speed: 120, speedVar: 0.6, life: 0.6, size: 2, color: '#7fa9a4', drag: 2.8 });
           enemy.speed = 34;
           this.phoneRinging = false;
           this.phoneCalls = [];
@@ -5799,6 +6006,7 @@ export class ZheYiShenGame {
             this.phoneRinging = false;
             enemy.mechTimer = 0;
             const missedCalls = phoneP2 && this.phoneCalls.length > 0 ? this.phoneCalls : [{ x: enemy.x, y: enemy.y }];
+            this.beginPhoneResolution(missedCalls, phoneP2, -1);
             this.resolvePhoneMisses(enemy, missedCalls, true);
             this.advancePhoneStory();
             this.phoneCalls = [];
@@ -5824,6 +6032,10 @@ export class ZheYiShenGame {
       }
       // 成年《还没干的那双鞋》：开场即在场，你每停一次它快一档，一直到本章结束。
       if (enemy.type === 'wet-shoes') {
+        if ((enemy.age * 100 | 0) % 55 < (dt * 100 | 0) && this.wetFootprints.length < 24) {
+          this.wetFootprints.push({ x: enemy.x, y: enemy.y + enemy.radius * 0.5, life: 4.2, stepped: false });
+          this.sayLore('wet-trail', '他想等鞋干了再出门。门外的事没等他。');
+        }
         if (this.heroMoving) enemy.wetShoesStopCharged = false;
         if (!enemy.wetShoesStopCharged
           && this.standStillTime >= WET_SHOES_STOP_THRESHOLD
@@ -5840,6 +6052,21 @@ export class ZheYiShenGame {
       }
       // 中年《谁的纸箱·清点》：先点名一件物证，8 秒内没打掉纸箱才让它本关失效。
       if (enemy.type === 'whose-box') {
+        // 《贴封条》：周期性把一件道具贴上封条 5 秒——是谁的，清完再说
+        this.sealTimer += dt;
+        if (this.sealTimer >= 7 && !this.sealedItem) {
+          this.sealTimer = 0;
+          const sealable = this.items.filter((item) => !this.stageDisabledItems.has(item) && getItem(item).quality < 5);
+          if (sealable.length) {
+            const target = sealable[Math.floor(this.random() * sealable.length)]!;
+            this.sealedItem = target;
+            this.sealedTimer = 5;
+            this.stageDisabledItems.add(target);
+            this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 28, '#b08a5c', `贴封条 ·《${getItem(target).name}》`);
+            this.spawnPixelParticles({ x: enemy.x, y: enemy.y, count: 8, speed: 60, life: 0.4, size: 2, color: '#b08a5c', drag: 2.6 });
+            this.sayLore('box-seal', '他的名字还在工位上。箱子先贴上了别人的字。');
+          }
+        }
         if (enemy.countedItem && (enemy.countedItemTimer ?? 0) > 0) {
           enemy.countedItemTimer = Math.max(0, (enemy.countedItemTimer ?? 0) - dt);
           if (enemy.countedItemTimer <= 0) {
@@ -5876,8 +6103,9 @@ export class ZheYiShenGame {
       // 暮年《走马灯》：不攻击，只转；影子扫到的方向按年龄顺序走出前五章小怪。
       if (enemy.type === 'revolving-lantern') {
         const tier = enemy.hp > enemy.maxHp * 0.66 ? 0 : enemy.hp > enemy.maxHp * 0.33 ? 1 : 2;
-        const interval = [4, 3, 2][tier]!;
-        const batch = [2, 3, 4][tier]!;
+        // 超级大怪潮：这一生在灯上快速过一遍——低血阶段整批整批地涌
+        const interval = [3.4, 2.2, 1.3][tier]!;
+        const batch = [3, 5, 8][tier]!;
         if ((enemy.mechTimer ?? 0) >= interval) {
           enemy.mechTimer = 0;
           this.playBossAnimation(enemy, tier === 0 ? 'lantern-summon' : 'lantern-summon-fast', 1.1);
@@ -5894,8 +6122,14 @@ export class ZheYiShenGame {
             const a = sweep + (i - batch / 2) * 0.22;
             const spawned = this.createSeekingEnemy(type, enemy.x + Math.cos(a) * 46, enemy.y + Math.sin(a) * 46);
             spawned.lanternSummon = true;
+            if (i % 7 === 3) {
+              spawned.shadowVeil = true;
+              this.sayLore('lantern-shadow', '灯转得越来越快。墙上跑过的每个影子，他都叫得出名字。');
+            }
             this.enemies.push(spawned);
+            this.spawnPixelParticles({ x: spawned.x, y: spawned.y, count: 6, angle: a, spread: 0.9, speed: 70, life: 0.5, size: 2, color: '#e2985c', drag: 2.4 });
           }
+          this.spawnPixelParticles({ x: enemy.x, y: enemy.y - 8, count: 8, angle: -Math.PI / 2, spread: 2.4, speed: 50, life: 0.6, size: 2, color: '#f0c976', gravity: -30, drag: 2 });
         }
       }
       if (enemy.type === 'iv-stand') {
@@ -5945,6 +6179,7 @@ export class ZheYiShenGame {
       if (enemy.type === 'closet-dark' && enemy.hp <= enemy.maxHp * 0.5 && (enemy.phase ?? 0) !== 2) {
         enemy.phase = 2;
         enemy.phaseFlashTimer = 1.1;
+        this.spawnPixelParticles({ x: enemy.x, y: enemy.y, count: 20, speed: 120, speedVar: 0.6, life: 0.6, size: 2, color: '#74647e', drag: 2.8 });
         this.playBossAnimation(enemy, 'closet-split', 1.1);
         for (let splitIndex = 0; splitIndex < 2; splitIndex += 1) {
           const splitAngle = this.random() * Math.PI * 2;
@@ -6032,6 +6267,7 @@ export class ZheYiShenGame {
         // 《雨衣倒下去》：不用爆炸、金环、红光——肩膀先塌，雨衣落地，画面中央不再有成年人。
         enemy.phase = 2;
         enemy.phaseFlashTimer = 1.2;
+        this.spawnPixelParticles({ x: enemy.x, y: enemy.y, count: 20, speed: 120, speedVar: 0.6, life: 0.6, size: 2, color: '#d2b35f', drag: 2.8 });
         enemy.windupTimer = 1.05; // 塌落瞬间打断旧招，并按设计书停住普通更新约一秒
         enemy.attackKind = undefined;
         enemy.mechTimer = 0;
@@ -6118,13 +6354,24 @@ export class ZheYiShenGame {
           }
         }
       }
-      // 没人相信的怪物：直线压影、环形影手、双门挤压三招循环；半血分裂后加快但不加判定范围。
+      // 没人相信的怪物：直线压影、环形影手、双门挤压、门缝光柱四招循环；半血分裂后加快但不加判定范围。
       const closetInterval = (enemy.phase ?? 1) === 2 ? CLOSET_PHASE_TWO_INTERVAL : CLOSET_ATTACK_INTERVAL;
       if (enemy.type === 'closet-dark' && (enemy.windupTimer ?? 0) <= 0 && (enemy.mechTimer ?? 0) >= closetInterval) {
         enemy.mechTimer = 0;
-        const move = this.closetMoveIndex % 3;
+        const move = this.closetMoveIndex % 4;
         this.closetMoveIndex += 1;
-        if (move === 0) {
+        if (move === 3) {
+          // 《缝里看你》：柜门开一条缝，一道窄光柱扫向玩家——光比黑更早找到他
+          enemy.attackTargetX = undefined;
+          enemy.attackTargetY = undefined;
+          enemy.attackSafeAngle = undefined;
+          enemy.attackAngle = Math.atan2(this.heroY - enemy.y, this.heroX - enemy.x);
+          enemy.windupTimer = 1.05;
+          enemy.attackKind = 'closet-gap';
+          this.playBossAnimation(enemy, 'closet-shadow', 1.5);
+          this.say('缝里看你');
+          this.sayLore('closet-gap', '他把柜门关了三次。第三次，里面好像也推了一下。');
+        } else if (move === 0) {
           enemy.attackTargetX = undefined;
           enemy.attackTargetY = undefined;
           enemy.attackSafeAngle = undefined;
@@ -6160,7 +6407,7 @@ export class ZheYiShenGame {
         enemy.phase = collectorMove + 1;
         if (collectorMove === 0) {
           if (this.billTimer <= 0) {
-            this.billTimer = 3.5;
+            this.billTimer = COLLECTOR_BILL_DURATION;
             this.playBossAnimation(enemy, 'collector-bill', 1.05);
             this.burst('word', enemy.x, enemy.y - enemy.radius - 10, 34, '#d5885f', '账单寄到了');
             this.say('3.5秒内结清 · 2零钱或8生命');
@@ -6173,24 +6420,28 @@ export class ZheYiShenGame {
           this.burst('word', enemy.x, enemy.y - enemy.radius - 10, 30, '#b97858', '上门');
         }
       }
-      if (enemy.type === 'lamp-keeper' && this.lampChoice && !this.lampReleaseReady) {
-        this.updateLampChoice(enemy, dt);
+      if (enemy.type === 'lamp-keeper' && this.lampSeize && !this.lampReleaseReady) {
+        this.updateLampSeize(enemy, dt);
       }
-      if (enemy.type === 'lamp-keeper' && !this.lampChoice && !this.lampReleaseReady
+      if (enemy.type === 'lamp-keeper' && !this.lampSeize && !this.lampReleaseReady
         && enemy.mechTimer >= LAMP_CYCLE_INTERVAL - 1.8
         && enemy.mechTimer < LAMP_CYCLE_INTERVAL - 1.8 + dt) {
         this.playBossAnimation(enemy, 'keeper-name', 1.8);
       }
-      if (enemy.type === 'lamp-keeper' && !this.lampChoice && !this.lampReleaseReady
+      if (enemy.type === 'lamp-keeper' && !this.lampSeize && !this.lampReleaseReady
         && enemy.mechTimer >= LAMP_CYCLE_INTERVAL) {
         enemy.mechTimer = 0;
-        this.beginLampChoice(enemy);
+        this.beginLampSeize(enemy);
+        this.spawnPixelParticles({ x: enemy.x, y: enemy.y - enemy.radius * 0.4, count: 14, angle: -Math.PI / 2, spread: 1.4, speed: 55, life: 0.9, size: 2, color: '#f0c976', gravity: -50, drag: 1.6 });
+        this.spawnPixelParticles({ x: enemy.x, y: enemy.y - enemy.radius * 0.4, count: 6, angle: -Math.PI / 2, spread: 0.9, speed: 35, life: 0.7, size: 2, color: '#e2985c', gravity: -40, drag: 1.8 });
       }
       if (enemy.type === 'last-bus') {
         const phase = enemy.phase ?? 0;
         if (phase === 0 && enemy.mechTimer >= 3) {
           enemy.phase = 1; enemy.mechTimer = 0; enemy.flash = 0.8;
           enemy.attackAngle = Math.atan2(this.heroY - enemy.y, this.heroX - enemy.x);
+          // 《晚点》：45% 假刹车——前摇走完不发车，顿 0.45s 后重新蓄一段更短的
+          enemy.busFeint = !enemy.busFeintDone && this.random() < 0.45;
           enemy.windupTimer = 0.8;
           enemy.attackKind = 'last-bus-dash';
           this.playBossAnimation(enemy, 'bus-depart', 1.25);
@@ -6260,7 +6511,7 @@ export class ZheYiShenGame {
       if ((enemy.windupTimer ?? 0) > 0) moveMult = 0; // 招式前摇：站定，脚下生根
       if (enemy.type === 'last-bus') moveMult *= (enemy.phase ?? 0) === 3 ? 0.3 : 0.6;
       if (enemy.type === 'ringing-phone' && this.phoneRinging) moveMult = 0; // 来电位置锁定，等你走过去
-      if (enemy.type === 'lamp-keeper' && this.lampChoice) moveMult = 0; // 《点名》期间站定，不能遮住二选一
+      if (enemy.type === 'lamp-keeper' && this.lampSeize) moveMult = 0; // 《收灯》期间站定提灯
       if (enemy.type === 'task-sync') moveMult *= 0.55;
       if (dist > reach) {
         enemy.x += (dx / dist) * enemy.speed * moveMult * dt;
@@ -6507,12 +6758,13 @@ export class ZheYiShenGame {
         if (this.random() < 0.2) this.burst('word', this.heroX, this.heroY - 52, 22, '#e2b76a', '影子里 ×2');
       }
     }
-    // 响个不停：真正接听时才可受伤。铃响但没走近，仍然只是一次来电。
+    // 响个不停：接听窗口是主输出窗口（全额），未接听时留 18% 穿透——
+    // 血条可以厚，但不可以不掉血；完全免伤只剩挫败感。
     if (enemy.type === 'ringing-phone'
       && ((!this.phoneRinging || this.phoneAnswer <= 0) && this.phonePostAnswerTimer <= 0)) {
+      amount *= 0.18;
       enemy.flash = 0.06;
       if (this.random() < 0.1) this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 22, '#43525a', '现在没空');
-      return;
     }
     if (enemy.type === 'ringing-phone') {
       const storyFloor = (enemy.phase ?? 1) < 2 && this.phoneStoryIndex < 6
@@ -6535,11 +6787,17 @@ export class ZheYiShenGame {
     enemy.flash = 0.12;
     if (enemy.type === 'debt-collector' && enemy.hp > 0) {
       enemy.relocateDamage = (enemy.relocateDamage ?? 0) + amount;
-      if (enemy.relocateDamage >= enemy.maxHp * 0.14) {
+      if (enemy.relocateDamage >= enemy.maxHp * COLLECTOR_RELOCATE_DAMAGE_RATIO) {
         enemy.relocateDamage = 0;
         enemy.mechTimer = 0;
         shouldRelocateCollector = true;
       }
+    }
+    if (enemy.shadowVeil) {
+      // 《灯影戏》：影子被打中一次才现形
+      enemy.shadowVeil = false;
+      this.burst('word', enemy.x, enemy.y - enemy.radius - 10, 22, '#c9bfd4', '现形');
+      this.spawnPixelParticles({ x: enemy.x, y: enemy.y, count: 12, speed: 80, life: 0.45, size: 2, color: '#3a3542', drag: 2.6 });
     }
     this.stats.damage += amount;
     this.burst('hit', enemy.x, enemy.y, 18 + Math.min(24, amount), color, undefined, material);
@@ -6549,6 +6807,7 @@ export class ZheYiShenGame {
       if (enemy.boss) this.bossVoice(enemy);
       return;
     }
+    if (enemy.type === 'debt-collector') this.billTimer = 0;
     if (enemy.type === 'whose-box' && enemy.countedItem && !this.stageDisabledItems.has(enemy.countedItem)) {
       this.boxSavedItem = enemy.countedItem;
       enemy.countedItem = undefined;
@@ -6709,6 +6968,10 @@ export class ZheYiShenGame {
     const healed = Math.min(chair.maxHp - chair.hp, chair.maxHp * 0.07);
     chair.hp += healed;
     this.burst('ring', target.x, target.y, 60, '#c9a24a');
+    this.spawnPixelParticles({ x: target.x, y: target.y, count: 18, speed: 110, life: 0.5, size: 2, color: '#c9a24a', drag: 3 });
+    this.spawnPixelParticles({ x: target.x, y: target.y, count: 6, speed: 60, life: 0.3, size: 3, color: '#f4ead2', drag: 3.4 });
+    // 被吸走的加成飞向老板椅
+    this.spawnPixelParticles({ x: target.x, y: target.y, count: 8, angle: Math.atan2(chair.y - target.y, chair.x - target.x), spread: 0.4, speed: 200, life: 0.42, size: 2, color: '#e2c887', drag: 0.6 });
     this.burst('word', chair.x, chair.y - chair.radius - 12, 30, '#c9a24a', `优化 +${Math.ceil(healed)}`);
   }
 
@@ -6718,6 +6981,9 @@ export class ZheYiShenGame {
     for (const task of tasks) {
       task.dead = true;
       this.burst('ring', task.x, task.y, 84, '#c66c5a');
+      this.spawnPixelParticles({ x: task.x, y: task.y, count: 14, speed: 130, life: 0.5, size: 2, color: '#c66c5a', drag: 2.8 });
+      this.spawnPixelParticles({ x: task.x, y: task.y, count: 5, speed: 55, life: 0.28, size: 3, color: '#f2d9c9', drag: 3.2 });
+      this.spawnPixelParticles({ x: task.x, y: task.y + 6, count: 6, speed: 80, life: 0.6, size: 2, color: '#6f4238', gravity: 140, drag: 1.8 });
       if (Math.hypot(task.x - this.heroX, task.y - this.heroY) < 96) hits += 1;
     }
     this.screenShake = Math.max(this.screenShake, 0.24);
@@ -6755,6 +7021,7 @@ export class ZheYiShenGame {
       if (task === survivor) continue;
       task.dead = true;
       this.burst('hit', task.x, task.y, 22, '#8a5560');
+      this.spawnPixelParticles({ x: task.x, y: task.y, count: 10, speed: 90, life: 0.45, size: 2, color: '#8a5560', gravity: 90, drag: 2.2 });
     }
     if (!this.enemies.includes(survivor)) this.enemies.push(survivor);
     survivor.backstabber = true;
@@ -6829,7 +7096,7 @@ export class ZheYiShenGame {
     enemy.bossAnimFrame = undefined;
   }
 
-  private bossAnimationFrame(enemy: EnemyUnit): { id: BossSkillId; frame: number } | undefined {
+  private bossAnimationFrame(enemy: EnemyUnit): { id: BossSkillId; frame: number; progress?: number } | undefined {
     if (!isBossSkillId(enemy.bossAnim) || (enemy.bossAnimTimer ?? 0) <= 0) return undefined;
     if (enemy.bossAnimFrame !== undefined) {
       return { id: enemy.bossAnim, frame: Math.max(0, Math.min(3, Math.trunc(enemy.bossAnimFrame))) };
@@ -6837,12 +7104,37 @@ export class ZheYiShenGame {
     if (enemy.bossAnimLoop) return { id: enemy.bossAnim, frame: Math.floor(enemy.age * 8) % 4 };
     const duration = Math.max(0.08, enemy.bossAnimDuration ?? 0.08);
     const progress = 1 - this.clamp((enemy.bossAnimTimer ?? 0) / duration, 0, 1);
-    return { id: enemy.bossAnim, frame: Math.min(3, Math.floor(progress * 4)) };
+    // 非匀速帧曲线：前摇拖住（帧0 占 34%、帧1 占 26%）→ 爆发一闪（帧2 占 16%）→ 收势缓出（帧3 占 24%）。
+    // 匀速 4 帧是"幻灯片"，攻击的重量感全在这条时间曲线里。
+    const frame = progress < 0.34 ? 0 : progress < 0.6 ? 1 : progress < 0.76 ? 2 : 3;
+    return { id: enemy.bossAnim, frame, progress };
   }
 
   private updatePraisePaperZones(dt: number): void {
     this.praisePaperDropTimer = Math.max(0, this.praisePaperDropTimer - dt);
     const chair = this.enemies.find((enemy) => !enemy.dead && enemy.type === 'praise-chair');
+    // 《画大饼》：一阶段周期性扔饼；吃到=真加成，但都记在账上
+    if (chair && (chair.phase ?? 1) === 1) {
+      this.bingDropTimer += dt;
+      if (!this.bingDrop && this.bingDropTimer >= 9) {
+        this.bingDropTimer = 0;
+        const bingAngle = this.random() * Math.PI * 2;
+        this.bingDrop = { x: this.heroX + Math.cos(bingAngle) * 110, y: this.heroY + Math.sin(bingAngle) * 110, life: 7 };
+        this.burst('word', chair.x, chair.y - chair.radius - 14, 26, '#e2c887', '画个饼');
+        this.sayLore('bing-drop', '饼挂在前面。杆子在他手里。');
+      }
+      if (this.bingDrop) {
+        this.bingDrop.life -= dt;
+        if (this.bingDrop.life <= 0) this.bingDrop = undefined;
+        else if (Math.hypot(this.heroX - this.bingDrop.x, this.heroY - this.bingDrop.y) < 22) {
+          this.bingDebt += 1;
+          this.praiseFire = Math.min(0.96, this.praiseFire + 0.08);
+          this.burst('word', this.heroX, this.heroY - 48, 26, '#e2c887', '攻速+8% · 记账');
+          this.spawnPixelParticles({ x: this.bingDrop.x, y: this.bingDrop.y, count: 10, speed: 70, life: 0.4, size: 2, color: '#e2c887', drag: 2.6 });
+          this.bingDrop = undefined;
+        }
+      }
+    }
     if (!chair || (chair.phase ?? 1) === 2) {
       this.praisePaperZones = [];
       return;
@@ -6911,9 +7203,10 @@ export class ZheYiShenGame {
 
   private beginPhoneRing(enemy: EnemyUnit, phaseTwo: boolean): void {
     this.phoneRinging = true;
-    this.phoneRingWindow = phaseTwo ? 4 : 5;
+    this.phoneRingWindow = phaseTwo ? PHONE_PHASE_TWO_RING_WINDOW : PHONE_PHASE_ONE_RING_WINDOW;
     this.phoneAnswer = 0;
     this.phoneAnswerTarget = -1;
+    this.phoneResolution = undefined;
     this.phonePostAnswerTimer = 0;
     this.phoneActiveStoryIndex = this.phoneStoryIndex < PHONE_STORY_STEPS.length ? this.phoneStoryIndex : -1;
     if (phaseTwo) {
@@ -6939,9 +7232,37 @@ export class ZheYiShenGame {
     this.playBossAnimation(enemy, phaseTwo ? 'phone-p2-ring' : 'phone-p1-ring', this.phoneRingWindow, true);
     this.feedback.vibrate([180, 700, 180, 700]);
     this.feedback.play('boss', 0.65);
+    this.screenShake = Math.max(this.screenShake, phaseTwo ? 0.22 : 0.1);
     const burstPoints = this.phoneCalls;
-    for (const call of burstPoints) this.burst('ring', call.x, call.y, 90, '#cfe4ea');
+    for (const call of burstPoints) {
+      this.burst('ring', call.x, call.y, phaseTwo ? 132 : 90, '#cfe4ea');
+      if (phaseTwo) {
+        this.burst('ring', call.x, call.y, 98, '#6f9099');
+        this.burst('ring', call.x, call.y, 68, '#a24754');
+      }
+    }
     this.say(phaseTwo ? '全部一起响了' : '电话响了');
+  }
+
+  private beginPhoneResolution(
+    calls: Array<{ x: number; y: number }>,
+    phaseTwo: boolean,
+    answeredIndex: number,
+  ): void {
+    this.phoneResolution = {
+      calls: calls.map((call) => ({ ...call })),
+      answeredIndex,
+      phaseTwo,
+      life: PHONE_RESOLUTION_DURATION,
+      duration: PHONE_RESOLUTION_DURATION,
+    };
+    this.screenShake = Math.max(this.screenShake, phaseTwo ? 0.42 : 0.24);
+    calls.forEach((call, index) => {
+      const answered = index === answeredIndex;
+      const color = answered ? '#d7bd73' : '#a24754';
+      this.burst('ring', call.x, call.y, phaseTwo ? 148 : 112, color);
+      this.burst('ring', call.x, call.y, phaseTwo ? 108 : 78, answered ? '#f1e3a6' : '#d36a74');
+    });
   }
 
   private phoneFieldPoint(angle: number, radius: number): { x: number; y: number } {
@@ -7048,6 +7369,7 @@ export class ZheYiShenGame {
   private finishPhoneAnswer(enemy: EnemyUnit, phaseTwo: boolean, answeredIndex: number): void {
     this.phoneRinging = false;
     enemy.mechTimer = 0;
+    this.beginPhoneResolution(this.phoneCalls, phaseTwo, answeredIndex);
     const storyCaller = this.phoneActiveStoryIndex >= 0
       ? PHONE_STORY_STEPS[this.phoneActiveStoryIndex]
       : undefined;
@@ -7063,7 +7385,7 @@ export class ZheYiShenGame {
     this.phoneAnswerTarget = -1;
   }
 
-  private beginLampChoice(enemy: EnemyUnit): void {
+  private beginLampSeize(enemy: EnemyUnit): void {
     this.lampItemsToReturnTotal = Math.max(this.lampItemsToReturnTotal, this.items.length);
     const ordered = this.items
       .map((_, index) => index)
@@ -7076,54 +7398,65 @@ export class ZheYiShenGame {
       this.beginLampRelease(enemy);
       return;
     }
-    if (ordered.length === 1) {
-      this.finishLampCycle(enemy, ordered[0]!);
+    const stripAt = ordered[0]!;
+    if (this.items[stripAt] === 'fathers-raincoat' && this.items.length === 1) {
+      // 只剩雨衣：不追了，直接进入最后一次剥离
+      this.finishLampCycle(enemy, stripAt);
       return;
     }
-    if (ordered.length === 2) {
-      const raincoatIndex = ordered.find((index) => this.items[index] === 'fathers-raincoat');
-      if (raincoatIndex !== undefined) {
-        const otherIndex = ordered.find((index) => index !== raincoatIndex)!;
-        this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 30, '#d8c27d', '雨衣最后还');
-        this.say('这件，要留到最后。');
-        this.finishLampCycle(enemy, otherIndex);
-        return;
-      }
-    }
-    const leftIndex = ordered[0]!;
-    const rightIndex = ordered[1]!;
     enemy.x = this.darkCX;
     enemy.y = this.darkCY - 108;
-    const spread = Math.max(56, Math.min(84, this.darkR * 0.48));
-    this.lampChoice = {
-      indices: [leftIndex, rightIndex],
-      items: [this.items[leftIndex]!, this.items[rightIndex]!],
-      x: [this.darkCX - spread, this.darkCX + spread],
-      y: this.darkCY + 22,
-      timer: 3,
-      total: 3,
+    // 灯光圈从收灯人脚下出发追人；每躲过一轮，下一轮更快
+    this.lampSeize = {
+      x: enemy.x, y: enemy.y + 40,
+      stripAt,
+      exposure: 0,
+      timer: 6,
+      speed: 62 * (1 + this.lampSeizeMisses * 0.3),
     };
-    this.playBossAnimation(enemy, 'keeper-name', 3);
-    this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 30, '#cbb98f', '保一件');
-    this.say('这两件，留哪一件。');
+    this.playBossAnimation(enemy, 'keeper-name', 2.2);
+    this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 30, '#cbb98f', `收灯 ·《${getItem(this.items[stripAt]!).name}》`);
+    this.say('该还这一件了。');
   }
 
-  private updateLampChoice(enemy: EnemyUnit, dt: number): void {
-    const choice = this.lampChoice;
-    if (!choice) return;
-    choice.timer = Math.max(0, choice.timer - dt);
-    const leftDistance = Math.hypot(this.heroX - choice.x[0], this.heroY - choice.y);
-    const rightDistance = Math.hypot(this.heroX - choice.x[1], this.heroY - choice.y);
-    let keepSlot: 0 | 1 | undefined;
-    if (leftDistance < 34 || rightDistance < 34) keepSlot = leftDistance <= rightDistance ? 0 : 1;
-    else if (choice.timer <= 0) keepSlot = leftDistance <= rightDistance ? 0 : 1;
-    if (keepSlot === undefined) return;
-    const stripSlot: 0 | 1 = keepSlot === 0 ? 1 : 0;
-    const stripAt = choice.indices[stripSlot];
-    const kept = getItem(choice.items[keepSlot]);
-    this.burst('word', choice.x[keepSlot], choice.y - 30, 26, '#d8c27d', `留下 ${kept.name}`);
-    this.lampChoice = undefined;
-    this.finishLampCycle(enemy, stripAt);
+  private updateLampSeize(enemy: EnemyUnit, dt: number): void {
+    const seize = this.lampSeize;
+    if (!seize) return;
+    seize.timer = Math.max(0, seize.timer - dt);
+    // 光圈追人：方向朝玩家，速度有限——跑得快能甩开
+    const dx = this.heroX - seize.x;
+    const dy = this.heroY - seize.y;
+    const distance = Math.hypot(dx, dy) || 1;
+    const step = Math.min(distance, seize.speed * dt);
+    seize.x += (dx / distance) * step;
+    seize.y += (dy / distance) * step;
+    const inLight = distance < LAMP_SEIZE_RADIUS;
+    if (inLight) {
+      seize.exposure += dt;
+      this.heroSlowTimer = Math.max(this.heroSlowTimer, 0.12);
+      // 被照住：身上那件道具的光屑一路飘向收灯人的灯
+      if (!this.reducedMotion && Math.floor(this.battleTime * 12) !== Math.floor((this.battleTime - dt) * 12)) {
+        this.spawnPixelParticles({
+          x: this.heroX, y: this.heroY - 14, count: 2,
+          angle: Math.atan2(enemy.y - this.heroY, enemy.x - this.heroX), spread: 0.3,
+          speed: 130, life: 0.6, size: 2, color: '#e8d8a8', drag: 0.4,
+        });
+      }
+    } else {
+      seize.exposure = Math.max(0, seize.exposure - dt * 0.6);
+    }
+    if (seize.exposure >= LAMP_SEIZE_EXPOSURE) {
+      const stripAt = seize.stripAt;
+      this.lampSeize = undefined;
+      this.finishLampCycle(enemy, stripAt);
+      return;
+    }
+    if (seize.timer <= 0) {
+      this.lampSeize = undefined;
+      this.lampSeizeMisses += 1;
+      this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 28, '#8f8672', '这次没照住');
+      this.sayLore('lamp-seize-miss', '他把灯提高了一点。夜还长。');
+    }
   }
 
   private finishLampCycle(enemy: EnemyUnit, stripAt: number): void {
@@ -7161,7 +7494,7 @@ export class ZheYiShenGame {
   private beginLampRelease(enemy: EnemyUnit): void {
     if (this.lampReleaseReady) return;
     this.lampFinalStripTimer = 0;
-    this.lampChoice = undefined;
+    this.lampSeize = undefined;
     this.lampReleaseReady = true;
     this.lampReleaseTimer = LAMP_RELEASE_CONFIRM_DELAY;
     this.darkR = 70;
@@ -7193,12 +7526,17 @@ export class ZheYiShenGame {
   }
 
   private relocateDebtCollector(enemy: EnemyUnit): void {
+    enemy.relocateFromX = enemy.x;
+    enemy.relocateFromY = enemy.y;
     this.playBossAnimation(enemy, 'collector-relocate', 0.9);
     const relocateAngle = this.random() * Math.PI * 2;
     enemy.x = this.clamp(this.heroX + Math.cos(relocateAngle) * 170, 44, W - 44);
     enemy.y = this.clamp(this.heroY + Math.sin(relocateAngle) * 170, 110, H - 92);
+    this.burst('ring', enemy.relocateFromX, enemy.relocateFromY, 58, '#d94b61');
     this.burst('ring', enemy.x, enemy.y, 68, '#75605a');
     this.burst('word', enemy.x, enemy.y - enemy.radius - 10, 30, '#9b7968', '换个门');
+    this.screenShake = Math.max(this.screenShake, 0.18);
+    this.feedback.vibrate([18, 24, 32]);
   }
 
   private fatherChargeGeometry(enemy: EnemyUnit, angle: number): {
@@ -7237,13 +7575,30 @@ export class ZheYiShenGame {
   /** 通用 boss 定向招式派发：各 boss 前摇归零时按 attackKind 结算。 */
   private resolveBossStrike(enemy: EnemyUnit): void {
     switch (enemy.attackKind) {
-      case 'last-bus-dash':
+      case 'last-bus-dash': {
+        if (enemy.busFeint) {
+          // 假刹车：喘一口气，再突然发车
+          enemy.busFeint = false;
+          enemy.busFeintDone = true;
+          enemy.windupTimer = 0.42;
+          enemy.attackKind = 'last-bus-dash';
+          enemy.attackAngle = Math.atan2(this.heroY - enemy.y, this.heroX - enemy.x);
+          this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 26, '#d3b65f', '晚点');
+          this.spawnPixelParticles({ x: enemy.x, y: enemy.y + 8, count: 8, speed: 40, life: 0.4, size: 2, color: '#8d949c', drag: 2.6 });
+          this.sayLore('bus-late', '跑到的时候，只剩车尾灯了。红的，越来越小。');
+          return;
+        }
         enemy.phase = 2;
         enemy.mechTimer = 0;
         enemy.dashHit = false;
-        enemy.angle = enemy.attackAngle ?? Math.atan2(this.heroY - enemy.y, this.heroX - enemy.x);
+        const busAngle = enemy.attackAngle ?? Math.atan2(this.heroY - enemy.y, this.heroX - enemy.x);
+        enemy.angle = busAngle;
+        // 出发瞬间：车尾排气 + 沿冲刺方向的站台风
+        this.spawnPixelParticles({ x: enemy.x - Math.cos(busAngle) * enemy.radius, y: enemy.y - Math.sin(busAngle) * enemy.radius, count: 12, angle: busAngle + Math.PI, spread: 0.8, speed: 90, life: 0.6, size: 3, color: '#8d949c', drag: 1.6 });
+        this.spawnPixelParticles({ x: enemy.x, y: enemy.y, count: 8, angle: busAngle, spread: 0.5, speed: 180, life: 0.4, size: 2, color: '#d3b65f', drag: 1.2 });
         this.playVoiceOnce('station-doors-closing');
         break;
+      }
       case 'stand': // 第一阶段《站好》：继承来的规训，长距重压、强击退、减速
         this.bossLunge(enemy, { reach: 210, band: 26, dmg: enemy.damage, knock: 34, slow: 0.7, color: '#9c8f6a', word: '站好', lunge: 120 });
         break;
@@ -7263,7 +7618,17 @@ export class ZheYiShenGame {
         const heroPerp = Math.abs(relX * chargeDirY - relY * chargeDirX);
         enemy.x += chargeDirX * charge.travel;
         enemy.y += chargeDirY * charge.travel;
+        enemy.renderLagX = (enemy.renderLagX ?? 0) - chargeDirX * charge.travel;
+        enemy.renderLagY = (enemy.renderLagY ?? 0) - chargeDirY * charge.travel;
         this.burst('ring', enemy.x, enemy.y, 46, '#6c7b8a');
+        // 冲撞沿途踢起的雨水尘土
+        for (let step = 0.2; step < 1; step += 0.2) {
+          this.spawnPixelParticles({
+            x: enemy.x - chargeDirX * charge.travel * step, y: enemy.y - chargeDirY * charge.travel * step + 8,
+            count: 4, angle: chargeAngle + Math.PI, spread: 1.2, speed: 46,
+            life: 0.5, size: 2, color: step < 0.5 ? '#8fa3b1' : '#5f6d79', gravity: 60, drag: 2,
+          });
+        }
         if (heroAlong > charge.start && heroAlong < charge.reach && heroPerp < charge.band) {
           this.hurtHero(enemy.damage, enemy.name);
           this.heroSlowTimer = Math.max(this.heroSlowTimer, 0.4);
@@ -7286,6 +7651,10 @@ export class ZheYiShenGame {
         }
         break;
       }
+      case 'closet-gap': // 《缝里看你》：一道窄光柱——光是伤害带，黑暗反而安全
+        this.bossLunge(enemy, { reach: 280, band: 13, dmg: 7, knock: 12, slow: 0.55, color: '#efe3c0', word: '看见你了', lunge: 0 });
+        this.spawnPixelParticles({ x: enemy.x, y: enemy.y, count: 14, angle: enemy.attackAngle ?? 0, spread: 0.16, speed: 260, life: 0.5, size: 2, color: '#f4ead2', drag: 1 });
+        break;
       case 'shadow': // 床底怪《影子压来》：巨影压过来，本体几乎不动
         this.bossLunge(enemy, { reach: 240, band: 34, dmg: enemy.damage, knock: 22, slow: 0.3, color: '#48434f', word: '别看', lunge: 36 });
         break;
@@ -7305,13 +7674,11 @@ export class ZheYiShenGame {
         }
         for (let hand = 0; hand < 12; hand += 1) {
           const angle = (hand / 12) * Math.PI * 2 + 0.13;
-          this.burst(
-            'hit',
-            targetX + Math.cos(angle) * (52 + (hand % 3) * 14),
-            targetY + Math.sin(angle) * (52 + (hand % 3) * 14),
-            12,
-            hand % 2 === 0 ? '#7b507c' : '#3d2a48',
-          );
+          const handX = targetX + Math.cos(angle) * (52 + (hand % 3) * 14);
+          const handY = targetY + Math.sin(angle) * (52 + (hand % 3) * 14);
+          this.burst('hit', handX, handY, 12, hand % 2 === 0 ? '#7b507c' : '#3d2a48');
+          // 手抓向圆心：暗紫抓痕屑向心飞
+          this.spawnPixelParticles({ x: handX, y: handY, count: 4, angle: angle + Math.PI, spread: 0.5, speed: 120, life: 0.4, size: 2, color: hand % 2 === 0 ? '#7b507c' : '#4a3253', drag: 1.8 });
         }
         this.feedback.vibrate([24, 24, 34]);
         this.screenShake = Math.max(this.screenShake, 0.28);
@@ -7328,6 +7695,10 @@ export class ZheYiShenGame {
         const dy = Math.abs(this.heroY - targetY);
         this.burst('door', targetX - CLOSET_SLAM_HALF_WIDTH, targetY, 72, '#71444e');
         this.burst('door', targetX + CLOSET_SLAM_HALF_WIDTH, targetY, 72, '#71444e');
+        // 双门在中线夹拢：木屑沿纵向挤出
+        this.spawnPixelParticles({ x: targetX, y: targetY, count: 10, angle: -Math.PI / 2, spread: 0.5, speed: 110, life: 0.5, size: 2, color: '#8a5a63', drag: 2.4 });
+        this.spawnPixelParticles({ x: targetX, y: targetY, count: 10, angle: Math.PI / 2, spread: 0.5, speed: 110, life: 0.5, size: 2, color: '#5d3a44', drag: 2.4 });
+        this.spawnPixelParticles({ x: targetX, y: targetY, count: 6, speed: 50, life: 0.3, size: 3, color: '#e6d6da', drag: 3 });
         this.burst('ring', targetX, targetY, CLOSET_SLAM_HALF_HEIGHT, '#4b354b');
         this.feedback.vibrate([34, 18, 48]);
         this.screenShake = Math.max(this.screenShake, 0.34);
@@ -7340,9 +7711,20 @@ export class ZheYiShenGame {
         }
         break;
       }
-      case 'sleeve': // 单袖：窄车道，给新手留下明确的横移出口
+      case 'sleeve': { // 单袖：窄车道，给新手留下明确的横移出口
         this.bossLunge(enemy, { reach: COAT_SLEEVE_REACH, band: COAT_SLEEVE_HALF_WIDTH, dmg: 5, knock: 10, slow: 0.5, color: '#9f3548', word: '是袖子', lunge: 0 });
+        // 《晾不干》：袖口扫过的地上留两滩湿渍，踩进去脚步发沉
+        const sleeveAngle = enemy.attackAngle ?? Math.atan2(this.heroY - enemy.y, this.heroX - enemy.x);
+        for (const reachRatio of [0.45, 0.8]) {
+          this.wetPatches.push({
+            x: enemy.x + Math.cos(sleeveAngle) * COAT_SLEEVE_REACH * reachRatio,
+            y: enemy.y + Math.sin(sleeveAngle) * COAT_SLEEVE_REACH * reachRatio,
+            radius: 26, life: 5, maxLife: 5,
+          });
+        }
+        this.sayLore('coat-drip', '他知道那是衣架。可它今晚站得比昨天近。');
         break;
+      }
       case 'double-sleeve': // 半血双袖：扩大横向覆盖，但仍只结算一次，避免重叠判定造成隐性双伤
         this.bossLunge(enemy, { reach: COAT_SLEEVE_REACH, band: COAT_DOUBLE_SLEEVE_HALF_WIDTH, dmg: 6, knock: 10, slow: 0.5, color: '#b83f55', word: '两只袖子', lunge: 0 });
         break;
@@ -7370,6 +7752,8 @@ export class ZheYiShenGame {
           this.caption = `纸箱正在清点《${getItem(item).name}》：8 秒内打掉它。`;
           this.captionTime = 3.6;
           this.burst('word', this.heroX, this.heroY - 54, 30, '#d7bd73', '8秒内保住');
+          this.spawnPixelParticles({ x: enemy.x, y: enemy.y - 6, count: 12, angle: -Math.PI / 2, spread: 1.8, speed: 70, life: 0.55, size: 2, color: '#b08a5c', gravity: 130, drag: 1.6 });
+          this.spawnPixelParticles({ x: enemy.x, y: enemy.y, count: 6, speed: 45, life: 0.35, size: 2, color: '#d7bd73', drag: 2.6 });
           this.feedback.vibrate([18, 36, 18]);
         }
         break;
@@ -7378,6 +7762,9 @@ export class ZheYiShenGame {
         const slamDist = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y);
         this.burst('ring', enemy.x, enemy.y, 120, '#c9a24a');
         this.burst('ring', enemy.x, enemy.y, 220, '#c9a24a');
+        // 拍桌尘浪：全向金屑贴地飞散 + 桌面纸屑上抛
+        this.spawnPixelParticles({ x: enemy.x, y: enemy.y + 10, count: 26, speed: 150, speedVar: 0.5, life: 0.55, size: 2, color: '#c9a24a', drag: 3.2 });
+        this.spawnPixelParticles({ x: enemy.x, y: enemy.y - 8, count: 10, angle: -Math.PI / 2, spread: 1.4, speed: 90, life: 0.7, size: 2, color: '#e8e1d3', gravity: 180, drag: 1.4 });
         this.feedback.vibrate([30, 40, 50]);
         this.screenShake = Math.max(this.screenShake, 0.3);
         if (slamDist < PRAISE_SLAM_RADIUS) {
@@ -7392,14 +7779,36 @@ export class ZheYiShenGame {
         const pullDistance = Math.hypot(pullX, pullY) || 1;
         this.burst('ring', enemy.x, enemy.y, Math.min(220, pullDistance), '#b97858');
         if (pullDistance < COLLECTOR_DRAG_RADIUS) {
+          const originX = this.heroX;
+          const originY = this.heroY;
           this.heroX = this.clamp(this.heroX + (pullX / pullDistance) * 54, 18, W - 18);
           this.heroY = this.clamp(this.heroY + (pullY / pullDistance) * 54, 92, H - 64);
+          this.burst('ring', originX, originY - 12, 52, '#ef5364');
+          this.burst('ring', this.heroX, this.heroY - 12, 72, '#d7bd73');
+          // 被拽离地面时脚下擦出的土屑，沿拖拽反方向喷
+          this.spawnPixelParticles({
+            x: originX, y: originY + 12, count: 14,
+            angle: Math.atan2(-pullY, -pullX), spread: 0.9, speed: 90,
+            life: 0.5, size: 2, color: '#8a715c', gravity: 120, drag: 2.2,
+          });
+          for (let link = 1; link <= 12; link += 1) {
+            const ratio = link / 13;
+            this.burst(
+              link % 3 === 0 ? 'door' : 'hit',
+              originX + (this.heroX - originX) * ratio,
+              originY - 12 + (this.heroY - originY) * ratio,
+              12 + (link % 4) * 4,
+              link % 2 === 0 ? '#f0c976' : '#b97858',
+            );
+          }
           if (this.hero.coins > 0) {
             this.hero.coins -= 1;
             this.burst('word', this.heroX, this.heroY - 46, 24, '#d5885f', '-1零钱');
           } else {
             this.hurtHero(5, enemy.name);
           }
+          this.screenShake = Math.max(this.screenShake, 0.24);
+          this.feedback.vibrate([26, 32, 38]);
         }
         break;
       }
@@ -7428,6 +7837,16 @@ export class ZheYiShenGame {
     const perp = Math.abs(relX * dirY - relY * dirX);
     const start = enemy.radius * 0.5;
     this.burst('ring', strikeX + dirX * opts.reach * 0.5, strikeY + dirY * opts.reach * 0.5, opts.reach * 0.6, opts.color);
+    // 挥击粒子：主题色碎屑沿攻击方向扫出，根部密端部散——招式落地的重量感
+    this.spawnPixelParticles({
+      x: strikeX + dirX * enemy.radius * 0.8, y: strikeY + dirY * enemy.radius * 0.8,
+      count: 16, angle, spread: 0.7, speed: opts.reach * 1.5, speedVar: 0.8,
+      life: 0.42, size: 2, color: opts.color, drag: 3.4,
+    });
+    this.spawnPixelParticles({
+      x: strikeX + dirX * opts.reach * 0.7, y: strikeY + dirY * opts.reach * 0.7,
+      count: 8, angle, spread: 1.6, speed: 40, life: 0.5, size: 2, color: '#efe7d4', drag: 2.6,
+    });
     // screenShake 的单位是秒，振幅 = ceil(值 * 16) px（见 render 的 shakeAmount）。
     // 挥空只给一记落地的闷响；真打到才配得上比"挨打 0.22"更重的一下。
     this.screenShake = Math.max(this.screenShake, 0.06);
@@ -7444,6 +7863,9 @@ export class ZheYiShenGame {
     }
     enemy.x = strikeX + dirX * opts.lunge;
     enemy.y = strikeY + dirY * opts.lunge;
+    // 突进丝滑：判定即时到位，渲染位置从起点追上来（0.1s 级指数衰减）
+    enemy.renderLagX = (enemy.renderLagX ?? 0) - dirX * opts.lunge;
+    enemy.renderLagY = (enemy.renderLagY ?? 0) - dirY * opts.lunge;
   }
 
   private showFatherAttackNameOnce(name: string): void {
@@ -7476,6 +7898,7 @@ export class ZheYiShenGame {
 
   private hurtHero(amount: number, source?: string): boolean {
     if (amount <= 0 || this.hurtCooldown > 0) return false;
+    if (this.bingPenaltyTimer > 0) amount *= 1.15; // 《画大饼》追偿易伤
     this.hurtCooldown = HURT_IFRAME;
     // 《连续签到1847天》：受伤打断当期打卡节律
     if (this.hasProjectileTrigger('streak-1847')) {
@@ -7741,8 +8164,6 @@ export class ZheYiShenGame {
 
   private openFate(destination: FateDestination): void {
     this.feedback.play('page', 0.9);
-    this.resetMovementInput();
-    this.resetFateInput();
     this.fateDestination = destination;
     const snapshot = this.buildLifeSnapshot();
     const fallback = generateLocalFateEvent(snapshot, () => this.random());
@@ -7751,6 +8172,31 @@ export class ZheYiShenGame {
     const generationId = ++this.fateGenerationId;
     this.currentFate = undefined;
     this.aiFateState = 'requesting';
+    // 无感加载：AI 在写这件事的时候不进纸窗，战斗照常。
+    // 顶部挂一行打字机字，事实落纸（AI 就绪）那一刻才弹出纸张窗口。
+    this.fateIncomingStart = this.battleTime;
+    // 章末等待期（advance）不再放新怪；终章战斗（battle）保持原节奏
+    if (destination === 'advance') this.spawnPause = Math.max(this.spawnPause, 999);
+    void (async () => {
+      const generated = await (prefetched ?? generateAIFate(snapshot));
+      if (generationId !== this.fateGenerationId) return;
+      let currentGenerated = generated ? validateFateEvent(generated, snapshot) : null;
+      if (generated && prefetched && !currentGenerated) currentGenerated = await generateAIFate(snapshot);
+      if (generationId !== this.fateGenerationId) return;
+      // 就绪结果暂存：battle 中立即弹纸窗；若等待期间流转到了别的画面
+      // （章末三选一/商店等），等回到 battle 的下一帧再弹。
+      this.pendingFateOpen = { event: currentGenerated ?? fallback, fromAI: Boolean(currentGenerated) };
+      if (this.state === 'battle') this.presentPendingFate();
+    })();
+  }
+
+  private presentPendingFate(): void {
+    const pending = this.pendingFateOpen;
+    if (!pending) return;
+    this.pendingFateOpen = undefined;
+    this.fateIncomingStart = -1;
+    this.resetMovementInput();
+    this.resetFateInput();
     this.fateResultDirection = undefined;
     this.fateResultTimer = 0;
     this.closeFreeInput();
@@ -7759,16 +8205,9 @@ export class ZheYiShenGame {
     this.fateResultMinTimer = 0;
     this.fatePlayerText = '';
     this.state = 'fateEvent';
-    void (async () => {
-      const generated = await (prefetched ?? generateAIFate(snapshot));
-      if (generationId !== this.fateGenerationId || this.state !== 'fateEvent' || this.fateResultDirection) return;
-      let currentGenerated = generated ? validateFateEvent(generated, snapshot) : null;
-      if (generated && prefetched && !currentGenerated) currentGenerated = await generateAIFate(snapshot);
-      if (generationId !== this.fateGenerationId || this.state !== 'fateEvent' || this.fateResultDirection) return;
-      this.currentFate = currentGenerated ?? fallback;
-      this.aiFateState = currentGenerated ? 'gpt' : 'fallback';
-      this.applyFateFact(this.currentFate);
-    })();
+    this.currentFate = pending.event;
+    this.aiFateState = pending.fromAI ? 'gpt' : 'fallback';
+    this.applyFateFact(this.currentFate);
   }
 
   private prepareFate(): void {
@@ -8451,6 +8890,69 @@ export class ZheYiShenGame {
     this.pushBurst({ id: this.entityId++, kind, x, y, radius, life: 0.36, duration: 0.36, color, text, material });
   }
 
+  /** 技能隐喻字幕：首次触发时说一句，走留白公式，一局一次 */
+  private sayLore(key: string, line: string): void {
+    if (this.attackLoreSeen.has(key) || this.captionTime > 0) return;
+    this.attackLoreSeen.add(key);
+    this.say(line);
+  }
+
+  /**
+   * Boss 技能像素粒子：方向性迸发/落地尘/主题色碎屑。
+   * 上限 240，reducedMotion 减半；粒子是"招式落地的重量"，不是常驻装饰。
+   */
+  private spawnPixelParticles(options: {
+    x: number; y: number; count: number;
+    angle?: number; spread?: number; speed?: number; speedVar?: number;
+    life?: number; size?: number; color: string; gravity?: number; drag?: number;
+  }): void {
+    const cap = this.reducedMotion ? 120 : 240;
+    const count = this.reducedMotion ? Math.ceil(options.count / 2) : options.count;
+    for (let index = 0; index < count; index += 1) {
+      if (this.pixelParticles.length >= cap) break;
+      const spread = options.spread ?? Math.PI * 2;
+      const baseAngle = options.angle ?? 0;
+      const particleAngle = baseAngle + (this.random() - 0.5) * spread;
+      const speed = (options.speed ?? 60) * (1 + (this.random() - 0.5) * (options.speedVar ?? 0.6));
+      const life = (options.life ?? 0.5) * (0.7 + this.random() * 0.6);
+      this.pixelParticles.push({
+        x: options.x, y: options.y,
+        vx: Math.cos(particleAngle) * speed,
+        vy: Math.sin(particleAngle) * speed,
+        life, maxLife: life,
+        size: Math.max(1, Math.round((options.size ?? 2) * (0.7 + this.random() * 0.7))),
+        color: options.color,
+        gravity: options.gravity ?? 0,
+        drag: options.drag ?? 2.4,
+      });
+    }
+  }
+
+  private updatePixelParticles(dt: number): void {
+    if (!this.pixelParticles.length) return;
+    for (const particle of this.pixelParticles) {
+      particle.life -= dt;
+      const damp = Math.max(0, 1 - particle.drag * dt);
+      particle.vx *= damp;
+      particle.vy = particle.vy * damp + particle.gravity * dt;
+      particle.x += particle.vx * dt;
+      particle.y += particle.vy * dt;
+    }
+    this.pixelParticles = this.pixelParticles.filter((particle) => particle.life > 0);
+  }
+
+  /** 世界坐标层绘制（调用方已 translate 到世界系） */
+  private renderPixelParticles(ctx: CanvasRenderingContext2D): void {
+    for (const particle of this.pixelParticles) {
+      const fade = particle.life / particle.maxLife;
+      ctx.globalAlpha = fade < 0.4 ? fade * 2.2 : 0.88;
+      ctx.fillStyle = particle.color;
+      const size = fade < 0.35 ? Math.max(1, particle.size - 1) : particle.size;
+      ctx.fillRect(Math.round(particle.x - size / 2), Math.round(particle.y - size / 2), size, size);
+    }
+    ctx.globalAlpha = 1;
+  }
+
   private pushBurst(effect: BurstEffect): void {
     if (this.bursts.length < MAX_BURSTS) {
       this.bursts.push(effect);
@@ -8681,7 +9183,7 @@ export class ZheYiShenGame {
     if (nearest && Math.hypot(nearest.x - this.heroX, nearest.y - this.heroY) <= 140) return false;
     if (this.voiceCaption || this.captionTime > 0 || this.phoneRinging || this.phoneAnswer > 0
       || this.phoneTranscript || this.comboReveal || this.eliteAlertTime > 0
-      || this.transitionTimer > 0 || this.lampChoice) return false;
+      || this.transitionTimer > 0 || this.lampSeize) return false;
     const fresh = this.memories.filter((line) => !this.recalledMemories.has(line));
     if (!fresh.length) return true;
     const line = fresh[Math.floor(this.random() * fresh.length)]!;
@@ -8779,6 +9281,7 @@ export class ZheYiShenGame {
     else if (this.state === 'fateEvent') this.renderFateEvent();
     else this.renderResult();
     this.renderVoiceCaption();
+    this.renderFateIncoming();
     if (this.flash > 0) {
       ctx.fillStyle = `rgba(174,35,55,${Math.min(0.32, this.flash * 1.25)})`;
       ctx.fillRect(0, 0, W, H);
@@ -8795,6 +9298,32 @@ export class ZheYiShenGame {
         this.devSnapshotAt = now;
       }
     }
+  }
+
+  /**
+   * 命运事件 AI 生成中的等待提示：battle 顶部一行打字机描边字，无底框。
+   * 事实落纸（AI 就绪）那一刻由 openFate 的回调弹出纸窗——等待本身不打断战斗。
+   */
+  private renderFateIncoming(): void {
+    if (this.fateIncomingStart < 0 || this.state !== 'battle' || this.paused) return;
+    const elapsed = this.battleTime - this.fateIncomingStart;
+    if (elapsed < 0) return;
+    const full = '有件事正在发生';
+    const shown = full.slice(0, Math.min(full.length, Math.floor(elapsed / 0.14)));
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.font = `bold 13px ${UI_ARCHIVE_FONT_STACK}`;
+    const settled = shown.length >= full.length;
+    // 打完整句后轻微呼吸；打字期间实底
+    ctx.globalAlpha = settled ? 0.78 + Math.sin(this.battleTime * 2.4) * 0.14 : 0.95;
+    const caret = !settled && Math.floor(this.battleTime * 4) % 2 === 0 ? '▏' : '';
+    this.drawOutlinedText(shown + caret, W / 2, 148, '#e6ddc9');
+    if (settled) {
+      const dots = '…'.slice(0, Math.floor(this.battleTime * 1.4) % 2 ? 1 : 0);
+      if (dots) this.drawOutlinedText(dots, W / 2 + Math.round(ctx.measureText(full).width / 2) + 8, 148, '#b7ad99');
+    }
+    ctx.restore();
   }
 
   private renderLowHealthWarning(): void {
@@ -8822,6 +9351,8 @@ export class ZheYiShenGame {
   private renderVoiceCaption(): void {
     const active = this.voiceCaption;
     if (!active || this.paused || this.phoneTranscript) return;
+    // 结算页排满了自己的仪式文案，字幕会压住「两道痕」段落——语音照播，字幕不叠
+    if (this.state === 'result') return;
     const cue = VOICE_CUES[active.id];
     const cleanText = cue.text
       .replace(/<#[\d.]+#>/g, ' ')
@@ -8930,6 +9461,7 @@ export class ZheYiShenGame {
       ? this.items.filter((id) => id !== 'server-shutdown')
       : this.items;
     this.drawHero(this.heroX, this.heroY, HERO_WORLD_SCALE, visibleEquipment, heroFacing, heroMotion, heroActionFrame);
+    this.renderEnemyOverlays();
     ctx.restore();
   }
 
@@ -9452,34 +9984,30 @@ export class ZheYiShenGame {
   }
 
   private renderLampChoice(): void {
-    const choice = this.lampChoice;
-    if (!choice) return;
+    const seize = this.lampSeize;
+    if (!seize) return;
     const ctx = this.ctx;
-    const progress = this.clamp(choice.timer / choice.total, 0, 1);
-    const pulse = this.reducedMotion ? 0 : Math.sin(this.visualTime * 7) * 2;
+    const exposureRatio = this.clamp(seize.exposure / LAMP_SEIZE_EXPOSURE, 0, 1);
+    const pulse = this.reducedMotion ? 0 : Math.sin(this.visualTime * 6) * 2;
     ctx.save();
-    ctx.textAlign = 'center';
-    ctx.font = `8px ${UI_FONT_STACK}`;
-    for (const slot of [0, 1] as const) {
-      const x = choice.x[slot];
-      const y = choice.y;
-      ctx.fillStyle = 'rgba(207,184,111,.14)';
-      ctx.beginPath();
-      ctx.arc(x, y, 28 + pulse, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#d3bc72';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(x, y, 24, -Math.PI / 2, -Math.PI / 2 + progress * Math.PI * 2);
-      ctx.stroke();
-      this.drawItemSymbol(choice.items[slot], x, y - 2, 15);
-      const label = getItem(choice.items[slot]).name.slice(0, 7);
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = '#17161a';
-      ctx.strokeText(label, x, y + 35);
-      ctx.fillStyle = '#eee5cf';
-      ctx.fillText(label, x, y + 35);
-    }
+    // 暖金灯光圈：中心亮、边缘柔，照住越久越亮
+    const glow = ctx.createRadialGradient(seize.x, seize.y, 4, seize.x, seize.y, LAMP_SEIZE_RADIUS + pulse);
+    glow.addColorStop(0, `rgba(240,214,142,${0.32 + exposureRatio * 0.3})`);
+    glow.addColorStop(0.7, `rgba(226,186,104,${0.16 + exposureRatio * 0.16})`);
+    glow.addColorStop(1, 'rgba(226,186,104,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(seize.x, seize.y, LAMP_SEIZE_RADIUS + pulse, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 0.85;
+    ctx.strokeStyle = '#e8d091';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(seize.x, seize.y, LAMP_SEIZE_RADIUS, -Math.PI / 2, -Math.PI / 2 + exposureRatio * Math.PI * 2);
+    ctx.stroke();
+    // 圈心：要收走的那件道具
+    const itemId = this.items[seize.stripAt];
+    if (itemId) this.drawItemSymbol(itemId, seize.x, seize.y, 13);
     ctx.restore();
   }
 
@@ -9547,12 +10075,129 @@ export class ZheYiShenGame {
     const frame = Math.floor(this.visualTime * 8) % 4;
     const frequency = this.phoneRingWindow < 2 ? 12 : this.phoneRingWindow < 3 ? 8 : 5;
     const pulse = this.reducedMotion ? 0.5 : (Math.sin(this.visualTime * frequency) + 1) * 0.5;
-    for (const call of this.phoneCalls) {
-      this.drawPixelWarningRing(call.x, call.y, 36 + pulse * 7, '#cfe4ea', 0.34 + pulse * 0.44, 1, 24);
-      this.drawPixelWarningRing(call.x, call.y, 48 + pulse * 5, '#6f9099', 0.18 + pulse * 0.24, 1, 28);
-      if ((phone.phase ?? 1) !== 2 || Math.hypot(call.x - phone.x, call.y - phone.y) < 4) continue;
+    const phaseTwo = (phone.phase ?? 1) === 2;
+    const ringTotal = phaseTwo ? PHONE_PHASE_TWO_RING_WINDOW : PHONE_PHASE_ONE_RING_WINDOW;
+    const urgency = this.clamp(1 - this.phoneRingWindow / ringTotal, 0, 1);
+    const targetIndex = this.phoneAnswerTarget >= 0 ? this.phoneAnswerTarget : this.nearestPhoneCallIndex();
+    for (let callIndex = 0; callIndex < this.phoneCalls.length; callIndex += 1) {
+      const call = this.phoneCalls[callIndex]!;
+      const target = callIndex === targetIndex;
+      const answering = target && this.phoneAnswer > 0;
+      const cold = target ? '#d7bd73' : '#cfe4ea';
+      this.drawAuraRing(call.x, call.y, 42 + pulse * 10 + urgency * 5, cold, 0.42 + pulse * 0.46, 2, 24);
+      this.drawAuraRing(call.x, call.y, 60 + pulse * 8 + urgency * 9, target ? '#a24754' : '#6f9099', 0.24 + pulse * 0.32, 2, 28);
+      if (phaseTwo) {
+        this.drawAuraRing(call.x, call.y, 82 + pulse * 10 + urgency * 14, '#a24754', 0.12 + pulse * 0.22, 2, 32);
+      }
+
+      const ctx = this.ctx;
+      ctx.save();
+      ctx.translate(Math.round(call.x), Math.round(call.y));
+      const fragmentCount = phaseTwo ? 16 : 10;
+      for (let fragment = 0; fragment < fragmentCount; fragment += 1) {
+        const angle = (fragment / fragmentCount) * Math.PI * 2 + callIndex * 0.71;
+        const wave = this.reducedMotion ? 0 : Math.sin(this.visualTime * frequency + fragment * 1.9) * (4 + urgency * 5);
+        const radius = (phaseTwo ? 67 : 54) + (fragment % 3) * 8 + wave;
+        const width = 5 + (fragment % 3) * 2 + urgency * 3;
+        ctx.save();
+        ctx.translate(Math.round(Math.cos(angle) * radius), Math.round(Math.sin(angle) * radius));
+        ctx.rotate(angle + Math.PI / 2);
+        ctx.globalAlpha = (target ? 0.64 : 0.34) + pulse * (target ? 0.28 : 0.24);
+        ctx.fillStyle = fragment % 4 === 0 ? '#a24754' : target ? '#d7bd73' : '#9fb8bd';
+        ctx.fillRect(-Math.round(width / 2), -1, Math.round(width), fragment % 4 === 0 ? 3 : 2);
+        ctx.restore();
+      }
+      ctx.restore();
+
+      if (phaseTwo) {
+        const proxy: EnemyUnit = { ...phone, x: call.x, y: call.y, bossAnim: undefined, bossAnimTimer: 0 };
+        ctx.save();
+        ctx.globalAlpha = 0.76 + pulse * 0.18;
+        this.pixelEnemies.draw(ctx, proxy, false, 0, this.heroX < call.x);
+        ctx.restore();
+      }
+      if (phaseTwo && Math.hypot(call.x - phone.x, call.y - phone.y) >= 4) {
+        const proxy: EnemyUnit = { ...phone, x: call.x, y: call.y };
+        this.pixelBossSkills.draw(
+          this.ctx,
+          proxy,
+          'phone-p2-ring',
+          frame,
+          this.heroX < call.x,
+          PHONE_PHASE_TWO_PROXY_SCALE,
+        );
+      }
+
+      if (!target) continue;
+      const answerProgress = this.clamp(this.phoneAnswer / PHONE_ANSWER_DURATION, 0, 1);
+      ctx.save();
+      ctx.translate(Math.round(call.x), Math.round(call.y));
+      ctx.strokeStyle = answering ? '#f1e3a6' : '#d7bd73';
+      ctx.lineWidth = answering ? 4 : 3;
+      ctx.globalAlpha = 0.72 + pulse * 0.24;
+      const lockRadius = 50 + (answering ? answerProgress * 18 : pulse * 5);
+      for (let segment = 0; segment < 12; segment += 1) {
+        const filled = !answering || segment < Math.ceil(answerProgress * 12);
+        ctx.globalAlpha = filled ? 0.92 : 0.18;
+        const start = -Math.PI / 2 + (segment / 12) * Math.PI * 2 + 0.035;
+        const end = -Math.PI / 2 + ((segment + 0.72) / 12) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, lockRadius, start, end);
+        ctx.stroke();
+      }
+      for (const corner of [-1, 1]) {
+        ctx.globalAlpha = 0.95;
+        ctx.fillStyle = '#f1e3a6';
+        ctx.fillRect(corner * 39 - (corner > 0 ? 7 : 0), -46, 7, 3);
+        ctx.fillRect(corner * 46 - (corner > 0 ? 3 : 0), -46, 3, 11);
+        ctx.fillRect(corner * 39 - (corner > 0 ? 7 : 0), 43, 7, 3);
+        ctx.fillRect(corner * 46 - (corner > 0 ? 3 : 0), 35, 3, 11);
+      }
+      ctx.restore();
+    }
+  }
+
+  private renderPhoneResolution(): void {
+    const resolution = this.phoneResolution;
+    if (!resolution || resolution.calls.length === 0) return;
+    const phone = this.enemies.find((enemy) => !enemy.dead && enemy.type === 'ringing-phone');
+    if (!phone) return;
+    const progress = this.clamp(1 - resolution.life / resolution.duration, 0, 1);
+    const alpha = this.clamp(resolution.life / 0.32, 0, 1);
+    const frame = Math.min(3, Math.floor(progress * 4));
+    const ctx = this.ctx;
+    for (let callIndex = 0; callIndex < resolution.calls.length; callIndex += 1) {
+      const call = resolution.calls[callIndex]!;
+      const answered = callIndex === resolution.answeredIndex;
+      const color = answered ? '#f1e3a6' : '#d36a74';
       const proxy: EnemyUnit = { ...phone, x: call.x, y: call.y };
-      this.pixelBossSkills.draw(this.ctx, proxy, 'phone-p1-ring', frame, this.heroX < call.x, 0.68);
+      const skillId: BossSkillId = resolution.phaseTwo
+        ? answered ? 'phone-p2-answer' : 'phone-p2-missed'
+        : answered ? 'phone-p1-answer' : 'phone-p1-missed';
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      this.pixelBossSkills.draw(ctx, proxy, skillId, frame, this.heroX < call.x, resolution.phaseTwo ? 0.96 : 0.9);
+      ctx.translate(Math.round(call.x), Math.round(call.y));
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = answered ? 4 : 3;
+      ctx.globalAlpha = alpha * (answered ? 0.92 : 0.74);
+      for (let wave = 0; wave < 3; wave += 1) {
+        ctx.beginPath();
+        ctx.arc(0, 0, 44 + wave * 26 + progress * (54 + wave * 14), 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      const shardCount = resolution.phaseTwo ? 20 : 14;
+      for (let shard = 0; shard < shardCount; shard += 1) {
+        const angle = (shard / shardCount) * Math.PI * 2 + callIndex * 0.53;
+        const inner = 52 + (shard % 4) * 6;
+        const length = 14 + (shard % 5) * 5 + progress * 24;
+        ctx.save();
+        ctx.rotate(angle);
+        ctx.fillRect(Math.round(inner + progress * 28), -1, Math.round(length), shard % 3 === 0 ? 3 : 2);
+        ctx.restore();
+      }
+      ctx.restore();
     }
   }
 
@@ -9562,15 +10207,14 @@ export class ZheYiShenGame {
     const ctx = this.ctx;
     ctx.save();
     ctx.globalAlpha = this.clamp(transcript.timer / 0.28, 0, 1);
-    drawCutCornerPanel(ctx, 34, 98, W - 68, 52, 'rgba(10,12,16,.88)', '#667d83', 2, 1);
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#9fb8bd';
-    ctx.font = `bold 8px ${UI_FONT_STACK}`;
-    ctx.fillText(transcript.speaker, 46, 113);
-    ctx.fillStyle = UI_PALETTE.paperLight;
+    // 与语音字幕同语言：无底框描边字
     ctx.textAlign = 'center';
+    ctx.font = `bold 8px ${UI_FONT_STACK}`;
+    ctx.globalAlpha *= 0.72;
+    this.drawOutlinedText(transcript.speaker, 180, 111, '#9fb8bd');
+    ctx.globalAlpha = this.clamp(transcript.timer / 0.28, 0, 1);
     ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText(`「${transcript.text}」`, 180, 130, 260, 13, 2);
+    this.drawOutlinedWrapText(`「${transcript.text}」`, 180, 130, 260, 13, 2, UI_PALETTE.paperLight);
     ctx.restore();
   }
 
@@ -9675,6 +10319,7 @@ export class ZheYiShenGame {
     const ctx = this.ctx;
     this.renderPraisePaperZones();
     this.renderPhoneCalls();
+    this.renderPhoneResolution();
     this.renderPraiseConsult();
     this.renderLampChoice();
     if (this.xiaoZhangWorld) {
@@ -9814,18 +10459,13 @@ export class ZheYiShenGame {
     if (this.captionTime <= 0 || !this.caption) return;
     const ctx = this.ctx;
     const alpha = this.clamp(this.captionTime > 6 ? (7 - this.captionTime) * 2 : this.captionTime / 1.2, 0, 1);
-    const twoLines = this.caption.length > 17;
     const panelY = this.eliteAlertTime > 0 ? 132 : 96;
-    const panelHeight = twoLines ? 35 : 25;
     ctx.save();
-    ctx.globalAlpha = alpha * 0.82;
-    drawCutCornerPanel(ctx, 38, panelY, W - 76, panelHeight, 'rgba(8,8,12,.68)', '#51494d', 2, 1);
-    ctx.fillStyle = UI_PALETTE.oldRed;
-    ctx.fillRect(44, panelY + 4, 18, 2);
-    ctx.fillStyle = '#e8e1d3';
+    // 与语音字幕同语言：无底框描边字，直接落在画面上
+    ctx.globalAlpha = alpha;
     ctx.textAlign = 'center';
-    ctx.font = `bold 10px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText(this.caption, 180, panelY + 17, W - 96, 14, 2);
+    ctx.font = `bold 11px ${UI_ARCHIVE_FONT_STACK}`;
+    this.drawOutlinedWrapText(this.caption, 180, panelY + 14, W - 96, 15, 2, '#e8e1d3');
     ctx.restore();
   }
 
@@ -10711,13 +11351,9 @@ export class ZheYiShenGame {
       const toastAlpha = this.clamp(this.toastTime / 0.32, 0, 1);
       this.ctx.save();
       this.ctx.globalAlpha = toastAlpha;
-      drawCutCornerPanel(this.ctx, 68, 72, 224, 22, 'rgba(10,10,15,.74)', '#64545a', 2, 1);
-      this.ctx.fillStyle = UI_PALETTE.raincoatYellow;
-      this.ctx.fillRect(74, 76, 14, 2);
-      this.ctx.fillStyle = '#e7e0d3';
       this.ctx.textAlign = 'center';
-      this.ctx.font = `bold 9px ${UI_FONT_STACK}`;
-      this.ctx.fillText(this.toast, 180, 87);
+      this.ctx.font = `bold 10px ${UI_FONT_STACK}`;
+      this.drawOutlinedText(this.toast, 180, 86, '#e7e0d3');
       this.ctx.restore();
     }
     this.renderXiaoZhangPrompt();
@@ -11062,16 +11698,13 @@ export class ZheYiShenGame {
     const ctx = this.ctx;
     const alpha = this.clamp(this.eliteAlertTime / 0.45, 0, 1);
     ctx.save();
+    // 危险语义靠红字与短促脉动表达，不再用底板红框压画面
     ctx.globalAlpha = alpha;
-    ctx.fillStyle = 'rgba(28,10,15,.9)';
-    ctx.fillRect(48, 94, 264, 32);
-    ctx.strokeStyle = '#b84255';
-    ctx.strokeRect(49, 95, 262, 30);
-    ctx.fillStyle = '#f0d8d9';
     ctx.textAlign = 'center';
-    ctx.font = 'bold 11px sans-serif';
+    const pulse = 1 + Math.max(0, this.eliteAlertTime - 2.2) * 0.12;
+    ctx.font = `bold ${Math.round(12 * pulse)}px ${UI_ARCHIVE_FONT_STACK}`;
     const label = this.eliteAlertKind === 'boss' ? '章节首领' : '精英逼近';
-    ctx.fillText(`${label} · ${this.eliteAlertName}`, 180, 115);
+    this.drawOutlinedText(`${label} · ${this.eliteAlertName}`, 180, 112, '#e88a97');
     ctx.restore();
   }
 
@@ -11637,22 +12270,29 @@ export class ZheYiShenGame {
     ctx.fillRect(rect.x + rect.width - (active ? 26 : 39), rect.y + 14, 10, 10);
   }
 
-  private renderEnemies(): void {
+  /** 名牌与血条画在主角之后：贴身近战时不再被主角精灵遮断 */
+  private renderEnemyOverlays(): void {
     for (const enemy of this.enemies) {
       if (enemy.dead) continue;
       if (!this.visibleInLampLight(enemy.x, enemy.y, enemy.radius + (enemy.boss ? 28 : 12))) continue;
-      this.drawEnemy(enemy);
       const marked = enemy.elite || enemy.boss || Boolean(enemy.backstabber);
       if (marked || enemy.hp < enemy.maxHp) {
         const barWidth = marked ? 50 : 26;
         this.bar(enemy.x - barWidth / 2, enemy.y + enemy.radius + 7, barWidth, marked ? 5 : 3, enemy.hp / enemy.maxHp, marked ? '#d64e5e' : '#9d3d4b');
       }
       if ((enemy.elite && !enemy.boss) || enemy.backstabber) {
-        this.ctx.fillStyle = '#c9c3b9';
         this.ctx.font = 'bold 8px sans-serif';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText(enemy.name, enemy.x, enemy.y + enemy.radius + 22);
+        this.drawOutlinedText(enemy.name, enemy.x, enemy.y + enemy.radius + 22, '#c9c3b9');
       }
+    }
+  }
+
+  private renderEnemies(): void {
+    for (const enemy of this.enemies) {
+      if (enemy.dead) continue;
+      if (!this.visibleInLampLight(enemy.x, enemy.y, enemy.radius + (enemy.boss ? 28 : 12))) continue;
+      this.drawEnemy(enemy);
       if ((enemy.tauntVulnerableTimer ?? 0) > 0) {
         this.ctx.fillStyle = '#d96a72';
         this.ctx.font = `bold 8px ${UI_FONT_STACK}`;
@@ -11682,6 +12322,7 @@ export class ZheYiShenGame {
     }
     for (const death of this.enemyDeaths) {
       if (!this.visibleInLampLight(death.x, death.y, death.radius + 12)) continue;
+      // (overlays drawn later, see renderEnemyOverlays)
       this.pixelEnemies.drawDeath(this.ctx, {
         asset: death.asset,
         x: death.x,
@@ -11771,7 +12412,7 @@ export class ZheYiShenGame {
           );
         }
         if (warning) {
-          this.drawPixelWarningRing(
+          this.drawAuraRing(
             enemy.x,
             enemy.y,
             CRY_MOTH_POWDER_RADIUS - charge * 9 + pulse * 2,
@@ -11794,10 +12435,10 @@ export class ZheYiShenGame {
           : 0;
         ctx.save();
         ctx.imageSmoothingEnabled = false;
-        this.drawPixelWarningRing(enemy.x, enemy.y, 28 + pulse * 5, '#4e465d', 0.28 + pulse * 0.18, 1, 28);
+        this.drawAuraRing(enemy.x, enemy.y, 28 + pulse * 5, '#4e465d', 0.28 + pulse * 0.18, 1, 28);
         if (inhale) {
           for (let breath = 0; breath < 3; breath += 1) {
-            this.drawPixelWarningRing(
+            this.drawAuraRing(
               enemy.x,
               enemy.y,
               FEAR_BREATH_RADIUS - charge * 38 - breath * 10 + pulse * 3,
@@ -11864,7 +12505,7 @@ export class ZheYiShenGame {
           }
         }
         ctx.restore();
-        this.drawPixelWarningRing(
+        this.drawAuraRing(
           enemy.x,
           enemy.y,
           28 + (warning ? (1 - charge) * 12 : pulse * 8),
@@ -11917,7 +12558,7 @@ export class ZheYiShenGame {
             size,
           );
         }
-        this.drawPixelWarningRing(
+        this.drawAuraRing(
           enemy.x,
           enemy.y,
           DESK_LAMP_AURA_RADIUS,
@@ -11926,7 +12567,7 @@ export class ZheYiShenGame {
           1,
           40,
         );
-        this.drawPixelWarningRing(
+        this.drawAuraRing(
           enemy.x,
           enemy.y,
           55 + pulse * 5,
@@ -11954,7 +12595,7 @@ export class ZheYiShenGame {
         ctx.beginPath();
         ctx.arc(enemy.x, enemy.y, fieldRadius, 0, Math.PI * 2);
         ctx.fill();
-        this.drawPixelWarningRing(
+        this.drawAuraRing(
           enemy.x,
           enemy.y,
           fieldRadius,
@@ -11963,7 +12604,7 @@ export class ZheYiShenGame {
           1,
           cold ? 36 : 28,
         );
-        this.drawPixelWarningRing(
+        this.drawAuraRing(
           enemy.x,
           enemy.y,
           30,
@@ -11973,8 +12614,8 @@ export class ZheYiShenGame {
           24,
         );
         if (reheat > 0) {
-          this.drawPixelWarningRing(enemy.x, enemy.y, REHEATED_POT_REHEAT_RADIUS, '#fff0a0', 0.92, reheat, 36);
-          this.drawPixelWarningRing(enemy.x, enemy.y, 43 - reheat * 8, '#f16b3e', 0.78, 1, 24);
+          this.drawAuraRing(enemy.x, enemy.y, REHEATED_POT_REHEAT_RADIUS, '#fff0a0', 0.92, reheat, 36);
+          this.drawAuraRing(enemy.x, enemy.y, 43 - reheat * 8, '#f16b3e', 0.78, 1, 24);
         }
 
         const steamCount = cold ? 2 : 3 + Math.round(heat * 5) + (reheat > 0 ? 3 : 0);
@@ -12032,7 +12673,7 @@ export class ZheYiShenGame {
           ctx.fill();
         }
         for (let ring = 0; ring < 3; ring += 1) {
-          this.drawPixelWarningRing(
+          this.drawAuraRing(
             enemy.x,
             enemy.y,
             30 + ring * 18 + charge * 9 + pulse * 2,
@@ -12065,7 +12706,7 @@ export class ZheYiShenGame {
           ctx.fillStyle = '#c8e8e9';
           ctx.globalAlpha = 0.94;
           ctx.font = `bold 10px ${UI_FONT_STACK}`;
-          ctx.fillText(`铃声 · ${Math.max(0, enemy.auraCooldown ?? MISSED_CALL_PULSE_INTERVAL).toFixed(1)}s`, this.heroX, this.heroY - 42);
+          ctx.fillText(`铃声 · ${Math.max(0, enemy.auraCooldown ?? MISSED_CALL_PULSE_INTERVAL).toFixed(1)}s`, this.heroX, this.heroY - 58);
         }
       } else if (enemy.type === 'silence') {
         const distance = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y);
@@ -12082,9 +12723,9 @@ export class ZheYiShenGame {
           ctx.arc(enemy.x, enemy.y, layer.radius, 0, Math.PI * 2);
           ctx.fill();
         }
-        this.drawPixelWarningRing(enemy.x, enemy.y, SILENCE_SLOW_RADIUS, '#777080', active ? 0.72 : 0.4, 1, 40);
-        this.drawPixelWarningRing(enemy.x, enemy.y, 61 + pulse * 4, '#5d5867', active ? 0.64 : 0.34, 1, 32);
-        this.drawPixelWarningRing(enemy.x, enemy.y, 34 + pulse * 3, '#aaa0ad', active ? 0.66 : 0.36, 1, 24);
+        this.drawAuraRing(enemy.x, enemy.y, SILENCE_SLOW_RADIUS, '#777080', active ? 0.72 : 0.4, 1, 40);
+        this.drawAuraRing(enemy.x, enemy.y, 61 + pulse * 4, '#5d5867', active ? 0.64 : 0.34, 1, 32);
+        this.drawAuraRing(enemy.x, enemy.y, 34 + pulse * 3, '#aaa0ad', active ? 0.66 : 0.36, 1, 24);
         for (let fragment = 0; fragment < 16; fragment += 1) {
           const angle = fragment / 16 * Math.PI * 2 + enemy.id * 0.23;
           const radius = 48 + (fragment % 4) * 10;
@@ -12107,7 +12748,7 @@ export class ZheYiShenGame {
           ctx.fillStyle = '#c9becb';
           ctx.globalAlpha = 0.94;
           ctx.font = `bold 10px ${UI_FONT_STACK}`;
-          ctx.fillText('没人说话 · 移速×0.75', this.heroX, this.heroY - 45);
+          ctx.fillText('没人说话 · 移速×0.75', this.heroX, this.heroY - 58);
         }
       }
       ctx.restore();
@@ -12144,9 +12785,9 @@ export class ZheYiShenGame {
           ctx.arc(enemy.x, enemy.y, layer.radius, 0, Math.PI * 2);
           ctx.fill();
         }
-        this.drawPixelWarningRing(enemy.x, enemy.y, OTHERS_PAPER_AURA_RADIUS, '#a94358', active ? 0.46 : 0.24, 1, 42);
-        this.drawPixelWarningRing(enemy.x, enemy.y, OTHERS_PAPER_MID_RADIUS, '#cb5262', active ? 0.54 : 0.28, 1, 32);
-        this.drawPixelWarningRing(enemy.x, enemy.y, OTHERS_PAPER_INNER_RADIUS + pulse * 4, '#ef6a76', active ? 0.74 : 0.34, 1, 24);
+        this.drawAuraRing(enemy.x, enemy.y, OTHERS_PAPER_AURA_RADIUS, '#a94358', active ? 0.46 : 0.24, 1, 42);
+        this.drawAuraRing(enemy.x, enemy.y, OTHERS_PAPER_MID_RADIUS, '#cb5262', active ? 0.54 : 0.28, 1, 32);
+        this.drawAuraRing(enemy.x, enemy.y, OTHERS_PAPER_INNER_RADIUS + pulse * 4, '#ef6a76', active ? 0.74 : 0.34, 1, 24);
         // 分数只以散点方式飘在场里，不铺成试卷网格。
         ctx.textAlign = 'center';
         ctx.font = `bold 10px ${UI_FONT_STACK}`;
@@ -12183,14 +12824,14 @@ export class ZheYiShenGame {
             ctx.fillStyle = '#f19aa0';
             ctx.globalAlpha = 0.92;
             ctx.font = `bold 11px ${UI_FONT_STACK}`;
-            ctx.fillText(distance <= OTHERS_PAPER_INNER_RADIUS ? '被比下去' : '比较中', this.heroX, this.heroY - 41);
+            ctx.fillText(distance <= OTHERS_PAPER_INNER_RADIUS ? '被比下去' : '比较中', this.heroX, this.heroY - 58);
           }
         }
         ctx.restore();
       } else if (enemy.type === 'sign-here') {
         const distance = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y);
         const active = distance <= SIGN_HERE_SLOW_RADIUS;
-        this.drawPixelWarningRing(
+        this.drawAuraRing(
           enemy.x,
           enemy.y,
           SIGN_HERE_SLOW_RADIUS + pulse * 3,
@@ -12237,7 +12878,7 @@ export class ZheYiShenGame {
         const angle = enemy.attackAngle ?? 0;
         ctx.save();
         ctx.imageSmoothingEnabled = false;
-        this.drawPixelWarningRing(
+        this.drawAuraRing(
           enemy.x,
           enemy.y,
           28 + pulse * 4,
@@ -12325,9 +12966,9 @@ export class ZheYiShenGame {
           ctx.textAlign = 'center';
           ctx.fillText(fragment % 3 === 0 ? '都' : fragment % 3 === 1 ? '…' : '说', enemy.x + Math.cos(angle) * radius, enemy.y + Math.sin(angle) * radius);
         }
-        this.drawPixelWarningRing(enemy.x, enemy.y, WHISPER_PRESSURE_RADIUS + pulse * 3, '#a56f96', active ? 0.82 : 0.4, 1, 30);
-        this.drawPixelWarningRing(enemy.x, enemy.y, 30 + pulse * 4, '#d09bb7', active ? 0.76 : 0.36, 1, 24);
-        this.drawPixelWarningRing(enemy.x, enemy.y, 20 + pulse * 2, '#72516c', active ? 0.7 : 0.32, 1, 20);
+        this.drawAuraRing(enemy.x, enemy.y, WHISPER_PRESSURE_RADIUS + pulse * 3, '#a56f96', active ? 0.82 : 0.4, 1, 30);
+        this.drawAuraRing(enemy.x, enemy.y, 30 + pulse * 4, '#d09bb7', active ? 0.76 : 0.36, 1, 24);
+        this.drawAuraRing(enemy.x, enemy.y, 20 + pulse * 2, '#72516c', active ? 0.7 : 0.32, 1, 20);
         if (active && !whisperHeroMarkDrawn) {
           whisperHeroMarkDrawn = true;
           this.drawPixelWarningRing(this.heroX, this.heroY - 7, 32 + pulse * 5, '#bd82a6', 0.86, 1, 28);
@@ -12335,7 +12976,7 @@ export class ZheYiShenGame {
           ctx.globalAlpha = 0.94;
           ctx.font = `bold 10px ${UI_FONT_STACK}`;
           ctx.textAlign = 'center';
-          ctx.fillText(`他们都在说 · ${(enemy.auraCooldown ?? WHISPER_PRESSURE_INTERVAL).toFixed(1)}s`, this.heroX, this.heroY - 43);
+          ctx.fillText(`他们都在说 · ${(enemy.auraCooldown ?? WHISPER_PRESSURE_INTERVAL).toFixed(1)}s`, this.heroX, this.heroY - 58);
         }
         ctx.restore();
       } else if (enemy.type === 'id-scanner') {
@@ -12344,7 +12985,7 @@ export class ZheYiShenGame {
         const targetY = enemy.scanTargetY;
         ctx.save();
         ctx.imageSmoothingEnabled = false;
-        this.drawPixelWarningRing(enemy.x, enemy.y, 31 + pulse * 3, '#55d89a', active ? 0.9 : warning ? 0.7 : 0.34, 1, 24);
+        this.drawAuraRing(enemy.x, enemy.y, 31 + pulse * 3, '#55d89a', active ? 0.9 : warning ? 0.7 : 0.34, 1, 24);
         if ((warning || active) && targetY !== undefined) {
           const charge = active ? 1 : 1 - this.clamp((enemy.windupTimer ?? 0) / ID_SCANNER_WINDUP, 0, 1);
           const span = active ? 238 : 28 + charge * 210;
@@ -12385,7 +13026,7 @@ export class ZheYiShenGame {
       ctx.globalAlpha = 0.95;
       ctx.font = `bold 11px ${UI_FONT_STACK}`;
       ctx.textAlign = 'center';
-      ctx.fillText(`#017 · ${this.scannerLockTimer.toFixed(1)}s`, this.heroX, this.heroY - 49);
+      ctx.fillText(`#017 · ${this.scannerLockTimer.toFixed(1)}s`, this.heroX, this.heroY - 58);
       for (const enemy of this.enemies) {
         if (enemy.dead || enemy.type === 'id-scanner' || enemy.elite || enemy.boss) continue;
         const dx = this.heroX - enemy.x;
@@ -12451,7 +13092,7 @@ export class ZheYiShenGame {
           ctx.fillRect(1, -6, 6, 12);
           ctx.restore();
         }
-        this.drawPixelWarningRing(enemy.x, laneY, 35 + charge * 11 + pulse * 3, '#e5be55', 0.62 + charge * 0.3, charge, 28);
+        this.drawAuraRing(enemy.x, laneY, 35 + charge * 11 + pulse * 3, '#e5be55', 0.62 + charge * 0.3, charge, 28);
         ctx.fillStyle = charge > 0.72 ? '#f0846b' : '#edcf75';
         ctx.globalAlpha = 0.96;
         ctx.font = `bold 10px ${UI_FONT_STACK}`;
@@ -12490,8 +13131,8 @@ export class ZheYiShenGame {
           ctx.fillRect(-length, -1, length, streak % 4 === 0 ? 4 : 2);
           ctx.restore();
         }
-        this.drawPixelWarningRing(enemy.x, laneY, 38 + pulse * 8, '#f2c95c', 0.84, remaining, 30);
-        this.drawPixelWarningRing(enemy.x - direction * 30, laneY, 48 + pulse * 5, '#c74750', 0.52, remaining, 26);
+        this.drawAuraRing(enemy.x, laneY, 38 + pulse * 8, '#f2c95c', 0.84, remaining, 30);
+        this.drawAuraRing(enemy.x - direction * 30, laneY, 48 + pulse * 5, '#c74750', 0.52, remaining, 26);
         ctx.fillStyle = '#f3d77a';
         ctx.globalAlpha = 0.94;
         ctx.font = `bold 9px ${UI_FONT_STACK}`;
@@ -12513,7 +13154,7 @@ export class ZheYiShenGame {
 
       if (enemy.type === 'task-simple') {
         const child = (enemy.phase ?? 0) > 0;
-        this.drawPixelWarningRing(enemy.x, enemy.y, 28 + pulse * 4, '#829aad', child ? 0.82 : 0.42, 1, 24);
+        this.drawAuraRing(enemy.x, enemy.y, 28 + pulse * 4, '#829aad', child ? 0.82 : 0.42, 1, 24);
         ctx.fillStyle = child ? '#c9d9e2' : '#849daf';
         ctx.globalAlpha = child ? 0.82 : 0.36;
         if (!child) {
@@ -12561,7 +13202,7 @@ export class ZheYiShenGame {
         const urgent = remaining <= 2;
         const color = urgent ? '#e15c58' : '#b9895a';
         const radius = urgent ? 36 + pulse * 6 : 31 + pulse * 3;
-        this.drawPixelWarningRing(enemy.x, enemy.y, radius, color, urgent ? 0.9 : 0.52, 1, 28);
+        this.drawAuraRing(enemy.x, enemy.y, radius, color, urgent ? 0.9 : 0.52, 1, 28);
         ctx.fillStyle = color;
         for (let tick = 0; tick < 12; tick += 1) {
           const angle = tick / 12 * Math.PI * 2 - Math.PI / 2;
@@ -12594,8 +13235,8 @@ export class ZheYiShenGame {
       } else if (enemy.type === 'task-sync') {
         const nextIn = Math.max(0, TASK_SYNC_INTERVAL - (enemy.mechTimer ?? 0));
         const activeAlpha = actionActive ? 0.92 : 0.42 + pulse * 0.2;
-        this.drawPixelWarningRing(enemy.x, enemy.y, 38 + pulse * 5, '#6f9c91', activeAlpha, 1, 28);
-        this.drawPixelWarningRing(enemy.x, enemy.y, 54 - pulse * 4, '#9cb8aa', activeAlpha * 0.72, 1, 32);
+        this.drawAuraRing(enemy.x, enemy.y, 38 + pulse * 5, '#6f9c91', activeAlpha, 1, 28);
+        this.drawAuraRing(enemy.x, enemy.y, 54 - pulse * 4, '#9cb8aa', activeAlpha * 0.72, 1, 32);
         const targets = this.enemies.filter((other) => {
           if (other.dead || other === enemy || other.boss || other.elite) return false;
           const distance = Math.hypot(other.x - enemy.x, other.y - enemy.y);
@@ -12618,7 +13259,7 @@ export class ZheYiShenGame {
             ctx.fillRect(0, 3, 7, 3);
             ctx.restore();
           }
-          this.drawPixelWarningRing(target.x, target.y, target.radius + 8 + pulse * 3, '#7ea397', activeAlpha * 0.7, 1, 18);
+          this.drawAuraRing(target.x, target.y, target.radius + 8 + pulse * 3, '#7ea397', activeAlpha * 0.7, 1, 18);
         }
         ctx.fillStyle = '#b4ccbf';
         ctx.globalAlpha = 0.94;
@@ -12627,7 +13268,7 @@ export class ZheYiShenGame {
       }
 
       if (actionActive) {
-        this.drawPixelWarningRing(enemy.x, enemy.y, 44 + pulse * 8, '#e3d5c2', 0.88, 1, 32);
+        this.drawAuraRing(enemy.x, enemy.y, 44 + pulse * 8, '#e3d5c2', 0.88, 1, 32);
       }
       ctx.restore();
     }
@@ -12650,7 +13291,7 @@ export class ZheYiShenGame {
         ctx.beginPath();
         ctx.arc(enemy.x, enemy.y, MEETING_DOOR_SLOW_RADIUS, 0, Math.PI * 2);
         ctx.fill();
-        this.drawPixelWarningRing(
+        this.drawAuraRing(
           enemy.x,
           enemy.y,
           MEETING_DOOR_SLOW_RADIUS + pulse * 3,
@@ -12695,7 +13336,7 @@ export class ZheYiShenGame {
         const near = distance <= contactRadius + 32;
         ctx.save();
         ctx.imageSmoothingEnabled = false;
-        this.drawPixelWarningRing(
+        this.drawAuraRing(
           enemy.x,
           enemy.y,
           contactRadius + pulse * 4,
@@ -12762,7 +13403,7 @@ export class ZheYiShenGame {
         const distance = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y);
         ctx.save();
         ctx.imageSmoothingEnabled = false;
-        this.drawPixelWarningRing(enemy.x, enemy.y, 42 + pulse * 5, called ? '#e26a4d' : '#83615d', called ? 0.92 : 0.34, 1, 32);
+        this.drawAuraRing(enemy.x, enemy.y, 42 + pulse * 5, called ? '#e26a4d' : '#83615d', called ? 0.92 : 0.34, 1, 32);
         if (called) {
           const dx = enemy.x - this.heroX;
           const dy = enemy.y - this.heroY;
@@ -12804,7 +13445,7 @@ export class ZheYiShenGame {
         const distance = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y);
         const active = distance <= OTHERS_FAMILY_SLOW_RADIUS;
         const travelAngle = enemy.attackAngle ?? 0;
-        this.drawPixelWarningRing(
+        this.drawAuraRing(
           enemy.x,
           enemy.y,
           OTHERS_FAMILY_SLOW_RADIUS + pulse * 3,
@@ -12850,10 +13491,10 @@ export class ZheYiShenGame {
         const tier = enemy.ivSpeedTier ?? Math.floor((enemy.mechTimer ?? 0) / IV_STAND_SPEED_INTERVAL);
         const tierProgress = ((enemy.mechTimer ?? 0) % IV_STAND_SPEED_INTERVAL) / IV_STAND_SPEED_INTERVAL;
         const moveAngle = Math.atan2(this.heroY - enemy.y, this.heroX - enemy.x);
-        this.drawPixelWarningRing(enemy.x, enemy.y, 34 + tier * 3 + pulse * 3, '#79a99a', 0.64 + Math.min(0.3, tier * 0.07), 1, 32);
-        this.drawPixelWarningRing(enemy.x, enemy.y, 45 + tier * 3, '#b5d4c7', 0.72, tierProgress, 36);
+        this.drawAuraRing(enemy.x, enemy.y, 34 + tier * 3 + pulse * 3, '#79a99a', 0.64 + Math.min(0.3, tier * 0.07), 1, 32);
+        this.drawAuraRing(enemy.x, enemy.y, 45 + tier * 3, '#b5d4c7', 0.72, tierProgress, 36);
         for (let shock = 1; shock <= Math.min(3, tier); shock += 1) {
-          this.drawPixelWarningRing(
+          this.drawAuraRing(
             enemy.x,
             enemy.y,
             49 + shock * 10 + pulse * (3 + shock),
@@ -12913,6 +13554,32 @@ export class ZheYiShenGame {
     return Math.hypot(x - this.darkCX, y - this.darkCY) <= Math.max(70, this.darkR) + margin;
   }
 
+  /**
+   * 小怪常驻机制场：细虚线淡环，无暗底描边。
+   * 只标注"这里有个范围"，不抢威胁语义——强警告（boss 前摇/玩家被锁定）才用 drawPixelWarningRing。
+   */
+  private drawAuraRing(
+    x: number,
+    y: number,
+    radius: number,
+    color: string,
+    alpha: number,
+    completion = 1,
+    _segments = 28,
+  ): void {
+    const ctx = this.ctx;
+    const sweep = Math.PI * 2 * this.clamp(completion, 0, 1);
+    ctx.save();
+    ctx.globalAlpha = alpha * 0.55;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 6]);
+    ctx.beginPath();
+    ctx.arc(x, y, radius, -Math.PI / 2, -Math.PI / 2 + sweep);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   private drawPixelWarningRing(
     x: number,
     y: number,
@@ -12920,22 +13587,33 @@ export class ZheYiShenGame {
     color: string,
     alpha: number,
     completion = 1,
-    segments = 28,
+    _segments = 28,
   ): void {
+    // 贴花式警戒圈：连续实线取代散点——暗底描边接地、主色实线成形、内侧余光收边。
+    // completion<1 时主色画成从正上方起的扫角，直观读出剩余时间。
     const ctx = this.ctx;
-    const count = Math.max(1, Math.floor(segments * this.clamp(completion, 0, 1)));
+    const sweep = Math.PI * 2 * this.clamp(completion, 0, 1);
+    const startAngle = -Math.PI / 2;
     ctx.save();
-    ctx.fillStyle = color;
+    ctx.lineCap = 'butt';
+    ctx.globalAlpha = alpha * 0.55;
+    ctx.strokeStyle = '#171013';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.stroke();
     ctx.globalAlpha = alpha;
-    for (let index = 0; index < count; index += 1) {
-      const angle = -Math.PI / 2 + (index / segments) * Math.PI * 2;
-      const size = index % 4 === 0 ? 4 : 3;
-      ctx.fillRect(
-        Math.round(x + Math.cos(angle) * radius - size / 2),
-        Math.round(y + Math.sin(angle) * radius - size / 2),
-        size,
-        size,
-      );
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, startAngle, startAngle + sweep);
+    ctx.stroke();
+    if (radius > 7) {
+      ctx.globalAlpha = alpha * 0.35;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(x, y, radius - 3, startAngle, startAngle + sweep);
+      ctx.stroke();
     }
     ctx.restore();
   }
@@ -13122,11 +13800,151 @@ export class ZheYiShenGame {
     ctx.restore();
   }
 
+  private renderCollectorBillStorm(enemy: EnemyUnit): void {
+    const ctx = this.ctx;
+    const charge = 1 - this.clamp(this.billTimer / COLLECTOR_BILL_DURATION, 0, 1);
+    const orbitRadius = 126 - charge * 66;
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+
+    // Twelve individual receipts close around the player. They carry the actual payment
+    // countdown, so the density is threatening without becoming a decorative screen grid.
+    for (let receipt = 0; receipt < 12; receipt += 1) {
+      const angle = (receipt / 12) * Math.PI * 2
+        + this.visualTime * (receipt % 2 === 0 ? 0.22 : -0.18)
+        + charge * 0.42;
+      const radius = orbitRadius + (receipt % 3) * 9;
+      const x = this.heroX + Math.cos(angle) * radius;
+      const y = this.heroY - 10 + Math.sin(angle) * radius * 0.72;
+      const width = 24 + (receipt % 2) * 6;
+      const height = 14 + (receipt % 3) * 2;
+      ctx.save();
+      ctx.translate(Math.round(x), Math.round(y));
+      ctx.rotate(angle + Math.PI / 2);
+      ctx.globalAlpha = 0.48 + charge * 0.46;
+      ctx.fillStyle = '#21171a';
+      ctx.fillRect(-width / 2 - 2, -height / 2 - 2, width + 4, height + 4);
+      ctx.fillStyle = receipt % 3 === 0 ? '#d7bd8b' : '#bca77d';
+      ctx.fillRect(-width / 2, -height / 2, width, height);
+      ctx.fillStyle = '#5a4142';
+      ctx.fillRect(-width / 2 + 3, -height / 2 + 3, width - 7, 2);
+      ctx.fillRect(-width / 2 + 3, -height / 2 + 7, Math.max(6, width * 0.55), 2);
+      ctx.fillStyle = '#b74958';
+      ctx.fillRect(width / 2 - 8, height / 2 - 6, 6, 4);
+      ctx.restore();
+    }
+
+    const linkX = this.heroX - enemy.x;
+    const linkY = this.heroY - enemy.y;
+    const linkDistance = Math.hypot(linkX, linkY) || 1;
+    ctx.fillStyle = '#d7bd73';
+    ctx.globalAlpha = 0.36 + charge * 0.5;
+    for (let step = 18; step < linkDistance - 26; step += 14) {
+      const ratio = step / linkDistance;
+      const size = step % 28 === 0 ? 5 : 3;
+      ctx.fillRect(
+        Math.round(enemy.x + linkX * ratio - size / 2),
+        Math.round(enemy.y + linkY * ratio - size / 2),
+        size,
+        size,
+      );
+    }
+
+    const lockRadius = 57 - charge * 12;
+    this.drawPixelWarningRing(this.heroX, this.heroY - 10, lockRadius, '#ef5364', 0.64 + charge * 0.32, 1, 32);
+    ctx.fillStyle = '#ef5364';
+    ctx.globalAlpha = 0.45 + charge * 0.5;
+    for (let stamp = 0; stamp < 8; stamp += 1) {
+      const angle = (stamp / 8) * Math.PI * 2 + 0.22;
+      const distance = 42 - charge * 10;
+      const x = Math.round(this.heroX + Math.cos(angle) * distance);
+      const y = Math.round(this.heroY - 10 + Math.sin(angle) * distance);
+      ctx.fillRect(x - 5, y - 1, 11, 3);
+      ctx.fillRect(x - 1, y - 5, 3, 11);
+    }
+
+    ctx.textAlign = 'center';
+    ctx.font = `bold 12px ${UI_FONT_STACK}`;
+    ctx.fillStyle = '#f2d7ad';
+    ctx.globalAlpha = 0.96;
+    ctx.fillText(`${Math.max(0, this.billTimer).toFixed(1)}s`, this.heroX, this.heroY - 19);
+    ctx.font = `bold 10px ${UI_FONT_STACK}`;
+    ctx.fillStyle = '#d7bd73';
+    ctx.fillText('2零钱', this.heroX - 31, this.heroY + 16);
+    ctx.fillStyle = '#ef5364';
+    ctx.fillText('8生命', this.heroX + 31, this.heroY + 16);
+    ctx.restore();
+  }
+
+  private renderCollectorRelocation(enemy: EnemyUnit): void {
+    if (enemy.relocateFromX === undefined || enemy.relocateFromY === undefined) return;
+    const ctx = this.ctx;
+    const duration = Math.max(0.08, enemy.bossAnimDuration ?? 0.9);
+    const progress = 1 - this.clamp((enemy.bossAnimTimer ?? 0) / duration, 0, 1);
+    const fromX = enemy.relocateFromX;
+    const fromY = enemy.relocateFromY;
+    const dx = enemy.x - fromX;
+    const dy = enemy.y - fromY;
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+
+    for (let door = 0; door < 6; door += 1) {
+      const ratio = (door + 1) / 7;
+      const pulse = this.clamp(1 - Math.abs(progress - ratio) * 2.4, 0, 1);
+      const x = fromX + dx * ratio;
+      const y = fromY + dy * ratio;
+      const width = 22 + pulse * 14;
+      const height = 42 + pulse * 22;
+      ctx.globalAlpha = 0.18 + pulse * 0.52;
+      ctx.fillStyle = '#1d171b';
+      ctx.fillRect(Math.round(x - width / 2 - 3), Math.round(y - height / 2 - 3), Math.round(width + 6), Math.round(height + 6));
+      ctx.fillStyle = door % 2 === 0 ? '#714a4b' : '#4d393e';
+      ctx.fillRect(Math.round(x - width / 2), Math.round(y - height / 2), Math.round(width), Math.round(height));
+      ctx.fillStyle = '#d7bd73';
+      ctx.fillRect(Math.round(x + width / 2 - 7), Math.round(y - 2), 4, 4);
+      ctx.fillStyle = '#b74958';
+      ctx.fillRect(Math.round(x - width / 2 + 4), Math.round(y - height / 2 + 7), Math.round(width - 8), 7);
+      ctx.fillStyle = '#ead9b6';
+      ctx.fillRect(Math.round(x - width / 2 + 7), Math.round(y - height / 2 + 9), Math.max(4, Math.round(width - 14)), 2);
+    }
+
+    for (let tag = 0; tag < 14; tag += 1) {
+      const ratio = (tag + 0.5) / 14;
+      const side = tag % 2 === 0 ? -1 : 1;
+      const x = fromX + dx * ratio - (dy / (Math.hypot(dx, dy) || 1)) * side * (9 + tag % 3 * 5);
+      const y = fromY + dy * ratio + (dx / (Math.hypot(dx, dy) || 1)) * side * (9 + tag % 3 * 5);
+      ctx.globalAlpha = 0.3 + progress * 0.5;
+      ctx.fillStyle = tag % 3 === 0 ? '#d7bd73' : '#b97858';
+      ctx.fillRect(Math.round(x - 4), Math.round(y - 2), 9, 5);
+      ctx.fillStyle = '#6b3038';
+      ctx.fillRect(Math.round(x + 1), Math.round(y - 1), 3, 3);
+    }
+
+    this.drawPixelWarningRing(fromX, fromY, 30 + progress * 44, '#d94b61', 0.78 - progress * 0.46, 1, 28);
+    this.drawPixelWarningRing(enemy.x, enemy.y, 72 - progress * 34, '#d7bd73', 0.48 + progress * 0.46, 1, 32);
+    ctx.textAlign = 'center';
+    ctx.font = `bold 11px ${UI_FONT_STACK}`;
+    ctx.fillStyle = '#f2d7ad';
+    ctx.globalAlpha = 0.9;
+    ctx.fillText('换个门', enemy.x, enemy.y - enemy.radius - 38);
+    ctx.restore();
+  }
+
   private renderBossTelegraph(enemy: EnemyUnit): void {
     if (!enemy.boss && !enemy.elite && !enemy.backstabber) return;
     const ctx = this.ctx;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
+
+    if (enemy.type === 'debt-collector' && this.billTimer > 0) {
+      this.renderCollectorBillStorm(enemy);
+    }
+    if (enemy.type === 'debt-collector' && enemy.bossAnim === 'collector-relocate'
+      && (enemy.bossAnimTimer ?? 0) > 0) {
+      this.renderCollectorRelocation(enemy);
+      ctx.restore();
+      return;
+    }
 
     if ((enemy.windupTimer ?? 0) > 0
       && (enemy.attackKind === 'praise-optimize'
@@ -13194,6 +14012,7 @@ export class ZheYiShenGame {
         stand: { windup: 0.95, reach: 210, band: 26, fill: '#9c8f6a', edge: '#d94b61', core: '#f2d7ad' },
         stomp: { windup: 0.6, reach: 150, band: 26, fill: '#c9b98f', edge: '#ef5364', core: '#fff0c4' },
         shadow: { windup: 0.85, reach: 240, band: 34, fill: '#48434f', edge: '#df4d70', core: '#edbdc9' },
+        'closet-gap': { windup: 1.05, reach: 280, band: 13, fill: '#8d8368', edge: '#efe3c0', core: '#fdf7e2' },
         sleeve: { windup: 0.8, reach: COAT_SLEEVE_REACH, band: COAT_SLEEVE_HALF_WIDTH, fill: '#5a3a44', edge: '#9f3548', core: '#d8aab4' },
         'double-sleeve': { windup: 0.8, reach: COAT_SLEEVE_REACH, band: COAT_DOUBLE_SLEEVE_HALF_WIDTH, fill: '#633540', edge: '#b83f55', core: '#edbac5' },
         paper: { windup: 0.7, reach: 190, band: 30, fill: '#6a6a72', edge: '#b0b0ba', core: '#e8e8ee' },
@@ -13227,8 +14046,13 @@ export class ZheYiShenGame {
         const slamCharge = 1 - this.clamp((enemy.windupTimer ?? 0) / 0.8, 0, 1);
         ctx.save();
         ctx.translate(enemy.x, enemy.y);
-        ctx.globalAlpha = 0.16 + slamCharge * 0.3;
-        ctx.fillStyle = '#c9a24a';
+        // 贴地渐变：中心近透明、边缘浓，读作"地上的一圈警戒贴花"而不是一块死色
+        const slamGradient = ctx.createRadialGradient(0, 0, PRAISE_SLAM_RADIUS * 0.2, 0, 0, PRAISE_SLAM_RADIUS);
+        slamGradient.addColorStop(0, '#c9a24a00');
+        slamGradient.addColorStop(0.72, '#c9a24a33');
+        slamGradient.addColorStop(1, '#c9a24a88');
+        ctx.globalAlpha = 0.45 + slamCharge * 0.5;
+        ctx.fillStyle = slamGradient;
         ctx.beginPath();
         ctx.arc(0, 0, PRAISE_SLAM_RADIUS, 0, Math.PI * 2);
         ctx.fill();
@@ -13260,8 +14084,15 @@ export class ZheYiShenGame {
       if (enemy.attackKind === 'collector-drag') {
         const dragCharge = 1 - this.clamp((enemy.windupTimer ?? 0) / 0.85, 0, 1);
         ctx.save();
-        ctx.globalAlpha = 0.07 + dragCharge * 0.09;
-        ctx.fillStyle = '#b97858';
+        const dragGradient = ctx.createRadialGradient(
+          enemy.x, enemy.y, COLLECTOR_DRAG_RADIUS * 0.25,
+          enemy.x, enemy.y, COLLECTOR_DRAG_RADIUS,
+        );
+        dragGradient.addColorStop(0, '#b9785800');
+        dragGradient.addColorStop(0.75, '#b9785826');
+        dragGradient.addColorStop(1, '#b9785866');
+        ctx.globalAlpha = 0.5 + dragCharge * 0.45;
+        ctx.fillStyle = dragGradient;
         ctx.beginPath();
         ctx.arc(enemy.x, enemy.y, COLLECTOR_DRAG_RADIUS, 0, Math.PI * 2);
         ctx.fill();
@@ -13351,30 +14182,40 @@ export class ZheYiShenGame {
       ctx.save();
       ctx.translate(enemy.x, enemy.y);
       ctx.rotate(enemy.attackAngle);
-      ctx.globalAlpha = 0.14 + charge * 0.28;
-      ctx.fillStyle = s.fill;
       const warningLength = Math.max(0, reach - start);
+      // 贴地软填充：根部浓、端部淡的线性渐变，取代整块平涂
+      const laneGradient = ctx.createLinearGradient(start, 0, reach, 0);
+      laneGradient.addColorStop(0, s.fill);
+      laneGradient.addColorStop(1, s.fill + '00');
+      ctx.globalAlpha = 0.22 + charge * 0.3;
+      ctx.fillStyle = laneGradient;
       ctx.fillRect(start, -band, warningLength, band * 2);
-
-      // 分段边缘和箭头提供方向，不再用整排贯穿危险带的栅栏线。
-      ctx.fillStyle = s.edge;
-      ctx.globalAlpha = 0.58 + charge * 0.38;
-      for (let distance = start; distance < reach; distance += 18) {
-        const segment = Math.min(11, reach - distance);
-        ctx.fillRect(distance, -band - 2, segment, 3);
-        ctx.fillRect(distance, band - 1, segment, 3);
+      // 连续双层边线：外暗接地、内主色成形（临爆最后 25% 边线开始脉冲）
+      const pulse = charge > 0.75 ? 0.5 + 0.5 * Math.sin(this.battleTime * 26) : 0;
+      ctx.globalAlpha = 0.5;
+      ctx.strokeStyle = '#171013';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(start, -band - 1, warningLength, band * 2 + 2);
+      ctx.globalAlpha = 0.55 + charge * 0.4 + pulse * 0.1;
+      ctx.strokeStyle = s.edge;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(start, -band - 1, warningLength, band * 2 + 2);
+      // 大号方向 chevron：随充能沿车道推进，取代细碎小箭头
+      ctx.strokeStyle = s.core;
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'butt';
+      ctx.lineJoin = 'miter';
+      const chevronSpan = Math.min(band * 0.6, 11);
+      const travel = (this.battleTime * 60) % 42;
+      ctx.globalAlpha = 0.34 + charge * 0.4;
+      for (let distance = start + 16 + travel; distance < reach - 10; distance += 42) {
+        ctx.beginPath();
+        ctx.moveTo(distance - 5, -chevronSpan);
+        ctx.lineTo(distance + 4, 0);
+        ctx.lineTo(distance - 5, chevronSpan);
+        ctx.stroke();
       }
-      ctx.fillRect(reach - 3, -band - 2, 4, band * 2 + 4);
-
-      ctx.fillStyle = s.core;
-      ctx.globalAlpha = 0.42 + charge * 0.46;
-      for (let distance = start + 28; distance < reach - 14; distance += 42) {
-        ctx.fillRect(distance, -6, 3, 4);
-        ctx.fillRect(distance + 3, -3, 3, 6);
-        ctx.fillRect(distance, 3, 3, 4);
-      }
-
-      // 蓄满瞬间的锋线
+      // 蓄满进度：中轴锋线从根部推向端点，读秒语义保持
       ctx.fillStyle = s.edge;
       ctx.globalAlpha = charge * charge * 0.8;
       ctx.fillRect(start, -2, warningLength * charge, 4);
@@ -13478,6 +14319,32 @@ export class ZheYiShenGame {
   }
 
   private drawEnemy(enemy: EnemyUnit): void {
+    // 突进平滑：渲染坐标临时叠加残余偏移（机制坐标不动），画完还原
+    const lagX = enemy.renderLagX ?? 0;
+    const lagY = enemy.renderLagY ?? 0;
+    const lagged = lagX !== 0 || lagY !== 0;
+    if (lagged) { enemy.x += lagX; enemy.y += lagY; }
+    // 冲刺前倾：位移残余越大，身体越往冲刺方向倾（上限约 6°），落定自动回正
+    const lagMag = Math.hypot(lagX, lagY);
+    const lean = lagMag > 2 && !this.reducedMotion
+      ? Math.min(0.11, lagMag / 240) * (lagX <= 0 ? 1 : -1)
+      : 0;
+    const ctx = this.ctx;
+    if (lean) {
+      ctx.save();
+      ctx.translate(enemy.x, enemy.y);
+      ctx.rotate(lean);
+      ctx.translate(-enemy.x, -enemy.y);
+    }
+    try {
+      this.drawEnemyInner(enemy);
+    } finally {
+      if (lean) ctx.restore();
+      if (lagged) { enemy.x -= lagX; enemy.y -= lagY; }
+    }
+  }
+
+  private drawEnemyInner(enemy: EnemyUnit): void {
     const ctx = this.ctx;
     const r = enemy.radius;
     const contactDistance = Math.hypot(this.heroX - enemy.x, this.heroY - enemy.y);
@@ -13521,14 +14388,17 @@ export class ZheYiShenGame {
       : this.heroX < enemy.x;
     const bossAnimation = this.bossAnimationFrame(enemy);
     const skillDrawn = bossAnimation
-      ? this.pixelBossSkills.draw(ctx, enemy, bossAnimation.id, bossAnimation.frame, faceLeft)
+      ? this.pixelBossSkills.draw(ctx, enemy, bossAnimation.id, bossAnimation.frame, faceLeft, 1, bossAnimation.progress)
       : false;
     let storyDrawn = false;
     if (!skillDrawn && enemy.xiaoZhang) {
       this.drawXiaoZhangFigure(enemy.x, enemy.y, faceLeft, true, attackProgress, 'backstab', 64);
       storyDrawn = true;
     }
+    if (enemy.shadowVeil) ctx.save();
+    if (enemy.shadowVeil) ctx.globalAlpha = 0.32;
     const pixelDrawn = skillDrawn || storyDrawn || this.pixelEnemies.draw(ctx, enemy, attacking, attackProgress, faceLeft);
+    if (enemy.shadowVeil) ctx.restore();
     ctx.save();
     ctx.translate(enemy.x, enemy.y + (pixelDrawn ? 0 : Math.sin(enemy.age * 3) * 2));
     if (enemy.elite || enemy.boss) {
@@ -14113,13 +14983,21 @@ export class ZheYiShenGame {
           : visual.form;
         const tint = projectile.critical ? '#fff1a8' : visual.materialTint;
         const tintStrength = visual.form === 'breath' ? 0.28 : visual.form === 'slash' ? 0.4 : 0.22; // v4 资产自带主色，染色只留材质倾向
-        const sprite = projectileAtlas.outlinedTinted(spriteName, tint, tintStrength);
+        // v5 帧动画优先：有该形态的 4 帧循环就播帧（10fps，id 错开相位），没有则回落静态图。
+        // 呼吸弹按凝实态换行——雾→软球→实球→珠光的成长是《一口气》的正典表达。
+        const animFormName = visual.form === 'breath'
+          ? breathAnimForm(Math.min(3, Math.floor(firmness * 4)))
+          : visual.form;
+        const animSprite = projectileAnimAtlas.ready
+          ? projectileFlightFrame(animFormName, projectile.life, projectile.id, tint, tintStrength)
+          : null;
+        const sprite = animSprite ?? projectileAtlas.outlinedTinted(spriteName, tint, tintStrength);
         if (sprite) {
           // Collision radius stays mechanical; readable forms use their own
           // display curve so diminishing volleys remain distinct but legible.
           const displayCurve = PROJECTILE_FORM_DISPLAY_SIZE[visual.form];
           const baseSize = (visual.form === 'breath'
-            ? Math.max(projectile.radius * 3.4, 13)
+            ? Math.min(42, Math.max(projectile.radius * 3, 13))
             : displayCurve
               ? this.clamp(displayCurve[0] + projectile.radius * displayCurve[1], displayCurve[2], displayCurve[3])
               : Math.max(projectile.radius * 3.1, 15)) * PROJECTILE_DISPLAY_LIFT;
@@ -14146,8 +15024,9 @@ export class ZheYiShenGame {
               );
             }
           }
-          // 实物弹自旋（在拖尾之后：残影沿弹道，本体自转）
-          const spinRate = PROJECTILE_SPIN[visual.form];
+          // 实物弹自旋（在拖尾之后：残影沿弹道，本体自转）。
+          // 帧动画形态禁用整图自旋——旋转/走位画在帧里，仿射旋转反而破坏像素网格。
+          const spinRate = animSprite ? 0 : PROJECTILE_SPIN[visual.form];
           if (spinRate && !this.reducedMotion) {
             ctx.rotate(projectile.life * spinRate + projectile.id * 0.9);
           }
@@ -14272,6 +15151,45 @@ export class ZheYiShenGame {
 
   private renderBursts(): void {
     const ctx = this.ctx;
+    // 场地残留：湿渍与水渍脚印（最底层）
+    for (const patch of this.wetPatches) {
+      const fade = Math.min(1, patch.life / Math.max(0.1, patch.maxLife)) * 0.4;
+      ctx.globalAlpha = fade;
+      ctx.fillStyle = '#3d4a52';
+      ctx.beginPath();
+      ctx.ellipse(patch.x, patch.y, patch.radius, patch.radius * 0.62, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = fade * 0.7;
+      ctx.strokeStyle = '#5f7480';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    for (const footprint of this.wetFootprints) {
+      const fade = Math.min(1, footprint.life / 4.2) * (footprint.stepped ? 0.18 : 0.5);
+      ctx.globalAlpha = fade;
+      ctx.fillStyle = '#54707c';
+      ctx.fillRect(Math.round(footprint.x - 4), Math.round(footprint.y - 2), 3, 5);
+      ctx.fillRect(Math.round(footprint.x + 1), Math.round(footprint.y - 3), 3, 5);
+    }
+    ctx.globalAlpha = 1;
+    // 《画大饼》：场上的那张饼
+    if (this.bingDrop) {
+      const blink = this.bingDrop.life < 2 ? (Math.floor(this.battleTime * 6) % 2 ? 0.5 : 1) : 1;
+      ctx.globalAlpha = blink;
+      ctx.fillStyle = '#2a2117';
+      ctx.beginPath(); ctx.arc(this.bingDrop.x, this.bingDrop.y + 1, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#e2c887';
+      ctx.beginPath(); ctx.arc(this.bingDrop.x, this.bingDrop.y, 11, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#c9a45f';
+      ctx.beginPath(); ctx.arc(this.bingDrop.x, this.bingDrop.y, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#6f4f30';
+      for (const [sx, sy] of [[-4, -3], [3, -5], [5, 2], [-2, 4], [0, -1]] as const) {
+        ctx.fillRect(this.bingDrop.x + sx, this.bingDrop.y + sy, 2, 1);
+      }
+      ctx.globalAlpha = 1;
+    }
+    // Boss 技能粒子垫在 burst 图形之下
+    this.renderPixelParticles(ctx);
     const ordinaryStride = this.bursts.length >= 120
       ? 4
       : this.bursts.length >= 80
@@ -14302,6 +15220,30 @@ export class ZheYiShenGame {
           0, Math.PI * 2,
         );
         ctx.fill();
+      } else if (burst.kind === 'star') {
+        // 机制记号：弹射转向的四角星闪——先胀后缩，微旋
+        const starSize = burst.radius * (progress < 0.3 ? progress / 0.3 : 1.25 - progress * 0.6);
+        ctx.translate(burst.x, burst.y);
+        ctx.rotate(progress * 0.6);
+        ctx.globalAlpha = 1 - progress * progress;
+        ctx.fillRect(-starSize, -1, starSize * 2, 2);
+        ctx.fillRect(-1, -starSize, 2, starSize * 2);
+        ctx.globalAlpha = (1 - progress) * 0.8;
+        ctx.fillRect(-2, -2, 4, 4);
+      } else if (burst.kind === 'split-spark') {
+        // 机制记号：分裂瞬间六向小碎光向外迸
+        ctx.translate(burst.x, burst.y);
+        for (let spark = 0; spark < 6; spark += 1) {
+          const sparkAngle = (spark / 6) * Math.PI * 2 + 0.3;
+          const sparkDistance = 4 + progress * burst.radius;
+          ctx.globalAlpha = (1 - progress) * (spark % 2 ? 0.9 : 0.6);
+          ctx.fillRect(
+            Math.round(Math.cos(sparkAngle) * sparkDistance) - 1,
+            Math.round(Math.sin(sparkAngle) * sparkDistance) - 1,
+            spark % 2 ? 2 : 3,
+            spark % 2 ? 2 : 3,
+          );
+        }
       } else if (burst.kind === 'door') {
         // 钥匙终点分两拍：钥匙孔保持可认，开门光向两侧展开；不要画成会移动的闭合网格框。
         const keyholeRadius = Math.max(2, Math.round(burst.radius * 0.07));
@@ -15781,6 +16723,7 @@ export class ZheYiShenGame {
     }
 
     this.bursts = [];
+    this.pixelParticles = [];
     for (let index = 0; index < MAX_BURSTS + 35; index += 1) {
       const important = index % 19 === 0;
       const angle = index * 1.618;
@@ -15847,6 +16790,7 @@ export class ZheYiShenGame {
     this.projectiles = [];
     this.pendingShots = [];
     this.bursts = [];
+    this.pixelParticles = [];
     this.coinDrops = [];
     this.decadeCooldown = 0.9;
     this.ktvTimer = 5.4;
@@ -15894,6 +16838,7 @@ export class ZheYiShenGame {
     this.projectiles = [];
     this.pendingShots = [];
     this.bursts = [];
+    this.pixelParticles = [];
     this.coinDrops = [];
     this.worldDoor = undefined;
     this.worldStall = undefined;
@@ -16153,6 +17098,7 @@ export class ZheYiShenGame {
     } else if (kind === 'raincoat-contract') {
       this.projectiles = [];
       this.bursts = [];
+    this.pixelParticles = [];
       this.raincoatReady = true;
       this.hero.hp = 999;
       this.hurtCooldown = 0;
@@ -16332,7 +17278,7 @@ export class ZheYiShenGame {
     const host = window as Window & {
       render_game_to_text?: () => string;
       advanceTime?: (ms: number) => void;
-      zhe_yi_shen_test?: (action: 'start' | 'reveal-origin' | 'clear' | 'choose-first' | 'swallow' | 'exhale' | 'open-fate' | 'special' | 'leave-special' | 'shop' | 'buy-first' | 'reroll-shop' | 'combo' | 'boss' | 'battle' | 'stress-battle' | 'projectile-combo-stress' | 'lantern-stress' | 'origin-badge-audit' | 'projectile-audit' | 'projectile-form' | 'projectile-mechanic' | 'relic-audit' | 'memory-recall' | 'father' | 'father-phase2' | 'boss-art' | 'boss-skill-art' | 'elite-art' | 'enemy-art' | 'scene-art' | 'childhood-boss-hazards' | 'childhood-hazards' | 'adult-hazards' | 'school-work-hazards' | 'youth-commute-hazards' | 'youth-task-hazards' | 'middle-age-hazards' | 'old-age-hazards' | 'telegraph' | 'praise-consult' | 'praise-approach' | 'praise-paper-approach' | 'phone-split' | 'phone-approach' | 'phone-caller' | 'phone-missed' | 'xiao-zhang-prompt' | 'xiao-zhang-help' | 'xiao-zhang-one-seat' | 'xiao-zhang-box' | 'win' | 'equip' | 'hurt' | 'defeat-stage-elite' | 'defeat-boss' | 'one-more' | 'pause', payload?: unknown) => void;
+      zhe_yi_shen_test?: (action: 'start' | 'reveal-origin' | 'clear' | 'choose-first' | 'swallow' | 'exhale' | 'open-fate' | 'special' | 'leave-special' | 'shop' | 'buy-first' | 'reroll-shop' | 'combo' | 'boss' | 'battle' | 'stress-battle' | 'projectile-combo-stress' | 'lantern-stress' | 'origin-badge-audit' | 'projectile-audit' | 'projectile-form' | 'projectile-mechanic' | 'relic-audit' | 'memory-recall' | 'father' | 'father-phase2' | 'boss-art' | 'boss-skill-art' | 'elite-art' | 'enemy-art' | 'scene-art' | 'childhood-boss-hazards' | 'collector-boss-hazards' | 'phone-boss-hazards' | 'childhood-hazards' | 'adult-hazards' | 'school-work-hazards' | 'youth-commute-hazards' | 'youth-task-hazards' | 'middle-age-hazards' | 'old-age-hazards' | 'telegraph' | 'praise-consult' | 'praise-approach' | 'praise-paper-approach' | 'phone-split' | 'phone-approach' | 'phone-caller' | 'phone-missed' | 'xiao-zhang-prompt' | 'xiao-zhang-help' | 'xiao-zhang-one-seat' | 'xiao-zhang-box' | 'win' | 'equip' | 'hurt' | 'defeat-stage-elite' | 'defeat-boss' | 'one-more' | 'pause', payload?: unknown) => void;
     };
     const renderGameState = () => JSON.stringify({
       coordinateSystem: 'origin top-left; +x right; +y down; logical 360x640',
@@ -16669,6 +17615,22 @@ export class ZheYiShenGame {
             safeAngle: enemy.attackSafeAngle === undefined ? null : Number(enemy.attackSafeAngle.toFixed(3)),
           })),
         },
+        collector: {
+          billTimer: Number(Math.max(0, this.billTimer).toFixed(2)),
+          coinCost: COLLECTOR_BILL_COIN_COST,
+          hpCost: COLLECTOR_BILL_HP_COST,
+          dragRadius: COLLECTOR_DRAG_RADIUS,
+          bosses: this.enemies.filter((enemy) => !enemy.dead && enemy.type === 'debt-collector').map((enemy) => ({
+            kind: enemy.attackKind ?? null,
+            windup: Number((enemy.windupTimer ?? 0).toFixed(2)),
+            relocateDamage: Number((enemy.relocateDamage ?? 0).toFixed(2)),
+            relocateFrom: enemy.relocateFromX === undefined || enemy.relocateFromY === undefined
+              ? null
+              : { x: Number(enemy.relocateFromX.toFixed(1)), y: Number(enemy.relocateFromY.toFixed(1)) },
+            position: { x: Number(enemy.x.toFixed(1)), y: Number(enemy.y.toFixed(1)) },
+            animation: enemy.bossAnim ?? null,
+          })),
+        },
         lamp: {
           active: this.darkActive,
           radius: this.darkActive ? Number(this.darkR.toFixed(1)) : null,
@@ -16681,10 +17643,13 @@ export class ZheYiShenGame {
               darknessProgress: Number(pose.darknessProgress.toFixed(2)),
             } : null;
           })(),
-          choice: this.lampChoice ? {
-            items: this.lampChoice.items,
-            indices: this.lampChoice.indices,
-            timer: Number(this.lampChoice.timer.toFixed(2)),
+          seize: this.lampSeize ? {
+            item: this.items[this.lampSeize.stripAt] ?? null,
+            x: Math.round(this.lampSeize.x),
+            y: Math.round(this.lampSeize.y),
+            exposure: Number(this.lampSeize.exposure.toFixed(2)),
+            timer: Number(this.lampSeize.timer.toFixed(2)),
+            speed: Math.round(this.lampSeize.speed),
           } : null,
           release: {
             ready: this.lampReleaseReady,
@@ -16731,6 +17696,12 @@ export class ZheYiShenGame {
           } : null,
           lastCaller: this.lastPhoneCaller ?? null,
           calls: this.phoneCalls.map((call) => ({ x: Math.round(call.x), y: Math.round(call.y) })),
+          resolution: this.phoneResolution ? {
+            answeredIndex: this.phoneResolution.answeredIndex,
+            phaseTwo: this.phoneResolution.phaseTwo,
+            life: Number(this.phoneResolution.life.toFixed(2)),
+            calls: this.phoneResolution.calls.map((call) => ({ x: Math.round(call.x), y: Math.round(call.y) })),
+          } : null,
         },
         father: {
           rain: this.rainActive,
@@ -17277,6 +18248,7 @@ export class ZheYiShenGame {
                 phone.x = call.x;
                 phone.y = call.y;
                 this.bursts = [];
+    this.pixelParticles = [];
                 this.burst('ring', call.x, call.y, 78, '#cfe4ea');
               }
               if (auditScreen === 'phone-answer' || auditScreen === 'phone-story') {
@@ -17329,9 +18301,9 @@ export class ZheYiShenGame {
               const hiddenShade = this.createSeekingEnemy('forgetter', this.darkCX + 184, this.darkCY + 18);
               hiddenShade.speed = 0;
               this.enemies.push(keeper, visibleShade, hiddenShade);
-              if (auditScreen === 'lamp-choice') this.beginLampChoice(keeper);
+              if (auditScreen === 'lamp-choice') this.beginLampSeize(keeper);
               this.caption = auditScreen === 'lamp-choice'
-                ? '他点亮两件东西。走向哪一件，就留下哪一件。'
+                ? '灯光圈跟着你走。被照满，那件东西就还回去了。'
                 : '灯照不到的地方，怪物仍在靠近，只是看不见。';
               this.captionTime = 99;
               this.shotTimer = 999;
@@ -17737,6 +18709,7 @@ export class ZheYiShenGame {
           this.projectiles = [];
           this.pendingShots = [];
           this.bursts = [];
+    this.pixelParticles = [];
           this.coinDrops = [];
           this.worldDoor = undefined;
           this.worldStall = undefined;
@@ -17780,6 +18753,7 @@ export class ZheYiShenGame {
             this.projectiles = [];
             this.pendingShots = [];
             this.bursts = [];
+    this.pixelParticles = [];
             this.coinDrops = [];
             this.darkActive = false;
             this.darkR = 9999;
@@ -17836,6 +18810,7 @@ export class ZheYiShenGame {
             this.projectiles = [];
             this.pendingShots = [];
             this.bursts = [];
+    this.pixelParticles = [];
             this.coinDrops = [];
             this.darkActive = false;
             this.darkR = 9999;
@@ -17883,6 +18858,7 @@ export class ZheYiShenGame {
             this.projectiles = [];
             this.pendingShots = [];
             this.bursts = [];
+    this.pixelParticles = [];
             this.auditBossArtActive = true;
             this.eliteAlertName = '';
             this.eliteAlertTime = 0;
@@ -17949,8 +18925,211 @@ export class ZheYiShenGame {
           this.projectiles = [];
           this.pendingShots = [];
           this.bursts = [];
+    this.pixelParticles = [];
           this.coinDrops = [];
           this.auditBossArtActive = true;
+          this.caption = '';
+          this.captionTime = 0;
+          this.eliteAlertName = '';
+          this.eliteAlertTime = 0;
+        }
+        if (action === 'phone-boss-hazards') {
+          const payloadVariant = payload && typeof payload === 'object' && 'variant' in payload
+            ? (payload as { variant?: unknown }).variant
+            : undefined;
+          const variant = typeof payload === 'string'
+            ? payload
+            : typeof payloadVariant === 'string'
+              ? payloadVariant
+              : 'stack-art';
+          if (this.state === 'title') this.startRun(0x20260726, true);
+          this.initialItemReward = false;
+          this.hero.maxHp = 999;
+          this.hero.hp = 999;
+          this.hero.block = 0;
+          this.hero.coins = 12;
+          this.items = [];
+          this.encounterIndex = 3;
+          this.startStage(true);
+          this.screenTransition = undefined;
+          this.lastRenderedState = this.state;
+          this.heroX = W / 2;
+          this.heroY = HERO_SCREEN_Y;
+          this.resetMovementInput();
+          this.heroMoving = false;
+          this.enemies = [];
+          this.projectiles = [];
+          this.pendingShots = [];
+          this.bursts = [];
+    this.pixelParticles = [];
+          this.coinDrops = [];
+          this.phoneMissed = 0;
+          this.phoneRelief = 0;
+          this.phoneStoryIndex = 7;
+          this.phoneActiveStoryIndex = -1;
+          this.phonePostAnswerTimer = 0;
+          this.phoneTranscript = undefined;
+          this.phoneResolution = undefined;
+          const phaseTwo = variant !== 'phase1-art';
+          const phone = this.createSeekingEnemy('ringing-phone', this.heroX, this.heroY - 112);
+          phone.phase = phaseTwo ? 2 : 1;
+          phone.hp = phaseTwo ? phone.maxHp * 0.46 : phone.maxHp;
+          phone.speed = 0;
+          phone.attackCooldown = 99;
+          phone.mechTimer = -999;
+          this.enemies.push(phone);
+          const phaseTwoCalls = [
+            { x: this.heroX - 118, y: this.heroY - 108 },
+            { x: this.heroX + 118, y: this.heroY - 86 },
+            { x: this.heroX - 126, y: this.heroY + 104 },
+            { x: this.heroX + 124, y: this.heroY + 108 },
+          ];
+          this.phoneCalls = phaseTwo ? phaseTwoCalls : [{ x: this.heroX + 116, y: this.heroY - 92 }];
+          this.phoneRinging = true;
+          this.phoneRingWindow = phaseTwo ? 1.36 : 2.5;
+          this.phoneAnswer = 0;
+          this.phoneAnswerTarget = -1;
+          phone.x = this.phoneCalls[0]!.x;
+          phone.y = this.phoneCalls[0]!.y;
+          this.playBossAnimation(phone, phaseTwo ? 'phone-p2-ring' : 'phone-p1-ring', 30, true);
+          if (variant === 'answer-art' || variant === 'answer-resolve') {
+            const targetIndex = phaseTwo ? 1 : 0;
+            const target = this.phoneCalls[targetIndex]!;
+            this.phoneAnswerTarget = targetIndex;
+            this.phoneAnswer = variant === 'answer-resolve' ? 2.99 : 1.56;
+            this.heroX = target.x;
+            this.heroY = target.y;
+            phone.x = target.x;
+            phone.y = target.y;
+            this.playBossAnimation(phone, phaseTwo ? 'phone-p2-answer' : 'phone-p1-answer', 3);
+            if (variant === 'answer-art') phone.bossAnimFrame = 2;
+          } else if (variant === 'answered-settle') {
+            this.phoneRinging = false;
+            this.phoneCalls = [];
+            this.beginPhoneResolution(phaseTwoCalls, true, 1);
+            this.phoneResolution!.life = 0.5;
+            this.phonePostAnswerTimer = 0.5;
+          } else if (variant === 'missed-settle') {
+            this.phoneRinging = false;
+            this.phoneCalls = [];
+            this.beginPhoneResolution(phaseTwoCalls, true, -1);
+            this.phoneResolution!.life = 0.5;
+          } else if (variant === 'miss-resolve') {
+            this.phoneRingWindow = 0.01;
+          } else if (variant === 'stack-art') {
+            const adultTypes: EnemyType[] = ['missed-call', 'desk-lamp', 'reheated-pot', 'wet-shoes'];
+            for (let index = 0; index < 18; index += 1) {
+              const angle = (index / 18) * Math.PI * 2 + 0.12;
+              const radius = 58 + (index % 3) * 42;
+              const minion = this.createSeekingEnemy(
+                adultTypes[index % adultTypes.length]!,
+                this.heroX + Math.cos(angle) * radius,
+                this.heroY + Math.sin(angle) * radius,
+              );
+              minion.speed = 0;
+              minion.attackCooldown = 99;
+              this.enemies.push(minion);
+            }
+          }
+          this.shotTimer = 999;
+          this.spawnPause = 999;
+          this.auditBossArtActive = variant !== 'answer-resolve' && variant !== 'miss-resolve';
+          this.auditEndurance = false;
+          this.auditDamageTaken = 0;
+          this.caption = '';
+          this.captionTime = 0;
+          this.eliteAlertName = '';
+          this.eliteAlertTime = 0;
+        }
+        if (action === 'collector-boss-hazards') {
+          const payloadVariant = payload && typeof payload === 'object' && 'variant' in payload
+            ? (payload as { variant?: unknown }).variant
+            : undefined;
+          const variant = typeof payload === 'string'
+            ? payload
+            : typeof payloadVariant === 'string'
+              ? payloadVariant
+              : 'stack-art';
+          if (this.state === 'title') this.startRun(0x20260726, true);
+          this.initialItemReward = false;
+          this.hero.maxHp = 999;
+          this.hero.hp = 999;
+          this.hero.block = 0;
+          this.hero.coins = 4;
+          this.hurtCooldown = 0;
+          this.items = [];
+          this.encounterIndex = 4;
+          this.startStage(true);
+          this.screenTransition = undefined;
+          this.lastRenderedState = this.state;
+          this.heroX = W / 2;
+          this.heroY = HERO_SCREEN_Y;
+          this.resetMovementInput();
+          this.heroMoving = false;
+          this.enemies = [];
+          this.projectiles = [];
+          this.pendingShots = [];
+          this.bursts = [];
+    this.pixelParticles = [];
+          this.coinDrops = [];
+          this.billTimer = 0;
+          const boss = this.createSeekingEnemy('debt-collector', this.heroX, this.heroY - 146);
+          boss.speed = 0;
+          boss.attackCooldown = 99;
+          boss.mechTimer = -999;
+          boss.relocateDamage = 0;
+          this.enemies.push(boss);
+          const lockDrag = (timer: number) => {
+            boss.attackAngle = Math.atan2(this.heroY - boss.y, this.heroX - boss.x);
+            boss.attackKind = 'collector-drag';
+            boss.windupTimer = timer;
+            this.playBossAnimation(boss, 'collector-drag', 1.1);
+          };
+          if (variant === 'bill-art' || variant === 'bill-coins' || variant === 'bill-life'
+            || variant === 'bill-kill' || variant === 'stack-art') {
+            this.billTimer = variant === 'bill-coins' || variant === 'bill-life' ? 0.05 : 1.42;
+            this.hero.coins = variant === 'bill-life' ? 0 : 4;
+            this.playBossAnimation(boss, 'collector-bill', 1.05);
+            if (variant === 'bill-kill') this.damageEnemy(boss, boss.maxHp + 1, '#d7bd73');
+            if (variant === 'bill-art' || variant === 'stack-art') boss.bossAnimFrame = 1;
+            if (variant === 'stack-art') {
+              const middleAgeTypes: EnemyType[] = ['debt', 'badge-thief', 'meeting-door', 'checkup-report'];
+              for (let index = 0; index < 12; index += 1) {
+                const angle = (index / 12) * Math.PI * 2 + 0.16;
+                const radius = index % 2 === 0 ? 82 : 132;
+                const minion = this.createSeekingEnemy(
+                  middleAgeTypes[index % middleAgeTypes.length]!,
+                  this.heroX + Math.cos(angle) * radius,
+                  this.heroY + Math.sin(angle) * radius,
+                );
+                minion.speed = 0;
+                minion.attackCooldown = 99;
+                this.enemies.push(minion);
+              }
+            }
+          } else if (variant === 'drag-art' || variant === 'drag-hit' || variant === 'drag-dodge') {
+            if (variant === 'drag-dodge') {
+              boss.x = 24;
+              boss.y = 8;
+            }
+            lockDrag(variant === 'drag-art' ? 0.43 : 0.05);
+            if (variant === 'drag-art') boss.bossAnimFrame = 1;
+          } else {
+            if (variant === 'relocate-trigger') {
+              this.damageEnemy(boss, boss.maxHp * COLLECTOR_RELOCATE_DAMAGE_RATIO, '#d7bd73');
+            } else {
+              this.relocateDebtCollector(boss);
+              boss.bossAnimFrame = 2;
+            }
+          }
+          this.shotTimer = 999;
+          this.spawnPause = 999;
+          this.auditBossArtActive = variant === 'bill-art'
+            || variant === 'drag-art'
+            || variant === 'relocate-art'
+            || variant === 'stack-art';
+          this.auditEndurance = false;
+          this.auditDamageTaken = 0;
           this.caption = '';
           this.captionTime = 0;
           this.eliteAlertName = '';
@@ -17985,6 +19164,7 @@ export class ZheYiShenGame {
           this.projectiles = [];
           this.pendingShots = [];
           this.bursts = [];
+    this.pixelParticles = [];
           this.coinDrops = [];
           const boss = this.createSeekingEnemy('closet-dark', this.heroX, this.heroY - 154);
           boss.speed = 0;
@@ -18144,6 +19324,7 @@ export class ZheYiShenGame {
           this.projectiles = [];
           this.pendingShots = [];
           this.bursts = [];
+    this.pixelParticles = [];
           this.coinDrops = [];
           this.auditBossArtActive = variant === 'moth-warn-art'
             || variant === 'fear-inhale-art'
@@ -18262,6 +19443,7 @@ export class ZheYiShenGame {
           this.projectiles = [];
           this.pendingShots = [];
           this.bursts = [];
+    this.pixelParticles = [];
           this.coinDrops = [];
           this.auditBossArtActive = variant === 'call-art'
             || variant === 'silence-art'
@@ -18411,6 +19593,7 @@ export class ZheYiShenGame {
           this.projectiles = [];
           this.pendingShots = [];
           this.bursts = [];
+    this.pixelParticles = [];
           this.coinDrops = [];
           this.auditBossArtActive = variant === 'scanner-warn-art'
             || variant === 'scanner-dodge-art'
@@ -18456,6 +19639,7 @@ export class ZheYiShenGame {
           this.projectiles = [];
           this.pendingShots = [];
           this.bursts = [];
+    this.pixelParticles = [];
           this.coinDrops = [];
           const addBus = (type: 'missed-bus' | 'last-bus', x: number, y: number) => {
             const enemy = this.createSeekingEnemy(type, x, y);
@@ -18585,6 +19769,7 @@ export class ZheYiShenGame {
           this.projectiles = [];
           this.pendingShots = [];
           this.bursts = [];
+    this.pixelParticles = [];
           this.coinDrops = [];
           this.coinKillProgress = 0;
           const addTask = (type: EnemyType, x: number, y: number, speed = 0) => {
@@ -18732,6 +19917,7 @@ export class ZheYiShenGame {
           this.projectiles = [];
           this.pendingShots = [];
           this.bursts = [];
+    this.pixelParticles = [];
           this.coinDrops = [];
           this.auditBossArtActive = variant === 'report-locked-art' || variant === 'horde-art';
           this.auditEndurance = true;
@@ -18817,6 +20003,7 @@ export class ZheYiShenGame {
           this.projectiles = [];
           this.pendingShots = [];
           this.bursts = [];
+    this.pixelParticles = [];
           this.coinDrops = [];
           this.auditBossArtActive = variant === 'queue-wrong-way-art'
             || variant === 'family-pass-art'

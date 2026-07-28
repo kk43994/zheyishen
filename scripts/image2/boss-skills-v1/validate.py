@@ -39,7 +39,7 @@ def main() -> None:
     if source.get("status") != "approved-and-promoted":
         fail("boss skill source manifest is not approved")
     if len(source["assets"]) != 16:
-        fail(f"expected 16 boss forms, got {len(source['assets'])}")
+        fail(f"expected 16 boss skill atlases, got {len(source['assets'])}")
 
     skill_ids: list[str] = []
     for asset in source["assets"]:
@@ -201,7 +201,9 @@ def main() -> None:
         "task-revise one-time revival": "enemy.type === 'task-revise' && (enemy.phase ?? 0) === 0",
         "task-deadline timed expiry": "enemy.type === 'task-deadline' && (enemy.mechTimer ?? 0) >= TASK_DEADLINE_DURATION",
         "task-sync periodic gathering": "enemy.type === 'task-sync' && (enemy.mechTimer ?? 0) >= TASK_SYNC_INTERVAL",
-        "closet three-move cycle": "const move = this.closetMoveIndex % 3;",
+        # 2026-07-26 用户批准新招《缝里看你》后扩为四招循环
+        "closet four-move cycle": "const move = this.closetMoveIndex % 4;",
+        "closet gap strike resolution": "case 'closet-gap':",
         "closet hands attack dispatch": "enemy.attackKind = 'closet-hands'",
         "closet hands strike resolution": "case 'closet-hands':",
         "closet slam attack dispatch": "enemy.attackKind = 'closet-slam'",
@@ -214,17 +216,17 @@ def main() -> None:
         "phone caller mother refund": "this.hero.coins += 2",
         "phone caller hospital relief": "this.phoneRelief += 1",
         "phone effective strength tier": "Math.floor(this.phoneMissed / 5) - this.phoneRelief",
-        "lamp choice start": "private beginLampChoice(enemy: EnemyUnit)",
-        "lamp choice duration": "timer: 3,",
-        "lamp choice movement resolution": "private updateLampChoice(enemy: EnemyUnit, dt: number)",
+        "lamp seize start": "private beginLampSeize(enemy: EnemyUnit)",  # 2026-07-26 用户裁决：取消二选一，改为灯光圈追踪收缴
+        "lamp seize window": "timer: 6,",
+        "lamp seize tracking resolution": "private updateLampSeize(enemy: EnemyUnit, dt: number)",
         "lamp choice strip resolution": "private finishLampCycle(enemy: EnemyUnit, stripAt: number)",
         "lamp keeper permanent guard": "if (enemy.type === 'lamp-keeper') {",
         "lamp keeper final dim action": "this.playBossAnimation(enemy, 'keeper-dim', LAMP_RELEASE_CONFIRM_DELAY)",
         "lamp keeper final strip playback": "keeper?.bossAnim === 'keeper-strip'",
         "lamp keeper final dim playback": "keeper?.bossAnim === 'keeper-dim'",
         "lamp keeper active release": "private releaseFinalBreath(): void",
-        "lamp choice rendering": "private renderLampChoice(): void",
-        "collector damage-triggered relocation": "enemy.relocateDamage >= enemy.maxHp * 0.14",
+        "lamp seize rendering": "private renderLampChoice(): void",
+        "collector damage-triggered relocation": "enemy.relocateDamage >= enemy.maxHp * COLLECTOR_RELOCATE_DAMAGE_RATIO",
         "collector relocation action": "private relocateDebtCollector(enemy: EnemyUnit)",
         "collector offscreen-radius pull chain": "const pullDX = enemy.x - this.heroX;",
         "stage elite identity downgrade": "spawn.boss = false",
@@ -261,7 +263,7 @@ def main() -> None:
     for instant_effect in ("eaten.dead = true", "this.resolveOneSeat(enemy, tasks)"):
         if instant_effect in praise_cycle:
             fail(f"praise phase-two effect still resolves before its animation: {instant_effect}")
-    if "3 秒内走向哪件就保哪件" not in wiki:
+    if "被照满 1.5 秒即收走一件道具" not in wiki:
         fail("wiki lamp choice rule has drifted from runtime")
     if "主动踩中才让当前加成与本轮任务同时翻倍" not in wiki:
         fail("wiki praise consultation rule has drifted from runtime")
@@ -277,7 +279,7 @@ def main() -> None:
         fail("wiki is missing the directional telegraph/strike geometry contract")
     if "title: '响个不停'" not in game:
         fail("adulthood stage title has drifted from its chapter boss")
-    print("boss skill validation passed: 16 forms, 41 actions, 164 wired frames")
+    print("boss skill validation passed: 16 atlases / 15 stage forms, 41 actions, 164 wired frames")
 
 
 if __name__ == "__main__":

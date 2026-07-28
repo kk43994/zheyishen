@@ -35,7 +35,7 @@ export const LIFE_STAGE_CANON: readonly LifeStageCanon[] = [
   {
     age: '青年', chapter: '青年 · 齿轮车站', focus: '毕业、求职、初入职场、租房、通勤与第一次独立生活。',
     bossType: 'praise-chair', bossName: '你很优秀', bossMeaning: '夸奖把更多工作留在他的椅背上，却没有留下位置。',
-    eliteType: 'last-bus', eliteName: '错过的那一班', eliteMeaning: '他总觉得别人比自己早一步上车。',
+    eliteType: 'last-bus', eliteName: '末班车', eliteMeaning: '他总觉得别人比自己早一步上车。',
     enemyPool: ['id-scanner', 'missed-bus', 'task-simple', 'task-revise', 'task-deadline', 'task-sync'],
   },
   {
@@ -47,7 +47,7 @@ export const LIFE_STAGE_CANON: readonly LifeStageCanon[] = [
   {
     age: '中年', chapter: '中年 · 没有关灯的办公室', focus: '职业压力、裁员风险、家庭责任、父母衰老、体检与账单。',
     bossType: 'debt-collector', bossName: '上门催收', bossMeaning: '过去推迟的账同时找到现在的地址。',
-    eliteType: 'whose-box', eliteName: '不知道是谁的纸箱', eliteMeaning: '工位被收进纸箱以后，连名字都像贴错了人。',
+    eliteType: 'whose-box', eliteName: '谁的纸箱', eliteMeaning: '工位被收进纸箱以后，连名字都像贴错了人。',
     enemyPool: ['debt', 'badge-thief', 'whisper', 'meeting-door', 'checkup-report'],
   },
   {

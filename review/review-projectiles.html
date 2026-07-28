@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>《这一身》弹体 v5 审阅</title>
+<style>
+  :root { --bg: #56493e; --card: #3b332c; --ink: #ece6d9; --dim: #b0a695; --line: #6b5f52; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #2b2622; color: var(--ink); font: 15px/1.6 -apple-system, "PingFang SC", sans-serif; padding: 18px 14px 60px; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { color: var(--dim); font-size: 13px; margin-bottom: 14px; }
+  .bgpick { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .bgpick button { border: 1px solid var(--line); color: var(--ink); background: none; padding: 5px 12px; border-radius: 6px; font-size: 13px; }
+  .bgpick button.on { background: var(--line); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+  .card h3 { font-size: 16px; }
+  .card .meta { color: var(--dim); font-size: 12px; margin: 2px 0 8px; }
+  .stage { border-radius: 8px; padding: 10px; display: flex; align-items: center; gap: 14px; }
+  .frames { display: flex; gap: 6px; margin-top: 8px; }
+  canvas { image-rendering: pixelated; display: block; }
+  .frames canvas { border: 1px solid rgba(0,0,0,.25); border-radius: 4px; }
+  h2 { font-size: 17px; margin: 26px 0 10px; }
+  .tag { display: inline-block; font-size: 11px; border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; margin-left: 6px; color: var(--dim); vertical-align: 2px; }
+</style>
+</head>
+<body>
+<h1>弹体 v5 审阅 <span class="tag">18 形态 × 4 帧 @10fps</span></h1>
+<div class="sub">大图为实际循环动画（6×放大）；下排为逐帧分解。切背景色检查各章地面上的可读性。哪行不满意，报形态名即可。</div>
+<div class="bgpick" id="bgpick"></div>
+<div class="grid" id="projGrid"></div>
+<h2>击中特效 <span class="tag">11 材质 × 4 帧</span></h2>
+<div class="grid" id="hitGrid"></div>
+<script>
+const FORMS = [
+  ['breath0', '一口气 · 凝实态0 散絮', '开局最弱 · 一口没成形的气', 18],
+  ['breath', '一口气 · 凝实态1 软球', '构筑渐强 · 雾聚成球', 0],
+  ['breath2', '一口气 · 凝实态2 实球', '伤害中段 · 出现薄边与内旋', 19],
+  ['breath3', '一口气 · 凝实态3 珠光', '构筑成型 · 一口气凝成珠', 20],
+  ['marble', '弹珠 · 高光走位', '弹珠 · 命中 25% 弹射至下一个敌人'],
+  ['key', '钥匙 · 逐帧旋转', '唯一的钥匙 · 射程尽头开门结算'],
+  ['slash', '劈砍弧 · 挥动开合', '木剑 · 宽弧'],
+  ['rain', '雨滴 · 尾摆', '父亲的雨衣 · 派生弹形态'],
+  ['tear', '泪滴 · 拉长回弹', '我一直在哭 · 派生弹形态'],
+  ['ice', '冰晶 · 棱面轮闪', '商店冷柜 · 冻结'],
+  ['laugh', '哈 · 弹跳挤压', '五个哈 · 五连发'],
+  ['serial', '制式弹 · 死板平移', '卖出去的名字 · 零暴击+30%（机制即隐喻）'],
+  ['paper', '信纸 · 翻折', '前台代收的信 · 弧线飘'],
+  ['razor', '修眉刀 · 刃口寒光', '同桌的修眉刀'],
+  ['lens', '镜片 · 反光扫过', '裂了的眼镜'],
+  ['sound', '声波 · 双弧开合', '缩回的声音 / KTV'],
+  ['link', '链环 · 交替亮', '砍价链接 · 命中分叉'],
+  ['button', '纽扣 · 翻转', '松扣子 · 第 3 轮多一发'],
+  ['stone', '石块 · 滚动带尘', '装石头的书包 · 重压'],
+  ['cone', '雾锥 · 丝缕后掠', '呵在玻璃上的字 · 宽锥穿透'],
+  ['stamp', '红章 · 翻滚亮印', '红作业本 · 折返弹盖章'],
+];
+const HITS = ['mist 雾', 'water 水', 'crit 暴击', 'paper 纸', 'wood 木', 'stone 石', 'metal 金属', 'ice 冰', 'signal 信号', 'key 钥匙', 'glass 玻璃'];
+const BGS = [['童年晨紫', '#6b6474'], ['少年教室', '#8f8a7c'], ['青年米棕', '#7a6a52'], ['成年饭桌', '#56493e'], ['中年办公', '#5d6160'], ['暮年病房', '#6e7568']];
+const CELL = 28, SC = 6;
+
+function loadImage(src) { return new Promise((ok, err) => { const i = new Image(); i.onload = () => ok(i); i.onerror = err; i.src = src; }); }
+
+function drawCell(ctx, img, col, row, scale) {
+  ctx.imageSmoothingEnabled = false;
+  ctx.clearRect(0, 0, CELL * scale, CELL * scale);
+  ctx.drawImage(img, col * CELL, row * CELL, CELL, CELL, 0, 0, CELL * scale, CELL * scale);
+}
+
+let stageBg = BGS[3][1];
+const stages = [];
+
+async function main() {
+  const [anim, hits] = await Promise.all([
+    loadImage('review-projectile-anim.png?v=5'),
+    loadImage('review-hits.png?v=2'),
+  ]);
+  const bgpick = document.getElementById('bgpick');
+  BGS.forEach(([name, color], i) => {
+    const b = document.createElement('button');
+    b.textContent = name;
+    if (i === 3) b.classList.add('on');
+    b.onclick = () => {
+      stageBg = color;
+      stages.forEach(s => s.style.background = color);
+      bgpick.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+    };
+    bgpick.appendChild(b);
+  });
+
+  const projGrid = document.getElementById('projGrid');
+  FORMS.forEach(([id, name, meta, rowOverride], idx) => {
+    const row = rowOverride !== undefined ? rowOverride : idx - 3; // 前 4 张凝实卡后回到顺行
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `<h3>${idx + 1}. ${name}</h3><div class="meta">${meta}</div>`;
+    const stage = document.createElement('div');
+    stage.className = 'stage';
+    stage.style.background = stageBg;
+    stages.push(stage);
+    const big = document.createElement('canvas');
+    big.width = big.height = CELL * SC;
+    stage.appendChild(big);
+    card.appendChild(stage);
+    const framesRow = document.createElement('div');
+    framesRow.className = 'frames';
+    for (let f = 0; f < 4; f++) {
+      const c = document.createElement('canvas');
+      c.width = c.height = CELL * 2.5;
+      const g = c.getContext('2d');
+      g.imageSmoothingEnabled = false;
+      g.drawImage(anim, f * CELL, row * CELL, CELL, CELL, 0, 0, CELL * 2.5, CELL * 2.5);
+      framesRow.appendChild(c);
+    }
+    card.appendChild(framesRow);
+    projGrid.appendChild(card);
+    const ctx = big.getContext('2d');
+    let frame = 0;
+    setInterval(() => { drawCell(ctx, anim, frame, row, SC); frame = (frame + 1) % 4; }, 100);
+  });
+
+  const hitGrid = document.getElementById('hitGrid');
+  HITS.forEach((name, row) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `<h3>${name}</h3>`;
+    const stage = document.createElement('div');
+    stage.className = 'stage';
+    stage.style.background = stageBg;
+    stages.push(stage);
+    const big = document.createElement('canvas');
+    const hc = 32;
+    big.width = big.height = hc * 5;
+    stage.appendChild(big);
+    card.appendChild(stage);
+    hitGrid.appendChild(card);
+    const ctx = big.getContext('2d');
+    let frame = 0;
+    setInterval(() => {
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, hc * 5, hc * 5);
+      ctx.drawImage(hits, frame * hc, row * hc, hc, hc, 0, 0, hc * 5, hc * 5);
+      frame = (frame + 1) % 4;
+    }, 125);
+  });
+}
+main();
+</script>
+</body>
+</html>

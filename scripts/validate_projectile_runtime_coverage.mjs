@@ -20,6 +20,7 @@ const expected = Object.entries(specs)
 
 const runtimeSource = await readFile(resolve(root, 'src/projectile-item-signatures.ts'), 'utf8');
 const gameSource = await readFile(resolve(root, 'src/game.ts'), 'utf8');
+const vfxSource = await readFile(resolve(root, 'src/vfx-sprites.ts'), 'utf8');
 const objectBody = runtimeSource.match(/PROJECTILE_ITEM_SIGNATURES\s*=\s*\{([\s\S]*?)\n\} as const/)?.[1] ?? '';
 const auditBody = runtimeSource.match(/PROJECTILE_AUDIT_CASES\s*=\s*\{([\s\S]*?)\n\} as const/)?.[1] ?? '';
 const compositionBody = runtimeSource.match(/PROJECTILE_COMPOSITION_CASES\s*=\s*\{([\s\S]*?)\n\} as const/)?.[1] ?? '';
@@ -40,6 +41,7 @@ const missing = expected.filter((id) => !actual.includes(id));
 const extra = actual.filter((id) => !expected.includes(id));
 
 const manifest = JSON.parse(await readFile(resolve(root, 'src/assets/vfx/projectiles.json'), 'utf8'));
+const animationManifest = JSON.parse(await readFile(resolve(root, 'src/assets/vfx/projectile-anim.json'), 'utf8'));
 const provenance = JSON.parse(await readFile(resolve(root, 'src/assets/vfx/projectiles.sources.json'), 'utf8'));
 const forms = [...objectBody.matchAll(/\bform:\s*'([^']+)'/g)].map((match) => match[1]);
 const missingArt = [...new Set(forms)].filter((form) => manifest.index?.[form] === undefined);
@@ -49,6 +51,10 @@ const requiredAtlasForms = [
   'typing', 'button', 'link', 'stamp', 'stone', 'lens', 'laugh',
 ];
 const missingAtlasForms = requiredAtlasForms.filter((form) => manifest.index?.[form] === undefined);
+const requiredAnimatedForms = ['breath', 'marble', 'key', 'slash'];
+const missingAnimatedForms = requiredAnimatedForms.filter((form) => !animationManifest.forms?.includes(form));
+const missingAnimationFrames = requiredAnimatedForms.flatMap((form) => Array.from({ length: 4 }, (_, frame) => `${form}${frame}`))
+  .filter((frame) => animationManifest.index?.[frame] === undefined);
 const sourceJobs = Object.values(provenance.referenceJobs ?? {});
 const hitManifest = JSON.parse(await readFile(resolve(root, 'src/assets/vfx/hits.json'), 'utf8'));
 const contractHtml = await readFile(resolve(root, 'docs/道具生产合同表.html'), 'utf8');
@@ -194,6 +200,8 @@ const runtimeProofs = [
 const missingRuntimeProofs = runtimeProofs.flatMap(([label, tokens]) => (
   tokens.every((token) => gameSource.includes(token)) ? [] : [`missing runtime proof: ${label}`]
 ));
+const image2AnimatedForms = [...vfxSource.matchAll(/PROJECTILE_IMAGE2_ANIMATED_FORMS = new Set\(\[([^\]]+)\]\)/g)]
+  .flatMap((match) => [...match[1].matchAll(/'([^']+)'/g)].map((entry) => entry[1]));
 const signatureById = new Map(signatureBlocks.map(([, id, body]) => {
   const readString = (field) => body.match(new RegExp(`\\b${field}:\\s*'([^']+)'`))?.[1];
   const readNumber = (field) => Number(body.match(new RegExp(`\\b${field}:\\s*(\\d+)`))?.[1]);
@@ -235,6 +243,10 @@ const errors = [
   ...extra.map((id) => `orphan runtime projectile signature: ${id}`),
   ...missingArt.map((form) => `missing projectile atlas frame: ${form}`),
   ...missingAtlasForms.map((form) => `missing required projectile atlas frame: ${form}`),
+  ...missingAnimatedForms.map((form) => `missing animated projectile form: ${form}`),
+  ...missingAnimationFrames.map((frame) => `missing animated projectile frame: ${frame}`),
+  ...requiredAnimatedForms.filter((form) => !image2AnimatedForms.includes(form))
+    .map((form) => `runtime does not enable approved Image2 projectile animation: ${form}`),
   ...missingHitMaterials.map((material) => `missing projectile hit material: ${material}`),
   ...incompleteDesign,
   ...invalidLiteralObjects.map((id) => `unapproved literal-object projectile: ${id}`),
@@ -297,6 +309,9 @@ console.log(JSON.stringify({
   compositionCount: compositionCases.length,
   literalObjects,
   atlasForms: Object.keys(manifest.index ?? {}).length,
+  animatedForms: animationManifest.forms?.length ?? 0,
+  animationFrames: Object.keys(animationManifest.index ?? {}).length,
+  runtimeAnimatedForms: image2AnimatedForms.length,
   image2ReferenceJobs: sourceJobs.length,
   laughOverlay: manifest.deterministicOverlays?.laugh ?? null,
   hitMaterials: hitManifest.materials?.length ?? 0,
