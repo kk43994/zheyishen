@@ -35,34 +35,36 @@ if (!draft && (!narratorVoice || !fatherVoice)) {
 const { VOICE_CUES, VOICE_CUE_IDS, validateVoiceScript } = await loadVoiceContract(ROOT);
 validateVoiceScript();
 
-const feminineRoles = new Set(['caregiver', 'family', 'nurse', 'doctor', 'pharmacist', 'neighbor']);
+// Casting table mirrors VOICE_DELIVERY's voice direction in voice-script.ts.
+// Every named woman gets her own timbre; institutional voices (broadcast,
+// door system, bank hotline) intentionally share the news-anchor register.
 const systemVoiceByRole = {
   teacher: 'female-chengshu',
   classmate: 'clever_boy',
   announcer: 'Chinese (Mandarin)_News_Anchor',
-  recruiter: 'Chinese (Mandarin)_Reliable_Executive',
+  recruiter: 'Chinese (Mandarin)_Gentle_Senior',
   landlord: 'Chinese (Mandarin)_Kind-hearted_Antie',
   office: 'Chinese (Mandarin)_News_Anchor',
   manager: 'Chinese (Mandarin)_Reliable_Executive',
   bank: 'Chinese (Mandarin)_News_Anchor',
   coworker: 'Chinese (Mandarin)_Southern_Young_Man',
-  security: 'Chinese (Mandarin)_Southern_Young_Man',
-  'room-keeper': 'Chinese (Mandarin)_Southern_Young_Man',
+  security: 'Chinese (Mandarin)_Gentleman',
+  'room-keeper': 'Chinese (Mandarin)_Humorous_Elder',
+  caregiver: 'Chinese (Mandarin)_Warm_Bestie',
+  // 家里人与老婆同一音色是有意的：饭桌那通电话就是同一个家。
+  family: 'Chinese (Mandarin)_Wise_Women',
+  nurse: 'female-yujie',
+  doctor: 'female-chengshu-jingpin',
+  pharmacist: 'Chinese (Mandarin)_Sweet_Lady',
+  neighbor: 'Chinese (Mandarin)_Kind-hearted_Antie',
 };
 
 function voiceFor(cue) {
   if (cue.role === 'narrator' || cue.role === 'lamp-keeper') return narratorVoice || 'Chinese (Mandarin)_Southern_Young_Man';
   if (cue.role === 'father') return fatherVoice || 'Chinese (Mandarin)_Reliable_Executive';
-  if (cue.role === 'hero') return cue.stage === 0 ? 'clever_boy' : 'Chinese (Mandarin)_Southern_Young_Man';
-  if (cue.role === 'wife') {
-    if (!wifeVoice) throw new Error('wife voice requires MINIMAX_WIFE_VOICE_ID; use the Kokoro production path when it is unavailable');
-    return wifeVoice;
-  }
-  if (cue.role === 'mother') {
-    if (!motherVoice) throw new Error('mother voice requires MINIMAX_MOTHER_VOICE_ID; use the Kokoro production path when it is unavailable');
-    return motherVoice;
-  }
-  if (feminineRoles.has(cue.role)) return 'Chinese (Mandarin)_Kind-hearted_Antie';
+  if (cue.role === 'hero') return cue.stage === 0 ? 'clever_boy' : 'Chinese (Mandarin)_Sincere_Adult';
+  if (cue.role === 'wife') return wifeVoice || 'Chinese (Mandarin)_Wise_Women';
+  if (cue.role === 'mother') return motherVoice || 'Chinese (Mandarin)_Kind-hearted_Elder';
   return systemVoiceByRole[cue.role] || 'Chinese (Mandarin)_Southern_Young_Man';
 }
 
@@ -119,7 +121,18 @@ for (const id of VOICE_CUE_IDS) {
     }
   }
   console.info(`[voice] ${id} (${cue.role})`);
-  const generated = await callTts(cue);
+  let generated;
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      generated = await callTts(cue);
+      break;
+    } catch (error) {
+      if (attempt >= 5 || !/rate limit/i.test(String(error?.message))) throw error;
+      const waitSeconds = 15 * (attempt + 1);
+      console.info(`[voice] ${id} rate limited; retrying in ${waitSeconds}s`);
+      await new Promise((resolveWait) => setTimeout(resolveWait, waitSeconds * 1000));
+    }
+  }
   await writeFile(path, generated.bytes);
   manifestById.set(id, {
     id, file: cue.file, role: cue.role, voiceId: voiceFor(cue), model: MODEL,
