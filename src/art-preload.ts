@@ -131,7 +131,6 @@ const STAGE_TOKENS: readonly (readonly string[])[] = [
     '/enemies/lamp-keeper-hd.png',
     '/boss-skills-v1/revolving-lantern-skills.png',
     '/boss-skills-v1/lamp-keeper-skills.png',
-    '/boss-skills-v2/keeper-name-8f.png',
     '/boss-skills-v2/keeper-strip-8f.png',
   ],
 ] as const;

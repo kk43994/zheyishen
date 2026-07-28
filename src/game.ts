@@ -1132,6 +1132,7 @@ export class ZheYiShenGame {
   private xiaoZhangWorld?: { x: number; y: number };
   private xiaoZhangAlly?: { x: number; y: number; fireCooldown: number; faceLeft: boolean };
   private xiaoZhangPrompt = false;
+  private xiaoZhangHelpedAt = 0;
   private xiaoZhangFocus: 0 | 1 = 0;
   // 《谁的纸箱·清点》只暂停效果，不从背包删物件；出关统一恢复。
   private stageDisabledItems = new Set<ItemId>();
@@ -2610,10 +2611,14 @@ export class ZheYiShenGame {
     }, Infinity);
     if (this.encounterIndex === 0) {
       // 童年还没上学：校门口与同学的两条已按正典移到少年章。
+      if (time >= 8) this.playVoiceOnce('caregiver-school-send');
       if (time >= 18) this.playVoiceOnce('caregiver-lights-out');
       if (time >= 22 && this.standStillTime >= 3 && nearestEnemyDistance > 140) this.playVoiceOnce('child-under-bed');
+      if (hpRatio <= 0.6) this.playVoiceOnce('caregiver-fell-again');
     } else if (this.encounterIndex === 1) {
       if (alive >= 6) this.playVoiceOnce('teacher-last-row');
+      if (time >= 30) this.playVoiceOnce('classmate-slept-late');
+      if (this.standStillTime >= 3 && nearestEnemyDistance > 140) this.playVoiceOnce('teacher-daydream');
       if (hpRatio <= 0.7) this.playVoiceOnce('classmate-score-whisper');
       // 放学那场戏排在统一答案之后。上一条仍占字幕主位时，下一条继续等。
       if (this.schoolEliteDefeatedAt > 0 && !this.voiceCaption) {
@@ -2625,15 +2630,23 @@ export class ZheYiShenGame {
       }
     } else if (this.encounterIndex === 2) {
       if (time >= 4) this.playVoiceOnce('recruiter-arrival-time');
+      if (hpRatio <= 0.5) this.playVoiceOnce('station-feel-unwell');
+      if (this.standStillTime >= 3 && nearestEnemyDistance > 140) this.playVoiceOnce('passerby-excuse-me');
+      if (this.helpedXiaoZhang && this.xiaoZhangHelpedAt > 0 && time >= this.xiaoZhangHelpedAt + 20) {
+        this.playVoiceOnce('xiaozhang-overtime');
+      }
     } else if (this.encounterIndex === 3) {
       if (time >= 18) this.playVoiceOnce('family-dinner-cold');
       if (time >= 26) this.playVoiceOnce('hospital-family-needed');
     } else if (this.encounterIndex === 4) {
       if (time >= 14) this.playVoiceOnce('manager-tonight-hard');
       if (hpRatio <= 0.5) this.playVoiceOnce('clinic-blood-pressure');
+      if (this.standStillTime >= 3 && nearestEnemyDistance > 140) this.playVoiceOnce('courier-timeout');
     } else if (this.encounterIndex === 5) {
       if (time >= 5) this.playVoiceOnce('clinic-next-number');
+      if (time >= 40) this.playVoiceOnce('clinic-fifty-six');
       if (this.standStillTime >= 5 && nearestEnemyDistance > 140) this.playVoiceOnce('neighbor-corridor-light');
+      if (hpRatio <= 0.5) this.playVoiceOnce('bedside-son-money');
       if (hpRatio <= 0.35) this.playVoiceOnce('hospital-family-late');
     }
   }
@@ -3399,6 +3412,7 @@ export class ZheYiShenGame {
       this.resetMovementInput();
       this.xiaoZhangPrompt = true;
       this.xiaoZhangFocus = this.hero.coins >= 10 ? 0 : 1;
+      this.playVoiceOnce('xiaozhang-busy-later');
       this.feedback.play('page', 0.82);
       return;
     }
@@ -3625,6 +3639,7 @@ export class ZheYiShenGame {
     this.hero.coins -= 10;
     this.stats.coinsSpent += 10;
     this.helpedXiaoZhang = true;
+    this.xiaoZhangHelpedAt = this.battleTime;
     this.xiaoZhangDecision = 'helped';
     this.xiaoZhangWorld = undefined;
     this.xiaoZhangAlly = { x: start.x, y: start.y, fireCooldown: 0.2, faceLeft: false };
@@ -6218,9 +6233,9 @@ export class ZheYiShenGame {
             this.praiseSpawnCount % 2 === 0 ? 'praise-p1-delegate' : 'praise-p1-praise',
             0.9,
           );
-          if (praiseKind === 0) { this.praiseDamage = Math.min(0.96, this.praiseDamage + 0.08); this.burst('word', this.heroX, this.heroY - 60, 30, '#c9a24a', '「这个只有你能做」伤害+8%'); }
-          else if (praiseKind === 1) { this.praiseFire = Math.min(0.96, this.praiseFire + 0.08); this.burst('word', this.heroX, this.heroY - 60, 30, '#c9a24a', '「我看好你」攻速+8%'); }
-          else { this.praiseMove = Math.min(0.6, this.praiseMove + 0.05); this.burst('word', this.heroX, this.heroY - 60, 30, '#c9a24a', '「辛苦一下」移速+5%'); }
+          if (praiseKind === 0) { this.praiseDamage = Math.min(0.96, this.praiseDamage + 0.08); this.burst('word', this.heroX, this.heroY - 60, 30, '#c9a24a', '「这个只有你能做」伤害+8%'); this.feedback.playVoice('boss-praise-only-you'); }
+          else if (praiseKind === 1) { this.praiseFire = Math.min(0.96, this.praiseFire + 0.08); this.burst('word', this.heroX, this.heroY - 60, 30, '#c9a24a', '「我看好你」攻速+8%'); this.feedback.playVoice('boss-praise-watch-you'); }
+          else { this.praiseMove = Math.min(0.6, this.praiseMove + 0.05); this.burst('word', this.heroX, this.heroY - 60, 30, '#c9a24a', '「辛苦一下」移速+5%'); this.feedback.playVoice('boss-praise-hard-work'); }
           this.feedback.play('coin', 0.5);
           const taskAlive = this.enemies.filter((unit) => !unit.dead && unit.type.startsWith('task-')).length;
           const batchSize = 1 + Math.floor(this.praiseSpawnCount / 4);
@@ -6891,6 +6906,7 @@ export class ZheYiShenGame {
           if (enemy.type === 'badge-thief' && !this.voiceCuesSeen.has('office-badge-denied')) {
             this.playVoiceOnce('office-badge-denied');
             this.scheduleVoice('office-meeting-continues', 1.2);
+            this.scheduleVoice('meeting-quarter-hard', 7.5);
           }
           if ((enemy.type === 'badge-thief' || enemy.type === 'whose-box') && this.hero.coins > 0) {
             this.hero.coins -= 1;
@@ -7201,10 +7217,12 @@ export class ZheYiShenGame {
     const typeKills = this.voiceEnemyKills[enemy.type] ?? 0;
     if (enemy.type === 'badge-thief') {
       if (typeKills === 4) this.playVoiceOnce('coworker-cardboard-box');
+      else if (typeKills === 8) this.playVoiceOnce('coworker-flower-water');
     }
     const defeatVoice: Partial<Record<EnemyType, VoiceCueId>> = {
       'uniform-answer': 'father-for-your-good',
       'last-bus': 'last-bus-departed',
+      'praise-chair': 'boss-meeting-over',
     };
     const voiceCue = defeatVoice[enemy.type];
     if (voiceCue) this.playVoiceOnce(voiceCue);
@@ -7518,6 +7536,7 @@ export class ZheYiShenGame {
     this.burst('ring', consult.x, consult.y, 62, '#b84954');
     this.burst('word', consult.x, consult.y - 32, 30, '#c9a24a', '加成翻倍 · 活也翻倍');
     this.say('很好，就按你说的办。');
+    this.feedback.playVoice('boss-praise-as-you-said');
     this.praiseConsult = undefined;
   }
 
@@ -8362,6 +8381,7 @@ export class ZheYiShenGame {
       this.hurtCooldown = Math.max(this.hurtCooldown, 1.2);
       this.burst('word', this.heroX, this.heroY - 60, 60, '#9fd0b8', '它替你挡下了');
       this.say('关服那天 · 它没等到告别');
+      this.feedback.playVoice('collector-not-yet');
       this.saveEffect = { kind: 'shutdown', timer: 0.8, duration: 0.8 };
     }
     if (this.hero.hp <= 0 && this.hasItem('funeral-photo') && !this.graceUsed && this.deathSaves < 3) {
@@ -8373,6 +8393,7 @@ export class ZheYiShenGame {
       this.flash = 0;
       this.burst('ring', this.heroX, this.heroY - 20, 90, '#d8cfae');
       this.say('遗照上的笑 · 再撑五秒');
+      this.feedback.playVoice('collector-not-yet');
       this.saveEffect = { kind: 'photo', timer: 0.7, duration: 0.7 };
     }
     if (this.hero.hp <= 0 && this.hasItem('snow-screen') && !this.snowUsed && this.deathSaves < 3) {
@@ -8382,6 +8403,7 @@ export class ZheYiShenGame {
       this.flash = 0.5;
       this.burst('word', this.heroX, this.heroY - 58, 70, '#c8d2d8', '雪花');
       this.say('雪花屏 · 这次伤害没有发生');
+      this.feedback.playVoice('collector-not-yet');
       this.saveEffect = { kind: 'static', timer: 0.6, duration: 0.6 };
     }
     if (this.hero.hp <= 0 && this.toothReady && this.deathSaves < 3) {
@@ -8389,6 +8411,7 @@ export class ZheYiShenGame {
       this.deathSaves += 1;
       this.hero.hp = 1;
       this.areaDamage(24, '#efe5c8');
+      this.feedback.playVoice('collector-not-yet');
       this.burst('word', this.heroX, this.heroY - 58, 90, '#efe5c8', '爸爸');
       this.say('女儿的乳牙 · 再留下来一次');
       this.saveEffect = { kind: 'tooth', timer: 0.7, duration: 0.7 };
@@ -8920,8 +8943,13 @@ export class ZheYiShenGame {
     this.shopOffers = candidates.slice(0, 3).map((item) => ({ item, price: this.itemPrice(item), sold: false }));
     this.shopFocus = 0;
     if (resetPurchase) {
-      if (this.encounterIndex === 2) this.playVoiceOnce('landlord-rent-deposit');
-      else if (this.encounterIndex === 5) this.playVoiceOnce('pharmacist-after-meals');
+      if (this.encounterIndex === 1) this.playVoiceOnce('shopkeeper-fifty-cents');
+      else if (this.encounterIndex === 2) this.playVoiceOnce('landlord-rent-deposit');
+      else if (this.encounterIndex === 3) this.playVoiceOnce('cashier-bag-fee');
+      else if (this.encounterIndex === 5) {
+        if (this.voiceCuesSeen.has('pharmacist-after-meals')) this.playVoiceOnce('pharmacist-self-pay');
+        else this.playVoiceOnce('pharmacist-after-meals');
+      }
     }
   }
 
@@ -9110,7 +9138,10 @@ export class ZheYiShenGame {
     this.resultStartedAt = performance.now();
     this.feedback.setAmbience(undefined);
     if (won) this.playVoiceOnce('narrator-final-breath');
-    else this.feedback.stopVoice();
+    else {
+      this.feedback.stopVoice();
+      this.playVoiceOnce('narrator-he-fell-asleep');
+    }
     this.feedback.play(won ? 'page' : 'swallow', won ? 1.2 : 0.9);
     if (!won) this.feedback.vibrate([26, 54, 26]);
     this.state = 'result';

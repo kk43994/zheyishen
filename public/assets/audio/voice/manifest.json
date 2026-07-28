@@ -23,7 +23,8 @@
         "exhale",
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "narrator-start-breath",
@@ -45,7 +46,8 @@
       "pitch": -2,
       "intensity": "low",
       "tags": []
-    }
+    },
+    "skipped": true
   },
   {
     "id": "child-under-bed",
@@ -68,7 +70,8 @@
         "breath",
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "caregiver-lights-out",
@@ -90,7 +93,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "caregiver-no-monster",
@@ -112,7 +116,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "father-childhood-walk",
@@ -132,7 +137,8 @@
       "pitch": -2,
       "intensity": "low",
       "tags": []
-    }
+    },
+    "skipped": true
   },
   {
     "id": "classmate-family-late",
@@ -154,7 +160,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "school-gate-closing",
@@ -174,7 +181,8 @@
       "pitch": 0,
       "intensity": "medium",
       "tags": []
-    }
+    },
+    "skipped": true
   },
   {
     "id": "school-bell-start",
@@ -194,7 +202,8 @@
       "pitch": 0,
       "intensity": "medium",
       "tags": []
-    }
+    },
+    "skipped": true
   },
   {
     "id": "teacher-last-row",
@@ -218,7 +227,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "teacher-answer-format",
@@ -240,7 +250,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "classmate-score-whisper",
@@ -260,7 +271,8 @@
       "pitch": 1,
       "intensity": "low",
       "tags": []
-    }
+    },
+    "skipped": true
   },
   {
     "id": "teacher-paper-back",
@@ -282,7 +294,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "father-for-your-good",
@@ -304,7 +317,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "school-bell-end",
@@ -324,7 +338,8 @@
       "pitch": 0,
       "intensity": "medium",
       "tags": []
-    }
+    },
+    "skipped": true
   },
   {
     "id": "recruiter-arrival-time",
@@ -344,7 +359,8 @@
       "pitch": 0,
       "intensity": "medium",
       "tags": []
-    }
+    },
+    "skipped": true
   },
   {
     "id": "landlord-rent-deposit",
@@ -368,7 +384,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "last-bus-arrival",
@@ -390,7 +407,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "station-yellow-line",
@@ -410,7 +428,8 @@
       "pitch": 0,
       "intensity": "medium",
       "tags": []
-    }
+    },
+    "skipped": true
   },
   {
     "id": "station-doors-closing",
@@ -432,7 +451,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "last-bus-departed",
@@ -454,7 +474,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "interview-thank-you",
@@ -474,7 +495,8 @@
       "pitch": 0,
       "intensity": "medium",
       "tags": []
-    }
+    },
+    "skipped": true
   },
   {
     "id": "phone-wife-fridge",
@@ -496,7 +518,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "phone-hospital-not-call",
@@ -520,7 +543,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "phone-mother-didnt-ask",
@@ -542,7 +566,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "phone-cannot-connect",
@@ -562,7 +587,8 @@
       "pitch": 0,
       "intensity": "medium",
       "tags": []
-    }
+    },
+    "skipped": true
   },
   {
     "id": "family-dinner-cold",
@@ -584,7 +610,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "hospital-family-needed",
@@ -608,7 +635,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "father-adult-phone",
@@ -631,7 +659,8 @@
         "clear-throat",
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "phone-coworker-group",
@@ -653,7 +682,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "hero-not-busy",
@@ -675,7 +705,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "hero-became-him",
@@ -711,7 +742,8 @@
         "purpose": "父亲旧句作为成年主角语言来源的远处回声"
       }
     ],
-    "postprocess": "成年主声 + 低频远置父亲记忆叠声（复用 father-for-your-good 原声）"
+    "postprocess": "成年主声 + 低频远置父亲记忆叠声（复用 father-for-your-good 原声）",
+    "skipped": true
   },
   {
     "id": "self-stand-straight",
@@ -744,7 +776,8 @@
         "purpose": "父亲训斥与主角内化短句轻微重合"
       }
     ],
-    "postprocess": "成年主声 + 低频远置父亲记忆叠声（复用 father-for-your-good 原声）"
+    "postprocess": "成年主声 + 低频远置父亲记忆叠声（复用 father-for-your-good 原声）",
+    "skipped": true
   },
   {
     "id": "self-for-your-good",
@@ -777,7 +810,8 @@
         "purpose": "父亲旧句在成年主角复述后方轻轻出现"
       }
     ],
-    "postprocess": "成年主声 + 低频远置父亲记忆叠声（复用 father-for-your-good 原声）"
+    "postprocess": "成年主声 + 低频远置父亲记忆叠声（复用 father-for-your-good 原声）",
+    "skipped": true
   },
   {
     "id": "office-badge-denied",
@@ -797,7 +831,8 @@
       "pitch": 0,
       "intensity": "medium",
       "tags": []
-    }
+    },
+    "skipped": true
   },
   {
     "id": "office-meeting-continues",
@@ -821,7 +856,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "manager-tonight-hard",
@@ -843,7 +879,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "bank-payment-due",
@@ -863,7 +900,8 @@
       "pitch": 0,
       "intensity": "medium",
       "tags": []
-    }
+    },
+    "skipped": true
   },
   {
     "id": "clinic-blood-pressure",
@@ -887,7 +925,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "coworker-cardboard-box",
@@ -911,7 +950,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "security-return-card",
@@ -933,7 +973,8 @@
       "pitch": -1,
       "intensity": "low",
       "tags": []
-    }
+    },
+    "skipped": true
   },
   {
     "id": "clinic-next-number",
@@ -957,7 +998,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "pharmacist-after-meals",
@@ -981,7 +1023,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "neighbor-corridor-light",
@@ -1003,7 +1046,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "hospital-family-late",
@@ -1025,7 +1069,8 @@
       "pitch": -1,
       "intensity": "medium",
       "tags": []
-    }
+    },
+    "skipped": true
   },
   {
     "id": "light-room-keeper",
@@ -1047,7 +1092,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "light-room-left-this",
@@ -1067,7 +1113,8 @@
       "pitch": -2,
       "intensity": "low",
       "tags": []
-    }
+    },
+    "skipped": true
   },
   {
     "id": "back-room-keeper",
@@ -1089,7 +1136,8 @@
       "tags": [
         "pause"
       ]
-    }
+    },
+    "skipped": true
   },
   {
     "id": "lamp-time-up",
@@ -1122,7 +1170,8 @@
         "purpose": "同一收灯人声线的近声、远声和轻微延迟层"
       }
     ],
-    "postprocess": "近声先到 + 远声慢半拍 + 轻微空灵摆动（ethereal-v2，无恐怖长混响）"
+    "postprocess": "近声先到 + 远声慢半拍 + 轻微空灵摆动（ethereal-v2，无恐怖长混响）",
+    "skipped": true
   },
   {
     "id": "lamp-return-due",
@@ -1155,7 +1204,8 @@
         "purpose": "同一收灯人声线的近声、远声和轻微延迟层"
       }
     ],
-    "postprocess": "近声先到 + 远声慢半拍 + 轻微空灵摆动（ethereal-v2，无恐怖长混响）"
+    "postprocess": "近声先到 + 远声慢半拍 + 轻微空灵摆动（ethereal-v2，无恐怖长混响）",
+    "skipped": true
   },
   {
     "id": "lamp-one-returned",
@@ -1190,7 +1240,8 @@
         "purpose": "同一收灯人声线的近声、远声和轻微延迟层"
       }
     ],
-    "postprocess": "近声先到 + 远声慢半拍 + 轻微空灵摆动（ethereal-v2，无恐怖长混响）"
+    "postprocess": "近声先到 + 远声慢半拍 + 轻微空灵摆动（ethereal-v2，无恐怖长混响）",
+    "skipped": true
   },
   {
     "id": "lamp-pockets-empty",
@@ -1224,7 +1275,8 @@
         "purpose": "同一收灯人声线的近声、远声和轻微延迟层"
       }
     ],
-    "postprocess": "近声先到 + 远声慢半拍 + 轻微空灵摆动（ethereal-v2，无恐怖长混响）"
+    "postprocess": "近声先到 + 远声慢半拍 + 轻微空灵摆动（ethereal-v2，无恐怖长混响）",
+    "skipped": true
   },
   {
     "id": "narrator-final-breath",
@@ -1250,6 +1302,532 @@
         "exhale",
         "pause"
       ]
+    },
+    "skipped": true
+  },
+  {
+    "id": "boss-praise-only-you",
+    "file": "assets/audio/voice/boss-praise-only-you.mp3",
+    "role": "boss",
+    "voiceId": "ttv-voice-2026072819561426-prAlwK1P",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 1620,
+    "bytes": 14388,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:18.963Z",
+    "delivery": {
+      "voice": "设计音色·热络空心领导男声",
+      "tone": "夸奖像派工，句尾上扬没有温度",
+      "emotion": "calm",
+      "speed": 1.06,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "boss-praise-watch-you",
+    "file": "assets/audio/voice/boss-praise-watch-you.mp3",
+    "role": "boss",
+    "voiceId": "ttv-voice-2026072819561426-prAlwK1P",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 1332,
+    "bytes": 12084,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:19.631Z",
+    "delivery": {
+      "voice": "设计音色·热络空心领导男声",
+      "tone": "顺口的器重",
+      "emotion": "calm",
+      "speed": 1.06,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "boss-praise-hard-work",
+    "file": "assets/audio/voice/boss-praise-hard-work.mp3",
+    "role": "boss",
+    "voiceId": "ttv-voice-2026072819561426-prAlwK1P",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 1116,
+    "bytes": 10356,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:20.221Z",
+    "delivery": {
+      "voice": "设计音色·热络空心领导男声",
+      "tone": "把加班说成小事",
+      "emotion": "calm",
+      "speed": 1.08,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "boss-praise-as-you-said",
+    "file": "assets/audio/voice/boss-praise-as-you-said.mp3",
+    "role": "boss",
+    "voiceId": "ttv-voice-2026072819561426-prAlwK1P",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 1764,
+    "bytes": 15540,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:21.064Z",
+    "delivery": {
+      "voice": "设计音色·热络空心领导男声",
+      "tone": "采纳你的意见，也把活递给你",
+      "emotion": "calm",
+      "speed": 1.02,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "boss-meeting-over",
+    "file": "assets/audio/voice/boss-meeting-over.mp3",
+    "role": "boss",
+    "voiceId": "ttv-voice-2026072819561426-prAlwK1P",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 1224,
+    "bytes": 11220,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:21.576Z",
+    "delivery": {
+      "voice": "设计音色·领导男声，多口齐声",
+      "tone": "所有的嘴同时说这两个字",
+      "emotion": "calm",
+      "speed": 0.9,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": []
+    }
+  },
+  {
+    "id": "xiaozhang-busy-later",
+    "file": "assets/audio/voice/xiaozhang-busy-later.mp3",
+    "role": "xiaozhang",
+    "voiceId": "Chinese (Mandarin)_Pure-hearted_Boy",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 3564,
+    "bytes": 29940,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:22.292Z",
+    "delivery": {
+      "voice": "清澈邻家青年男声",
+      "tone": "客气地把忙留给自己",
+      "emotion": "calm",
+      "speed": 1.02,
+      "pitch": 0,
+      "intensity": "low",
+      "tags": []
+    }
+  },
+  {
+    "id": "xiaozhang-overtime",
+    "file": "assets/audio/voice/xiaozhang-overtime.mp3",
+    "role": "xiaozhang",
+    "voiceId": "Chinese (Mandarin)_Pure-hearted_Boy",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 2052,
+    "bytes": 17844,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:22.850Z",
+    "delivery": {
+      "voice": "清澈邻家青年男声",
+      "tone": "随口一句，不算抱怨",
+      "emotion": "calm",
+      "speed": 0.98,
+      "pitch": 0,
+      "intensity": "low",
+      "tags": []
+    }
+  },
+  {
+    "id": "caregiver-school-send",
+    "file": "assets/audio/voice/caregiver-school-send.mp3",
+    "role": "caregiver",
+    "voiceId": "Chinese (Mandarin)_Warm_Bestie",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 3204,
+    "bytes": 27060,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:23.625Z",
+    "delivery": {
+      "voice": "成年女声",
+      "tone": "出门前的日常叮嘱",
+      "emotion": "calm",
+      "speed": 1.02,
+      "pitch": 0,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "caregiver-fell-again",
+    "file": "assets/audio/voice/caregiver-fell-again.mp3",
+    "role": "caregiver",
+    "voiceId": "Chinese (Mandarin)_Warm_Bestie",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 1908,
+    "bytes": 16692,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:24.170Z",
+    "delivery": {
+      "voice": "成年女声",
+      "tone": "随口安慰，疼不被承认",
+      "emotion": "calm",
+      "speed": 0.98,
+      "pitch": 0,
+      "intensity": "low",
+      "tags": []
+    }
+  },
+  {
+    "id": "classmate-slept-late",
+    "file": "assets/audio/voice/classmate-slept-late.mp3",
+    "role": "classmate",
+    "voiceId": "clever_boy",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 2160,
+    "bytes": 18708,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:24.770Z",
+    "delivery": {
+      "voice": "少年男声",
+      "tone": "考前压低声音的炫耀式诉苦",
+      "emotion": "calm",
+      "speed": 1,
+      "pitch": 1,
+      "intensity": "low",
+      "tags": []
+    }
+  },
+  {
+    "id": "teacher-daydream",
+    "file": "assets/audio/voice/teacher-daydream.mp3",
+    "role": "teacher",
+    "voiceId": "female-chengshu",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 1620,
+    "bytes": 14388,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:25.344Z",
+    "delivery": {
+      "voice": "成熟女教师声",
+      "tone": "顺口点名，不停下讲课",
+      "emotion": "calm",
+      "speed": 1,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "shopkeeper-fifty-cents",
+    "file": "assets/audio/voice/shopkeeper-fifty-cents.mp3",
+    "role": "shopkeeper",
+    "voiceId": "ttv-voice-2026072900232726-IjGrwGUK",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 1800,
+    "bytes": 15828,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:26.988Z",
+    "delivery": {
+      "voice": "设计音色·沙哑小卖部大爷",
+      "tone": "说惯了的两个词",
+      "emotion": "calm",
+      "speed": 0.95,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": []
+    }
+  },
+  {
+    "id": "station-feel-unwell",
+    "file": "assets/audio/voice/station-feel-unwell.mp3",
+    "role": "announcer",
+    "voiceId": "Chinese (Mandarin)_News_Anchor",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 4140,
+    "bytes": 34548,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:27.955Z",
+    "delivery": {
+      "voice": "交通广播女声",
+      "tone": "标准安全播报，没人接住的关心",
+      "emotion": "calm",
+      "speed": 1,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "passerby-excuse-me",
+    "file": "assets/audio/voice/passerby-excuse-me.mp3",
+    "role": "passerby",
+    "voiceId": "Chinese (Mandarin)_Unrestrained_Young_Man",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 1584,
+    "bytes": 14100,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:28.635Z",
+    "delivery": {
+      "voice": "不羁青年男声",
+      "tone": "借过，脚步不停",
+      "emotion": "calm",
+      "speed": 1.12,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "cashier-bag-fee",
+    "file": "assets/audio/voice/cashier-bag-fee.mp3",
+    "role": "cashier",
+    "voiceId": "male-qn-daxuesheng",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 2772,
+    "bytes": 23604,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:29.358Z",
+    "delivery": {
+      "voice": "青年男收银声",
+      "tone": "流程化的一问",
+      "emotion": "calm",
+      "speed": 1.08,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "meeting-quarter-hard",
+    "file": "assets/audio/voice/meeting-quarter-hard.mp3",
+    "role": "meeting",
+    "voiceId": "male-qn-jingying",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 2448,
+    "bytes": 21012,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:29.973Z",
+    "delivery": {
+      "voice": "精英青年男声",
+      "tone": "门后的场面话",
+      "emotion": "calm",
+      "speed": 1.05,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "coworker-flower-water",
+    "file": "assets/audio/voice/coworker-flower-water.mp3",
+    "role": "coworker",
+    "voiceId": "Chinese (Mandarin)_Straightforward_Boy",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 2448,
+    "bytes": 21012,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:30.690Z",
+    "delivery": {
+      "voice": "率真青年男声",
+      "tone": "低声说给旁边的人听",
+      "emotion": "calm",
+      "speed": 0.95,
+      "pitch": 0,
+      "intensity": "low",
+      "tags": []
+    }
+  },
+  {
+    "id": "courier-timeout",
+    "file": "assets/audio/voice/courier-timeout.mp3",
+    "role": "courier",
+    "voiceId": "Chinese (Mandarin)_Gentle_Youth",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 2952,
+    "bytes": 25044,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:31.407Z",
+    "delivery": {
+      "voice": "温润青年男声",
+      "tone": "急但客气，重复的是系统的倒计时",
+      "emotion": "calm",
+      "speed": 1.16,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "clinic-fifty-six",
+    "file": "assets/audio/voice/clinic-fifty-six.mp3",
+    "role": "nurse",
+    "voiceId": "female-yujie-jingpin",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 4032,
+    "bytes": 33684,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:32.160Z",
+    "delivery": {
+      "voice": "忙碌护士女声",
+      "tone": "第二遍叫号，略提高",
+      "emotion": "calm",
+      "speed": 1.05,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    }
+  },
+  {
+    "id": "pharmacist-self-pay",
+    "file": "assets/audio/voice/pharmacist-self-pay.mp3",
+    "role": "pharmacist",
+    "voiceId": "Chinese (Mandarin)_Gentleman",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 1944,
+    "bytes": 16980,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:32.795Z",
+    "delivery": {
+      "voice": "中年药师声",
+      "tone": "窗口的例行确认",
+      "emotion": "calm",
+      "speed": 1.02,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": []
+    }
+  },
+  {
+    "id": "bedside-son-money",
+    "file": "assets/audio/voice/bedside-son-money.mp3",
+    "role": "bedside",
+    "voiceId": "ttv-voice-2026072900233926-alwGTIdH",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 3060,
+    "bytes": 25908,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:34.473Z",
+    "delivery": {
+      "voice": "设计音色·气短病房老头",
+      "tone": "带着笑意的羡慕，说得很慢",
+      "emotion": "calm",
+      "speed": 0.88,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": []
+    }
+  },
+  {
+    "id": "collector-not-yet",
+    "file": "assets/audio/voice/collector-not-yet.mp3",
+    "role": "lamp-keeper",
+    "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 1764,
+    "bytes": 15540,
+    "draft": false,
+    "assetRevision": 1,
+    "generatedAt": "2026-07-28T22:26:35.212Z",
+    "delivery": {
+      "voice": "低沉年长男声＋远近叠层",
+      "tone": "不是宽恕，只是报时",
+      "emotion": "calm",
+      "speed": 0.78,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": []
+    },
+    "reviewFile": "assets/audio/voice-review/collector-not-yet.ethereal-v2.mp3",
+    "reviewDurationMs": 2230,
+    "reviewBytes": 19572,
+    "layers": [
+      {
+        "file": "assets/audio/voice/collector-not-yet.mp3",
+        "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
+        "purpose": "同一收灯人声线的近声、远声和轻微延迟层"
+      }
+    ],
+    "postprocess": "近声先到 + 远声慢半拍 + 轻微空灵摆动（ethereal-v2，无恐怖长混响）"
+  },
+  {
+    "id": "narrator-he-fell-asleep",
+    "file": "assets/audio/voice/narrator-he-fell-asleep.mp3",
+    "role": "narrator",
+    "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 2088,
+    "bytes": 18132,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-28T22:26:35.750Z",
+    "delivery": {
+      "voice": "低沉中老年男声",
+      "tone": "只说事实，把评价留给空白",
+      "emotion": "sad",
+      "speed": 0.8,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": []
     }
   }
 ]

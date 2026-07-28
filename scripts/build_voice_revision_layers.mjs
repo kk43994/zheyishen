@@ -44,6 +44,7 @@ const lampLayerIds = [
   'lamp-return-due',
   'lamp-one-returned',
   'lamp-pockets-empty',
+  'collector-not-yet',
 ];
 
 function runFfmpeg(args, label) {

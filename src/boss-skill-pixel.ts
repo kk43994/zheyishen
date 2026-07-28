@@ -200,10 +200,7 @@ const EIGHT_FRAME_SKILLS: Partial<Record<BossSkillId, EightFrameSpec>> = {
     url: new URL('./assets/enemies/boss-skills-v2/bus-depart-8f.png', import.meta.url).href,
     frame: 64, frames: 8, display: 144,
   },
-  'keeper-name': {
-    url: new URL('./assets/enemies/boss-skills-v2/keeper-name-8f.png', import.meta.url).href,
-    frame: 64, frames: 8, display: 160,
-  },
+  // keeper-name 暂缓：A 表帧3-4 有绿幕键控残留（黄绿光锥被啃），干净版重生成后再挂回
   'keeper-strip': {
     url: new URL('./assets/enemies/boss-skills-v2/keeper-strip-8f.png', import.meta.url).href,
     frame: 64, frames: 8, display: 160,

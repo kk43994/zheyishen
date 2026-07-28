@@ -7,10 +7,15 @@ export type VoiceCueId =
   | 'family-dinner-cold' | 'hospital-family-needed' | 'hero-became-him' | 'self-stand-straight' | 'self-for-your-good'
   | 'office-badge-denied' | 'office-meeting-continues' | 'manager-tonight-hard' | 'bank-payment-due' | 'clinic-blood-pressure' | 'coworker-cardboard-box' | 'security-return-card'
   | 'clinic-next-number' | 'pharmacist-after-meals' | 'neighbor-corridor-light' | 'hospital-family-late' | 'light-room-keeper' | 'light-room-left-this' | 'back-room-keeper'
-  | 'lamp-time-up' | 'lamp-return-due' | 'lamp-one-returned' | 'lamp-pockets-empty' | 'narrator-final-breath';
+  | 'lamp-time-up' | 'lamp-return-due' | 'lamp-one-returned' | 'lamp-pockets-empty' | 'narrator-final-breath'
+  | 'boss-praise-only-you' | 'boss-praise-watch-you' | 'boss-praise-hard-work' | 'boss-praise-as-you-said' | 'boss-meeting-over'
+  | 'xiaozhang-busy-later' | 'xiaozhang-overtime' | 'caregiver-school-send' | 'caregiver-fell-again'
+  | 'classmate-slept-late' | 'teacher-daydream' | 'shopkeeper-fifty-cents' | 'station-feel-unwell' | 'passerby-excuse-me'
+  | 'cashier-bag-fee' | 'meeting-quarter-hard' | 'coworker-flower-water' | 'courier-timeout'
+  | 'clinic-fifty-six' | 'pharmacist-self-pay' | 'bedside-son-money' | 'collector-not-yet' | 'narrator-he-fell-asleep';
 
 export type VoiceTreatment = 'clear' | 'phone' | 'pa' | 'behind-door' | 'memory' | 'swallowed' | 'exhaled';
-export type VoiceRole = 'narrator' | 'father' | 'hero' | 'caregiver' | 'teacher' | 'classmate' | 'announcer' | 'recruiter' | 'landlord' | 'family' | 'wife' | 'mother' | 'nurse' | 'office' | 'manager' | 'bank' | 'doctor' | 'coworker' | 'security' | 'pharmacist' | 'neighbor' | 'room-keeper' | 'lamp-keeper';
+export type VoiceRole = 'narrator' | 'father' | 'hero' | 'caregiver' | 'teacher' | 'classmate' | 'announcer' | 'recruiter' | 'landlord' | 'family' | 'wife' | 'mother' | 'nurse' | 'office' | 'manager' | 'bank' | 'doctor' | 'coworker' | 'security' | 'pharmacist' | 'neighbor' | 'room-keeper' | 'lamp-keeper' | 'boss' | 'xiaozhang' | 'shopkeeper' | 'passerby' | 'cashier' | 'meeting' | 'courier' | 'bedside';
 export type VoiceEmotion = 'calm' | 'happy' | 'sad' | 'fearful' | 'surprised' | 'angry' | 'disgusted';
 export type VoiceIntensity = 'low' | 'medium';
 export type VoicePerformanceTag =
@@ -20,7 +25,8 @@ export type VoicePerformanceTag =
 export type VoiceTriggerEvent =
   | 'origin_ready' | 'stage_enter' | 'stage_time' | 'stand_still' | 'boss_spawn' | 'boss_phase' | 'boss_defeat'
   | 'enemy_first_kill' | 'enemy_hit' | 'enemy_count' | 'hp_below' | 'shop_open' | 'special_room_open' | 'special_room_take'
-  | 'item_trigger' | 'stage_transition' | 'ending_strip' | 'ending_choice';
+  | 'item_trigger' | 'stage_transition' | 'ending_strip' | 'ending_choice'
+  | 'npc_encounter' | 'death_save' | 'run_lost';
 
 export interface VoiceTriggerSpec {
   event: VoiceTriggerEvent;
@@ -120,6 +126,29 @@ export const VOICE_CUE_CONTEXT: Record<VoiceCueId, VoiceCueContext> = {
   'lamp-one-returned': { scene: '收灯处', speaker: '收灯人' },
   'lamp-pockets-empty': { scene: '收灯处', speaker: '收灯人' },
   'narrator-final-breath': { scene: '最后一盏灯旁', speaker: '暮年的他' },
+  'boss-praise-only-you': { scene: '办公区那头的椅背', speaker: '领导' },
+  'boss-praise-watch-you': { scene: '办公区那头的椅背', speaker: '领导' },
+  'boss-praise-hard-work': { scene: '办公区那头的椅背', speaker: '领导' },
+  'boss-praise-as-you-said': { scene: '《你怎么看》的标记旁', speaker: '领导' },
+  'boss-meeting-over': { scene: '椅背上所有的嘴', speaker: '椅子' },
+  'xiaozhang-busy-later': { scene: '工位边', speaker: '一起入职的小张' },
+  'xiaozhang-overtime': { scene: '跟在身后', speaker: '一起入职的小张' },
+  'caregiver-school-send': { scene: '出门前的玄关', speaker: '照料者' },
+  'caregiver-fell-again': { scene: '门外', speaker: '照料者' },
+  'classmate-slept-late': { scene: '考试前的教室', speaker: '同桌' },
+  'teacher-daydream': { scene: '讲台上', speaker: '老师' },
+  'shopkeeper-fifty-cents': { scene: '校门口小卖部', speaker: '小卖部老板' },
+  'station-feel-unwell': { scene: '城南站台', speaker: '广播' },
+  'passerby-excuse-me': { scene: '人流里', speaker: '路人' },
+  'cashier-bag-fee': { scene: '超市收银台', speaker: '收银员' },
+  'meeting-quarter-hard': { scene: '会议室门后', speaker: '同事' },
+  'coworker-flower-water': { scene: '空出来的工位旁', speaker: '同事' },
+  'courier-timeout': { scene: '写字楼过道', speaker: '外卖员' },
+  'clinic-fifty-six': { scene: '门诊走廊', speaker: '叫号' },
+  'pharmacist-self-pay': { scene: '药房窗口', speaker: '药师' },
+  'bedside-son-money': { scene: '邻床', speaker: '同病房的老人' },
+  'collector-not-yet': { scene: '倒下的地方', speaker: '收灯人' },
+  'narrator-he-fell-asleep': { scene: '没走完的那一章', speaker: '暮年的他' },
 };
 
 const trigger = (
@@ -188,6 +217,29 @@ const VOICE_DELIVERY: Record<VoiceCueId, DeliverySpec> = {
   'lamp-one-returned': { voice: '低沉年长男声＋远近叠层', tone: '近声先到，远声慢半拍贴上，空灵但不恐怖', emotion: 'calm', speed: 0.78, pitch: -2, intensity: 'low' },
   'lamp-pockets-empty': { voice: '低沉年长男声＋远近叠层', tone: '远近同声缓慢收拢，不催促，句间留白', emotion: 'calm', speed: 0.74, pitch: -2, intensity: 'low' },
   'narrator-final-breath': { voice: '低沉中老年男声', tone: '比开场更轻，带遗憾，不要释然得太圆满', emotion: 'sad', speed: 0.74, pitch: -2, intensity: 'low' },
+  'boss-praise-only-you': { voice: '设计音色·热络空心领导男声', tone: '夸奖像派工，句尾上扬没有温度', emotion: 'calm', speed: 1.06, pitch: -1, intensity: 'medium' },
+  'boss-praise-watch-you': { voice: '设计音色·热络空心领导男声', tone: '顺口的器重', emotion: 'calm', speed: 1.06, pitch: -1, intensity: 'medium' },
+  'boss-praise-hard-work': { voice: '设计音色·热络空心领导男声', tone: '把加班说成小事', emotion: 'calm', speed: 1.08, pitch: -1, intensity: 'medium' },
+  'boss-praise-as-you-said': { voice: '设计音色·热络空心领导男声', tone: '采纳你的意见，也把活递给你', emotion: 'calm', speed: 1.02, pitch: -1, intensity: 'medium' },
+  'boss-meeting-over': { voice: '设计音色·领导男声，多口齐声', tone: '所有的嘴同时说这两个字', emotion: 'calm', speed: 0.90, pitch: -2, intensity: 'low' },
+  'xiaozhang-busy-later': { voice: '清澈邻家青年男声', tone: '客气地把忙留给自己', emotion: 'calm', speed: 1.02, pitch: 0, intensity: 'low' },
+  'xiaozhang-overtime': { voice: '清澈邻家青年男声', tone: '随口一句，不算抱怨', emotion: 'calm', speed: 0.98, pitch: 0, intensity: 'low' },
+  'caregiver-school-send': { voice: '成年女声', tone: '出门前的日常叮嘱', emotion: 'calm', speed: 1.02, pitch: 0, intensity: 'low' },
+  'caregiver-fell-again': { voice: '成年女声', tone: '随口安慰，疼不被承认', emotion: 'calm', speed: 0.98, pitch: 0, intensity: 'low' },
+  'classmate-slept-late': { voice: '少年男声', tone: '考前压低声音的炫耀式诉苦', emotion: 'calm', speed: 1.00, pitch: 1, intensity: 'low' },
+  'teacher-daydream': { voice: '成熟女教师声', tone: '顺口点名，不停下讲课', emotion: 'calm', speed: 1.00, pitch: 0, intensity: 'medium' },
+  'shopkeeper-fifty-cents': { voice: '设计音色·沙哑小卖部大爷', tone: '说惯了的两个词', emotion: 'calm', speed: 0.95, pitch: -2, intensity: 'low' },
+  'station-feel-unwell': { voice: '交通广播女声', tone: '标准安全播报，没人接住的关心', emotion: 'calm', speed: 1.00, pitch: 0, intensity: 'medium' },
+  'passerby-excuse-me': { voice: '不羁青年男声', tone: '借过，脚步不停', emotion: 'calm', speed: 1.12, pitch: 0, intensity: 'medium' },
+  'cashier-bag-fee': { voice: '青年男收银声', tone: '流程化的一问', emotion: 'calm', speed: 1.08, pitch: 0, intensity: 'medium' },
+  'meeting-quarter-hard': { voice: '精英青年男声', tone: '门后的场面话', emotion: 'calm', speed: 1.05, pitch: -1, intensity: 'medium' },
+  'coworker-flower-water': { voice: '率真青年男声', tone: '低声说给旁边的人听', emotion: 'calm', speed: 0.95, pitch: 0, intensity: 'low' },
+  'courier-timeout': { voice: '温润青年男声', tone: '急但客气，重复的是系统的倒计时', emotion: 'calm', speed: 1.16, pitch: 0, intensity: 'medium' },
+  'clinic-fifty-six': { voice: '忙碌护士女声', tone: '第二遍叫号，略提高', emotion: 'calm', speed: 1.05, pitch: 0, intensity: 'medium' },
+  'pharmacist-self-pay': { voice: '中年药师声', tone: '窗口的例行确认', emotion: 'calm', speed: 1.02, pitch: -1, intensity: 'medium' },
+  'bedside-son-money': { voice: '设计音色·气短病房老头', tone: '带着笑意的羡慕，说得很慢', emotion: 'calm', speed: 0.88, pitch: -2, intensity: 'low' },
+  'collector-not-yet': { voice: '低沉年长男声＋远近叠层', tone: '不是宽恕，只是报时', emotion: 'calm', speed: 0.78, pitch: -2, intensity: 'low' },
+  'narrator-he-fell-asleep': { voice: '低沉中老年男声', tone: '只说事实，把评价留给空白', emotion: 'sad', speed: 0.80, pitch: -2, intensity: 'low' },
 };
 
 const performanceTags = (text: string): VoicePerformanceTag[] => {
@@ -206,12 +258,13 @@ const cue = (
   voiceTrigger: VoiceTriggerSpec,
   purpose: string,
   volume = 0.84,
+  cooldownMs = 60_000,
 ): VoiceCue => ({
   id, stage, role, text, performance,
   delivery: { ...VOICE_DELIVERY[id], tags: performanceTags(text) },
   treatment, trigger: voiceTrigger, purpose, volume,
   context: VOICE_CUE_CONTEXT[id],
-  file: `assets/audio/voice/${id}.mp3`, cooldownMs: 60_000,
+  file: `assets/audio/voice/${id}.mp3`, cooldownMs,
   playbackFile: role === 'lamp-keeper' ? `assets/audio/voice-review/${id}.ethereal-v2.mp3` : undefined,
 });
 
@@ -277,17 +330,40 @@ export const VOICE_CUES: Record<VoiceCueId, VoiceCue> = {
   'lamp-one-returned': cue('lamp-one-returned', 5, 'lamp-keeper', '这一件，<#0.42#>先还回去。', '低沉近声先到，远处同声慢半拍叠上来；空灵但禁止恐怖混响。', 'clear', trigger('ending_strip', '收灯人第一次剥下道具', true, 3, true), '终局不是打败死神，而是逐件归还。'),
   'lamp-pockets-empty': cue('lamp-pockets-empty', 5, 'lamp-keeper', '口袋空了。<#0.4#>再看看手里。', '远近叠声一起收窄，不催促，给玩家检查自己的时间。', 'clear', trigger('ending_strip', '最后一件道具离身', true, 3, true), '把注意力从这一身移到一口气。'),
   'narrator-final-breath': cue('narrator-final-breath', 'ending', 'narrator', '(inhale)手里空了。<#0.82#>这一口气，<#0.46#>也可以放下了。(exhale)', '与开场同一音色，更轻、更遗憾；不是释然地宣布圆满。', 'clear', trigger('ending_choice', '所有道具归还后，最后一次攻击重新有效', true, 3, true), '用同一次呼吸闭合开场；玩家再次攻击就是回答。'),
+  'boss-praise-only-you': cue('boss-praise-only-you', 2, 'boss', '这个只有你能做。', '热络得像发任务，句尾上扬却没有温度。', 'clear', trigger('boss_phase', '你很优秀一阶段推出任务波并给出伤害好话', false, 1), '加成是真的，好话也是真的——这正是它可怕的地方。', 0.8, 9_000),
+  'boss-praise-watch-you': cue('boss-praise-watch-you', 2, 'boss', '我看好你。', '顺口的器重，说完人已经在看下一份文件。', 'clear', trigger('boss_phase', '你很优秀一阶段给出攻速好话', false, 1), '被看好的代价是被继续使用。', 0.8, 9_000),
+  'boss-praise-hard-work': cue('boss-praise-hard-work', 2, 'boss', '辛苦一下。', '把加班说成小事的口吻。', 'clear', trigger('boss_phase', '你很优秀一阶段给出移速好话', false, 1), '「一下」是这句话里唯一的谎。', 0.8, 9_000),
+  'boss-praise-as-you-said': cue('boss-praise-as-you-said', 2, 'boss', '很好，就按你说的办。', '采纳你的意见，也把活递给你。', 'clear', trigger('boss_phase', '玩家踩下《你怎么看》标记', false, 2), '主动走过去的那一步是玩家自己选的。', 0.82, 20_000),
+  'boss-meeting-over': cue('boss-meeting-over', 2, 'boss', '散会。', '椅背上所有的嘴同时说，只说这两个字。', 'clear', trigger('boss_defeat', '你很优秀被击败', true, 3, true), '椅子空出来了，马上会有人坐进去——这句留给玩家自己想。', 0.78),
+  'xiaozhang-busy-later': cue('xiaozhang-busy-later', 2, 'xiaozhang', '你先忙，我这边还有点没弄完。', '客气地把忙留给自己。', 'clear', trigger('npc_encounter', '碰到一起入职的小张弹出选择框', false, 2), '他后来在岗位混战里活下来的方式，也是这句。'),
+  'xiaozhang-overtime': cue('xiaozhang-overtime', 2, 'xiaozhang', '今晚又得加班了。', '随口一句，不算抱怨。', 'clear', trigger('stage_time', '帮助小张20秒后他跟随时随口说', false, 1, false, 20), '友军也在撑。'),
+  'caregiver-school-send': cue('caregiver-school-send', 0, 'caregiver', '书包背好了吗？<#0.3#>路上慢点。', '出门前的日常叮嘱，不看着他说。', 'behind-door', trigger('stage_time', '童年章第8秒', false, 1, false, 8), '童年唯一的日常送别。'),
+  'caregiver-fell-again': cue('caregiver-fell-again', 0, 'caregiver', '男孩子，摔摔没事的。', '门外随口安慰。', 'behind-door', trigger('hp_below', '童年章生命首次低于60%', false, 1), '疼不被承认，是从很小开始的。'),
+  'classmate-slept-late': cue('classmate-slept-late', 1, 'classmate', '我昨晚一点才睡。', '考前压低声音的炫耀式诉苦。', 'clear', trigger('stage_time', '少年章第30秒', false, 1, false, 30), '考试前的谎言日常。'),
+  'teacher-daydream': cue('teacher-daydream', 1, 'teacher', '发什么呆？', '顺口点名，不停下讲课。', 'clear', trigger('stand_still', '少年章静止3秒且附近没有敌人', false, 1, false, 3), '静止惩罚的少年版。'),
+  'shopkeeper-fifty-cents': cue('shopkeeper-fifty-cents', 1, 'shopkeeper', '同学，五毛。', '说惯了的两个词，眼睛没离开电视。', 'clear', trigger('shop_open', '少年章第一次打开小卖部', false, 1), '让商店有地点、有人。'),
+  'station-feel-unwell': cue('station-feel-unwell', 2, 'announcer', '如遇身体不适，请联系站台工作人员。', '标准安全播报。', 'pa', trigger('hp_below', '青年章生命首次低于50%', false, 1), '制式播报里藏一句没人接住的关心。'),
+  'passerby-excuse-me': cue('passerby-excuse-me', 2, 'passerby', '让一让，谢谢。', '借过，脚步不停。', 'clear', trigger('stand_still', '青年章静止3秒', false, 1, false, 3), '人流不会为任何人停。'),
+  'cashier-bag-fee': cue('cashier-bag-fee', 3, 'cashier', '袋子要吗？<#0.2#>四毛。', '流程化的一问。', 'clear', trigger('shop_open', '成年章第一次打开商店', false, 1), '生活的价格精确到毛。'),
+  'meeting-quarter-hard': cue('meeting-quarter-hard', 4, 'meeting', '这个季度大家都不容易。', '门后的场面话。', 'behind-door', trigger('stage_time', '门禁失败后7.5秒，会议还在继续', false, 1), '门里门外是两个世界。'),
+  'coworker-flower-water': cue('coworker-flower-water', 4, 'coworker', '他工位那盆花，没人浇了。', '低声说给旁边的人听。', 'clear', trigger('enemy_count', '累计击败8个打包纸箱', false, 1), '裁员不点破，只剩一盆花。', 0.7),
+  'courier-timeout': cue('courier-timeout', 4, 'courier', '麻烦让一下，<#0.15#>超时了超时了。', '急但客气，重复的是系统的倒计时。', 'clear', trigger('stand_still', '中年章静止3秒', false, 1, false, 3), '连站着不动都在挡别人赶时间。'),
+  'clinic-fifty-six': cue('clinic-fifty-six', 5, 'nurse', '五十六号。<#0.4#>五十六号到了没有？', '第二遍叫号，略提高音量。', 'pa', trigger('stage_time', '暮年章第40秒', false, 1, false, 40), '叫号没人应——也许就是他没力气应。'),
+  'pharmacist-self-pay': cue('pharmacist-self-pay', 5, 'pharmacist', '这个自费的，要吗？', '窗口的例行确认。', 'clear', trigger('shop_open', '暮年章第二次打开药房', false, 1), '健康是分档的。'),
+  'bedside-son-money': cue('bedside-son-money', 5, 'bedside', '你儿子又打钱来了吧。', '带着笑意的羡慕，说得很慢。', 'clear', trigger('hp_below', '暮年章生命首次低于50%', false, 1), '邻床的羡慕，比探望更常来。'),
+  'collector-not-yet': cue('collector-not-yet', 5, 'lamp-keeper', '还不是时候。', '不是宽恕，只是报时。', 'clear', trigger('death_save', '免死道具生效的瞬间', false, 3, true), '免死瞬间由收灯人亲口盖章。', 0.84, 20_000),
+  'narrator-he-fell-asleep': cue('narrator-he-fell-asleep', 'ending', 'narrator', '他睡着了。', '只说事实，把评价留给空白。', 'clear', trigger('run_lost', '战败结算开始', false, 2), '战败不需要审判，一句轻的就够重了。'),
 };
 
 export const VOICE_CUE_IDS = Object.keys(VOICE_CUES) as VoiceCueId[];
 
 export const STAGE_VOICE_PRELOADS: ReadonlyArray<ReadonlyArray<VoiceCueId>> = [
-  ['narrator-opening', 'narrator-start-breath', 'child-under-bed', 'caregiver-lights-out', 'caregiver-no-monster', 'father-childhood-walk'],
-  ['school-bell-start', 'classmate-family-late', 'school-gate-closing', 'teacher-last-row', 'teacher-answer-format', 'classmate-score-whisper', 'teacher-paper-back', 'father-for-your-good', 'school-bell-end'],
-  ['recruiter-arrival-time', 'landlord-rent-deposit', 'last-bus-arrival', 'station-yellow-line', 'station-doors-closing', 'last-bus-departed', 'interview-thank-you'],
-  ['phone-wife-fridge', 'phone-hospital-not-call', 'phone-mother-didnt-ask', 'phone-cannot-connect', 'father-adult-phone', 'phone-coworker-group', 'hero-not-busy', 'family-dinner-cold', 'hospital-family-needed', 'hero-became-him', 'self-stand-straight', 'self-for-your-good', 'light-room-keeper', 'light-room-left-this', 'back-room-keeper'],
-  ['office-badge-denied', 'office-meeting-continues', 'manager-tonight-hard', 'bank-payment-due', 'clinic-blood-pressure', 'coworker-cardboard-box', 'security-return-card', 'light-room-keeper', 'light-room-left-this', 'back-room-keeper'],
-  ['clinic-next-number', 'pharmacist-after-meals', 'neighbor-corridor-light', 'hospital-family-late', 'light-room-keeper', 'light-room-left-this', 'back-room-keeper', 'lamp-time-up', 'lamp-return-due', 'lamp-one-returned', 'lamp-pockets-empty', 'narrator-final-breath'],
+  ['narrator-opening', 'narrator-start-breath', 'child-under-bed', 'caregiver-lights-out', 'caregiver-no-monster', 'father-childhood-walk', 'caregiver-school-send', 'caregiver-fell-again', 'narrator-he-fell-asleep'],
+  ['school-bell-start', 'classmate-family-late', 'school-gate-closing', 'teacher-last-row', 'teacher-answer-format', 'classmate-score-whisper', 'teacher-paper-back', 'father-for-your-good', 'school-bell-end', 'classmate-slept-late', 'teacher-daydream', 'shopkeeper-fifty-cents'],
+  ['recruiter-arrival-time', 'landlord-rent-deposit', 'last-bus-arrival', 'station-yellow-line', 'station-doors-closing', 'last-bus-departed', 'interview-thank-you', 'boss-praise-only-you', 'boss-praise-watch-you', 'boss-praise-hard-work', 'boss-praise-as-you-said', 'boss-meeting-over', 'xiaozhang-busy-later', 'xiaozhang-overtime', 'station-feel-unwell', 'passerby-excuse-me'],
+  ['phone-wife-fridge', 'phone-hospital-not-call', 'phone-mother-didnt-ask', 'phone-cannot-connect', 'father-adult-phone', 'phone-coworker-group', 'hero-not-busy', 'family-dinner-cold', 'hospital-family-needed', 'hero-became-him', 'self-stand-straight', 'self-for-your-good', 'light-room-keeper', 'light-room-left-this', 'back-room-keeper', 'cashier-bag-fee'],
+  ['office-badge-denied', 'office-meeting-continues', 'manager-tonight-hard', 'bank-payment-due', 'clinic-blood-pressure', 'coworker-cardboard-box', 'security-return-card', 'light-room-keeper', 'light-room-left-this', 'back-room-keeper', 'meeting-quarter-hard', 'coworker-flower-water', 'courier-timeout'],
+  ['clinic-next-number', 'pharmacist-after-meals', 'neighbor-corridor-light', 'hospital-family-late', 'light-room-keeper', 'light-room-left-this', 'back-room-keeper', 'lamp-time-up', 'lamp-return-due', 'lamp-one-returned', 'lamp-pockets-empty', 'narrator-final-breath', 'clinic-fifty-six', 'pharmacist-self-pay', 'bedside-son-money', 'collector-not-yet'],
 ];
 
 export function validateVoiceScript(): void {

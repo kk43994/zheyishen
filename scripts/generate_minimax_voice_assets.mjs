@@ -61,6 +61,15 @@ const systemVoiceByRole = {
   doctor: 'female-chengshu-jingpin',
   pharmacist: 'Chinese (Mandarin)_Sweet_Lady',
   neighbor: 'Chinese (Mandarin)_Kind-hearted_Antie',
+  // —— 2026-07-28 扩充批（性别再平衡：新增配角以男声为主）——
+  boss: 'ttv-voice-2026072819561426-prAlwK1P', // 设计音色 manager-warm-hollow（热络空心领导）
+  xiaozhang: 'Chinese (Mandarin)_Pure-hearted_Boy',
+  shopkeeper: 'ttv-voice-2026072900232726-IjGrwGUK', // 设计音色 shopkeeper-elder（沙哑小卖部大爷）
+  passerby: 'Chinese (Mandarin)_Unrestrained_Young_Man',
+  cashier: 'male-qn-daxuesheng',
+  meeting: 'male-qn-jingying',
+  courier: 'Chinese (Mandarin)_Gentle_Youth',
+  bedside: 'ttv-voice-2026072900233926-alwGTIdH', // 设计音色 bedside-elder（气短病房老头）
 };
 
 // A role can contain several acoustically different real-world speakers.
@@ -76,6 +85,9 @@ const systemVoiceByCue = {
   'coworker-cardboard-box': 'Chinese (Mandarin)_Straightforward_Boy',
   'security-return-card': 'Chinese (Mandarin)_Male_Announcer',
   'pharmacist-after-meals': 'Chinese (Mandarin)_Gentleman',
+  'pharmacist-self-pay': 'Chinese (Mandarin)_Gentleman',
+  'coworker-flower-water': 'Chinese (Mandarin)_Straightforward_Boy',
+  'clinic-fifty-six': 'female-yujie-jingpin',
 };
 
 function voiceFor(cue) {

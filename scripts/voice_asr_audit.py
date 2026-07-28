@@ -23,6 +23,9 @@ MANUAL_REVIEW_IDS = {
     "landlord-rent-deposit",
     "family-dinner-cold",
     "hero-became-him",
+    # 超短句 ASR 不可靠（散会/发什么呆），MiniMax 余额恢复后重掷再人工听
+    "boss-meeting-over",
+    "teacher-daydream",
 }
 
 
