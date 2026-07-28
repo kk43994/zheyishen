@@ -43,7 +43,7 @@ const systemVoiceByRole = {
   classmate: 'clever_boy',
   announcer: 'Chinese (Mandarin)_News_Anchor',
   recruiter: 'Chinese (Mandarin)_Gentle_Senior',
-  landlord: 'Chinese (Mandarin)_Kind-hearted_Antie',
+  landlord: 'Chinese (Mandarin)_Mature_Woman',
   office: 'Chinese (Mandarin)_News_Anchor',
   manager: 'Chinese (Mandarin)_Reliable_Executive',
   bank: 'Chinese (Mandarin)_News_Anchor',
@@ -51,8 +51,7 @@ const systemVoiceByRole = {
   security: 'Chinese (Mandarin)_Gentleman',
   'room-keeper': 'Chinese (Mandarin)_Humorous_Elder',
   caregiver: 'Chinese (Mandarin)_Warm_Bestie',
-  // 家里人与老婆同一音色是有意的：饭桌那通电话就是同一个家。
-  family: 'Chinese (Mandarin)_Wise_Women',
+  family: 'female-tianmei',
   nurse: 'female-yujie',
   doctor: 'female-chengshu-jingpin',
   pharmacist: 'Chinese (Mandarin)_Sweet_Lady',
