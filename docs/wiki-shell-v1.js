@@ -1,5 +1,24 @@
 (function () {
   'use strict';
+  /* ── 图鉴分卷导航：把分类图鉴页入口注入顶栏（幂等，独立于顶栏原有锚点） ── */
+  var CODEX_PAGES = [
+    ['boss.html', 'Boss志'], ['bestiary.html', '敌怪志'], ['items.html', '道具志'],
+    ['voices.html', '语音馆'], ['world.html', '世界志'], ['vfx.html', '特效馆']
+  ];
+  var tb = document.querySelector('#wiki-topbar .tb-links');
+  if (tb && !tb.querySelector('a[href="boss.html"]')) {
+    CODEX_PAGES.forEach(function (page) {
+      var a = document.createElement('a');
+      a.href = page[0];
+      a.textContent = page[1];
+      a.className = 'codex-page-link';
+      tb.appendChild(a);
+    });
+  }
+})();
+
+(function () {
+  'use strict';
 
   /* ── 主题：留灯 / 熄灯 ── */
   var root = document.documentElement;

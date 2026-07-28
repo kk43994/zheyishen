@@ -1,0 +1,1183 @@
+{
+  "items": [
+    {
+      "id": "loose-button",
+      "name": "校服上掉下来的纽扣",
+      "quality": 1,
+      "qualityLabel": "杂物",
+      "pool": "random",
+      "flavor": "他把它攥了一整天。",
+      "mechanic": "规律地多射一发：每第3轮攻击额外+1弹，没有负面作用。",
+      "iconIndex": 0,
+      "manifestation": "item-manifestations-v1/01-loose-button.png",
+      "combos": [],
+      "tags": [
+        "继承弹"
+      ]
+    },
+    {
+      "id": "wooden-sword",
+      "name": "床底下的木剑",
+      "quality": 1,
+      "qualityLabel": "杂物",
+      "pool": "random",
+      "flavor": "黑暗里，它确实锋利过。",
+      "mechanic": "近距离重击：伤害+45% · 弹宽+30%；代价：射程-35%。",
+      "iconIndex": 1,
+      "manifestation": "item-manifestations-v1/02-wooden-sword.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "red-workbook",
+      "name": "写满红叉的练习册",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "错过的题，总得重新做。",
+      "mechanic": "失败后折返加强：弹道到终点折返并强化；代价：基础伤害-12%。",
+      "iconIndex": 2,
+      "manifestation": "item-manifestations-v1/03-red-workbook.png",
+      "combos": [
+        "returned-letter"
+      ],
+      "tags": []
+    },
+    {
+      "id": "stone-schoolbag",
+      "name": "装满石头的书包",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "大人说，这都是为你好。",
+      "mechanic": "缓慢而沉重：伤害+40% · 穿透+2；代价：弹速-45% · 主角驼背。",
+      "iconIndex": 3,
+      "manifestation": "item-manifestations-v1/04-stone-schoolbag.png",
+      "combos": [
+        "for-your-own-good",
+        "this-weight-is-nothing"
+      ],
+      "tags": []
+    },
+    {
+      "id": "bleach-powder",
+      "name": "剩了半袋的漂粉",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "那年他觉得，先被看见才算存在。",
+      "mechanic": "显眼的叛逆：射速+22% · 暴击+8%；代价：敌人逼近速度+15%。",
+      "iconIndex": 4,
+      "manifestation": "item-manifestations-v1/05-bleach-powder.png",
+      "combos": [
+        "thought-he-was-cool"
+      ],
+      "tags": []
+    },
+    {
+      "id": "eyebrow-razor",
+      "name": "同桌的修眉刀",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "她说只是修眉，夏天却从不卷袖子。",
+      "mechanic": "把弹道削得极细：伤害+18% · 暴击+25%；代价：最大生命-8 · 弹宽-55%。",
+      "iconIndex": 5,
+      "manifestation": "item-manifestations-v1/06-eyebrow-razor.png",
+      "combos": [
+        "cry-for-help-as-style",
+        "someone-answered"
+      ],
+      "tags": []
+    },
+    {
+      "id": "od-pill",
+      "name": "OD妹给的小药丸",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "她说，吃了以后今晚就不会做梦。",
+      "mechanic": "每场产生一次失真：每场随机大幅强化一项弹道；代价：同时随机削弱另一项弹道。",
+      "iconIndex": 6,
+      "manifestation": "item-manifestations-v1/07-od-pill.png",
+      "combos": [
+        "cry-for-help-as-style",
+        "someone-answered"
+      ],
+      "tags": []
+    },
+    {
+      "id": "front-desk-letter",
+      "name": "前桌的情书",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "信封上没有他的名字。",
+      "mechanic": "偏离后寻找目标：弹道强追踪；代价：散射角增大 · 伤害-8%。",
+      "iconIndex": 7,
+      "manifestation": "item-manifestations-v1/08-front-desk-letter.png",
+      "combos": [
+        "rain-letter",
+        "returned-letter"
+      ],
+      "tags": []
+    },
+    {
+      "id": "cracked-glasses",
+      "name": "裂了一边的眼镜",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "他第一次看清远方，也看不清自己。",
+      "mechanic": "远距精确射击：射程+55% · 暴击+14%；代价：弹宽-35%。",
+      "iconIndex": 8,
+      "manifestation": "item-manifestations-v1/09-cracked-glasses.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "small-uniform",
+      "name": "小了一号的校服",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "他长大了，衣服却不允许。",
+      "mechanic": "束缚换取速度：射速+22%；代价：最大生命-6 · 弹宽-15%。",
+      "iconIndex": 9,
+      "manifestation": "item-manifestations-v1/10-small-uniform.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "only-key",
+      "name": "出租屋唯一的钥匙",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "自由与孤独，是同一扇门。",
+      "mechanic": "终点打开一扇门：弹道消失时产生小型爆炸；代价：射程-12%。",
+      "iconIndex": 10,
+      "manifestation": "item-manifestations-v1/11-only-key.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "first-salary",
+      "name": "第一次工资的信封",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "那天他第一次觉得自己有用。",
+      "mechanic": "零钱转化为力量：每5枚零钱使伤害+6%；代价：花钱会立刻失去加成。",
+      "iconIndex": 11,
+      "manifestation": "item-manifestations-v1/12-first-salary.png",
+      "combos": [
+        "seen-only-when-useful"
+      ],
+      "tags": []
+    },
+    {
+      "id": "nameless-tie",
+      "name": "没有商标的领带",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "系上它，他们也许会认真听。",
+      "mechanic": "体面而窒息：伤害+18% · 暴击+18%；代价：最大生命-10。",
+      "iconIndex": 12,
+      "manifestation": "item-manifestations-v1/13-nameless-tie.png",
+      "combos": [
+        "seen-only-when-useful",
+        "bend-and-stretch"
+      ],
+      "tags": []
+    },
+    {
+      "id": "fathers-raincoat",
+      "name": "父亲的雨衣",
+      "quality": 5,
+      "qualityLabel": "这一身",
+      "pool": "story",
+      "flavor": "他没有拥抱过你，但那天雨很大。",
+      "mechanic": "承受并化为雨：每场抵挡首次受伤；受伤释放雨滴；代价：射速-18% · 身体变得沉重。",
+      "iconIndex": 13,
+      "manifestation": "item-manifestations-v1/14-fathers-raincoat.png",
+      "combos": [
+        "rain-letter",
+        "thought-he-was-cool",
+        "became-him",
+        "stood-the-same-way"
+      ],
+      "tags": [
+        "继承弹"
+      ]
+    },
+    {
+      "id": "unsent-phone",
+      "name": "没打出去的电话",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "号码一直都没有换。",
+      "mechanic": "浪费的能量变成来电：能量溢出时储存声波；代价：每层来电使射速-3%。",
+      "iconIndex": 14,
+      "manifestation": "item-manifestations-v1/15-unsent-phone.png",
+      "combos": [
+        "someone-answered"
+      ],
+      "tags": []
+    },
+    {
+      "id": "baby-tooth",
+      "name": "女儿换下的乳牙",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "lamp",
+      "flavor": "他开始害怕自己先离开。",
+      "mechanic": "替他留下来一次：每场首次致命伤保留1生命并爆发；代价：基础伤害-10%。",
+      "iconIndex": 15,
+      "manifestation": "item-manifestations-v1/16-baby-tooth.png",
+      "combos": [
+        "became-him"
+      ],
+      "tags": []
+    },
+    {
+      "id": "revoked-badge",
+      "name": "已经注销的旧工牌",
+      "quality": 5,
+      "qualityLabel": "这一身",
+      "pool": "story",
+      "flavor": "名字还在，门已经打不开了。",
+      "mechanic": "经历越多伤害越高：每件穿戴物使伤害+5%；代价：商城价格+20%。",
+      "iconIndex": 16,
+      "manifestation": "item-manifestations-v1/17-revoked-badge.png",
+      "combos": [
+        "seen-only-when-useful",
+        "bend-and-stretch"
+      ],
+      "tags": []
+    },
+    {
+      "id": "slow-watch",
+      "name": "慢了七分钟的手表",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "身体还在走，时间已经不同步。",
+      "mechanic": "让弹幕停在时间里：每7秒冻结弹道1秒，恢复后加速；代价：弹速-15%。",
+      "iconIndex": 17,
+      "manifestation": "item-manifestations-v1/18-slow-watch.png",
+      "combos": [
+        "for-your-own-good"
+      ],
+      "tags": []
+    },
+    {
+      "id": "missing-photo",
+      "name": "少了一个人的合照",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "lamp",
+      "flavor": "回忆越来越满，屋子越来越空。",
+      "mechanic": "每第四轮保护身后：每第4轮额外发射两枚高伤弹道；代价：生命低于一半时射速-15%。",
+      "iconIndex": 18,
+      "manifestation": "item-manifestations-v1/19-missing-photo.png",
+      "combos": [
+        "when-everyone-is-free"
+      ],
+      "tags": [
+        "继承弹"
+      ]
+    },
+    {
+      "id": "white-bottle",
+      "name": "药房最下面的白瓶子",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "标签说一天一次，他记不清了。",
+      "mechanic": "透支身体加速攻击：射速+30%；代价：每场开始失去2生命 · 伤害-10%。",
+      "iconIndex": 19,
+      "manifestation": "item-manifestations-v1/20-white-bottle.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "empty-frame",
+      "name": "一直空着的相框",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "他一直说，等大家有空。",
+      "mechanic": "空处发生爆炸：所有终点爆炸范围扩大；代价：弹道存在时间-25%。",
+      "iconIndex": 20,
+      "manifestation": "item-manifestations-v1/21-empty-frame.png",
+      "combos": [
+        "when-everyone-is-free"
+      ],
+      "tags": []
+    },
+    {
+      "id": "broken-spine",
+      "name": "断掉的脊梁骨",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "inner",
+      "flavor": "他们说男人要做家里的顶梁柱。",
+      "mechanic": "负面越多，一口气越重：每条负面词条增伤12% · 每3条负面穿透+1；代价：支付一口气 · 治疗-30% · 永久弯腰。",
+      "iconIndex": 21,
+      "manifestation": "item-manifestations-v1/22-broken-spine.png",
+      "combos": [
+        "this-weight-is-nothing",
+        "bend-and-stretch",
+        "stood-the-same-way"
+      ],
+      "tags": []
+    },
+    {
+      "id": "spent-decade",
+      "name": "提前花掉的十年",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "inner",
+      "flavor": "未来的他没有同意，但合同已经生效。",
+      "mechanic": "预支未来的攻击：每10秒提前释放5轮攻击；代价：爆发后停止呼吸2秒。",
+      "iconIndex": 22,
+      "manifestation": "item-manifestations-v1/23-spent-decade.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "held-pee",
+      "name": "憋回去的那泡尿",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "会开到第三个小时。他练出来了。",
+      "mechanic": "站着不动越憋越狠：站定时伤害持续积攒，最高+60%；代价：移速-8%。",
+      "iconIndex": 23,
+      "manifestation": "item-manifestations-v1/24-held-pee.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "flash-escape",
+      "name": "交掉的闪现",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "关键团，他闪现撞了墙。后来的很多关键时刻，他也是这样。",
+      "mechanic": "受击瞬间闪现躲开：受击时自动闪现躲开这次伤害，冷却9秒；代价：小概率闪向反方向。",
+      "iconIndex": 24,
+      "manifestation": "item-manifestations-v1/25-flash-escape.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "class-break",
+      "name": "课间十分钟",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "铃一响就往外冲。那时候快乐只需要十分钟。",
+      "mechanic": "开场十秒撒欢：每阶段前10秒移速+35%、射速+25%；代价：结束后疲惫3秒，移速-15%。",
+      "iconIndex": 25,
+      "manifestation": "item-manifestations-v1/26-class-break.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "last-page",
+      "name": "暑假作业最后一页",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "8月30日晚上，全家总动员。",
+      "mechanic": "死线前爆发：每阶段最后10秒伤害翻倍；代价：阶段前30秒伤害-10%。",
+      "iconIndex": 26,
+      "manifestation": "item-manifestations-v1/27-last-page.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "five-ha",
+      "name": "五个哈",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "他回了\"哈哈哈哈哈\"。少一个都显得没礼貌。",
+      "mechanic": "五连发：攻击变为五连发，一发比一发轻（总量微升）；代价：治疗-15%。",
+      "iconIndex": 27,
+      "manifestation": "item-manifestations-v1/28-five-ha.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "red-packet",
+      "name": "抢到的0.87元红包",
+      "quality": 1,
+      "qualityLabel": "杂物",
+      "pool": "random",
+      "flavor": "群里都说谢谢老板。他也说了。",
+      "mechanic": "零碎的快乐：击杀15%概率掉一枚零钱，没有负面作用。",
+      "iconIndex": 28,
+      "manifestation": "item-manifestations-v1/29-red-packet.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "snow-screen",
+      "name": "雪花屏",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "电视没信号了。他盯着雪花看了很久，总觉得里面有东西。",
+      "mechanic": "这次伤害没有发生：每阶段一次：致命伤化为雪花，没有发生；代价：画面偶尔闪过一帧雪花。",
+      "iconIndex": 29,
+      "manifestation": "item-manifestations-v1/30-snow-screen.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "marble",
+      "name": "当年最强的那颗弹珠",
+      "quality": 1,
+      "qualityLabel": "杂物",
+      "pool": "random",
+      "flavor": "全班都输给过它。上周搬家，它从铁盒里滚出来——只是颗玻璃珠。",
+      "mechanic": "还会弹：命中25%概率弹向另一个敌人，没有负面作用。",
+      "iconIndex": 30,
+      "manifestation": "item-manifestations-v1/31-marble.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "always-crying",
+      "name": "我一直在哭",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "发出去的时候，他正面无表情地刷下一条。",
+      "mechanic": "受伤流出穿透泪：受到伤害时发射3枚穿透眼泪；代价：射程-12%。",
+      "iconIndex": 31,
+      "manifestation": "item-manifestations-v1/32-always-crying.png",
+      "combos": [],
+      "tags": [
+        "继承弹"
+      ]
+    },
+    {
+      "id": "three-day-visible",
+      "name": "朋友圈仅三天可见",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "过去被折叠成三天。",
+      "mechanic": "三圈后放手：拾取任何道具后，3枚当前弹体绕身三圈，再向外释放；代价：治疗-5%。",
+      "iconIndex": 32,
+      "manifestation": "item-manifestations-v1/33-three-day-visible.png",
+      "combos": [],
+      "tags": [
+        "继承弹"
+      ]
+    },
+    {
+      "id": "read-3am",
+      "name": "凌晨三点的已读",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "在线不等于回应。",
+      "mechanic": "已读不回：命中不立即结算：5秒后连本带利×1.3一次爆出；代价：目标提前倒下则挂账落空。",
+      "iconIndex": 33,
+      "manifestation": "item-manifestations-v1/34-read-3am.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "retracted-voice",
+      "name": "领导撤回的六十秒语音",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "你永远不知道那60秒里是什么。",
+      "mechanic": "沉默攒成声波：咽下+1层；吐出时每层释放6点声波；代价：每层射速-2%。",
+      "iconIndex": 34,
+      "manifestation": "item-manifestations-v1/35-retracted-voice.png",
+      "combos": [],
+      "tags": [
+        "继承弹"
+      ]
+    },
+    {
+      "id": "takeout-3am",
+      "name": "凌晨三点的外卖袋",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "对身体的延期付款。",
+      "mechanic": "低血缓慢回补：生命<40%时每2秒回1；代价：主动治疗-15%。",
+      "iconIndex": 35,
+      "manifestation": "item-manifestations-v1/36-takeout-3am.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "auto-renew",
+      "name": "自动续费到明年的会员",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "取消入口藏得很深。",
+      "mechanic": "开场自动增益：每阶段前15秒伤害+10%；代价：每阶段扣1零钱。",
+      "iconIndex": 36,
+      "manifestation": "item-manifestations-v1/37-auto-renew.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "bargain-link",
+      "name": "全家帮砍仍差一刀的链接",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "差的永远是那一刀。",
+      "mechanic": "低级道具变奖励：每件Ⅰ/Ⅱ级道具伤害+3%；代价：商城价格+10%。",
+      "iconIndex": 37,
+      "manifestation": "item-manifestations-v1/38-bargain-link.png",
+      "combos": [],
+      "tags": [
+        "继承弹"
+      ]
+    },
+    {
+      "id": "mineral-water",
+      "name": "相亲桌上没拆的矿泉水",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "谁先拧开谁输。",
+      "mechanic": "对峙：每对峙满8秒无伤：最近的敌人先绷不住，重创+僵直；代价：受伤重新计时。",
+      "iconIndex": 38,
+      "manifestation": "item-manifestations-v1/39-mineral-water.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "group-dad",
+      "name": "家长群里的“孩子他爸”",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "他的名字最后一次被使用是在实名认证。",
+      "mechanic": "附属更强：雨滴/分裂/弹跳等继承弹伤害+40%；代价：本体伤害-10%。",
+      "iconIndex": 39,
+      "manifestation": "item-manifestations-v1/40-group-dad.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "divorce-draft",
+      "name": "没有按下发送的离婚协议",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "random",
+      "flavor": "存了三年的草稿箱。",
+      "mechanic": "拖延成了护甲：首次受伤一半立即结算，另一半阶段末补扣；代价：治疗-15%。",
+      "iconIndex": 40,
+      "manifestation": "item-manifestations-v1/41-divorce-draft.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "checkup-arrows",
+      "name": "体检报告上的向上箭头",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "人被缩成一组异常指标。",
+      "mechanic": "异常继续异常：高于基准的属性再+8%，低于的再-8%；代价：双向放大，无法回头。",
+      "iconIndex": 41,
+      "manifestation": "item-manifestations-v1/42-checkup-arrows.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "shared-powerbank",
+      "name": "医院走廊的共享充电宝",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "按分钟计费的等待。",
+      "mechanic": "租来的精力：攻击空窗租电，恢复攻击时短暂连射加速；代价：每累计租电8秒扣1零钱。",
+      "iconIndex": 42,
+      "manifestation": "item-manifestations-v1/43-shared-powerbank.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "third-pill",
+      "name": "她没说名字的第三颗药",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "inner",
+      "flavor": "前两颗有名字，第三颗没有。",
+      "mechanic": "周期性失真：每20秒狂暴8秒（伤害×1.6 射速×1.4）；代价：随后3秒崩落（全属性×0.6）。",
+      "iconIndex": 43,
+      "manifestation": "item-manifestations-v1/44-third-pill.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "loan-contract",
+      "name": "已经签好名字的网贷合同",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "inner",
+      "flavor": "利息比字迹清楚。",
+      "mechanic": "预支的力量：伤害+25%；代价：每阶段先扣2零钱；不足仍扣现有零钱，再扣4生命。",
+      "iconIndex": 44,
+      "manifestation": "item-manifestations-v1/45-loan-contract.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "name-sold",
+      "name": "把名字卖掉的合同",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "inner",
+      "flavor": "编号比名字好记。",
+      "mechanic": "制式化：零散射、零波动，基础伤害+30%；代价：永不暴击 · 无法再亲口回应命运。",
+      "iconIndex": 45,
+      "manifestation": "item-manifestations-v1/46-name-sold.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "moms-bowl",
+      "name": "母亲留在锅里的那碗饭",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "lamp",
+      "flavor": "无论多晚，锅里总有一只倒扣的碗。",
+      "mechanic": "溢出的爱变护盾：溢出的治疗转为护盾；代价：转化率每阶段-10%（会凉）。",
+      "iconIndex": 46,
+      "manifestation": "item-manifestations-v1/47-moms-bowl.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "ruma-msg",
+      "name": "凌晨两点朋友发来的“在吗”",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "lamp",
+      "flavor": "这一次，有人接了。",
+      "mechanic": "未回复的都在等你：咽下+1层；生命<35%时每层化为5点护盾；代价：每层治疗-3%。",
+      "iconIndex": 47,
+      "manifestation": "item-manifestations-v1/48-ruma-msg.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "held-elevator",
+      "name": "有人替你按住的电梯",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "lamp",
+      "flavor": "有人愿意为你多等三秒。",
+      "mechanic": "弹道在终点等你：弹道消失时30%悬停后追向最近敌人；代价：弹速-8%。",
+      "iconIndex": 48,
+      "manifestation": "item-manifestations-v1/49-held-elevator.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "old-door-lock",
+      "name": "一直没有换的家门锁",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "lamp",
+      "flavor": "那把钥匙一直开得了门。",
+      "mechanic": "回家的路更疼：弹道折返；回程伤害+30%；代价：射程-10%。",
+      "iconIndex": 49,
+      "manifestation": "item-manifestations-v1/50-old-door-lock.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "drank-for-boss",
+      "name": "酒局上代喝的那杯",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "领导说，小周能喝。",
+      "mechanic": "把伤吐还回去：受伤25%概率攒代喝；3层释放累计范围反伤；代价：每阶段开场1.2秒站不稳。",
+      "iconIndex": 50,
+      "manifestation": "item-manifestations-v1/51-drank-for-boss.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "hair-in-takeout",
+      "name": "外卖里吃出的头发",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "他挑出来，拍了照，最后还是吃完了。",
+      "mechanic": "将就的一口：生命<30%时自动回8（每阶段一次）；代价：所有治疗-10%。",
+      "iconIndex": 51,
+      "manifestation": "item-manifestations-v1/52-hair-in-takeout.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "unwashed-pillow",
+      "name": "没洗的枕套",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "上面有一个人形的黄印子。",
+      "mechanic": "躺平减伤：静止2秒后减伤50%；代价：起身后1秒射速-20%。",
+      "iconIndex": 52,
+      "manifestation": "item-manifestations-v1/53-unwashed-pillow.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "sock-cigs",
+      "name": "藏在袜子里的烟",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "一天一根。戒了十年。",
+      "mechanic": "提神的代价：受伤后2秒移速+25%；代价：每45秒最大生命-1。",
+      "iconIndex": 53,
+      "manifestation": "item-manifestations-v1/54-sock-cigs.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "pregnancy-test",
+      "name": "验孕棒",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "random",
+      "flavor": "两道杠那天，他在楼道里坐到天亮。",
+      "mechanic": "身后多了个影子：每第3轮多1枚继承弹；代价：商城价格+35%。",
+      "iconIndex": 54,
+      "manifestation": "item-manifestations-v1/55-pregnancy-test.png",
+      "combos": [],
+      "tags": [
+        "继承弹"
+      ]
+    },
+    {
+      "id": "gym-card",
+      "name": "健身房年卡",
+      "quality": 1,
+      "qualityLabel": "杂物",
+      "pool": "random",
+      "flavor": "去过三次。教练还在发消息。",
+      "mechanic": "花钱买的自觉：移速+8%；代价：每阶段扣1零钱。",
+      "iconIndex": 55,
+      "manifestation": "item-manifestations-v1/56-gym-card.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "funeral-photo",
+      "name": "遗照选用的那张",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "random",
+      "flavor": "照相馆师傅说，笑一点。他就笑了。",
+      "mechanic": "最后的配合：致命伤时1血狂暴5秒（每局一次）；代价：生效后治疗-20%。",
+      "iconIndex": 56,
+      "manifestation": "item-manifestations-v1/57-funeral-photo.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "typing-indicator",
+      "name": "对方正在输入…",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "输入了很久。最后收到的是“嗯”。",
+      "mechanic": "三个点以后，话向四面散开：头顶每0.5秒出现1个点；第3点触发12向大范围散射，继承当前弹体机制；代价：取消普通连射，改为每1.5秒结算1轮散射。",
+      "iconIndex": 57,
+      "manifestation": "item-manifestations-v1/58-typing-indicator.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "year-report",
+      "name": "年度听歌报告",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "你最爱的那首歌，循环在凌晨。",
+      "mechanic": "单曲循环：每第4轮把上一轮弹道原样重放一遍（×0.6）；代价：每阶段开场生命-2。",
+      "iconIndex": 58,
+      "manifestation": "item-manifestations-v1/59-year-report.png",
+      "combos": [],
+      "tags": [
+        "继承弹"
+      ]
+    },
+    {
+      "id": "momo-avatar",
+      "name": "momo的头像",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "换上粉色小恐龙之后，他终于敢说话了。",
+      "mechanic": "匿名的胆量：无敌人贴脸时暴击+25%；代价：被贴脸时伤害-8%。",
+      "iconIndex": 59,
+      "manifestation": "item-manifestations-v1/60-momo-avatar.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "ai-chat",
+      "name": "和AI聊到凌晨",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "random",
+      "flavor": "它记得他说过的每一句话。",
+      "mechanic": "它复读你：每轮攻击后0.4秒复读一轮回声弹（×0.35）；命运牌结算后回4血；代价：亲口回应的属性变化减半。",
+      "iconIndex": 60,
+      "manifestation": "item-manifestations-v1/61-ai-chat.png",
+      "combos": [],
+      "tags": [
+        "继承弹"
+      ]
+    },
+    {
+      "id": "streak-1847",
+      "name": "连续签到1847天",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "断在住院那一周。",
+      "mechanic": "打卡节律：每个整10秒的第一发必定暴击（准时）；代价：受伤打断当期打卡。",
+      "iconIndex": 61,
+      "manifestation": "item-manifestations-v1/62-streak-1847.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "goodnight-2h",
+      "name": "晚安之后的两小时",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "发完晚安，他又刷了两小时。",
+      "mechanic": "熬出来的精神：生命<50%时射速+18%；代价：每30秒最大生命-1。",
+      "iconIndex": 62,
+      "manifestation": "item-manifestations-v1/63-goodnight-2h.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "friend-verify",
+      "name": "对方已开启朋友验证",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "想转发个段子过去，才发现早就被删了。",
+      "mechanic": "一个人也行：每次商城不买离开伤害+6%（可叠）；代价：治疗-10%。",
+      "iconIndex": 63,
+      "manifestation": "item-manifestations-v1/64-friend-verify.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "summer-run",
+      "name": "练了一个暑假的跑法",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "胳膊向后，压低身子。",
+      "mechanic": "那年最快的姿势：移速+12%；代价：急停会滑半步。",
+      "iconIndex": 64,
+      "manifestation": "item-manifestations-v1/65-summer-run.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "one-more-game",
+      "name": "再来一把就睡",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "这话他说了十年。",
+      "mechanic": "不甘心的续航：章末可跳过回复；伤害+10%一层（最多5层）；代价：每层令下阶段开场停火0.5秒。",
+      "iconIndex": 65,
+      "manifestation": "item-manifestations-v1/66-one-more-game.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "eye-exercise",
+      "name": "眼保健操",
+      "quality": 3,
+      "qualityLabel": "心结",
+      "pool": "random",
+      "flavor": "闭眼，睁开，三十岁了。",
+      "mechanic": "闭眼的半秒：每12秒自动闭眼获得0.5秒无敌；代价：睁眼后1.5秒敌人加速。",
+      "iconIndex": 66,
+      "manifestation": "item-manifestations-v1/67-eye-exercise.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "card-binder",
+      "name": "大扫除清掉的卡册",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "他集齐了全班羡慕的一切。",
+      "mechanic": "借来的强度：每阶段随机+12%伤害/射速/射程；代价：阶段结束即消失。",
+      "iconIndex": 67,
+      "manifestation": "item-manifestations-v1/68-card-binder.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "abstract-lv10",
+      "name": "抽象话十级",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "6。乐。急了。",
+      "mechanic": "嘲讽拉满：每8秒嘲讽最近非Boss敌人：受伤+20%但冲向你；代价：咽下效果-10%。",
+      "iconIndex": 68,
+      "manifestation": "item-manifestations-v1/69-abstract-lv10.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "shop-freezer",
+      "name": "小卖部的冰柜",
+      "quality": 2,
+      "qualityLabel": "旧物",
+      "pool": "random",
+      "flavor": "五毛钱的快乐在最底层。",
+      "mechanic": "冰雾缠弹：命中20%冻结敌人1.2秒；代价：射速-5%。",
+      "iconIndex": 69,
+      "manifestation": "item-manifestations-v1/70-shop-freezer.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "server-shutdown",
+      "name": "关服那天",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "random",
+      "flavor": "他养的那只电子宠物还在等他喂食。服务器关闭那天，没有人通知它。",
+      "mechanic": "它替你挡最后一次：致命伤时小剪影替你挡下，然后永远消失；代价：它消失后，治疗-15%。",
+      "iconIndex": 70,
+      "manifestation": "item-manifestations-v1/71-server-shutdown.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "painless-night",
+      "name": "没有痛觉的夜晚",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "inner",
+      "flavor": "他把麻木误认成了坚强。",
+      "mechanic": "把伤害延迟成重量：未结算伤害持续提高攻击；代价：8秒后全额结算 · 普通治疗失效。",
+      "iconIndex": 71,
+      "manifestation": "item-manifestations-v1/72-painless-night.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "ktv-song",
+      "name": "KTV里没人听的那首歌",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "inner",
+      "flavor": "轮到他唱时，包厢里都在点下一首。",
+      "mechanic": "攒一口气吼出去：每6秒攒满一口，向四周吼出一圈声浪（继承全部形变）；代价：常规攻击伤害-15%。",
+      "iconIndex": 72,
+      "manifestation": "item-manifestations-v1/73-ktv-song.png",
+      "combos": [],
+      "tags": [
+        "继承弹"
+      ]
+    },
+    {
+      "id": "breath-on-glass",
+      "name": "冬天呵在玻璃上的字",
+      "quality": 4,
+      "qualityLabel": "遗物",
+      "pool": "lamp",
+      "flavor": "他呵出一团雾，写了个名字，又擦掉了。",
+      "mechanic": "一口气呵成雾：弹体呵成宽雾锥：弹宽×2.2 · 穿透+2；代价：射程×0.55。",
+      "iconIndex": 73,
+      "manifestation": "item-manifestations-v1/74-breath-on-glass.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "admission-notice",
+      "name": "入学通知书",
+      "quality": 5,
+      "qualityLabel": "这一身",
+      "pool": "story",
+      "flavor": "上面印着他的名字，名字后面跟着一个号。",
+      "mechanic": "选择变多了，但你不能不选：每章奖励三选一变四选一；代价：不能再跳过奖励，每次必须选走一件。",
+      "iconIndex": 74,
+      "manifestation": "item-manifestations-v1/75-admission-notice.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "iphone-17-pro-max",
+      "name": "最新款的 iPhone 17 Pro Max",
+      "quality": 5,
+      "qualityLabel": "这一身",
+      "pool": "story",
+      "flavor": "离职金买的最新款手机。爽歪歪。",
+      "mechanic": "新机就是快：伤害+30% · 攻速+10%；代价：拾取时零钱清零 · 每15秒弹一次消息，攻击中断0.4秒。",
+      "iconIndex": 75,
+      "manifestation": "item-manifestations-v1/76-iphone-17-pro-max.png",
+      "combos": [],
+      "tags": []
+    },
+    {
+      "id": "fathers-chart",
+      "name": "父亲的病历本",
+      "quality": 5,
+      "qualityLabel": "这一身",
+      "pool": "story",
+      "flavor": "名字栏写着他父亲的名字。轮到他填自己的时候，症状栏可以照抄。",
+      "mechanic": "你透支得越多，你越强：每永久损失10点最大生命，伤害+8%（无上限）；代价：治疗效果-40%。",
+      "iconIndex": 76,
+      "manifestation": "item-manifestations-v1/77-fathers-chart.png",
+      "combos": [],
+      "tags": []
+    }
+  ],
+  "combos": [
+    {
+      "key": "rain-letter",
+      "name": "那天雨太大，我没有听见",
+      "members": [
+        "front-desk-letter",
+        "fathers-raincoat"
+      ],
+      "effect": "信纸被浸湿，变慢、变重、穿透"
+    },
+    {
+      "key": "returned-letter",
+      "name": "被退回的信",
+      "members": [
+        "red-workbook",
+        "front-desk-letter"
+      ],
+      "effect": "未命中的信被红笔批改后折返，二次命中更疼"
+    },
+    {
+      "key": "for-your-own-good",
+      "name": "大人说这都是为你好",
+      "members": [
+        "stone-schoolbag",
+        "slow-watch"
+      ],
+      "effect": "冻结解除后，一口气一次性压穿敌群"
+    },
+    {
+      "key": "cry-for-help-as-style",
+      "name": "被当成风格的求救",
+      "members": [
+        "eyebrow-razor",
+        "od-pill"
+      ],
+      "effect": "受伤时涌出点赞与爱心，不提供任何治疗"
+    },
+    {
+      "key": "seen-only-when-useful",
+      "name": "我只在有用时被看见",
+      "members": [
+        "first-salary",
+        "nameless-tie",
+        "revoked-badge"
+      ],
+      "effect": "刚证明过有用的两秒里，他格外锋利"
+    },
+    {
+      "key": "thought-he-was-cool",
+      "name": "那年他觉得自己很酷",
+      "members": [
+        "bleach-powder",
+        "fathers-raincoat"
+      ],
+      "effect": "掉色的雨滴标记敌人，被标记者受伤更多"
+    },
+    {
+      "key": "someone-answered",
+      "name": "这一次有人接了",
+      "members": [
+        "eyebrow-razor",
+        "od-pill",
+        "unsent-phone"
+      ],
+      "effect": "攒下的假点赞在吐出时化为真实护盾"
+    },
+    {
+      "key": "became-him",
+      "name": "后来我也成了他",
+      "members": [
+        "baby-tooth",
+        "fathers-raincoat"
+      ],
+      "effect": "乳牙碎的那一刻，雨衣自动罩住孩子"
+    },
+    {
+      "key": "when-everyone-is-free",
+      "name": "等大家有空",
+      "members": [
+        "missing-photo",
+        "empty-frame"
+      ],
+      "effect": "空相框复制合照的弹道，每次复制更褪色"
+    },
+    {
+      "key": "this-weight-is-nothing",
+      "name": "这点重量不算什么",
+      "members": [
+        "broken-spine",
+        "stone-schoolbag"
+      ],
+      "effect": "弹道停留越久越重，压得越深"
+    },
+    {
+      "key": "bend-and-stretch",
+      "name": "能屈能伸",
+      "members": [
+        "broken-spine",
+        "nameless-tie",
+        "revoked-badge"
+      ],
+      "effect": "弯腰的程度化为暴击，暴击时他说「收到」"
+    },
+    {
+      "key": "stood-the-same-way",
+      "name": "他当年也是这样站着的",
+      "members": [
+        "broken-spine",
+        "fathers-raincoat"
+      ],
+      "effect": "身后浮现同样弯腰的轮廓，雨下得更密"
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="wiki-runtime-v1.css">
+<script>(function(){try{var t=localStorage.getItem('wiki-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<title>《这一身》百科 · 特效馆</title>
+<style>
+  :root{
+    --paper:#D8D0C1; --paper-2:#AAA297;
+    --ink:#17151A; --ink-2:#3E3A3D; --ink-3:#6E675B;
+    --oldred:#9F3548; --oldred-soft:#B06961;
+    --rainyellow:#C6A44A; --wardblue:#71818A; --moon:#E8E1D3;
+    --bg:#111116; --card:#1B1A20; --line:#34323A;
+    --fg:#E8E1D3; --fg-2:#D8D0C1; --fg-3:#AAA297;
+    --moon-face:#E8E1D3; --moon-halo:rgba(232,225,211,.10);
+    --q1:#786F69; --q2:#71818A; --q3:#9F3548; --q4:#C6A44A; --q5:#E8E1D3;
+    --positive:#779887; --warning:#B06961;
+    --desk:url("assets/desk-texture.png");
+  }
+  :root[data-theme="light"]{
+    --bg:#E9E3D4; --card:#F1ECDF; --line:#C8C0AC;
+    --fg:#1A1713; --fg-2:#453F36; --fg-3:#6E675B;
+    --oldred:#9E3B33; --oldred-soft:#B0554A;
+    --rainyellow:#A8842F; --wardblue:#63737B;
+    --moon-face:#E5DCC4; --moon-halo:rgba(110,103,91,.14);
+    --q1:#7E7A6E; --q2:#5F7581; --q3:#9E3B33; --q4:#8A6E22; --q5:#8A2F3F;
+    --positive:#5c7a63; --warning:#a1554d;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    background-image:linear-gradient(rgba(17,17,22,.90),rgba(17,17,22,.90)),var(--desk);background-attachment:fixed;
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;line-height:1.85;font-size:16px;
+    -webkit-font-smoothing:antialiased}
+  :root[data-theme="light"] body{background-image:none}
+  .serif{font-family:"Songti SC","STSong","Noto Serif CJK SC","SimSun",serif}
+  .frame{max-width:1180px;margin:0 auto;padding:0 20px}
+  header.codex-hero{padding:56px 0 20px;text-align:center}
+  header.codex-hero .eyebrow{font-size:12px;letter-spacing:.5em;color:var(--fg-3);text-indent:.5em;margin:0 0 14px}
+  header.codex-hero h1{margin:0;font-size:clamp(34px,6vw,52px);font-weight:900;letter-spacing:.08em}
+  header.codex-hero .sub{margin:14px auto 0;max-width:720px;color:var(--fg-3);font-size:14px;letter-spacing:.04em}
+  main.codex{max-width:1180px;margin:0 auto;padding:8px 20px 90px}
+  .sect-h{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);margin:44px 0 6px;padding-bottom:8px}
+  .sect-h h2{margin:0;font-size:24px;letter-spacing:.06em}
+  .sect-h .cnt{font-size:12px;color:var(--fg-3);letter-spacing:.06em}
+  .bx{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:22px 24px;margin:22px 0;position:relative;overflow:hidden}
+  .bx h3{margin:0;font-size:22px;letter-spacing:.05em}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .chip{font-size:11px;letter-spacing:.12em;padding:2px 9px;border:1px solid var(--line);border-radius:99px;color:var(--fg-3);white-space:nowrap}
+  .chip.red{color:var(--oldred);border-color:var(--oldred)}
+  .chip.gold{color:var(--rainyellow);border-color:var(--rainyellow)}
+  .chip.blue{color:var(--wardblue);border-color:var(--wardblue)}
+  .dim{color:var(--fg-3)}
+  .flavor{font-style:normal;color:var(--fg-2);border-left:3px solid var(--oldred);padding:2px 0 2px 12px;margin:10px 0;line-height:1.9}
+  .lore{color:var(--fg-3);font-size:13px}
+  .g{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end}
+  figure.anim{margin:0;text-align:center}
+  figure.anim img{image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:4px;max-width:100%}
+  figure.anim figcaption{font-size:12px;color:var(--fg-3);margin-top:4px;line-height:1.4}
+  .shot{max-width:100%;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:4px}
+  .vo{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .vo:last-child{border-bottom:0}
+  .vo-play{flex:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--oldred);background:none;
+    color:var(--oldred);font-size:13px;cursor:pointer;line-height:1}
+  .vo-play:hover{background:var(--oldred);color:var(--moon)}
+  .vo-play.on{background:var(--oldred);color:var(--moon)}
+  .vo-text{margin:0;font-size:15px;color:var(--fg)}
+  .vo-meta{margin:2px 0 0;font-size:12px;color:var(--fg-3);letter-spacing:.03em}
+  .ric{display:inline-block;flex:none;width:72px;height:72px;image-rendering:pixelated;
+    background-image:var(--icon-sheet);background-size:576px auto;background-repeat:no-repeat;
+    background-color:#101014;border:1px solid var(--line);border-radius:6px}
+  .item-row{display:flex;gap:16px}
+  .item-main{min-width:0;flex:1}
+  .portrait{flex:none;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:6px}
+  .boss-head{display:flex;gap:20px;flex-wrap:wrap}
+  .boss-info{flex:1;min-width:260px}
+  .skill-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:10px}
+  .skill-card{background:rgba(0,0,0,.14);border:1px solid var(--line);border-radius:8px;padding:12px;text-align:center}
+  :root[data-theme="light"] .skill-card{background:rgba(255,255,255,.4)}
+  .skill-card img{image-rendering:pixelated;background:#101014;border-radius:4px;max-width:100%}
+  .skill-card .nm{display:block;font-weight:700;margin-top:6px}
+  .skill-card .desc{font-size:12.5px;color:var(--fg-3);line-height:1.7;margin-top:2px}
+  .skill-card .lr{font-size:12px;color:var(--oldred-soft);margin-top:4px}
+  .sub-h{margin:26px 0 4px;font-size:16px;letter-spacing:.08em;color:var(--fg-2)}
+  .foot{border-top:1px solid var(--line);margin-top:60px;padding:26px 20px 60px;text-align:center;font-size:12px;color:var(--fg-3);letter-spacing:.1em}
+  .foot a{color:var(--fg-2)}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px}
+  .card-grid .bx{margin:0}
+  @media (max-width:640px){.bx{padding:16px}.item-row{flex-direction:row}.card-grid{grid-template-columns:1fr}}
+
+  :root{--icon-sheet:url("../src/assets/items/icons.png")}
+</style>
+</head>
+<body>
+
+<div class="topbar" id="wiki-topbar">
+  <a class="tb-mark serif" href="index.html">这一身<i>百科</i></a>
+  <nav class="tb-links" aria-label="图鉴分卷"><a href="index.html">正典</a><a href="boss.html">Boss志</a><a href="bestiary.html">敌怪志</a><a href="items.html">道具志</a><a href="voices.html">语音馆</a><a href="world.html">世界志</a><a href="vfx.html" class="on">特效馆</a></nav>
+  <button class="tb-theme" id="wiki-theme-toggle" type="button" title="留灯 / 熄灯" aria-label="切换明暗主题">☾</button>
+</div>
+
+<header class="codex-hero">
+  <div class="frame">
+    <p class="eyebrow">弹是主角的手，不能盖过人</p>
+    <h1 class="serif">特效馆</h1>
+    <p class="sub">弹体飞行帧动画 / 十一材质命中 / 成双协同 / 状态标记，全部直接裁自运行时图集。</p>
+  </div>
+</header>
+
+<main class="codex">
+<div class="sect-h"><h2 class="serif">《一口气》弹体 · 飞行形态</h2><span class="cnt">21 种形态 · 4 帧 @10fps · 帧动画正典 v5</span></div><section class="bx"><p class="sub-h">凝实度四态 · 从无形雾到实心珠光</p><div class="g"><figure class="anim"><img src="assets/wiki/gif/projectile/breath0.gif" alt="凝实度 · 无形" loading="lazy"><figcaption>凝实度 · 无形</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/breath.gif" alt="一口气 · 月白雾团" loading="lazy"><figcaption>一口气 · 月白雾团</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/breath2.gif" alt="凝实度 · 凝实" loading="lazy"><figcaption>凝实度 · 凝实</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/breath3.gif" alt="凝实度 · 珠光" loading="lazy"><figcaption>凝实度 · 珠光</figcaption></figure></div><p class="sub-h">道具改写的弹体形态</p><div class="g"><figure class="anim"><img src="assets/wiki/gif/projectile/marble.gif" alt="弹珠" loading="lazy"><figcaption>弹珠</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/key.gif" alt="钥匙" loading="lazy"><figcaption>钥匙</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/slash.gif" alt="劈砍" loading="lazy"><figcaption>劈砍</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/rain.gif" alt="雨点" loading="lazy"><figcaption>雨点</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/tear.gif" alt="泪滴" loading="lazy"><figcaption>泪滴</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/ice.gif" alt="冰晶" loading="lazy"><figcaption>冰晶</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/laugh.gif" alt="哈字" loading="lazy"><figcaption>哈字</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/serial.gif" alt="制式弹" loading="lazy"><figcaption>制式弹</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/paper.gif" alt="纸页" loading="lazy"><figcaption>纸页</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/razor.gif" alt="修眉刀" loading="lazy"><figcaption>修眉刀</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/lens.gif" alt="镜片" loading="lazy"><figcaption>镜片</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/sound.gif" alt="声波" loading="lazy"><figcaption>声波</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/link.gif" alt="链接" loading="lazy"><figcaption>链接</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/button.gif" alt="纽扣" loading="lazy"><figcaption>纽扣</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/stone.gif" alt="石子" loading="lazy"><figcaption>石子</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/cone.gif" alt="呵气雾锥" loading="lazy"><figcaption>呵气雾锥</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/stamp.gif" alt="印章" loading="lazy"><figcaption>印章</figcaption></figure></div><p class="dim" style="font-size:12.5px;margin:12px 0 0">在线逐帧审阅页：<a href="review-projectiles.html" style="color:var(--rainyellow)">弹体审阅 · 21 卡循环</a></p></section><div class="sect-h"><h2 class="serif">命中与消散 · 十一种材质</h2><span class="cnt">敌怪材质决定命中反馈 · v2 全生图化</span></div><section class="bx"><div class="g"><figure class="anim"><img src="assets/wiki/gif/hit/mist.gif" alt="雾" loading="lazy"><figcaption>雾</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/water.gif" alt="水" loading="lazy"><figcaption>水</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/crit.gif" alt="暴击" loading="lazy"><figcaption>暴击</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/paper.gif" alt="纸" loading="lazy"><figcaption>纸</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/wood.gif" alt="木" loading="lazy"><figcaption>木</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/stone.gif" alt="石" loading="lazy"><figcaption>石</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/metal.gif" alt="金属" loading="lazy"><figcaption>金属</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/ice.gif" alt="冰" loading="lazy"><figcaption>冰</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/signal.gif" alt="信号" loading="lazy"><figcaption>信号</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/key.gif" alt="钥匙" loading="lazy"><figcaption>钥匙</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/glass.gif" alt="玻璃" loading="lazy"><figcaption>玻璃</figcaption></figure></div></section><div class="sect-h"><h2 class="serif">成双协同 · 状态标记</h2><span class="cnt">协同首触发 say「成双·…」一局一次 · 状态图标挂在敌怪头顶</span></div><section class="bx"><div class="g"><figure class="anim"><img src="assets/wiki/img/synergy-ice.png" alt="成双 · 湿×冰 冻结增强" loading="lazy"><figcaption>成双 · 湿×冰 冻结增强</figcaption></figure><figure class="anim"><img src="assets/wiki/img/synergy-crack.png" alt="成双 · 锋利×骨节 旧伤" loading="lazy"><figcaption>成双 · 锋利×骨节 旧伤</figcaption></figure><figure class="anim"><img src="assets/wiki/img/synergy-collapse.png" alt="成双 · 重×爆炸 塌陷" loading="lazy"><figcaption>成双 · 重×爆炸 塌陷</figcaption></figure><figure class="anim"><img src="assets/wiki/img/synergy-arc.png" alt="成双 · 水×信号 麻痹" loading="lazy"><figcaption>成双 · 水×信号 麻痹</figcaption></figure></div><div class="g" style="margin-top:16px"><figure class="anim"><img src="assets/wiki/img/status-freeze.png" alt="冻结" loading="lazy"><figcaption>冻结</figcaption></figure><figure class="anim"><img src="assets/wiki/img/status-paralyze.png" alt="麻痹" loading="lazy"><figcaption>麻痹</figcaption></figure><figure class="anim"><img src="assets/wiki/img/status-read.png" alt="已读挂账" loading="lazy"><figcaption>已读挂账</figcaption></figure><figure class="anim"><img src="assets/wiki/img/status-loop.png" alt="单曲循环" loading="lazy"><figcaption>单曲循环</figcaption></figure><figure class="anim"><img src="assets/wiki/img/status-wet.png" alt="潮湿" loading="lazy"><figcaption>潮湿</figcaption></figure><figure class="anim"><img src="assets/wiki/img/status-raw.png" alt="旧伤" loading="lazy"><figcaption>旧伤</figcaption></figure><figure class="anim"><img src="assets/wiki/img/status-heavy.png" alt="沉重" loading="lazy"><figcaption>沉重</figcaption></figure><figure class="anim"><img src="assets/wiki/img/status-control-fatigue.png" alt="操控疲劳" loading="lazy"><figcaption>操控疲劳</figcaption></figure></div></section>
+</main>
+
+<div class="foot">这一身 · 百科图鉴 · 全部素材直接取自游戏运行时资源 · <a href="index.html">返回故事线正典</a></div>
+<script>
+(function(){
+  'use strict';
+  var root=document.documentElement;
+  var toggle=document.getElementById('wiki-theme-toggle');
+  function cur(){var t=root.getAttribute('data-theme');return t==='dark'||t==='light'?t:'dark';}
+  function paint(){if(toggle)toggle.textContent=cur()==='dark'?'☀':'☾';}
+  if(toggle){toggle.addEventListener('click',function(){var n=cur()==='dark'?'light':'dark';
+    root.setAttribute('data-theme',n);try{localStorage.setItem('wiki-theme',n);}catch(e){}paint();});paint();}
+  var audio=new Audio();var curBtn=null;
+  function reset(){if(curBtn){curBtn.classList.remove('on');curBtn.textContent='▶';curBtn=null;}}
+  audio.addEventListener('ended',reset);
+  audio.addEventListener('pause',function(){if(audio.ended)return;reset();});
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.vo-play');if(!b)return;
+    if(curBtn===b){audio.pause();return;}
+    reset();audio.src=b.getAttribute('data-src');audio.play();
+    curBtn=b;b.classList.add('on');b.textContent='◼';
+  });
+})();
+</script>
+</body>
+</html>
