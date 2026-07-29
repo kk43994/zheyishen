@@ -40,6 +40,7 @@ import {
 } from './life-stage';
 import { DEFAULT_APPEARANCE, commitOriginWheels, getOriginModifiers, getOriginTrait, rollOriginWheels } from './origins';
 import { completeFirstRunGuide, hasCompletedFirstRunGuide } from './onboarding';
+import { itemIrony } from './item-irony';
 import { FATE_ITEM_IDS, getItem, ITEM_IDS, STORY_ITEM_IDS } from './relics';
 import { appendLifeLedger, readLifeLedger, type LifeLedgerEntry } from './run-ledger';
 import { closeItemCodex, isItemCodexOpen, notifyCodexRunEnded, openItemCodex, recordItemAcquired } from './item-codex';
@@ -18623,6 +18624,13 @@ export class ZheYiShenGame {
     ctx.fillStyle = '#6b6355';
     ctx.font = `9px ${UI_FONT_STACK}`;
     this.wrapText(item.summary, 34, 362, 292, 13, 3);
+    // 卡底压一行「反讽在哪里」——七层母表的第六层，文案与百科道具志同源。
+    const irony = itemIrony(id);
+    if (irony) {
+      ctx.fillStyle = '#8a7a63';
+      ctx.font = `9px ${UI_FONT_STACK}`;
+      this.wrapText(`设计理念 · ${irony}`, 34, 386, 292, 12, 2);
+    }
 
     this.drawBreathActionButton(
       DEV_DETAIL_TAKE_RECT,
