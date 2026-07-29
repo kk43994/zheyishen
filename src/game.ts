@@ -3,6 +3,7 @@ import {
   generateAIFateResult,
   generateAIFreeFate,
   generateAIOrigin,
+  generateLifeSummary,
   platformOriginModel,
   readAIDiagnostic,
   type AIGenerationState,
@@ -222,6 +223,19 @@ const CLOSET_SLAM_HALF_HEIGHT = 96;
 const WET_SHOES_STOP_THRESHOLD = 1.2;
 const WET_SHOES_SPEED_STEP = 4;
 const WET_SHOES_MAX_SPEED = 96;
+/**
+ * 湿鞋是追猎者：从开幕（eliteAt 0）跟到本章结束，速度一路由慢转快。
+ * 原实现只有「玩家站着不动」才加速，那惩罚的是站桩，不构成持续压迫。
+ * 这里补一条随战斗时间推进的基础速度：18 起步，到本章尾声追到 44。
+ */
+/**
+ * 收灯人的血量。彩蛋 Boss：正常构筑打不动，只有把伤害堆到极限的特殊构筑才有机会。
+ * 击杀会走隐藏结局，见 finishLampKeeperKill。
+ */
+const LAMP_KEEPER_HP = 19999;
+
+const WET_SHOES_BASE_SPEED = 18;
+const WET_SHOES_CHASE_SPEED_AT_END = 44;
 /** 成年小怪不是静态障碍：台灯用高风险增伤圈，隔夜饭用全场倒计时逼玩家回身处理。 */
 const DESK_LAMP_AURA_RADIUS = 88;
 const DESK_LAMP_DAMAGE_MULTIPLIER = 1.2;
@@ -451,7 +465,7 @@ function originComicCaptionProgress(sceneIndex: number, sceneElapsed: number): n
 
 // 标题页右下角与 AI 诊断行都会带上它：上传后扫码第一眼就能确认平台跑的是哪个包，
 // 排查「上传了但行为没变」时不再靠猜。每次要重新上传前手动 +1。
-const BUILD_TAG = '0729-17';
+const BUILD_TAG = '0729-19';
 const TITLE_START_RECT = { x: 88, y: 520, width: 184, height: 44 } as const;
 const TITLE_AUDIO_RECT = { x: 290, y: 16, width: 54, height: 30 } as const;
 const TITLE_CODEX_RECT = { x: 16, y: 16, width: 54, height: 30 } as const;
@@ -521,8 +535,8 @@ const VOICE_CAPTION_Y: Partial<Record<ScreenState, number>> = {
 };
 type PauseTab = 'body' | 'origin' | 'fates' | 'settings';
 const PAUSE_TABS: readonly PauseTab[] = ['body', 'origin', 'fates', 'settings'];
-type ResultTab = 'seal' | 'items' | 'fates' | 'stats';
-const RESULT_TABS: readonly ResultTab[] = ['seal', 'items', 'fates', 'stats'];
+type ResultTab = 'seal' | 'life' | 'items' | 'fates' | 'stats';
+const RESULT_TABS: readonly ResultTab[] = ['seal', 'life', 'items', 'fates', 'stats'];
 type RewardDestination = 'start' | 'advance' | 'battle';
 type ScreenTransitionKind = 'first-breath' | 'page' | 'door' | 'lights-out';
 
@@ -1149,6 +1163,12 @@ export class ZheYiShenGame {
   };
   private lampSeizeMisses = 0;
   private lampItemsToReturnTotal = 0;
+  /** 本局是否杀死了收灯人：结局页据此走隐藏结局。 */
+  private lampKeeperSlain = false;
+  /** AI 人生封卷：收灯人一出现就后台开写，结局页直接取现成的。 */
+  private lifeSummary = '';
+  private lifeSummaryRequested = false;
+  private lifeSummaryAbort?: AbortController;
   private lampFinalStripTimer = 0;
   private lampReleaseReady = false;
   private lampReleaseTimer = 0;
@@ -1323,6 +1343,10 @@ export class ZheYiShenGame {
   private phoneRinging = false;
   private phoneRingWindow = 0;
   private phoneAnswer = 0;
+  /** 接听规则只在本局第一次响铃时说明一次，之后不再打扰。 */
+  private phoneAnswerHintShown = false;
+  /** 踩圈规则只在本局第一次征询时说明一次。 */
+  private praiseConsultHintShown = false;
   private phoneMissed = 0;
   private phoneCalls: Array<{ x: number; y: number }> = [];
   private phoneAnswerTarget = -1;
@@ -1461,7 +1485,12 @@ export class ZheYiShenGame {
       }
       if (this.state === 'result') {
         if (pointInPaddedRect(p, RESULT_TAB_RECT, 0, 8)) {
-          const index = this.clamp(Math.floor((p.x - RESULT_TAB_RECT.x) / (RESULT_TAB_RECT.width / 4)), 0, 3);
+          // 分母与上限都从 RESULT_TABS 推导：写死 4 的话，加一个页签就会点串页。
+          const index = this.clamp(
+            Math.floor((p.x - RESULT_TAB_RECT.x) / (RESULT_TAB_RECT.width / RESULT_TABS.length)),
+            0,
+            RESULT_TABS.length - 1,
+          );
           this.resultTab = RESULT_TABS[index]!;
         } else if (pointInRect(p, RESULT_CODEX_RECT)) {
           this.openCodexOverlay();
@@ -2679,6 +2708,7 @@ export class ZheYiShenGame {
     this.lampSeize = undefined;
     this.lampSeizeMisses = 0;
     this.lampItemsToReturnTotal = 0;
+    this.lampKeeperSlain = false;
     this.lampFinalStripTimer = 0;
     this.lampReleaseReady = false;
     this.lampReleaseTimer = 0;
@@ -2800,6 +2830,9 @@ export class ZheYiShenGame {
     this.phoneRinging = false;
     this.phoneRingWindow = 0;
     this.phoneAnswer = 0;
+    // 两条机制说明字幕按局重置：新的一局要重新教一次。
+    this.phoneAnswerHintShown = false;
+    this.praiseConsultHintShown = false;
     this.phoneMissed = 0;
     this.phoneCalls = [];
     this.phoneAnswerTarget = -1;
@@ -3261,6 +3294,7 @@ export class ZheYiShenGame {
     this.lampSeize = undefined;
     this.lampSeizeMisses = 0;
     this.lampItemsToReturnTotal = 0;
+    this.lampKeeperSlain = false;
     this.lampFinalStripTimer = 0;
     this.lampReleaseReady = false;
     this.lampReleaseTimer = 0;
@@ -3271,6 +3305,9 @@ export class ZheYiShenGame {
     this.phoneRinging = false;
     this.phoneRingWindow = 0;
     this.phoneAnswer = 0;
+    // 两条机制说明字幕按局重置：新的一局要重新教一次。
+    this.phoneAnswerHintShown = false;
+    this.praiseConsultHintShown = false;
     this.phoneMissed = 0;
     this.phoneCalls = [];
     this.phoneAnswerTarget = -1;
@@ -3693,32 +3730,47 @@ export class ZheYiShenGame {
       this.say('名字卖掉了 · 开不了口');
       return;
     }
+    // 这个弹窗是 DOM 覆盖层，此前一直是浏览器默认 sans-serif + 纯色方块，
+    // 和游戏的纸质/像素语言完全脱节。玩家在这里做的事就是「替他把话写下来」，
+    // 所以它应该是一张纸：米色纸面、墨色字、切角（clip-path 对应 drawCutCornerPanel）。
+    const ARCHIVE_FONT = '"Songti SC","Noto Serif CJK SC","STSong",serif';
+    const CUT = 'polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px)';
     const wrap = document.createElement('div');
-    wrap.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,5,8,.74);z-index:50;';
+    wrap.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(5,5,8,.78);z-index:50;';
     const box = document.createElement('div');
-    box.style.cssText = 'background:#14141a;border:1px solid #77727b;padding:18px;width:300px;font-family:sans-serif;';
+    box.style.cssText = `background:#d8d0c1;color:#17151a;padding:20px 18px;width:300px;`
+      + `font-family:${ARCHIVE_FONT};clip-path:${CUT};`
+      + `box-shadow:0 0 0 2px rgba(23,21,26,.55);`;
     const title = document.createElement('div');
     title.textContent = '他张了张嘴——你替他说：';
-    title.style.cssText = 'color:#e8e1d3;font-size:13px;margin-bottom:10px;';
+    title.style.cssText = 'color:#17151a;font-size:14px;font-weight:700;margin-bottom:12px;letter-spacing:.5px;';
     const input = document.createElement('input');
     input.maxLength = 24;
     input.placeholder = '写下他的回应（24字内）';
     input.autocomplete = 'off';
-    input.style.cssText = 'width:100%;box-sizing:border-box;background:#0c0d11;border:1px solid #55525b;color:#e8e1d3;padding:10px;font-size:16px;outline:none;';
+    // 输入区做成纸上划的一道横线，而不是一个深色输入框——写字是写在纸上的。
+    input.style.cssText = `width:100%;box-sizing:border-box;background:rgba(255,255,255,.34);`
+      + `border:0;border-bottom:2px solid #7c705d;color:#17151a;padding:10px 4px;`
+      + `font-size:16px;font-family:${ARCHIVE_FONT};outline:none;`;
     const hint = document.createElement('div');
     hint.textContent = '选择这句话是咽下压力，还是把边界说出来';
-    hint.style.cssText = 'color:#9e99a3;font-size:11px;line-height:1.5;margin-top:8px;';
+    hint.style.cssText = 'color:#6b6355;font-size:11px;line-height:1.6;margin-top:10px;';
     const row = document.createElement('div');
     row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;';
     const swallow = document.createElement('button');
     swallow.textContent = '咽下地说';
-    swallow.style.cssText = 'min-height:44px;background:#4f6470;border:0;color:#f0e9dc;padding:9px;font-size:13px;';
+    swallow.style.cssText = `min-height:44px;background:#71818a;border:0;color:#f0e9dc;padding:9px;`
+      + `font-size:13px;font-family:${ARCHIVE_FONT};font-weight:700;clip-path:${CUT};`;
     const exhale = document.createElement('button');
     exhale.textContent = '吐出来说';
-    exhale.style.cssText = 'min-height:44px;background:#8d4a58;border:0;color:#f0e9dc;padding:9px;font-size:13px;';
+    exhale.style.cssText = `min-height:44px;background:#9f3548;border:0;color:#f0e9dc;padding:9px;`
+      + `font-size:13px;font-family:${ARCHIVE_FONT};font-weight:700;clip-path:${CUT};`;
     const cancel = document.createElement('button');
     cancel.textContent = '算了';
-    cancel.style.cssText = 'width:100%;margin-top:8px;background:#2c2c33;border:none;color:#a7a3ab;padding:7px;font-size:12px;';
+    // 「算了」是退出，不该和两个选择同权重：改成纸面上的一行字，不做成按钮块。
+    cancel.style.cssText = `width:100%;margin-top:10px;background:transparent;border:0;`
+      + `border-top:1px dashed #a49882;color:#6b6355;padding:9px 0 0;font-size:12px;`
+      + `font-family:${ARCHIVE_FONT};`;
     row.append(swallow, exhale);
     box.append(title, input, hint, row, cancel);
     wrap.append(box);
@@ -4164,6 +4216,9 @@ export class ZheYiShenGame {
         this.darkR = 330 - closing * (330 - 96);
         if (t >= 1) {
           this.lampSpawned = true;
+          // 无感加载：人生封卷从这一刻开始在后台写，玩家还要走完收灯流程，
+          // 等他到结局页时通常已经就绪，全程不占前台时间。
+          this.beginLifeSummary();
           this.eliteAlertKind = 'boss';
           this.eliteAlertName = '收灯人';
           this.eliteAlertTime = 2.8;
@@ -6270,7 +6325,9 @@ export class ZheYiShenGame {
       }
     }
     if (this.hasItem('empty-frame')) this.burst('frame', projectile.x, projectile.y, radius, '#b68b4e');
-    this.burst(this.hasProjectileTrigger('only-key') ? 'door' : 'ring', projectile.x, projectile.y, radius, '#d3a85d');
+    const keyBlast = this.hasProjectileTrigger('only-key');
+    this.burst(keyBlast ? 'door' : 'ring', projectile.x, projectile.y, radius, '#d3a85d');
+    if (keyBlast) this.spawnKeyBlastParticles(projectile.x, projectile.y, radius);
   }
 
   private relocateQueueScreen(enemy: EnemyUnit): void {
@@ -7014,6 +7071,13 @@ export class ZheYiShenGame {
       }
       // 成年《还没干的那双鞋》：开场即在场，你每停一次它快一档，一直到本章结束。
       if (enemy.type === 'wet-shoes') {
+        // 随本章进度把「地板速度」抬上来；站桩加速仍然叠在这之上，两者取较大值，
+        // 这样玩家一直跑也躲不掉它越追越紧，站着不动则会被立刻拉近。
+        const stage = STAGES[this.encounterIndex];
+        const chaseProgress = stage ? this.clamp(this.battleTime / Math.max(1, stage.duration), 0, 1) : 0;
+        const floorSpeed = WET_SHOES_BASE_SPEED
+          + (WET_SHOES_CHASE_SPEED_AT_END - WET_SHOES_BASE_SPEED) * chaseProgress;
+        if (enemy.speed < floorSpeed) enemy.speed = floorSpeed;
         if ((enemy.age * 100 | 0) % 55 < (dt * 100 | 0) && this.wetFootprints.length < 24) {
           this.wetFootprints.push({ x: enemy.x, y: enemy.y + enemy.radius * 0.5, life: 4.2, stepped: false });
           this.sayLore('wet-trail', '他想等鞋干了再出门。门外的事没等他。');
@@ -7636,7 +7700,7 @@ export class ZheYiShenGame {
       whisper: { name: '他们都在说', hp: 15, speed: 54, radius: 13, damage: 3 },
       clockwork: { name: '打卡齿轮', hp: 38, speed: 32, radius: 18, damage: 6 },
       debt: { name: '下个月账单', hp: 48, speed: 28, radius: 20, damage: 7 },
-      'silent-father': { name: '沉默的父亲', hp: 300, speed: 24, radius: 34, damage: 9, boss: true },
+      'silent-father': { name: '沉默的父亲', hp: 600, speed: 24, radius: 34, damage: 9, boss: true },
       'cry-moth': { name: '哭蛾', hp: 8, speed: 48, radius: 10, damage: 2 },
       'hunger-shadow': { name: '空奶瓶', hp: 10, speed: 34, radius: 12, damage: 3 },
       'missed-bus': { name: '错过的车', hp: 60, speed: 150, radius: 16, damage: 9 },
@@ -7645,19 +7709,19 @@ export class ZheYiShenGame {
       'badge-thief': { name: '打包的纸箱', hp: 30, speed: 40, radius: 14, damage: 4 },
       forgetter: { name: '忘记名字的人', hp: 90, speed: 12, radius: 18, damage: 8 },
       'empty-chair': { name: '空椅子', hp: 70, speed: 0, radius: 14, damage: 0 },
-      'closet-dark': { name: '没人相信的怪物', hp: 150, speed: 30, radius: 26, damage: 6, boss: true },
-      'uniform-answer': { name: '统一答案', hp: 200, speed: 22, radius: 26, damage: 6, elite: true },
-      'last-bus': { name: '末班车', hp: 260, speed: 26, radius: 28, damage: 10, elite: true },
-      'debt-collector': { name: '上门催收', hp: 340, speed: 24, radius: 26, damage: 8, boss: true },
-      'lamp-keeper': { name: '收灯人', hp: 430, speed: 20, radius: 40, damage: 12, boss: true },
+      'closet-dark': { name: '没人相信的怪物', hp: 300, speed: 30, radius: 26, damage: 6, boss: true },
+      'uniform-answer': { name: '统一答案', hp: 300, speed: 22, radius: 26, damage: 6, elite: true },
+      'last-bus': { name: '末班车', hp: 340, speed: 26, radius: 28, damage: 10, elite: true },
+      'debt-collector': { name: '上门催收', hp: 920, speed: 24, radius: 26, damage: 8, boss: true },
+      'lamp-keeper': { name: '收灯人', hp: 860, speed: 20, radius: 40, damage: 12, boss: true },
       // —— 小 Boss（精英通道）——
-      'coat-rack': { name: '立在墙角的衣架', hp: 58, speed: 30, radius: 26, damage: 4, elite: true },
-      'whose-box': { name: '谁的纸箱', hp: 142, speed: 24, radius: 24, damage: 8, elite: true },
-      'wet-shoes': { name: '还没干的那双鞋', hp: 150, speed: 18, radius: 22, damage: 7, elite: true },
-      'revolving-lantern': { name: '走马灯', hp: 210, speed: 0, radius: 34, damage: 0, elite: true },
+      'coat-rack': { name: '立在墙角的衣架', hp: 156, speed: 30, radius: 26, damage: 4, elite: true },
+      'whose-box': { name: '谁的纸箱', hp: 460, speed: 24, radius: 24, damage: 8, elite: true },
+      'wet-shoes': { name: '还没干的那双鞋', hp: 2131, speed: 18, radius: 22, damage: 7, elite: true },
+      'revolving-lantern': { name: '走马灯', hp: 420, speed: 0, radius: 34, damage: 0, elite: true },
       // —— 大 Boss ——
-      'praise-chair': { name: '你很优秀', hp: 320, speed: 14, radius: 30, damage: 7, boss: true },
-      'ringing-phone': { name: '响个不停', hp: 380, speed: 22, radius: 30, damage: 8, boss: true },
+      'praise-chair': { name: '你很优秀', hp: 680, speed: 14, radius: 30, damage: 7, boss: true },
+      'ringing-phone': { name: '响个不停', hp: 800, speed: 22, radius: 30, damage: 8, boss: true },
       // —— 少年小怪 ——
       'others-paper': { name: '别人的那张', hp: 20, speed: 0, radius: 16, damage: 0 },
       'sign-here': { name: '要签字的那一栏', hp: 24, speed: 46, radius: 12, damage: 3 },
@@ -7680,6 +7744,18 @@ export class ZheYiShenGame {
     };
     const spec = specs[type];
     const grow = 1 + this.encounterIndex * 0.3 + this.battleTime * 0.0022;
+    // 收灯人是彩蛋 Boss：血量固定 19999，不吃章节成长系数（否则暮年 ×2.5 会变成 49997）。
+    // 这个数字的用意是「除了特殊构筑根本杀不死」——它不是一场常规战斗，是一个可能性。
+    if (type === 'lamp-keeper') {
+      return {
+        id: this.entityId++, type, name: opts?.name ?? spec.name, x, y,
+        radius: spec.radius,
+        hp: LAMP_KEEPER_HP, maxHp: LAMP_KEEPER_HP, speed: spec.speed * 0.82,
+        damage: spec.damage,
+        attackCooldown: 0.9, elite: false, boss: true,
+        dead: false, flash: 0, age: this.random() * 3,
+      } as EnemyUnit;
+    }
     const madeElite = Boolean(opts?.elite && !spec.elite && !spec.boss);
     const elite = Boolean(spec.elite || opts?.elite);
     const hp = spec.hp * grow * (madeElite ? 2.7 : 1);
@@ -7695,14 +7771,12 @@ export class ZheYiShenGame {
 
   private damageEnemy(enemy: EnemyUnit, amount: number, color: string, material?: string): void {
     if (enemy.dead || amount <= 0) return;
-    if (enemy.type === 'lamp-keeper') {
-      enemy.flash = 0.08;
-      if (!this.lampGuardHintShown) {
-        this.lampGuardHintShown = true;
-        this.say('他没有接这一口气，只看着你身上的东西。');
-        this.burst('ring', enemy.x, enemy.y, enemy.radius * 2.1, '#b9ad91');
-      }
-      return;
+    if (enemy.type === 'lamp-keeper' && !this.lampGuardHintShown) {
+      // 不再免疫伤害——他可以被杀，只是 19999 血摆在那里。首次挨打仍然给这句话：
+      // 正典里他本来就不是来跟你打的，是你自己决定要不要打。
+      this.lampGuardHintShown = true;
+      this.say('他没有接这一口气，只看着你身上的东西。');
+      this.burst('ring', enemy.x, enemy.y, enemy.radius * 2.1, '#b9ad91');
     }
     if ((enemy.marked ?? 0) > 0) amount *= 1.12;
     if ((enemy.rawTimer ?? 0) > 0) amount *= 1 + Math.min(3, enemy.rawStacks ?? 1) * 0.06;
@@ -7794,6 +7868,10 @@ export class ZheYiShenGame {
       return;
     }
     enemy.dead = true;
+    if (enemy.type === 'lamp-keeper') {
+      this.finishLampKeeperKill(enemy);
+      return;
+    }
     if (enemy.type === 'uniform-answer' && this.schoolEliteDefeatedAt <= 0) this.schoolEliteDefeatedAt = this.battleTime;
     // 《这个很简单》：说好很简单的活，死的时候分裂成两件（只分裂一代）
     if (enemy.type === 'task-simple' && (enemy.phase ?? 0) === 0 && this.enemies.length < LANTERN_HORDE_CAP) {
@@ -8156,6 +8234,12 @@ export class ZheYiShenGame {
   }
 
   private beginPraiseConsult(enemy: EnemyUnit, extraTasks: number): void {
+    // 和电话一样：踩圈这件事此前没有任何一处说明，玩家只看到一个问号。首次说明一次。
+    if (!this.praiseConsultHintShown) {
+      this.praiseConsultHintShown = true;
+      this.caption = '他在等一个回答。站进那个圈里。';
+      this.captionTime = 4.2;
+    }
     const angle = this.random() * Math.PI * 2;
     this.praiseConsult = {
       x: this.heroX + Math.cos(angle) * 94,
@@ -8190,6 +8274,13 @@ export class ZheYiShenGame {
   }
 
   private beginPhoneRing(enemy: EnemyUnit, phaseTwo: boolean): void {
+    // 接听规则（走到跟前、站满三秒）此前全靠玩家自己猜——铃声、震动、边缘指示都只说
+    // 「那边有电话」，没有一处说「要走过去站着」。第一次响铃时讲清楚，只讲一次。
+    if (!this.phoneAnswerHintShown) {
+      this.phoneAnswerHintShown = true;
+      this.caption = '电话在响。得走到跟前，站满三秒。';
+      this.captionTime = 4.2;
+    }
     this.phoneRinging = true;
     this.phoneRingWindow = phaseTwo ? PHONE_PHASE_TWO_RING_WINDOW : PHONE_PHASE_ONE_RING_WINDOW;
     this.phoneAnswer = 0;
@@ -8450,6 +8541,72 @@ export class ZheYiShenGame {
       this.burst('word', enemy.x, enemy.y - enemy.radius - 12, 28, '#8f8672', '这次没照住');
       this.sayLore('lamp-seize-miss', '他把灯提高了一点。夜还长。');
     }
+  }
+
+  /**
+   * 击杀收灯人——彩蛋成就。
+   *
+   * 正典里他不是来跟你打的：他一件一件收走你这一身，你本该主动放下最后一口气。
+   * 19999 点血就是这个意思——常规构筑根本打不动，只有把伤害堆到极限才够得着。
+   *
+   * 不在本局给任何加成：收灯人出现在终局，他之后没有可玩内容，还回道具毫无意义。
+   * 奖励落在下一局——这个成就解锁传承机制（见 openSpecialRoom 里的名册继承）。
+   */
+  /**
+   * 后台预生成这一局的人生封卷。只发起一次；拿不到就保持空串，
+   * 结局页有固定文案兜底——封卷写不出来绝不能让结局卡住。
+   */
+  private beginLifeSummary(): void {
+    if (this.lifeSummaryRequested || !this.origin) return;
+    this.lifeSummaryRequested = true;
+    this.lifeSummaryAbort = new AbortController();
+    // 封卷要串成一个故事，所以喂进去的必须是「经历了什么」而不是「经历了几次」：
+    // 出生背景故事 + 外号由来 + 每一张命运牌的事件、方向、结果，以及玩家亲口说的原话。
+    const payload = {
+      nickname: this.origin.nickname || this.origin.title,
+      nicknameReason: this.origin.nicknameReason ?? '',
+      title: this.origin.title,
+      originKind: this.origin.kind,
+      originStory: this.origin.story,
+      reachedAge: AGE_LABELS[Math.min(this.encounterIndex, AGE_LABELS.length - 1)],
+      chapters: AGE_LABELS.slice(0, this.encounterIndex + 1),
+      items: this.items.map((id) => getItem(id).name),
+      swallowed: this.stats.swallowed,
+      exhaled: this.stats.exhaled,
+      receipts: this.fateReceipts.map((receipt) => ({
+        title: receipt.event.title,
+        fact: receipt.event.fact,
+        direction: receipt.direction,
+        label: receipt.event[receipt.direction]?.label ?? '',
+        result: receipt.result,
+        ...(receipt.playerText ? { playerText: receipt.playerText } : {}),
+      })),
+      keeperSlain: this.lampKeeperSlain,
+    };
+    void generateLifeSummary(payload, this.lifeSummaryAbort.signal).then((text) => {
+      if (text) this.lifeSummary = text;
+    });
+  }
+
+  private finishLampKeeperKill(enemy: EnemyUnit): void {
+    this.lampKeeperSlain = true;
+    this.lampSeize = undefined;
+    this.lampReleaseReady = false;
+    this.lampFinalStripTimer = 0;
+    this.darkR = 320;
+    this.burst('ring', enemy.x, enemy.y, 120, '#f0d79a');
+    this.burst('ring', enemy.x, enemy.y, 78, '#fdf6e0');
+    this.caption = '灯灭在他手里。这一身，他没有收走。';
+    this.captionTime = 4.6;
+    this.say('这一身，他没有收走。');
+    this.feedback.play('boss', 1.2);
+    this.feedback.vibrate([140, 90, 140, 90, 200]);
+    recordTelemetry('lamp_keeper_slain', {
+      runSeed: this.runSeed >>> 0,
+      items: this.items.length,
+      kills: this.stats.kills,
+    });
+    this.endRun(true);
   }
 
   private finishLampCycle(enemy: EnemyUnit, stripAt: number): void {
@@ -9364,7 +9521,12 @@ export class ZheYiShenGame {
       }
       this.releaseRetractedVoice();
     }
-    this.fateReceipts.push({ event: resolvedEvent, direction, result: response.result });
+    this.fateReceipts.push({
+      event: resolvedEvent,
+      direction,
+      result: response.result,
+      ...(custom && this.fatePlayerText ? { playerText: this.fatePlayerText } : {}),
+    });
     recordTelemetry('fate_choice', {
       runSeed: this.runSeed >>> 0,
       chapterIndex: this.encounterIndex,
@@ -9705,7 +9867,10 @@ export class ZheYiShenGame {
     const roomPool = (this.specialRoomKind === 'back' ? BACK_ROOM_POOL : LIGHT_ROOM_POOL).filter((id) => !this.items.includes(id));
     this.specialRoomPreviousLifeItem = undefined;
     if (this.specialRoomKind === 'light') {
-      const previousLife = this.ledgerEntries[0];
+      // 传承机制由彩蛋成就解锁：名册里必须存在一世杀死过收灯人。
+      // 他的职责就是收走你这一身；只有他被杀过，东西才谈得上「传下来」。
+      const inheritanceUnlocked = this.ledgerEntries.some((entry) => entry.keeperSlain);
+      const previousLife = inheritanceUnlocked ? this.ledgerEntries[0] : undefined;
       // 五件固定传承物必须在当前人生自己的章节落下；上一世只能留下普通物证，
       // 否则雨衣、病历本和旧工牌会抢跑它们本局的叙事时刻。
       const previousCandidates = previousLife
@@ -9791,6 +9956,7 @@ export class ZheYiShenGame {
       items: [...this.items],
       lastEcho,
       won,
+      keeperSlain: this.lampKeeperSlain,
       recordedAt: Date.now(),
     };
     this.ledgerEntries = appendLifeLedger(entry);
@@ -10056,7 +10222,10 @@ export class ZheYiShenGame {
   }
 
   private burst(kind: BurstEffect['kind'], x: number, y: number, radius: number, color: string, text?: string, material?: string): void {
-    this.pushBurst({ id: this.entityId++, kind, x, y, radius, life: 0.36, duration: 0.36, color, text, material });
+    // 飘字要能读完：0.36 秒且全程线性淡出，平均不透明度只有 0.5，玩家根本看不清写了什么。
+    // 文字类给到 1.1 秒（渲染侧前 55% 保持全不透明），其余特效维持原时长不变。
+    const duration = kind === 'word' ? 1.1 : 0.36;
+    this.pushBurst({ id: this.entityId++, kind, x, y, radius, life: duration, duration, color, text, material });
   }
 
   /** 技能隐喻字幕：首次触发时说一句，走留白公式，一局一次 */
@@ -10095,6 +10264,35 @@ export class ZheYiShenGame {
         drag: options.drag ?? 2.4,
       });
     }
+  }
+
+  /**
+   * 钥匙爆炸的三层爆发。原来只有一个锁孔加两片门光，读法对但太薄。
+   * 按项目已有的爆发模板分三层，并且各层的方向是有讲究的——这不是随机撒屑：
+   *   ① 门光两侧的金屑：沿水平方向左右喷出，跟着「门被打开」那一下走；
+   *   ② 白亮芯：极短命、极快，只负责那一瞬的过曝，让爆点有重量；
+   *   ③ 重屑坠地：带重力，落回地面，收尾时把爆炸的余量交还给场景。
+   */
+  private spawnKeyBlastParticles(x: number, y: number, radius: number): void {
+    const scale = this.clamp(radius / 44, 0.6, 1.8);
+    // ① 门光两侧：左右各一束，贴着开门的方向
+    for (const angle of [0, Math.PI]) {
+      this.spawnPixelParticles({
+        x, y, count: Math.round(9 * scale), angle, spread: 0.7,
+        speed: 150 * scale, speedVar: 0.55, life: 0.42, size: 2,
+        color: '#d3a85d', drag: 3.1,
+      });
+    }
+    // ② 白亮芯：一瞬的过曝
+    this.spawnPixelParticles({
+      x, y, count: Math.round(7 * scale), speed: 210 * scale, speedVar: 0.7,
+      life: 0.16, size: 2, color: '#fdf6e0', drag: 4.2,
+    });
+    // ③ 重屑坠地：带重力，收尾还给场景
+    this.spawnPixelParticles({
+      x, y: y - 2, count: Math.round(8 * scale), speed: 92 * scale, speedVar: 0.8,
+      life: 0.72, size: 1, color: '#8a6b32', gravity: 220, drag: 1.5,
+    });
   }
 
   private updatePixelParticles(dt: number): void {
@@ -10824,14 +11022,20 @@ export class ZheYiShenGame {
     const visibleHeight = Math.max(1, Math.round((height * revealSteps) / 8));
     const left = Math.round(x - width / 2);
     const top = Math.round(groundY - height + (1 - revealSteps / 8) * 3);
-    ctx.save();
+    // 揭开效果是个轴对齐矩形裁剪，可以直接用 drawImage 的九参源矩形表达：
+    // clip() 是 canvas 上最贵的操作之一（会让快速路径失效），战斗中 24 个摆设
+    // 每帧就是 24 次 clip + 24 次 save/restore。改成源矩形后这些全部消失。
+    // 源坐标必须用精确分数，不能取整：精灵高度不能被目标高度整除时，取整会让最近邻
+    // 采样偏移小半个源像素——对拍实测 48 个用例里有 25 个出现差异、最大差值 246。
+    // 用精确分数后 48/48 逐像素一致。
+    const revealTop = top + height - visibleHeight;
+    const srcY = (sprite.height * (height - visibleHeight)) / height;
+    const srcH = sprite.height - srcY;
+    const previousAlpha = ctx.globalAlpha;
     ctx.globalAlpha = alpha;
     ctx.imageSmoothingEnabled = false;
-    ctx.beginPath();
-    ctx.rect(left, top + height - visibleHeight, width, visibleHeight);
-    ctx.clip();
-    ctx.drawImage(sprite, left, top, width, height);
-    ctx.restore();
+    ctx.drawImage(sprite, 0, srcY, sprite.width, srcH, left, revealTop, width, visibleHeight);
+    ctx.globalAlpha = previousAlpha;
   }
 
   private renderStageAtmosphere(stage: StageSpec, next: StageSpec | undefined, blend: number): void {
@@ -11265,12 +11469,17 @@ export class ZheYiShenGame {
     const pulse = this.reducedMotion ? 0 : Math.sin(this.visualTime * 7) * 2;
     ctx.save();
     ctx.translate(Math.round(consult.x), Math.round(consult.y));
-    ctx.fillStyle = 'rgba(179,61,73,.08)';
-    ctx.strokeStyle = '#b84954';
+    // 原来是一个方块底 + 方框，压在 Boss 立绘上很脏。预警真正要传达的是「还有多久」，
+    // 那件事由下面那圈进度环负责；方块只是噪音，去掉。
+    // lineWidth 必须显式设：方块那段原本带 lineWidth=2，删掉后这里会继承上一次绘制
+    // 留下的值（描边字是 3），进度环会莫名变粗。
     ctx.lineWidth = 2;
+    // 底圈：始终画满的落脚圈。只画进度弧的话，时间快到时弧会缩没，「？」就变成
+    // 一个飘在空中、没有空间归属的符号——那正是它读起来「偏移」的原因。
+    // 半径 27 与触发判定的 28 对应：圈里就是站得住的地方。
+    ctx.strokeStyle = 'rgba(215,189,114,.28)';
     ctx.beginPath();
-    ctx.rect(-20 - pulse, -20 - pulse, 40 + pulse * 2, 40 + pulse * 2);
-    ctx.fill();
+    ctx.arc(0, 0, 27, 0, Math.PI * 2);
     ctx.stroke();
     ctx.strokeStyle = '#d7bd72';
     ctx.beginPath();
@@ -13330,24 +13539,20 @@ export class ZheYiShenGame {
     const traits = this.origin.traits.map((id) => getOriginTrait(id));
     ctx.save();
 
-    // The compact mark is a readable identity tag, not a mystery glyph.
-    ctx.fillStyle = 'rgba(14,14,19,.82)';
-    ctx.fillRect(x, y, width, height);
-    const frameDrawn = uiTextures.drawStampButtonFrame(ctx, x, y, width, height, 'normal', 0.88);
-    if (!frameDrawn) drawRedStamp(ctx, x, y, width, height, '', 691, UI_PALETTE.oldRed, UI_PALETTE.oldRed, 'rgba(0,0,0,0)');
-    drawRedStamp(ctx, x + 5, y + 5, 27, 28, this.originBadgeGlyph(), 37, kindColor, UI_PALETTE.paperLight, 'rgba(14,14,19,.82)', 12);
+    // 去底框：全游戏叙事文字统一为无底描边字（2026-07-26 裁决），这块外号栏此前还留着
+    // 一个深色方块 + 印章边框，是最后几处违例之一。只保留那枚出身印记作为身份标识，
+    // 文字改描边字直接落在画面上。
+    drawRedStamp(ctx, x + 5, y + 5, 27, 28, this.originBadgeGlyph(), 37, kindColor, UI_PALETTE.paperLight, 'rgba(0,0,0,0)', 12);
     ctx.textAlign = 'left';
-    ctx.fillStyle = UI_PALETTE.paperDim;
     ctx.font = `8px ${UI_FONT_STACK}`;
-    ctx.fillText('出生外号', x + 39, y + 12);
+    this.drawOutlinedText('出生外号', x + 39, y + 12, UI_PALETTE.paperDim);
     let nicknameSize = 11;
     do {
       ctx.font = `bold ${nicknameSize}px ${UI_ARCHIVE_FONT_STACK}`;
       if (ctx.measureText(nickname).width <= 70) break;
       nicknameSize -= 1;
     } while (nicknameSize > 8);
-    ctx.fillStyle = UI_PALETTE.paperLight;
-    ctx.fillText(nickname, x + 39, y + 28);
+    this.drawOutlinedText(nickname, x + 39, y + 28, UI_PALETTE.paperLight);
     traits.forEach((trait, index) => {
       ctx.fillStyle = trait.tone === 'positive' ? '#8fc0a5' : trait.tone === 'negative' ? '#d3707c' : '#b7b1a6';
       ctx.fillRect(x + width - 6, y + 8 + index * 10, 2, 7);
@@ -13426,19 +13631,15 @@ export class ZheYiShenGame {
     applyPixelDiscipline(ctx);
     const vector = this.computeAttackVector();
     const norm = (value: number, base: number) => (value / base).toFixed(2);
-    drawCutCornerPanel(ctx, 54, 594, 246, 40, 'rgba(18,18,24,.9)', '#4d494d', 2, 1);
+    // 武器条去底：它只是三个读数，不需要一个横贯屏幕的暗条压住场景。
     ctx.textAlign = 'left';
-    ctx.fillStyle = UI_PALETTE.paperLight;
     ctx.font = `bold 9px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillText('《一口气》', 64, 608);
+    this.drawOutlinedText('《一口气》', 64, 608, UI_PALETTE.paperLight);
     drawStatusIcon(ctx, 113, 600, 'breath-power', 1, UI_PALETTE.breath);
-    ctx.fillStyle = UI_PALETTE.oldRed;
     ctx.font = `bold 10px ${UI_FONT_STACK}`;
-    ctx.fillText(`劲 ${norm(vector.damage, BASE_VECTOR.damage)}`, 127, 608);
-    ctx.fillStyle = UI_PALETTE.hospitalBlueGray;
-    ctx.fillText(`速 ${norm(1 / vector.fireInterval, 1 / BASE_VECTOR.fireInterval)}`, 187, 608);
-    ctx.fillStyle = UI_PALETTE.raincoatYellow;
-    ctx.fillText(`程 ${norm(vector.range, BASE_VECTOR.range)}`, 247, 608);
+    this.drawOutlinedText(`劲 ${norm(vector.damage, BASE_VECTOR.damage)}`, 127, 608, UI_PALETTE.oldRed);
+    this.drawOutlinedText(`速 ${norm(1 / vector.fireInterval, 1 / BASE_VECTOR.fireInterval)}`, 187, 608, UI_PALETTE.hospitalBlueGray);
+    this.drawOutlinedText(`程 ${norm(vector.range, BASE_VECTOR.range)}`, 247, 608, UI_PALETTE.raincoatYellow);
     ctx.fillStyle = UI_PALETTE.paperDim;
     ctx.font = `8px ${UI_FONT_STACK}`;
     const traits = [
@@ -13561,15 +13762,13 @@ export class ZheYiShenGame {
 
     // Pause owns the far-right 28px. Keep the resource panel separate so the
     // two controls do not visually merge on a narrow phone screen.
-    drawCutCornerPanel(ctx, 248, 6, 74, 39, hudFill, hudStroke, 2, 1);
+    // 血条框保留（它需要一个容器来读进度），零钱不是血条，去底改描边字。
     drawStatusIcon(ctx, 257, 13, 'coins', 1, UI_PALETTE.raincoatYellow);
     ctx.textAlign = 'left';
-    ctx.fillStyle = UI_PALETTE.paperDim;
     ctx.font = `9px ${UI_FONT_STACK}`;
-    ctx.fillText('零钱', 274, 18);
-    ctx.fillStyle = UI_PALETTE.raincoatYellow;
+    this.drawOutlinedText('零钱', 274, 18, UI_PALETTE.paperDim);
     ctx.font = `bold 11px ${UI_FONT_STACK}`;
-    ctx.fillText(String(this.hero.coins), 274, 36);
+    this.drawOutlinedText(String(this.hero.coins), 274, 36, UI_PALETTE.raincoatYellow);
 
     drawLifeChapterTrack(ctx, 18, 52, 324, STAGES.length, this.encounterIndex, AGE_LABELS.join('|'), 0);
   }
@@ -16772,7 +16971,19 @@ export class ZheYiShenGame {
       ctx.strokeStyle = burst.color;
       ctx.fillStyle = burst.color;
       if (burst.kind === 'word') {
-        ctx.textAlign = 'center'; ctx.font = 'bold 11px sans-serif'; ctx.fillText(burst.text || '', burst.x, burst.y - progress * 22);
+        // 前 55% 保持全不透明再淡出；上浮距离不变，只是摊到更长时间里，观感更稳。
+        // 另加一圈近黑描边——飘字此前是纯填充，落在杂物地板上几乎读不出来。
+        ctx.globalAlpha = progress < 0.55 ? 1 : 1 - (progress - 0.55) / 0.45;
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 11px sans-serif';
+        const wordY = burst.y - progress * 22;
+        ctx.lineJoin = 'round';
+        ctx.miterLimit = 2;
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'rgba(6,6,9,.86)';
+        ctx.strokeText(burst.text || '', burst.x, wordY);
+        ctx.fillStyle = burst.color;
+        ctx.fillText(burst.text || '', burst.x, wordY);
       } else if (burst.kind === 'sigh') {
         const driftX = burst.text === 'L' ? -1 : burst.text === 'R' ? 1 : 0;
         const driftY = burst.text === 'B' ? -0.6 : burst.text === 'F' ? 0.3 : -0.35;
@@ -16811,6 +17022,29 @@ export class ZheYiShenGame {
         }
       } else if (burst.kind === 'door') {
         // 钥匙终点分两拍：钥匙孔保持可认，开门光向两侧展开；不要画成会移动的闭合网格框。
+        // 前两拍之外再加两层光：开门瞬间的过曝核心 + 一圈向外散开的光晕。
+        // 粒子负责重量，光负责那一瞬的亮——两者分工，避免把锁孔糊掉。
+        if (progress < 0.34) {
+          const flash = 1 - progress / 0.34;
+          ctx.save();
+          ctx.globalAlpha *= flash * 0.9;
+          ctx.fillStyle = '#fdf6e0';
+          ctx.beginPath();
+          ctx.arc(Math.round(burst.x), Math.round(burst.y - 2), Math.max(2, burst.radius * 0.16 * flash), 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+        {
+          const halo = burst.radius * (0.24 + progress * 0.92);
+          ctx.save();
+          ctx.globalAlpha *= (1 - progress) * 0.42;
+          ctx.strokeStyle = '#f0d79a';
+          ctx.lineWidth = Math.max(1, 3 - progress * 2.4);
+          ctx.beginPath();
+          ctx.arc(Math.round(burst.x), Math.round(burst.y - 2), halo, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
         const keyholeRadius = Math.max(2, Math.round(burst.radius * 0.07));
         const keyholeStem = Math.max(3, Math.round(burst.radius * 0.14));
         ctx.save();
@@ -17296,24 +17530,7 @@ export class ZheYiShenGame {
       ctx.fillStyle = 'rgba(190,200,205,.08)'; ctx.fillRect(88, 34, 184, 500);
       ctx.strokeStyle = '#632c37'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(70, 0); ctx.lineTo(92, H); ctx.moveTo(290, 0); ctx.lineTo(268, H); ctx.stroke();
     }
-    ctx.fillStyle = 'rgba(7,7,10,.76)';
-    ctx.fillRect(14, 15, 332, 76);
-    ctx.fillStyle = this.specialRoomKind === 'light' ? UI_PALETTE.raincoatYellow : UI_PALETTE.hospitalBlueGray;
-    ctx.fillRect(14, 15, 3, 76);
-    ctx.textAlign = 'left';
-    ctx.fillStyle = UI_PALETTE.paperLight;
-    ctx.font = `bold 18px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillText(this.specialRoomKind === 'light' ? '留灯间' : '里屋', 28, 45);
-    ctx.font = `9px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillStyle = this.specialRoomKind === 'light' ? '#c9b77c' : '#aeb7bb';
-    ctx.fillText(
-      this.specialRoomKind === 'light'
-        ? (this.specialRoomPreviousLifeItem ? '看守人：有人把它留在这儿了。' : '桌上没有价签。只能带走一件。')
-        : '不收零钱。镜子只认还剩多少口气。',
-      28,
-      70,
-    );
-    drawStitchDivider(ctx, 25, 87, 310, 'horizontal', '#534b48', 5, 4);
+    this.drawSpecialRoomHeader();
 
     for (let index = 0; index < 3; index += 1) {
       const id = this.specialRoomOffers[index];
@@ -17335,6 +17552,83 @@ export class ZheYiShenGame {
       this.specialRoomKind === 'light' ? '另外两件东西，会继续留在灯下。' : '镜子比他先老了一步。',
       180,
       620,
+    );
+  }
+
+  /**
+   * 标题栏此前是一个纯黑矩形 + 一根左侧色条 + 一条虚线，和游戏其余部分的切角纸质面板
+   * 语言完全脱节，看上去像调试 HUD（用户点名「太丑」）。改用与预览卡同一套的
+   * drawCutCornerPanel + 纸纹 + 确定性磨损；那根色条换成一团灯光——留灯间的前提
+   * 就是「灯还亮着」，这件事该由画面说，而不是一根色带。
+   */
+  private drawSpecialRoomHeader(): void {
+    const ctx = this.ctx;
+    const warm = this.specialRoomKind === 'light';
+    this.drawPixelTitle(warm ? '留灯间' : '里屋', W / 2, 40, 24, warm ? '#f2e6cb' : UI_PALETTE.paperLight);
+    ctx.textAlign = 'center';
+    ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
+    this.drawOutlinedText(
+      warm
+        ? (this.specialRoomPreviousLifeItem ? '看守人：有人把它留在这儿了。' : '桌上没有价签。只能带走一件。')
+        : '不收零钱。镜子只认还剩多少口气。',
+      W / 2,
+      66,
+      warm ? '#c9b77c' : '#aeb7bb',
+    );
+  }
+
+  /**
+   * 像素风标题：小字号渲染到离屏，再用最近邻整数倍放大，得到硬边的像素块字。
+   * 直接用大字号画只会得到平滑的矢量字，和整个游戏的像素语言不搭。
+   *
+   * 放大倍数只用 2：汉字结构比拉丁字母复杂得多，3 倍意味着源字号只有 8px，
+   * 「留灯间」会糊成「囧灯闫」——笔画在那个分辨率下已经并到一起了。
+   * 2 倍对应 12px 源字号，笔画还分得开，边缘又确实是硬像素块。
+   *
+   * 按「文本+字号+颜色」缓存，避免每帧重建离屏画布。
+   */
+  private readonly pixelTitleCache = new Map<string, HTMLCanvasElement>();
+
+  private drawPixelTitle(text: string, centerX: number, centerY: number, targetSize: number, fill: string): void {
+    const ctx = this.ctx;
+    const scale = 2;
+    const small = Math.max(10, Math.round(targetSize / scale));
+    const key = `${text}|${small}|${fill}`;
+    let baked = this.pixelTitleCache.get(key);
+    if (!baked) {
+      const probe = document.createElement('canvas').getContext('2d');
+      if (!probe) return;
+      const font = `bold ${small}px ${UI_ARCHIVE_FONT_STACK}`;
+      probe.font = font;
+      const width = Math.ceil(probe.measureText(text).width) + 4;
+      const height = small + 4;
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const bake = canvas.getContext('2d');
+      if (!bake) return;
+      bake.font = font;
+      bake.textAlign = 'center';
+      bake.textBaseline = 'middle';
+      bake.lineJoin = 'round';
+      bake.miterLimit = 2;
+      bake.lineWidth = 2;
+      bake.strokeStyle = 'rgba(6,6,9,.86)';
+      bake.strokeText(text, width / 2, height / 2);
+      bake.fillStyle = fill;
+      bake.fillText(text, width / 2, height / 2);
+      baked = canvas;
+      this.pixelTitleCache.set(key, baked);
+    }
+    const drawWidth = baked.width * scale;
+    const drawHeight = baked.height * scale;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(
+      baked,
+      Math.round(centerX - drawWidth / 2),
+      Math.round(centerY - drawHeight / 2),
+      drawWidth,
+      drawHeight,
     );
   }
 
@@ -17406,7 +17700,13 @@ export class ZheYiShenGame {
     ctx.font = `bold 11px ${UI_ARCHIVE_FONT_STACK}`;
     this.wrapText(taken ? '空下来的位置' : item.name, centerX, rect.y + 169, rect.width - 14, 13, 2);
 
-    const status = taken ? '已经穿上' : !canAfford ? '已经付不起' : holding ? '别松手' : focused ? '按住带走' : `${index + 1}`;
+    // 未选中态原本直接显示 `${index + 1}`，屏幕上就是孤零零一个「2」「3」——那不是设计，
+    // 是占位符漏了出来。换成一句能读懂的招呼，同时告诉玩家「点一下先看看」。
+    const status = taken ? '已经穿上'
+      : !canAfford ? '已经付不起'
+        : holding ? '别松手'
+          : focused ? '按住带走'
+            : '看看这件';
     ctx.fillStyle = taken ? '#6d696d' : !canAfford ? UI_PALETTE.warning : focused
       ? (this.specialRoomKind === 'light' ? UI_PALETTE.raincoatYellow : UI_PALETTE.hospitalBlueGray)
       : UI_PALETTE.paperDim;
@@ -17567,21 +17867,24 @@ export class ZheYiShenGame {
     ctx.fillStyle = UI_PALETTE.oldRed;
     ctx.fillRect(20, 89, 320, 2);
 
-    const resultTabLabels = ['封卷', '穿过的', '咽与吐', '留下的'];
+    const resultTabLabels = ['封卷', '这一生', '穿过的', '咽与吐', '留下的'];
+    const tabStride = RESULT_TAB_RECT.width / RESULT_TABS.length;
+    const tabWidth = tabStride - 2;
     resultTabLabels.forEach((label, index) => {
-      const x = RESULT_TAB_RECT.x + index * 80;
+      const x = Math.round(RESULT_TAB_RECT.x + index * tabStride);
       const active = this.resultTab === RESULT_TABS[index];
       ctx.fillStyle = active ? 'rgba(216,208,193,.15)' : 'rgba(27,26,32,.72)';
-      ctx.fillRect(x, RESULT_TAB_RECT.y, 78, RESULT_TAB_RECT.height);
+      ctx.fillRect(x, RESULT_TAB_RECT.y, tabWidth, RESULT_TAB_RECT.height);
       ctx.fillStyle = active ? UI_PALETTE.oldRed : '#514d53';
-      ctx.fillRect(x, RESULT_TAB_RECT.y + RESULT_TAB_RECT.height - 2, 78, 2);
+      ctx.fillRect(x, RESULT_TAB_RECT.y + RESULT_TAB_RECT.height - 2, tabWidth, 2);
       ctx.textAlign = 'center';
       ctx.fillStyle = active ? UI_PALETTE.paperLight : UI_PALETTE.paperDim;
       ctx.font = `bold 9px ${UI_FONT_STACK}`;
-      ctx.fillText(label, x + 39, RESULT_TAB_RECT.y + 18);
+      ctx.fillText(label, x + tabWidth / 2, RESULT_TAB_RECT.y + 18);
     });
 
     if (this.resultTab === 'seal') this.renderResultSeal();
+    else if (this.resultTab === 'life') this.renderResultLife();
     else if (this.resultTab === 'items') this.renderResultItems();
     else if (this.resultTab === 'fates') this.renderResultFates();
     else this.renderResultStats();
@@ -17842,6 +18145,43 @@ export class ZheYiShenGame {
     if (swallowed === related.length) return `${related.length} 次咽下，把它留在了身体里。`;
     if (swallowed === 0) return `${related.length} 次吐出，让它有了清楚的形状。`;
     return `${related.length} 次回应，一起把它养深。`;
+  }
+
+  /**
+   * 「这一生」页：AI 把这一局的出身、外号由来、每一张命运牌（含玩家亲口说的原话）
+   * 串成的一段封卷。收灯人出现时就在后台开写，走到结局通常已经就绪。
+   *
+   * 三种状态都必须有得看——写好了给正文、还在写给等待、写不出来给固定兜底；
+   * 绝不能因为 AI 没回来就留一块空白，那和「出生没有兜底」是两回事：
+   * 出生失败必须让玩家看见并可重试，封卷失败只是少一段文字，不该打断结局。
+   */
+  private renderResultLife(): void {
+    const ctx = this.ctx;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = UI_PALETTE.oldRed;
+    ctx.font = `bold 10px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText(this.lifeSummary ? '这一生 · AI生成' : '这一生', 20, 150);
+
+    const identity = this.origin?.nickname ? `《${this.origin.nickname}》` : this.origin?.title || '没有留下名字的人';
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    ctx.fillText(`${identity} · ${this.fateReceipts.length} 张回执 · ${this.items.length} 件物证`, 20, 168);
+    drawStitchDivider(ctx, 20, 178, 320, 'horizontal', '#4d494d', 5, 4);
+
+    if (this.lifeSummary) {
+      ctx.fillStyle = UI_PALETTE.paper;
+      ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
+      this.wrapText(this.lifeSummary, 20, 202, 320, 16, 16);
+      return;
+    }
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
+    this.wrapText(
+      this.lifeSummaryRequested
+        ? '最后一页还在写。\n他这一生的字，正在一句一句落下来。'
+        : '这一身，没有等到最后一页。',
+      20, 202, 320, 16, 4,
+    );
   }
 
   private renderResultItems(): void {
@@ -19616,6 +19956,7 @@ export class ZheYiShenGame {
             items: ['only-key', 'front-desk-letter', 'fathers-raincoat'],
             lastEcho: '他亲口说：「没事。不忙。」',
             won: false,
+            keeperSlain: false,
             recordedAt: Date.now(),
           }];
         }
@@ -19737,13 +20078,13 @@ export class ZheYiShenGame {
                   runSeed: 0x19af21c4, nickname: '把饭热了三遍的人', title: '总说马上回家',
                   reachedStage: 3, reachedAge: '成年', endedBy: '响个不停',
                   items: ['front-desk-letter', 'fathers-raincoat', 'iphone-17-pro-max', 'unsent-phone', 'moms-bowl'],
-                  lastEcho: '他亲口说：「没事。不忙。」', won: false, recordedAt: Date.now(),
+                  lastEcho: '他亲口说：「没事。不忙。」', won: false, keeperSlain: false, recordedAt: Date.now(),
                 },
                 {
                   runSeed: 0x073a91ef, nickname: '永远坐靠门那桌', title: '替别人先看出口',
                   reachedStage: 5, reachedAge: '晚年', endedBy: '放下了',
                   items: ['wooden-sword', 'only-key', 'fathers-chart', 'revoked-badge', 'held-elevator', 'funeral-photo'],
-                  lastEcho: '有人替他按住了那一趟电梯。', won: true, recordedAt: Date.now() - 1000,
+                  lastEcho: '有人替他按住了那一趟电梯。', won: true, keeperSlain: true, recordedAt: Date.now() - 1000,
                 },
               ];
               const requestedLedgerPage = Number.parseInt(auditParams.get('ledger-page') ?? '0', 10);

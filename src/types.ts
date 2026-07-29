@@ -188,6 +188,8 @@ export interface FateReceipt {
   result: string;
   /** 可选的异步文学回响，只用于展示，不进入正典记忆或机械结算。 */
   echo?: string;
+  /** 玩家「亲口说」时打下的那句话。人生封卷要把它和事件绑在一起才串得成故事。 */
+  playerText?: string;
 }
 
 export interface LifeSnapshotItem {

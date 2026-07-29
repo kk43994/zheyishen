@@ -77,10 +77,19 @@ interface AIEnvelope {
   error?: string;
 }
 
-/** 互动空间全链路统一使用 Seed 2.0 Pro，命运请求在战斗后台预生成。 */
+/**
+ * 互动空间全链路统一模型；命运请求在战斗后台预生成。
+ *
+ * 2026-07-29 改用 lite：抖音互动中心那把令牌只能访问 pro / lite 两个模型
+ * （1-6-flash、1-5-pro、2-0-flash 等一律 404，2-1-pro 是 403），所以可选项只有两个。
+ * 本地合成测量给出的方向是矛盾的——简单提示词下 lite 更慢（43.0s vs pro 14.3s），
+ * 长提示词下 lite 更快（37.8s vs pro 52.6s）——单次采样不足为据，改由真机验收裁决。
+ * 两者都是推理模型，真正的加速杠杆仍是 thinking:{type:'disabled'}（pro 上实测
+ * 52.6s → 13.0s），但平台是否透传该参数尚未验证。
+ */
 const PLATFORM_AI_MODELS = {
-  origin: 'doubao-seed-2-0-pro-260215',
-  default: 'doubao-seed-2-0-pro-260215',
+  origin: 'doubao-seed-2-0-lite-260428',
+  default: 'doubao-seed-2-0-lite-260428',
 } as const;
 
 // doubao Seed 2.0 Pro 默认开深度思考，实测同一段 origin 提示词：思考开 52.6s、关掉 13.0s。
@@ -91,11 +100,34 @@ const ORIGIN_AI_TIMEOUT_MS = 100_000;
 // fate-review 19.6s、fate-result 10.1s。原来的 10~20s 上限全部卡在采样值上下，必然抖动失败。
 const FATE_AI_TIMEOUT_MS = 60_000;
 
+/**
+ * 人生总结在收灯人出现的那一刻就开始后台预生成，玩家走完终局时通常已经就绪，
+ * 所以等待窗可以给得宽——它不占用任何前台时间（项目「无感加载」红线）。
+ */
+const LIFE_SUMMARY_TIMEOUT_MS = 90_000;
+
 function platformModelFor(kind: keyof typeof AI_SYSTEM_PROMPTS): string {
   return kind === 'origin' ? PLATFORM_AI_MODELS.origin : PLATFORM_AI_MODELS.default;
 }
 
 /** 出生失败页要把实际请求的模型 ID 打给玩家看，用于区分平台故障与模型未开通。 */
+/**
+ * 这一局的人生封卷。在收灯人出现时由 game.ts 提前发起，结果缓存到结局页再显示。
+ * 拿不到就返回 null——结局页有自己的固定文案兜底，绝不能因为总结没写出来就卡住。
+ */
+export async function generateLifeSummary(payload: unknown, signal?: AbortSignal): Promise<string | null> {
+  try {
+    const raw = await requestAI('life-summary', payload, LIFE_SUMMARY_TIMEOUT_MS, signal);
+    if (!isRecord(raw) || typeof raw.text !== 'string') return null;
+    const text = raw.text.trim().replace(/\s+/g, ' ');
+    if (text.length < 60 || text.length > 260) return null;
+    return text;
+  } catch (error) {
+    console.info('[AI] 人生封卷未生成', error instanceof Error ? error.message : error);
+    return null;
+  }
+}
+
 export function platformOriginModel(): string {
   return PLATFORM_AI_MODELS.origin;
 }
@@ -297,7 +329,7 @@ function callPlatformAI(
 }
 
 async function performAIRequest(
-  path: 'origin' | 'fate' | 'fate-options' | 'fate-free' | 'fate-review' | 'fate-result',
+  path: 'origin' | 'fate' | 'fate-options' | 'fate-free' | 'fate-review' | 'fate-result' | 'life-summary',
   payload: unknown,
   timeoutMs: number,
   signal?: AbortSignal,
@@ -353,7 +385,7 @@ function classifyAIError(error: unknown, signal?: AbortSignal): string {
 }
 
 async function requestAI(
-  path: 'origin' | 'fate' | 'fate-options' | 'fate-free' | 'fate-review' | 'fate-result',
+  path: 'origin' | 'fate' | 'fate-options' | 'fate-free' | 'fate-review' | 'fate-result' | 'life-summary',
   payload: unknown,
   timeoutMs: number,
   signal?: AbortSignal,

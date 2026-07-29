@@ -68,6 +68,26 @@ function fitText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number):
   return `${characters.join('')}…`;
 }
 
+/**
+ * 切角面板每帧要画几十个 fillRect（斜角是一行一行填出来的，战斗中实测 60.8 次/帧）。
+ * 图形只由「宽高+切角+颜色」决定，与位置无关，所以可以烘焙成位图复用。
+ *
+ * 但这里不能像颗粒那样无条件烘焙：竖条与横条在中间是**重叠**的，
+ * globalAlpha < 1 或颜色本身带透明度时，「逐个填充」会让重叠区更深，
+ * 而「整块贴图」是均匀的——那是真实的外观差异。所以只在完全不透明时走缓存。
+ */
+const shapeCache = new Map<string, HTMLCanvasElement>();
+const SHAPE_CACHE_LIMIT = 48;
+
+/** 颜色是否完全不透明：rgba()/hsla() 的第四位与 #RRGGBBAA 都要排除。 */
+function isOpaqueColor(color: string): boolean {
+  const c = color.trim().toLowerCase();
+  if (c.startsWith('#')) return c.length !== 5 && c.length !== 9;
+  const m = c.match(/^(?:rgba|hsla)\([^)]*,\s*([0-9.]+)\s*\)$/);
+  if (m) return Number.parseFloat(m[1]!) >= 1;
+  return !c.includes('transparent');
+}
+
 function fillPixelShape(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -82,6 +102,49 @@ function fillPixelShape(
   const sw = atLeast(width, 1);
   const sh = atLeast(height, 1);
   const cut = Math.min(atLeast(corner, 0), Math.floor(sw / 3), Math.floor(sh / 3));
+
+  if (ctx.globalAlpha >= 1 && isOpaqueColor(color) && sw * sh >= 256) {
+    const key = `${sw},${sh},${cut},${color}`;
+    let baked = shapeCache.get(key);
+    if (baked) {
+      shapeCache.delete(key);
+      shapeCache.set(key, baked);
+    } else {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = sw;
+        canvas.height = sh;
+        const bakeCtx = canvas.getContext('2d');
+        if (bakeCtx) {
+          fillPixelShapeDirect(bakeCtx, 0, 0, sw, sh, cut, color);
+          baked = canvas;
+          shapeCache.set(key, baked);
+          if (shapeCache.size > SHAPE_CACHE_LIMIT) {
+            const oldest = shapeCache.keys().next().value;
+            if (oldest !== undefined) shapeCache.delete(oldest);
+          }
+        }
+      } catch {
+        // 拿不到离屏画布就直接画。
+      }
+    }
+    if (baked) {
+      ctx.drawImage(baked, sx, sy);
+      return;
+    }
+  }
+  fillPixelShapeDirect(ctx, sx, sy, sw, sh, cut, color);
+}
+
+function fillPixelShapeDirect(
+  ctx: CanvasRenderingContext2D,
+  sx: number,
+  sy: number,
+  sw: number,
+  sh: number,
+  cut: number,
+  color: string,
+): void {
   ctx.fillStyle = color;
   if (cut <= 0) {
     ctx.fillRect(sx, sy, sw, sh);

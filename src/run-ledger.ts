@@ -14,6 +14,12 @@ export interface LifeLedgerEntry {
   items: ItemId[];
   lastEcho: string;
   won: boolean;
+  /**
+   * 这一世是否杀死了收灯人。收灯人的职责就是收走你这一身；杀了他，
+   * 东西没被收走，下一局开局直接带一件传下来——这是隐藏结局的特殊加成。
+   * 旧存档没有这个字段，按 false 处理。
+   */
+  keeperSlain: boolean;
   recordedAt: number;
 }
 
@@ -43,6 +49,7 @@ function parseEntry(value: unknown): LifeLedgerEntry | null {
     items,
     lastEcho: cleanText(raw.lastEcho, '没有留下最后一句。', 180),
     won: raw.won === true,
+    keeperSlain: raw.keeperSlain === true,
     recordedAt: typeof raw.recordedAt === 'number' && Number.isFinite(raw.recordedAt) ? raw.recordedAt : 0,
   };
 }

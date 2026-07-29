@@ -30,8 +30,15 @@ for (const token of [
   'fail:',
   'complete:',
 ]) assert(platformCall.includes(token), `平台 AI 调用缺少 ${token}`);
-assert(ai.includes("origin: 'doubao-seed-2-0-pro-260215'"), '出生档案没有使用 Seed 2.0 Pro');
-assert(ai.includes("default: 'doubao-seed-2-0-pro-260215'"), '后台命运链路没有统一使用 Seed 2.0 Pro');
+// 抖音互动中心那把令牌只授权两个模型（其余 404/403），所以这里断言「取值在授权范围内
+// 且出生与后台一致」，而不是写死某一个 ID——换模型是产品裁决，不该每次都撞门禁。
+const PLATFORM_ALLOWED_MODELS = ['doubao-seed-2-0-pro-260215', 'doubao-seed-2-0-lite-260428'];
+const modelOf = (field) => (ai.match(new RegExp(`${field}: '([^']+)'`)) || [])[1];
+const originModel = modelOf('origin');
+const defaultModel = modelOf('default');
+assert(PLATFORM_ALLOWED_MODELS.includes(originModel), `出生档案模型不在授权范围内：${originModel}`);
+assert(PLATFORM_ALLOWED_MODELS.includes(defaultModel), `后台命运链路模型不在授权范围内：${defaultModel}`);
+assert(originModel === defaultModel, `出生与后台命运链路必须用同一模型：${originModel} vs ${defaultModel}`);
 // 原合同写死 stream:false 来保证「不出现半截 JSON」。但 doubao 默认深度思考，origin 实测
 // 要跑 52.6 秒，非流式等于让平台网关憋 50 秒不吐字节，网关先断，回来的是 errorType F 的
 // `platform server error`——为了防半截 JSON 反而让出生 100% 失败。这里改为守住真正的不变量：
@@ -99,8 +106,8 @@ console.log(JSON.stringify({
   valid: true,
   platformAPI: 'tt.callAIChatCompletion',
   models: {
-    origin: 'doubao-seed-2-0-pro-260215',
-    background: 'doubao-seed-2-0-pro-260215',
+    origin: originModel,
+    background: defaultModel,
   },
   transport: 'SSE stream; delivered only after done/[DONE]/complete, gated by JSON parse',
   thinking: 'requested disabled; platform may drop the param, timeouts sized for the slow path',
