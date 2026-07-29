@@ -88,6 +88,11 @@ function platformModelFor(kind: keyof typeof AI_SYSTEM_PROMPTS): string {
   return kind === 'origin' ? PLATFORM_AI_MODELS.origin : PLATFORM_AI_MODELS.default;
 }
 
+/** 出生失败页要把实际请求的模型 ID 打给玩家看，用于区分平台故障与模型未开通。 */
+export function platformOriginModel(): string {
+  return PLATFORM_AI_MODELS.origin;
+}
+
 /** 与 vite.config.ts 中的系统提示词保持一致；生产环境（tt 路径）在客户端拼装。 */
 import { AI_SYSTEM_PROMPTS } from './ai-prompts';
 

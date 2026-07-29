@@ -3,6 +3,7 @@ import {
   generateAIFateResult,
   generateAIFreeFate,
   generateAIOrigin,
+  platformOriginModel,
   readAIDiagnostic,
   type AIGenerationState,
 } from './ai';
@@ -450,7 +451,7 @@ function originComicCaptionProgress(sceneIndex: number, sceneElapsed: number): n
 
 // 标题页右下角与 AI 诊断行都会带上它：上传后扫码第一眼就能确认平台跑的是哪个包，
 // 排查「上传了但行为没变」时不再靠猜。每次要重新上传前手动 +1。
-const BUILD_TAG = '0729-4';
+const BUILD_TAG = '0729-5';
 const TITLE_START_RECT = { x: 88, y: 520, width: 184, height: 44 } as const;
 const TITLE_AUDIO_RECT = { x: 290, y: 16, width: 54, height: 30 } as const;
 const TITLE_CODEX_RECT = { x: 16, y: 16, width: 54, height: 30 } as const;
@@ -458,7 +459,7 @@ const RESULT_CODEX_RECT = { x: 70, y: 572, width: 220, height: 26 } as const;
 const ORIGIN_CONTINUE_RECT = { x: 64, y: 570, width: 232, height: 42 } as const;
 const ORIGIN_COMIC_SKIP_RECT = { x: 64, y: 548, width: 232, height: 44 } as const;
 const ORIGIN_LEDGER_RECT = { x: 222, y: 532, width: 106, height: 25 } as const;
-const ORIGIN_RETRY_RECT = { x: 73, y: 395, width: 214, height: 70 } as const;
+const ORIGIN_RETRY_RECT = { x: 73, y: 410, width: 214, height: 62 } as const;
 const ORIGIN_ERROR_HOME_RECT = { x: 32, y: 486, width: 142, height: 46 } as const;
 const ORIGIN_ERROR_CODEX_RECT = { x: 186, y: 486, width: 142, height: 46 } as const;
 const LEDGER_OLDER_RECT = { x: 22, y: 566, width: 88, height: 38 } as const;
@@ -2960,14 +2961,17 @@ export class ZheYiShenGame {
       validated: '档案校验通过',
       rejected: '已返回但校验未通过',
       unavailable: '未发现 tt 接口',
-      timeout: '等待平台回调超时',
-      failed: '平台调用失败',
+      timeout: '等待回调超时',
+      failed: '调用失败',
       invalid_json: '返回内容不是JSON',
       empty_response: '回调了但没有内容',
       aborted: '请求已取消',
     };
     const detail = diagnostic.detail ? ` · ${diagnostic.detail}` : '';
-    return `AI接入(${BUILD_TAG}) · ${transport}${labels[diagnostic.status]}${detail}`;
+    // 模型 ID 必须一起显示：平台把上游「模型未开通/无权限」也包装成 platform server error，
+    // 光看报错分不清是平台故障还是模型没开，带上 ID 才能一眼判断该去火山控制台开哪个。
+    const model = platformOriginModel();
+    return `AI接入(${BUILD_TAG}) · ${transport}${labels[diagnostic.status]}${detail} · 模型 ${model}`;
   }
 
   private drawAIDiagnosticBadge(x: number, y: number, width: number): void {
@@ -2976,13 +2980,13 @@ export class ZheYiShenGame {
     const isError = ['rejected', 'unavailable', 'timeout', 'failed', 'invalid_json', 'empty_response'].includes(diagnostic.status);
     const tone = isError ? UI_PALETTE.oldRed : '#4f6470';
     ctx.save();
-    ctx.font = `10px ${UI_FONT_STACK}`;
-    // 平台原始 errMsg + errorCode + errorType 是排查上传后 AI 调不通的唯一线索，
-    // 必须一个字不丢、看得清地全部显示：10px 左对齐、最多五行（五行 × 约28字，
-    // 远超平台报错实际长度）；万一更长，最后一行以 … 收尾提示截断，不静默吃字。
+    ctx.font = `12px ${UI_FONT_STACK}`;
+    // 平台原始 errMsg + errorCode + errorType + 模型 ID 是排查上传后 AI 调不通的唯一线索，
+    // 必须一个字不丢、看得清地全部显示：12px 左对齐、最多七行；
+    // 万一更长，最后一行以 … 收尾提示截断，不静默吃字。
     const inner = width - 16;
-    const maxLines = 5;
-    const lineHeight = 13;
+    const maxLines = 7;
+    const lineHeight = 16;
     const lines: string[] = [];
     let current = '';
     let truncated = false;
@@ -12557,11 +12561,11 @@ export class ZheYiShenGame {
     ctx.textAlign = 'center';
     ctx.fillStyle = '#625b51'; ctx.font = `9px ${UI_FONT_STACK}`; ctx.fillText('出生 · 第一件无法选择的事', 180, 46);
     drawRedStamp(ctx, 133, 132, 94, 70, '未落档', 79, UI_PALETTE.oldRed, UI_PALETTE.paper, UI_PALETTE.ink);
-    ctx.fillStyle = UI_PALETTE.ink; ctx.font = `bold 19px ${UI_ARCHIVE_FONT_STACK}`; ctx.fillText('这一生还没有写下来', 180, 284);
+    ctx.fillStyle = UI_PALETTE.ink; ctx.font = `bold 19px ${UI_ARCHIVE_FONT_STACK}`; ctx.fillText('这一生还没有写下来', 180, 240);
     ctx.fillStyle = '#625b51'; ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText('没有使用兜底人物，也不会带着假故事开局。', 180, 308, 260, 16, 1);
-    // 报错框顶到 316，五行满写时到 391，刚好停在重试按钮（395）上方。
-    this.drawAIDiagnosticBadge(28, 316, 304);
+    this.wrapText('没有使用兜底人物，也不会带着假故事开局。', 180, 268, 260, 16, 1);
+    // 报错框顶到 278，七行满写时到 400；重试按钮同步下移到 410 给它让位。
+    this.drawAIDiagnosticBadge(24, 278, 312);
     this.drawBreathActionButton(ORIGIN_RETRY_RECT, '重新等他出生', UI_PALETTE.hospitalBlueGray);
     this.drawBreathActionButton(ORIGIN_ERROR_HOME_RECT, '回到封面', '#57585d');
     this.drawBreathActionButton(ORIGIN_ERROR_CODEX_RECT, '打开物证册', UI_PALETTE.oldRed);
