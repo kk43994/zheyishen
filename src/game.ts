@@ -450,7 +450,7 @@ function originComicCaptionProgress(sceneIndex: number, sceneElapsed: number): n
 
 // 标题页右下角与 AI 诊断行都会带上它：上传后扫码第一眼就能确认平台跑的是哪个包，
 // 排查「上传了但行为没变」时不再靠猜。每次要重新上传前手动 +1。
-const BUILD_TAG = '0729-3';
+const BUILD_TAG = '0729-4';
 const TITLE_START_RECT = { x: 88, y: 520, width: 184, height: 44 } as const;
 const TITLE_AUDIO_RECT = { x: 290, y: 16, width: 54, height: 30 } as const;
 const TITLE_CODEX_RECT = { x: 16, y: 16, width: 54, height: 30 } as const;
@@ -12172,10 +12172,11 @@ export class ZheYiShenGame {
     ctx.fillStyle = UI_PALETTE.paperDim;
     ctx.font = `18px ${UI_FONT_STACK}`;
     ctx.fillText('AI生成内容', 180, 620);
-    ctx.globalAlpha = 0.4;
+    // 构建号必须一眼可见（在框内、够亮），它是判断平台是否换上新包的唯一凭据。
+    ctx.globalAlpha = 0.85;
     ctx.textAlign = 'right';
     ctx.font = `8px ${UI_FONT_STACK}`;
-    ctx.fillText(BUILD_TAG, 352, 632);
+    ctx.fillText(BUILD_TAG, 342, 624);
     ctx.globalAlpha = 1;
   }
 
