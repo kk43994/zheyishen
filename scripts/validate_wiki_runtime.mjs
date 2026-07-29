@@ -361,7 +361,7 @@ for (const token of [
 for (const token of [
   '.item-catalog-grid',
   '.item-catalog-card',
-  '../src/assets/items/icons.png',
+  'assets/icons.png',
   'repeat(2, minmax(0, 1fr))',
   '.rpc-head-main',
   '.rpc-manifestation-image',

@@ -369,7 +369,7 @@ def shell(slug: str, title: str, eyebrow: str, sub: str, body: str) -> str:
 <script>(function(){{try{{var t=localStorage.getItem('wiki-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}}catch(e){{}}}})();</script>
 <title>《这一身》百科 · {title}</title>
 <style>{BASE_CSS}
-  :root{{--icon-sheet:url("../src/assets/items/icons.png")}}
+  :root{{--icon-sheet:url("assets/icons.png")}}  /* docs 内副本，本地线上同路径 */
 </style>
 </head>
 <body>

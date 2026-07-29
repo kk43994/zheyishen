@@ -73,7 +73,7 @@
   height: 72px;
   flex: none;
   display: block;
-  background-image: url("../src/assets/items/icons.png");
+  background-image: url("assets/icons.png");
   background-repeat: no-repeat;
   background-size: 576px 720px;
   background-position: calc(var(--icon-col) * -72px) calc(var(--icon-row) * -72px);
@@ -84,7 +84,7 @@
   width: 36px;
   height: 36px;
   flex: none;
-  background-image: url("../src/assets/items/icons.png");
+  background-image: url("assets/icons.png");
   background-repeat: no-repeat;
   background-size: 288px 360px;
   background-position: calc(var(--icon-col) * -36px) calc(var(--icon-row) * -36px);
@@ -464,7 +464,7 @@
 .wall-tile.dim { opacity: .18; filter: grayscale(1); }
 .wall-item-icon {
   display: block; width: 40px; height: 40px;
-  background-image: url("../src/assets/items/icons.png"); background-repeat: no-repeat;
+  background-image: url("assets/icons.png"); background-repeat: no-repeat;
   background-size: 320px 400px;
   background-position: calc(var(--icon-col) * -40px) calc(var(--icon-row) * -40px);
   image-rendering: pixelated;
