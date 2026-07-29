@@ -18610,7 +18610,9 @@ export class ZheYiShenGame {
     ctx.fillText(`${'ⅠⅡⅢⅣⅤ'[item.quality - 1]} · ${item.qualityName}`, 128, 195);
     ctx.fillStyle = '#3f6b52';
     // 正负效果与卡底两行一起抬到 11/12px：名称放大后，9px 的说明字被压得读不动。
-    ctx.font = `11px ${UI_FONT_STACK}`;
+    // 字重取 600（PingFang Semibold）而不是 bold：常规字重在纸面底色上这个字号发虚，
+    // 700 又会糊成一团。
+    ctx.font = `600 11px ${UI_FONT_STACK}`;
     this.wrapText(`得到 · ${item.positive}`, 128, 213, 196, 14, 3);
     ctx.fillStyle = '#8d3f4c';
     this.wrapText(`留下 · ${item.negative}`, 128, 255, 196, 14, 3);
@@ -18624,14 +18626,14 @@ export class ZheYiShenGame {
     this.wrapText(item.flavor, 34, 316, 292, 19, 3);
     ctx.letterSpacing = '0px';
     ctx.fillStyle = '#6b6355';
-    ctx.font = `12px ${UI_FONT_STACK}`;
+    ctx.font = `600 12px ${UI_FONT_STACK}`;
     this.wrapText(item.summary, 34, 361, 292, 15, 2);
     // 卡底压一行「反讽在哪里」——七层母表的第六层，文案与百科道具志同源。
     // 最长一条 26 字，11px 下会折成两行，行高按面板底边（406）留够。
     const irony = itemIrony(id);
     if (irony) {
       ctx.fillStyle = '#8a7a63';
-      ctx.font = `11px ${UI_FONT_STACK}`;
+      ctx.font = `600 11px ${UI_FONT_STACK}`;
       this.wrapText(`设计理念 · ${irony}`, 34, 383, 296, 14, 2);
     }
 
