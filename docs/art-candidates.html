@@ -501,6 +501,20 @@
   .wall .ic.q5{border-color:color-mix(in srgb,var(--q5) 60%,var(--line))}
   .wall.wall-man{grid-template-columns:repeat(auto-fill,minmax(108px,1fr))}
   .wall.wall-man img{aspect-ratio:480/250;object-fit:cover}
+
+  /* 实机屏幕：竖屏 360×640，密排不占大屏 */
+  .screens{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;margin:10px 0 6px}
+  .screens.screens-3{grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:16px 0 4px}
+  .screens figure{margin:0}
+  .screens img{width:100%;height:auto;aspect-ratio:360/640;object-fit:cover;object-position:top;display:block;border:1px solid var(--line);border-radius:5px;background:#0c0c10;image-rendering:pixelated}
+  .screens figcaption{margin-top:6px;font-size:11px;line-height:1.5;color:var(--fg-3)}
+  .side-shot{float:right;width:210px;margin:2px 0 14px 22px}
+  .side-shot img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:5px;image-rendering:pixelated;background:#0c0c10}
+  .side-shot figcaption{margin-top:7px;font-size:11.5px;line-height:1.5;color:var(--fg-3);text-align:center}
+  @media(max-width:640px){
+    .side-shot{float:none;width:auto;max-width:320px;margin:14px auto}
+    .screens{grid-template-columns:repeat(auto-fill,minmax(108px,1fr))}
+  }
 </style>
 </head>
 <body>

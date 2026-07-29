@@ -129,7 +129,8 @@ const proofs = {
     "`干呕 · +${Math.ceil(this.hero.hp - beforeHp)}`",
   ],
   'funeral-photo final smile': [
-    "this.hasItem('funeral-photo') && !this.graceUsed",
+    // 免死判定走 ownsItem（封存 3 秒不该关掉保命），hasItem 也接受。
+    /this\.(hasItem|ownsItem)\('funeral-photo'\) && !this\.graceUsed/,
     'this.graceTimer = 5;',
     'this.flash = 0;',
     "this.saveEffect = { kind: 'photo', timer: 0.7, duration: 0.7 };",
@@ -142,7 +143,7 @@ const proofs = {
     "'最大生命 -1'",
   ],
   'server-shutdown permanent departure': [
-    "this.hasItem('server-shutdown') && !this.petGone",
+    /this\.(hasItem|ownsItem)\('server-shutdown'\) && !this\.petGone/,
     "this.saveEffect = { kind: 'shutdown', timer: 0.8, duration: 0.8 };",
     "this.items.filter((id) => id !== 'server-shutdown')",
     "this.hasItem('server-shutdown') && this.petGone",
@@ -241,7 +242,12 @@ const proofs = {
   ],
 };
 for (const [label, tokens] of Object.entries(proofs)) {
-  for (const token of tokens) if (!runtimeEvidence.includes(token)) errors.push(`${label} is missing: ${token}`);
+  // token 可以是字面量，也可以是正则——保命判定这类「换个等价写法就误报」的地方
+  // 用正则守不变量，不锁某一行怎么写。
+  for (const token of tokens) {
+    const present = token instanceof RegExp ? token.test(runtimeEvidence) : runtimeEvidence.includes(token);
+    if (!present) errors.push(`${label} is missing: ${token}`);
+  }
 }
 for (const [id, label] of Object.entries(REVIEWED_RELIC_RUNTIME)) {
   if (!proofs[label]) errors.push(`${id} claims a runtime review without a matching proof group: ${label}`);

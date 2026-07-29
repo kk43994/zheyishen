@@ -9316,7 +9316,7 @@ export class ZheYiShenGame {
         if (this.hasCombo('这一次有人接了')) this.heartCount = Math.min(12, this.heartCount + 3);
       }
     }
-    if (this.hero.hp <= 0 && this.hasItem('server-shutdown') && !this.petGone && this.deathSaves < 3) {
+    if (this.hero.hp <= 0 && this.ownsItem('server-shutdown') && !this.petGone && this.deathSaves < 3) {
       this.petGone = true;
       this.deathSaves += 1;
       this.hero.hp = 1;
@@ -9326,7 +9326,7 @@ export class ZheYiShenGame {
       this.playVoiceRepeatable('collector-not-yet');
       this.saveEffect = { kind: 'shutdown', timer: 0.8, duration: 0.8 };
     }
-    if (this.hero.hp <= 0 && this.hasItem('funeral-photo') && !this.graceUsed && this.deathSaves < 3) {
+    if (this.hero.hp <= 0 && this.ownsItem('funeral-photo') && !this.graceUsed && this.deathSaves < 3) {
       this.graceUsed = true;
       this.deathSaves += 1;
       this.graceTimer = 5;
@@ -9338,7 +9338,7 @@ export class ZheYiShenGame {
       this.playVoiceRepeatable('collector-not-yet');
       this.saveEffect = { kind: 'photo', timer: 0.7, duration: 0.7 };
     }
-    if (this.hero.hp <= 0 && this.hasItem('snow-screen') && !this.snowUsed && this.deathSaves < 3) {
+    if (this.hero.hp <= 0 && this.ownsItem('snow-screen') && !this.snowUsed && this.deathSaves < 3) {
       this.snowUsed = true;
       this.deathSaves += 1;
       this.hero.hp = 1;
@@ -10168,6 +10168,15 @@ export class ZheYiShenGame {
     if (!this.hasItem('momo-avatar')) return false;
     const target = this.nearestEnemy(this.heroX, this.heroY);
     return !target || Math.hypot(target.x - this.heroX, target.y - this.heroY) > 150;
+  }
+
+  /**
+   * 只问「这件东西还在不在身上」：贴了封条的不算，但《体检报告》那 3 秒
+   * 加成失效不算——那道门禁的意思是「你攒的加成暂时不作数」，
+   * 不是「今晚你不许活」。保命判定走这条，别走 hasItem。
+   */
+  private ownsItem(id: ItemId): boolean {
+    return this.items.includes(id) && !this.stageDisabledItems.has(id);
   }
 
   private hasItem(id: ItemId): boolean {

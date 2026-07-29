@@ -13,6 +13,7 @@
  *
  * 产物：docs/assets/screens/<id>.png（360×640 原始像素，不放大）
  */
+import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
@@ -27,12 +28,12 @@ const SHOTS = [
   { id: 'back-room', q: 'audit-room=back', wait: 1200, cap: '里屋 · 强力遗物都带着代价' },
   { id: 'shop', q: 'audit-screen=shop', wait: 1200, cap: '没有招牌的当铺 · 怪潮间隙路边出现' },
   { id: 'boss', q: 'audit-screen=boss', wait: 1600, cap: '章节 Boss 战 · 战场会变成这个 Boss 的现实现场' },
-  { id: 'ledger', q: 'audit-screen=ledger', wait: 1200, cap: '《这一身》名册 · 上一世留下的东西会回来' },
+  { id: 'ledger', q: 'audit-room=light&audit-previous=1', wait: 1400, cap: '上一世的留灯间 · 名册记得上一局那个人，这一局还能把他的东西拿回来' },
   { id: 'lamp-dark', q: 'audit-screen=lamp-dark', wait: 1600, cap: '《灯下》· 他手里那盏灯是场上唯一的光源' },
   { id: 'lamp-seize', q: 'audit-screen=lamp-choice', wait: 1600, cap: '《收灯》· 灯光圈追着你，照满就收走一件' },
   { id: 'result-won', q: 'audit-result=won', wait: 2200, cap: '终局 · 逐件归还之后，由玩家自己放下' },
   { id: 'result-lost', q: 'audit-result=lost', wait: 2200, cap: '人生档案封卷 · 失败也会被记进名册' },
-  { id: 'origin-comic', q: 'audit-screen=origin-comic&audit-scene=2&audit-ai=ready', wait: 2000, cap: '开场 · 出生档案由 AI 现场生成，没有兜底人物' },
+  { id: 'origin-comic', q: 'audit-screen=origin-comic&audit-scene=5&audit-ai=ready', wait: 2400, cap: '开场 · 出生档案由 AI 现场生成，没有兜底人物' },
   { id: 'checkpoint', q: 'audit-screen=checkpoint', wait: 1400, cap: '断点恢复 · 中途断连不丢这一生' },
 ];
 
@@ -84,9 +85,16 @@ for (const shot of SHOTS) {
   }
 }
 
+// 清单要覆盖磁盘上已有的全部截图，不能只写本次跑到的那几张——
+// 用 --only 补拍一张就把清单缩成一条，百科拿它取图注会直接 KeyError。
+const existing = [];
+for (const shot of SHOTS) {
+  const file = path.join(OUT_DIR, `${shot.id}.png`);
+  if (existsSync(file)) existing.push({ id: shot.id, caption: shot.cap, file });
+}
 await writeFile(
   path.join(OUT_DIR, 'manifest.json'),
-  `${JSON.stringify({ shots: done.map(({ id, cap, file }) => ({ id, caption: cap, file })), failed }, null, 2)}\n`,
+  `${JSON.stringify({ shots: existing, failed }, null, 2)}\n`,
   'utf8',
 );
 await browser.close();

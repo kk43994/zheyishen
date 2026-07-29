@@ -1,0 +1,65 @@
+{
+  "shots": [
+    {
+      "id": "fate",
+      "caption": "命运牌 · 事情已经发生，只能选咽下或吐出",
+      "file": "docs/assets/screens/fate.png"
+    },
+    {
+      "id": "light-room",
+      "caption": "留灯间 · 被爱过的证据，三选一",
+      "file": "docs/assets/screens/light-room.png"
+    },
+    {
+      "id": "back-room",
+      "caption": "里屋 · 强力遗物都带着代价",
+      "file": "docs/assets/screens/back-room.png"
+    },
+    {
+      "id": "shop",
+      "caption": "没有招牌的当铺 · 怪潮间隙路边出现",
+      "file": "docs/assets/screens/shop.png"
+    },
+    {
+      "id": "boss",
+      "caption": "章节 Boss 战 · 战场会变成这个 Boss 的现实现场",
+      "file": "docs/assets/screens/boss.png"
+    },
+    {
+      "id": "ledger",
+      "caption": "上一世的留灯间 · 名册记得上一局那个人，这一局还能把他的东西拿回来",
+      "file": "docs/assets/screens/ledger.png"
+    },
+    {
+      "id": "lamp-dark",
+      "caption": "《灯下》· 他手里那盏灯是场上唯一的光源",
+      "file": "docs/assets/screens/lamp-dark.png"
+    },
+    {
+      "id": "lamp-seize",
+      "caption": "《收灯》· 灯光圈追着你，照满就收走一件",
+      "file": "docs/assets/screens/lamp-seize.png"
+    },
+    {
+      "id": "result-won",
+      "caption": "终局 · 逐件归还之后，由玩家自己放下",
+      "file": "docs/assets/screens/result-won.png"
+    },
+    {
+      "id": "result-lost",
+      "caption": "人生档案封卷 · 失败也会被记进名册",
+      "file": "docs/assets/screens/result-lost.png"
+    },
+    {
+      "id": "origin-comic",
+      "caption": "开场 · 出生档案由 AI 现场生成，没有兜底人物",
+      "file": "docs/assets/screens/origin-comic.png"
+    },
+    {
+      "id": "checkpoint",
+      "caption": "断点恢复 · 中途断连不丢这一生",
+      "file": "docs/assets/screens/checkpoint.png"
+    }
+  ],
+  "failed": []
+}

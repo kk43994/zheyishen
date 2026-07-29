@@ -49,6 +49,42 @@ let latestAIDiagnostic: AIDiagnostic = {
   updatedAt: Date.now(),
 };
 
+/**
+ * 真机验收探针：平台是否真的透传了 thinking:{type:'disabled'}。
+ * chars = 本次平台流式请求里实际收到的 reasoning_content 总字数——
+ * 0 就是思考已关（disabled 透传成功），>0 就是平台把参数丢了、模型在裸跑思考。
+ * -1 表示还没有走完一次平台流式请求（dev 代理直连不经过这里，永远 -1）。
+ */
+let thinkingProbe: { kind: string; chars: number } = { kind: '', chars: -1 };
+
+export function readThinkingProbe(): { kind: string; chars: number } {
+  return { ...thinkingProbe };
+}
+
+/**
+ * 探针的真机可视层：左下角一行 9px 小字，只在平台流式请求走完后出现。
+ * 走 DOM 而不是 canvas，是因为渲染都在 game.ts、而那边可能正被并行会话编辑；
+ * 这行字和标题页右下的构建号是同一性质——给上传后的真机验收看的，不属于游戏画面。
+ */
+function updateThinkingProbeBadge(kind: string, chars: number): void {
+  try {
+    let badge = document.getElementById('ai-thinking-probe');
+    if (!badge) {
+      badge = document.createElement('div');
+      badge.id = 'ai-thinking-probe';
+      badge.style.cssText = 'position:fixed;left:6px;bottom:4px;z-index:40;'
+        + 'font:9px/1.4 monospace;color:#8a8577;opacity:.75;pointer-events:none;';
+      document.body.appendChild(badge);
+    }
+    badge.textContent = chars > 0
+      ? `${kind} 思考${chars}字·平台未关思考`
+      : `${kind} 思考0字·已关`;
+    badge.style.color = chars > 0 ? '#c5827d' : '#8a8577';
+  } catch {
+    // 探针绝不允许影响游玩。
+  }
+}
+
 function publishAIDiagnostic(
   kind: keyof typeof AI_SYSTEM_PROMPTS,
   transport: AIDiagnostic['transport'],
@@ -258,7 +294,14 @@ function callPlatformAI(
         reject(new Error('platform_ai_empty_response'));
         return;
       }
-      publishAIDiagnostic(kind, 'platform', 'returned', `平台已回调 · ${text.length}字`);
+      // 思考探针在成功路径落账：0字=disabled 真的透传了；>0=平台丢参数、模型裸跑思考。
+      thinkingProbe = { kind, chars: reasonedChars };
+      publishAIDiagnostic(
+        kind,
+        'platform',
+        'returned',
+        `平台已回调 · ${text.length}字 · 思考${reasonedChars}字${reasonedChars > 0 ? '（平台未关思考）' : '（思考已关）'}`,
+      );
       try {
         resolve(parseFirstAIJson(text));
       } catch {
