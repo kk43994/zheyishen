@@ -86,6 +86,8 @@ const systemVoiceByCue = {
   'security-return-card': 'Chinese (Mandarin)_Male_Announcer',
   'pharmacist-after-meals': 'Chinese (Mandarin)_Gentleman',
   'pharmacist-self-pay': 'Chinese (Mandarin)_Gentleman',
+  // 用户钦点：主角听见自己说出旧句的那一刻，用抒情男声
+  'hero-became-him': 'Chinese (Mandarin)_Lyrical_Voice',
   'coworker-flower-water': 'Chinese (Mandarin)_Straightforward_Boy',
   'clinic-fifty-six': 'female-yujie-jingpin',
 };
