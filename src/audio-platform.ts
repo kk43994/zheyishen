@@ -161,6 +161,25 @@ function media(file: string): HTMLAudioElement {
  * BufferSource 播放没有 seek、没有解码、没有管线重启，代价是微秒级。
  * 音频数据来自内联 base64（见 audio-sfx-inline.ts），不产生任何网络请求。
  */
+/**
+ * 找到起声点：第一个振幅超过全曲峰值 2% 的样本。留 3ms 回退量，避免把起音的
+ * 极短上升沿削掉导致「咔」声变闷。扫描只在解码后做一次。
+ */
+function findLeadSilence(buffer: AudioBuffer): number {
+  const data = buffer.getChannelData(0);
+  let peak = 0;
+  for (let i = 0; i < data.length; i += 1) {
+    const v = Math.abs(data[i]!);
+    if (v > peak) peak = v;
+  }
+  if (peak <= 0) return 0;
+  const threshold = peak * 0.02;
+  let lead = 0;
+  while (lead < data.length && Math.abs(data[lead]!) < threshold) lead += 1;
+  const backoff = Math.round(buffer.sampleRate * 0.003);
+  return Math.max(0, lead - backoff) / buffer.sampleRate;
+}
+
 class SfxEngine {
   private context?: AudioContext;
   private master?: GainNode;
@@ -172,6 +191,12 @@ class SfxEngine {
    * 这里显式恢复旧的复音上限，超了就掐掉最早那一声。
    */
   private readonly voices = new Map<string, AudioBufferSourceNode[]>();
+  /**
+   * 每个音效的起声偏移（秒）。素材开头普遍带一段静音——实测 hit 有 50.3ms、
+   * coin 35.2ms、hurt 20.3ms，叠上宿主输出缓冲就是打击感明显「慢半拍」。
+   * 不必重导素材：解码后扫一遍波形定位起声点，播放时用 start(when, offset) 跳过。
+   */
+  private readonly leads = new Map<string, number>();
   private decoding = false;
   private failed = false;
 
@@ -218,7 +243,10 @@ class SfxEngine {
         const bytes = new Uint8Array(binary.length);
         for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
         // decodeAudioData 的 Promise 形式在旧 WebView 上可能缺失，回调形式两边都吃。
-        const onDone = (buffer: AudioBuffer): void => { this.buffers.set(name, buffer); };
+        const onDone = (buffer: AudioBuffer): void => {
+          this.buffers.set(name, buffer);
+          this.leads.set(name, findLeadSilence(buffer));
+        };
         const result = context.decodeAudioData(bytes.buffer, onDone, () => undefined);
         if (result && typeof (result as Promise<AudioBuffer>).then === 'function') {
           void (result as Promise<AudioBuffer>).then(onDone).catch(() => undefined);
@@ -267,7 +295,8 @@ class SfxEngine {
         }
         try { source.disconnect(); gain.disconnect(); } catch { /* 已断开 */ }
       };
-      source.start();
+      // 从起声点开始，跳过素材自带的前导静音。
+      source.start(0, this.leads.get(name) ?? 0);
       live.push(source);
       this.voices.set(name, live);
       return true;
@@ -285,11 +314,25 @@ class SfxEngine {
     const latency = `base ${ms(context.baseLatency)} · out ${ms(
       (context as AudioContext & { outputLatency?: number }).outputLatency,
     )}`;
-    return `${context.state} · ${this.buffers.size}/${Object.keys(SFX_INLINE_BASE64).length} · ${latency}`;
+    const hitLead = this.leads.get('hit');
+    const trim = typeof hitLead === 'number' ? ` · hit裁${Math.round(hitLead * 1000)}ms` : '';
+    return `${context.state} · ${this.buffers.size}/${Object.keys(SFX_INLINE_BASE64).length} · ${latency}${trim}`;
   }
 }
 
 const sfxEngine = new SfxEngine();
+
+// 从后台切回时 AudioContext 会停在 suspended，且不会因为一次点击自动恢复
+// （Phaser 的最佳实践文章专门点名过 iOS 上这个行为）。unlock() 不一定在切回后
+// 被触发，所以这里显式挂在可见性/焦点事件上补一刀。
+if (typeof document !== 'undefined') {
+  const resumeIfVisible = (): void => {
+    if (document.visibilityState === 'visible') sfxEngine.prime();
+  };
+  document.addEventListener('visibilitychange', resumeIfVisible);
+  window.addEventListener('focus', resumeIfVisible);
+  window.addEventListener('pageshow', resumeIfVisible);
+}
 
 /** 供性能面板显示音效引擎走的是哪条路。 */
 export function sfxEngineState(): string {
