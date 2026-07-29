@@ -450,7 +450,7 @@ function originComicCaptionProgress(sceneIndex: number, sceneElapsed: number): n
 
 // 标题页右下角与 AI 诊断行都会带上它：上传后扫码第一眼就能确认平台跑的是哪个包，
 // 排查「上传了但行为没变」时不再靠猜。每次要重新上传前手动 +1。
-const BUILD_TAG = '0729-2';
+const BUILD_TAG = '0729-3';
 const TITLE_START_RECT = { x: 88, y: 520, width: 184, height: 44 } as const;
 const TITLE_AUDIO_RECT = { x: 290, y: 16, width: 54, height: 30 } as const;
 const TITLE_CODEX_RECT = { x: 16, y: 16, width: 54, height: 30 } as const;
@@ -2976,33 +2976,37 @@ export class ZheYiShenGame {
     const isError = ['rejected', 'unavailable', 'timeout', 'failed', 'invalid_json', 'empty_response'].includes(diagnostic.status);
     const tone = isError ? UI_PALETTE.oldRed : '#4f6470';
     ctx.save();
-    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.font = `10px ${UI_FONT_STACK}`;
     // 平台原始 errMsg + errorCode + errorType 是排查上传后 AI 调不通的唯一线索，
-    // 一行截断等于把它丢掉。这里按可用宽度折行，最多三行（下方 395 是重试按钮）。
-    const inner = width - 14;
+    // 必须一个字不丢、看得清地全部显示：10px 左对齐、最多五行（五行 × 约28字，
+    // 远超平台报错实际长度）；万一更长，最后一行以 … 收尾提示截断，不静默吃字。
+    const inner = width - 16;
+    const maxLines = 5;
+    const lineHeight = 13;
     const lines: string[] = [];
     let current = '';
+    let truncated = false;
     for (const char of this.originAIDiagnosticLine()) {
       const next = current + char;
       if (ctx.measureText(next).width > inner && current) {
+        if (lines.length === maxLines - 1) { truncated = true; break; }
         lines.push(current);
         current = char;
-        if (lines.length === 3) break;
       } else current = next;
     }
-    if (lines.length < 3 && current) lines.push(current);
+    if (current) lines.push(truncated ? `${current.slice(0, -1)}…` : current);
     if (!lines.length) lines.push('AI接入 · 等待发起');
-    const height = 8 + lines.length * 11;
-    ctx.fillStyle = 'rgba(235, 226, 208, 0.78)';
+    const height = 10 + lines.length * lineHeight;
+    ctx.fillStyle = 'rgba(235, 226, 208, 0.85)';
     ctx.fillRect(x, y, width, height);
     ctx.strokeStyle = tone;
     ctx.lineWidth = 1;
     ctx.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
-    ctx.textAlign = 'center';
+    ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = tone;
     lines.forEach((line, index) => {
-      ctx.fillText(line, x + width / 2, y + 10 + index * 11);
+      ctx.fillText(line, x + 8, y + 12 + index * lineHeight);
     });
     ctx.restore();
   }
@@ -12554,8 +12558,9 @@ export class ZheYiShenGame {
     drawRedStamp(ctx, 133, 132, 94, 70, '未落档', 79, UI_PALETTE.oldRed, UI_PALETTE.paper, UI_PALETTE.ink);
     ctx.fillStyle = UI_PALETTE.ink; ctx.font = `bold 19px ${UI_ARCHIVE_FONT_STACK}`; ctx.fillText('这一生还没有写下来', 180, 284);
     ctx.fillStyle = '#625b51'; ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText('没有使用兜底人物，也不会带着假故事开局。', 180, 322, 260, 16, 2);
-    this.drawAIDiagnosticBadge(28, 348, 304);
+    this.wrapText('没有使用兜底人物，也不会带着假故事开局。', 180, 308, 260, 16, 1);
+    // 报错框顶到 316，五行满写时到 391，刚好停在重试按钮（395）上方。
+    this.drawAIDiagnosticBadge(28, 316, 304);
     this.drawBreathActionButton(ORIGIN_RETRY_RECT, '重新等他出生', UI_PALETTE.hospitalBlueGray);
     this.drawBreathActionButton(ORIGIN_ERROR_HOME_RECT, '回到封面', '#57585d');
     this.drawBreathActionButton(ORIGIN_ERROR_CODEX_RECT, '打开物证册', UI_PALETTE.oldRed);
