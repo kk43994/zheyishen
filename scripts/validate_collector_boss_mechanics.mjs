@@ -49,7 +49,7 @@ for (const [token, message] of [
   ['private renderCollectorRelocation(enemy: EnemyUnit): void', '缺少换门专用渲染'],
   ['for (let door = 0; door < 6; door += 1)', '换门不是六层门影'],
   ['for (let tag = 0; tag < 14; tag += 1)', '换门缺少十四枚地址标签'],
-  ['this.heroX + (pullX / pullDistance) * 54', '上门没有拖近 54px'],
+  ['this.heroX += (pullX / pullDistance) * 54', '上门没有按世界坐标拖近 54px'],
   ['for (let link = 1; link <= 12; link += 1)', '上门结算缺少十二段票据链爆发'],
   ["action === 'collector-boss-hazards'", '缺少催收 Boss 确定性审阅入口'],
   ["variant === 'bill-coins'", '缺少账单扣钱原子场景'],

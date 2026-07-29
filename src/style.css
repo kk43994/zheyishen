@@ -107,18 +107,29 @@ body::before {
 
 .ai-generated-label {
   position: absolute;
-  right: 8px;
-  bottom: 8px;
-  padding: 3px 6px 2px;
-  border: 1px solid rgb(232 225 211 / 56%);
-  color: #e8e1d3;
-  background: rgb(8 8 12 / 78%);
-  box-shadow: 2px 2px 0 rgb(0 0 0 / 28%);
+  left: 50%;
+  bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  color: rgb(181 176 167 / 74%);
+  background: none;
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 400;
   line-height: 1.2;
-  letter-spacing: 0;
+  letter-spacing: 1px;
   white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.ai-generated-label::before {
+  width: 3px;
+  height: 3px;
+  flex: 0 0 auto;
+  background: rgb(155 205 196 / 74%);
+  box-shadow: 0 0 5px rgb(155 205 196 / 24%);
+  content: '';
 }
 
 .loading-card {

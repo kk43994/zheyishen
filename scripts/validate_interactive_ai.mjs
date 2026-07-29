@@ -32,9 +32,14 @@ for (const token of [
 ]) assert(platformCall.includes(token), `平台 AI 调用缺少 ${token}`);
 assert(ai.includes("origin: 'doubao-seed-2-0-pro-260215'"), '出生档案没有使用 Seed 2.0 Pro');
 assert(ai.includes("default: 'doubao-seed-2-0-pro-260215'"), '后台命运链路没有统一使用 Seed 2.0 Pro');
-assert(ai.includes('const useStream = kind === \'origin\''), '出生档案没有启用平台 SSE 流式回调');
+assert(ai.includes('const useStream = false'), '出生档案必须使用平台完整响应，避免半截 JSON 被判成生成失败');
 assert(ai.includes('const ORIGIN_AI_TIMEOUT_MS = 55_000'), '出生档案没有为扫码环境保留 55 秒回调时间');
 assert(ai.includes("requestAI('origin', { runSeed, kind, requestNonce, wheels }, ORIGIN_AI_TIMEOUT_MS"), '出生档案没有使用统一等待窗');
+assert(game.includes('ORIGIN_COMIC_SKIP_RECT'), 'AI 出生完成后没有可见的提前翻页入口');
+assert(game.includes('private finishOriginComicEarly()'), 'AI 出生完成后不能提前结束漫画');
+assert(game.includes("this.aiOriginState === 'gpt' && this.origin"), '提前翻页没有受 AI 完成状态保护');
+assert(game.includes('private returnToTitleFromOrigin()'), '出生失败页没有回到封面的动作');
+assert(game.includes("this.drawBreathActionButton(ORIGIN_ERROR_CODEX_RECT, '打开物证册'"), '出生失败页没有物证册入口');
 
 const requestSwitch = section(ai, 'async function performAIRequest(', 'function classifyAIError(');
 assert(
@@ -51,8 +56,15 @@ assert(!ai.includes('fate-lines') && !prompts.includes("'fate-lines':") && !vite
 assert(game.includes("this.say('这句话已经说出口 · 回执会在后台写完')"), '提交后必须立即进入后台回执流程');
 assert(index.includes('<span class="ai-generated-label">AI生成内容</span>'), '加载首屏缺少 AI 生成显式标识');
 assert(style.includes('.ai-generated-label') && style.includes('font-size: 18px'), '首屏 AI 标识尺寸不符合最短边 5%');
-assert(style.includes('border: 1px solid rgb(232 225 211 / 56%)'), '加载首屏 AI 标识没有收纳为角落徽标');
-assert(game.includes("ctx.fillText('AI生成内容', 342, 613)"), '正式标题页缺少 AI 生成显式标识');
+assert(
+  style.includes('left: 50%') && style.includes('bottom: 10px') && style.includes('background: none'),
+  '加载首屏 AI 标识没有按漫画风格收纳在底部',
+);
+assert(
+  game.includes("ctx.font = `18px ${UI_FONT_STACK}`")
+    && game.includes("ctx.fillText('AI生成内容', 180, 620)"),
+  '正式标题页缺少位于底部且满足最短边 5% 的 AI 生成标识',
+);
 assert(game.includes('private drawAIDiagnosticBadge('), '平台 AI 诊断没有使用紧凑状态徽标');
 assert(game.includes('AI正在生成回执'), '后台回执没有显式标明 AI 生成');
 assert(ai.includes("publishAIDiagnostic(kind, 'platform', 'calling'"), '平台 AI 请求没有记录已发出状态');

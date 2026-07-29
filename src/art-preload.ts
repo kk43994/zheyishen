@@ -23,6 +23,7 @@ interface ArtEntry {
 // EnemyPixelAtlas 使用的 canonical 图显式纳入，避免依赖通配符误装整套旧资源。
 const regularArtModules = import.meta.glob<string>([
   './assets/**/*.png',
+  './assets/**/*.webp',
   '!./assets/**/preview-*.png',
   '!./assets/canonical-v1/**/*.png',
 ], {

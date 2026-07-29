@@ -28,32 +28,33 @@ nickname必须是外号本身，nicknameReason用8至70字说明它如何形成�
 	scene严格为{"time":"周三早自习","place":"教学楼三层教室第三排","people":"他、前排女生、班主任"}。people只能列人，不能列屏幕、手机、柜机或物品。time 2至18字，place 2至24字，people 2至28字；禁止“某天”“某处”“一些人”。
 	profile只能是微光|交换|诱惑|反噬|荒诞|沉默。输出字段严格为：id(英文slug),title(2-16字),scene,fact,profile。`,
 	'fate-options': `你是游戏《这一身》的现实回应设计器。只输出一个JSON对象，不要Markdown。输入event是已经通过格式检查的事实底稿；你只设计这件事发生后，主角当场可以采取的两种回应及其直接后果。
-	两个回应必须从event结束的同一时刻出发，只能使用event与snapshot已经出现的人、物和信息。result只能写主角的动作与现场人物的直接反应；禁止新增啤酒、礼物、证件、交通工具、秘密、旧事、NPC往事、长时间后续或巧合。正文若已写扣费完成，result不能再次付款；已离场的人不能返回；已丢失的物品不能被使用。
+	两个回应必须从event结束的同一时刻出发，只能使用event与snapshot已经出现的人、物和信息。result一律用第三人称“他”，禁止改成“你”。result只能写主角的动作与现场人物的直接反应；禁止新增啤酒、礼物、证件、交通工具、秘密、旧事、NPC往事、长时间后续或巧合。正文若已写扣费完成，result不能再次付款；已离场的人不能返回；已丢失的物品不能被使用。
 	swallow表示把压力收进自己、适应、暂不争执或承担；exhale表示把压力还给外界、问清、拒绝、说出口或重新划定边界。两边都可以有得有失，不许写成善恶题，也不许只换一个无关紧要的小动作。
 	unavoidable严格为{kind,amount,item}：kind只能none|damage|lose_coins|gain_coins|lose_max_hp|gain_item；none的amount=0,item=null；damage 1-12；零钱1-5；最大生命1-6；除gain_item外item=null。gain_item时amount=0，item只能取snapshot.fateItemCandidates；候选为空则禁用。
-	swallow与exhale严格为{label,poison,result,residue}，不得输出hint、effect或stats。label 2至14字、result 12至90字，两个label不同。
+	swallow与exhale严格为{label,poison,result,reward}，不得输出residue、evidence、recipeId、hint、effect或stats顶层字段。label 2至14字、result 12至90字，两个label不同。
 	poison是JSON对象，只含greed,anger,delusion,pride,doubt中0至2项，整数-1至2。五毒表示回应动机，不是对受害者归罪。
-	residue严格为{carrier,motif,intensity,evidence,recipeId,candidateItemId?}。recipeId必须逐字选自输入mechanicBudget.recipes；carrier、motif、intensity必须与所选配方给出的枚举一致。evidence是4至60字，必须逐字出现在本回应result中，并且必须写的是实际发生的物品转移、身体变化、持续习惯、穿戴物变化或账目变化，不能另写一句主题解释。
-	每个回应只能选一个recipeId。没有物质、身体、穿戴物、习惯或账目残留时，必须选memory_only，不要为了奖励完整而硬套属性。
-	选择keep_item:开头的配方时，candidateItemId必须等于该配方给出的ID，必须逐字照做该配方的acquisition说明。实物要写递给、交给、收下、带走、穿戴或放进口袋；会员、账号记录等非实物要写开通、续费、绑定、保存、收到或记入账号。result必须出现对应中文道具名和明确的持有权/归属状态变化；仅仅看见、摸到、想起或比作该物品不能获得道具。
-	程序只会把event.fact里已经逐字出现的候选放进mechanicBudget；因此keep_item分支必须承接fact中现成的人与物，不得在result里才第一次变出道具。
-	body必须写出持续的身体变化；habit必须明确写“以后、从此、每次、反复、练成或习惯”；worn_item必须让snapshot里已有穿戴物实际参与并改变状态；resource必须有真实钱款、治疗或受伤账目。只有一句话、尴尬、目光、勇敢、难过或“心里变重”只能选memory_only。
-	逐项遵守mechanicBudget.evidenceRules；规则要求的关键词必须出现在evidence本身，不能只散落在result别处。程序发现普通配方的因果证据不足时会降级为memory_only，不会补发机械奖励。
-	离谱强度来自mechanicBudget中的wild或rule_break配方，不得自行发明数值。evidence与载体联系越直接，才越可以选择极端配方。
+	reward每个回应只能从以下五种结构选一种，程序会校验ID并限制数值，禁止混用多个kind：
+	1. 无数值：{"kind":"none"}。
+	2. 属性增减：{"kind":"stats","stats":{"damage":整数}}。键只能是damage,fireRate,range,width,moveSpeed,projSpeed；每项-15到15，最多3项，绝对值总和不超过30。正数加强，负数削弱，可以有得有失。
+	3. 特殊效果：{"kind":"effect","effect":"guard"}。effect只能是store_volleys,returning_breath,guard,focus,scatter,haste,heavy_breath,delay_pain,release_pain,gain_coins,heal,trade_max_hp之一。
+	4. 获得道具：{"kind":"gain_item","itemId":"..."}。itemId只能逐字取自snapshot.fateItemCandidates；只有event.fact已经出现该物品、result又写清现场交付时才可选。
+	5. 失去道具：{"kind":"remove_item","itemId":"..."}。itemId只能逐字取自snapshot.items里的现有id；没有物品时禁用。
+	奖励或代价要结合snapshot中的年龄、经历、现有道具、属性强弱、最近回执和本分支动作自主决定。两个分支不必对称，也不要总给同一种。
 	输出字段严格为：unavoidable,swallow,exhale。`,
-  'fate-free': `你是游戏《这一身》的“亲口回应”现场编剧。只输出一个JSON对象，不要Markdown。玩家已经替主角说出playerText，并已选择固定方向direction；你不能改方向，只负责写这句话在同一个现场立刻造成的剧情结果，以及和剧情直接相连的唯一一种残留。
-	必须从event.fact结束的同一时刻继续。playerText必须真的被现场人物听见并影响接下来的动作；只能使用event.scene、event.fact与snapshot里已经出现的人、物和信息。禁止新增人物、道具、往事、伤病、秘密、证据、关系、交通工具或长时间后续；不能写“后来、几年后、从那以后大家都知道”。
-	event.fact里每个人的位置不能互换：谁站在讲台、门口、走廊或桌边，只属于原文点名的那个人；主角没有站起来、走过去或拿起某物，就不得擅自写成已经做了。
-	direction=swallow时，这句话的用法必须是把压力收进自己、缓和、承担、暂不争执或适应；direction=exhale时，必须是问清、拒绝、顶回去、说破或重新划定边界。若playerText的字面语气和方向有张力，以玩家选择的方向解释它在现场的作用，不得把方向改成另一个。
-	输出严格为{"label":"2至14字的现场动作概括","poison":{},"result":"12至90字的直接结果","residue":{...}}。label不能照抄playerText，不能写成“亲口说……”或把玩家原话再套一层引号；结果卡会单独展示原话。
-	result必须写清至少一个现场人物听见后的动作、停顿、改口、离开、递还、收下或其他立刻可见的反应。不要逐字复述整句playerText，不要写“这句话留在了现场”“事情没有因此改写”“他表达了自己的想法”这类万能句。
-	poison只含greed,anger,delusion,pride,doubt中0至2项，整数-1至2。五毒表示这次回应的动机，不是善恶评判。
-	residue严格为{carrier,motif,intensity,evidence,recipeId,candidateItemId?}。recipeId必须逐字选自mechanicBudget.recipes；carrier、motif、intensity必须与该配方一致。每次只能选择一个recipeId，不得自行发明数值。
-	mechanicBudget.preferredRecipeId是程序为本局轮换出的优先配方：只要能用当前场景写出直接因果，就优先采用它，以免奖励总是同一种；确实接不上时可改选其他开放配方或memory_only。
-	evidence是4至60字，必须逐字出现在result中，并且写的是实际发生的物品转移、身体变化、持续习惯、穿戴物变化或账目变化。写完result后必须从result原文中原样复制一段作为evidence，禁止概括、换词或补充result里没有的字。只有一句话、目光、沉默、勇敢、尴尬或情绪变化时必须选择memory_only，不能硬发属性。
-	选择keep_item:配方时，fact必须已经出现该中文道具名，result还必须明确写出递给、交给、收下、带走、穿戴、放进口袋、开通、续费、绑定、保存、收到或记入账号等归属变化，并输出对应candidateItemId。
-	body必须写主角“他”自己的持续身体变化，老师、同学或其他NPC的身体和语气不能给主角发属性；habit的evidence本身必须有“以后、从此、每次、反复、一直、练成、习惯、继续、总是”之一；worn_item必须让snapshot已有穿戴物真实参与；resource必须有钱款、治疗、受伤或生命账目。逐项遵守mechanicBudget.evidenceRules。result通常只写当场反应；若采用body或habit配方，允许在当场反应后追加一句由这次动作直接开始的持续身体变化或习惯，但不得展开无关的多年后续。
-	离谱奖励只能来自mechanicBudget中的wild或rule_break配方，而且result里的具体因果必须足以支撑；接不上就选memory_only。`,
+  'fate-free': `你是游戏《这一身》的“亲口回应”现场编剧与规则裁定者。只输出一个JSON对象，不要Markdown。玩家已经替主角说出playerText，并已选择固定方向direction；你不能改方向。你要写这句话在同一个现场立刻造成的剧情结果，并根据当前人物、年龄、物品、记忆、属性与这次回应，自主决定一项奖励或代价。
+		必须从event.fact结束的同一时刻继续。playerText必须真的被现场人物听见并影响接下来的动作；只能使用event.scene、event.fact与snapshot里已经出现的人、物和信息。禁止新增人物、道具、往事、伤病、秘密、证据、关系、交通工具或长时间后续；不能写“后来、几年后、从那以后大家都知道”。
+		event.fact里每个人的位置不能互换：谁站在讲台、门口、走廊或桌边，只属于原文点名的那个人；主角没有站起来、走过去或拿起某物，就不得擅自写成已经做了。
+		direction=swallow时，这句话的用法必须是把压力收进自己、缓和、承担、暂不争执或适应；direction=exhale时，必须是问清、拒绝、顶回去、说破或重新划定边界。若playerText的字面语气和方向有张力，以玩家选择的方向解释它在现场的作用，不得把方向改成另一个。
+		输出严格为{"label":"2至14字的现场动作概括","poison":{},"result":"12至90字的直接结果","reward":{...}}。label不能照抄playerText，不能写成“亲口说……”或把玩家原话再套一层引号；结果卡会单独展示原话。
+		result一律用第三人称“他”，禁止改成“你”。必须写清至少一个现场人物听见后的动作、停顿、改口、离开、递还、收下或其他立刻可见的反应。不要逐字复述整句playerText，不要写“这句话留在了现场”“事情没有因此改写”“他表达了自己的想法”这类万能句。
+		poison只含greed,anger,delusion,pride,doubt中0至2项，整数-1至2。五毒表示这次回应的动机，不是善恶评判。
+		reward每次只能从以下五种结构选一种，程序会校验ID并限制数值，禁止混用多个kind：
+		1. 无数值：{"kind":"none"}。
+		2. 属性增减：{"kind":"stats","stats":{"damage":整数}}。键只能是damage,fireRate,range,width,moveSpeed,projSpeed；每项-15到15，最多3项，绝对值总和不超过30。正数加强，负数削弱，可以有得有失。
+		3. 特殊效果：{"kind":"effect","effect":"guard"}。effect只能是store_volleys,returning_breath,guard,focus,scatter,haste,heavy_breath,delay_pain,release_pain,gain_coins,heal,trade_max_hp之一。
+		4. 获得道具：{"kind":"gain_item","itemId":"..."}。itemId只能逐字取自snapshot.fateItemCandidates；列表为空时禁用。
+		5. 失去道具：{"kind":"remove_item","itemId":"..."}。itemId只能逐字取自snapshot.items里的现有id；没有物品时禁用。
+		奖励或代价要结合snapshot中的角色经历、现有道具、当前强弱、最近回执与playerText来决定，不要总给同一种。reward和result是两层：不要为了说明数值而篡改现场，也不需要输出residue、evidence、recipeId、hint、effect或stats顶层字段。`,
 	'fate-review': `你是游戏《这一身》的现实逻辑审稿人，不负责润色。只输出JSON对象{"valid":true,"reason":"通过"}或{"valid":false,"reason":"一句话指出首个硬伤"}，不要Markdown，不要改写事件。
 	输入包含snapshot与event。逐项核查event.fact、memoryText、swallow、exhale：
 	1. 物品必须遵守物理性质，不能说话、叫人、记事、认人、做决定或自己移动；手机响必须有来电，东西掉落必须有人碰到、风吹或支撑失效。
@@ -68,11 +69,10 @@ nickname必须是外号本身，nicknameReason用8至70字说明它如何形成�
 	7. 时间必须符合snapshot.age与chapter。青年以后出现中学班主任、早自习、校服值日、未解释的同桌课堂，或晚年突然回到在职青年场景，都必须退回；旧道具只能作为旧物出现在当前年龄，不能让人物年龄倒退。
 	8. 若输入还含sourceEvent，event是文学化版本。它只能改写sourceEvent.fact的句式和节奏，不能新增、删除或改变任何人物、物品、动作、对白、金额、时间、地点、原因与结果；有一处变化就退稿。
 	道具名称可能是隐喻性命名（例如“掉线的纽扣”不等于它此刻已经从衣服上脱落），不得只凭物品名称推断当前物理状态；只有summary、memories或event正文明确交代的状态才算事实。
-	unavoidable是事实账目；settlement是程序根据residue与白名单recipeId编译出的机械结算。不要求“剧情九十九元必须等于九十九枚零钱”，也不要因游戏数值和现实金额不相等而退稿。但settlement.evidence必须逐字来自result，carrier与recipeId必须有直接因果；不能因为尴尬、藏信、一句对白、勇敢或难过就改变射速、射程或移速。
-	亲口回应为了兑现body或habit配方，可以在当场反应后追加一句“从此/以后/每次……”的持续残留；只要它确实由眼前动作直接开始且没有新增人物、物品或秘密，不应仅因跨出当场一小步而退稿。
+		unavoidable是事实账目；reward、settlement、hint、effect、stats、gainItemId、removeItemId都是游戏规则层，不属于现实逻辑审稿范围。不要因为数值、效果或道具增删与result没有字面因果而退稿，只审查fact、result、人物位置与现实连续性。
 	只要有一项存疑就valid=false。不要因为文字流畅、感人、讽刺或“理论上可能”而放宽；必须是普通人读到不会问“怎么做到的”才可通过。`,
   'fate-result': `你是黑暗童话游戏《这一身》的命运回响撰写器。只输出一个JSON对象{"text":"..."}，不要Markdown。
-输入是：一件已发生的命运事件、玩家选择的回应方向(swallow=咽下/exhale=吐出)、已执行的机械效果、程序已验证的settlement（含剧情原句evidence与recipeId，可选）、以及当前人生快照。
+	输入是：一件已发生的命运事件、玩家选择的回应方向(swallow=咽下/exhale=吐出)、AI选择且程序已限制过的reward、已执行的机械效果，以及当前人生快照。
 若输入含playerText，这是玩家替主角亲口说出的话。必须让这句话真正进入当前现场，紧接着写在场人物的直接反应或立刻可见的结果；只能使用event.fact和snapshot已经存在的人、物与信息，不得新增人物、道具、往事、伤病、秘密或长时间后续。结果卡会另行展示playerText，因此text不要再次逐字复述整句话。
-用20至70个中文字写出这次回应给他带来了什么、为什么。若有settlement，必须围绕settlement.evidence解释对应机械结果，不能另编因果；若获得道具，必须点名该道具。也可以点名他身上的某件穿戴物或外号。写物不写理，黑色幽默克制，禁止格言与道德评判，不要复述整段事件。优先用留白：两个具体事实并置、不说破，让玩家自己拼出第三句。数值已由规则执行，你只负责解释。`,
+	用20至70个中文字写出这次回应给他带来了什么。若获得或失去道具，点名该道具；其他数值不必硬编现实因果。也可以点名他身上的某件穿戴物或外号。写物不写理，黑色幽默克制，禁止格言与道德评判，不要复述整段事件。优先用留白：两个具体事实并置、不说破，让玩家自己拼出第三句。`,
 } as const;

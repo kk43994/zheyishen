@@ -34,7 +34,8 @@ for (const [line, message] of [
 ] ) requireToken(game, line, message);
 
 for (const [token, message] of [
-  ['this.phoneActiveStoryIndex = this.phoneStoryIndex < PHONE_STORY_STEPS.length', '响铃时没有锁定当前剧情通次'],
+  ['const storyLimit = phaseTwo ? PHONE_STORY_STEPS.length : 6;', '电话阶段没有把前六通和第七通分开'],
+  ['this.phoneActiveStoryIndex = this.phoneStoryIndex < storyLimit', '响铃时没有按当前阶段锁定剧情通次'],
   ['private advancePhoneStory(): void', '缺少接挂共用的剧情推进函数'],
   ['this.advancePhoneStory();', '挂断或接听没有推进固定顺序'],
   ['const storyCaller = this.phoneActiveStoryIndex >= 0', '接听结算仍在随机抽剧情来电'],

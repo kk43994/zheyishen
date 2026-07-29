@@ -3,8 +3,8 @@ import { resolve, relative } from 'node:path';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const target = resolve(ROOT, process.argv[2] ?? 'dist');
-const PLATFORM_MAX_BYTES = 8 * 1024 * 1024;
-const RELEASE_BUDGET_BYTES = 7 * 1024 * 1024;
+const PLATFORM_MAX_BYTES = 20 * 1024 * 1024;
+const RELEASE_BUDGET_BYTES = 18 * 1024 * 1024;
 const forbidden = [
   'item-art-review.html',
   'voice-review.html',

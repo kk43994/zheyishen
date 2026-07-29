@@ -1,5 +1,7 @@
 export type ArtLoadPriority = 'critical' | 'next' | 'background';
 
+import { recordArtPerformance } from './performance-monitor';
+
 interface ArtLoadTask {
   readonly url: string;
   priority: number;
@@ -30,6 +32,10 @@ let gameplayActive = false;
 
 const MAX_CRITICAL_CONCURRENCY = 3;
 const MAX_DEFERRED_CONCURRENCY = 1;
+
+function normalizedArtUrl(url: string): string {
+  return new URL(url, document.baseURI).href;
+}
 
 function nextPaint(): Promise<void> {
   return new Promise((resolve) => {
@@ -63,15 +69,26 @@ function waitForImage(image: HTMLImageElement, url: string): Promise<void> {
 
 async function runTask(task: ArtLoadTask): Promise<void> {
   const occupiedDeferredLane = task.priority < PRIORITY.critical;
+  const startedAt = performance.now();
+  let decodeStartedAt = startedAt;
   try {
     await waitForBackgroundBudget(task);
     task.image.decoding = 'async';
     task.image.src = task.url;
     await waitForImage(task.image, task.url);
+    decodeStartedAt = performance.now();
     if (typeof task.image.decode === 'function') await task.image.decode();
     if (task.image.naturalWidth <= 0 || task.image.naturalHeight <= 0) {
       throw new Error(`art_decode_failed:${task.url}`);
     }
+    const completedAt = performance.now();
+    recordArtPerformance(
+      task.url,
+      completedAt - startedAt,
+      completedAt - decodeStartedAt,
+      task.image.naturalWidth,
+      task.image.naturalHeight,
+    );
     const record = records.get(task.url);
     if (record) {
       record.loaded = true;
@@ -79,6 +96,7 @@ async function runTask(task: ArtLoadTask): Promise<void> {
     }
     task.resolve(task.image);
   } catch (error) {
+    recordArtPerformance(task.url, performance.now() - startedAt, 0, 0, 0, true);
     records.delete(task.url);
     task.reject(error instanceof Error ? error : new Error(`art_load_failed:${task.url}`));
   } finally {
@@ -111,7 +129,8 @@ export function loadArtImage(
   url: string,
   priority: ArtLoadPriority = 'background',
 ): Promise<HTMLImageElement> {
-  const existing = records.get(url);
+  const normalizedUrl = normalizedArtUrl(url);
+  const existing = records.get(normalizedUrl);
   const requestedPriority = PRIORITY[priority];
   if (existing) {
     if (existing.task && requestedPriority > existing.task.priority) {
@@ -129,20 +148,20 @@ export function loadArtImage(
     rejectTask = reject;
   });
   const task: ArtLoadTask = {
-    url,
+    url: normalizedUrl,
     priority: requestedPriority,
     image,
     resolve: resolveTask,
     reject: rejectTask,
   };
-  records.set(url, { image, promise, task, loaded: false });
+  records.set(normalizedUrl, { image, promise, task, loaded: false });
   queue.push(task);
   pump();
   return promise;
 }
 
 export function loadedArtImage(url: string): HTMLImageElement | null {
-  const record = records.get(url);
+  const record = records.get(normalizedArtUrl(url));
   return record?.loaded ? record.image : null;
 }
 

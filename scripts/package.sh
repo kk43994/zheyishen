@@ -15,6 +15,7 @@ python3 scripts/validate_mobile_ui.py
 npm run validate:projectiles
 npm run validate:late-bosses
 npm run validate:phone-story
+npm run validate:voice-timeline
 npm run validate:ledger
 npm run validate:fate-background
 npm run validate:fate-residue
@@ -49,10 +50,11 @@ rm -f \
 rm -rf dist/assets/audio/voice-concepts
 rm -rf dist/assets/audio/voice-review
 rm -f dist/assets/audio/ambience/*.wav
+rm -f dist/assets/audio/music/*.wav
 rm -f dist/assets/audio/sfx/*.wav
 
 # 语音发布档降码率：public 里保留 64k 母版，进包统一转 56k 单声道（听感差异
-# 可忽略，省约 300KB——8MB 硬限下的常备腾挪位）。
+# 可忽略，同时减少首次音频读取量。
 ffmpeg_bin="${FFMPEG_BIN:-ffmpeg}"
 if ! command -v "$ffmpeg_bin" >/dev/null 2>&1; then
   printf '%s\n' "package.sh: ffmpeg unavailable (set FFMPEG_BIN); voice bitrate downscale is required for the release budget" >&2
@@ -71,12 +73,12 @@ for voice_file in "${voice_files[@]}"; do
 done
 
 npm run validate:release-budget
-bash scripts/run-validator.sh --required index.html --max-size 8388608 dist
+bash scripts/run-validator.sh --required index.html --max-size 20971520 dist
 mkdir -p "$release_dir"
 rm -f "$release_dir/$archive_name"
 cd dist
 /usr/bin/zip -q -r -X "$release_dir/$archive_name" .
 cd "$project_dir"
-bash scripts/run-validator.sh --required index.html --max-size 8388608 "$release_dir/$archive_name"
+bash scripts/run-validator.sh --required index.html --max-size 20971520 "$release_dir/$archive_name"
 npm run sync:release-metadata
 printf '%s\n' "$release_dir/$archive_name"

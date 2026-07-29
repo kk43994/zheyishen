@@ -393,7 +393,9 @@ export class PixelEnemyRenderer {
     opacity = 1,
   ): boolean {
     const image = enemyPixelAtlas.slice(asset, motion, frame);
-    if (!image) return false;
+    if (!image) {
+      throw new Error(`怪物正式像素帧缺失 ${asset}:${motion}:${frame}；程序化降级动画已取消`);
+    }
     const previousSmoothing = target.imageSmoothingEnabled;
     target.save();
     target.imageSmoothingEnabled = false;

@@ -45,7 +45,7 @@ for (const [token, message] of [
 for (const [token, message] of [
   ['recalledMemories: [...this.recalledMemories]', '断点写入遗漏已浮现记忆'],
   ['this.recalledMemories = new Set(checkpoint.recalledMemories)', '断点恢复遗漏已浮现记忆'],
-  ["checkpoint.recalledMemories.join(',')", '断点签名没有在回忆浮现后触发落盘'],
+  ["[...this.recalledMemories].join(',')", '断点签名没有在回忆浮现后触发落盘'],
 ] ) requireToken(game, token, message);
 
 for (const [source, label] of [[canon, '正典'], [plan, '升级计划'], [wiki, '百科']]) {

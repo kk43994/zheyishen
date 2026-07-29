@@ -63,13 +63,13 @@ type NarrativeCheck = { valid: true } | { valid: false; reason: string };
 const CURRENT_LIFE_FORBIDDEN: Record<LifeAge, ReadonlyArray<readonly [RegExp, string]>> = {
   童年: [
     [/(?:妻子|老婆|女儿|儿子|自己的孩子|老伴|结婚|离婚|相亲)/, '童年不能拥有成年后的伴侣或子女关系'],
-    [/(?:上班|下班|工资|公司|办公室|主管|同事|裁员|房东|租房|网贷|体检|退休|养老金)/, '童年不能以成年人身份工作、租房或退休'],
+    [/(?:他.{0,8}(?:领工资|在公司|在办公室|当主管|和同事|被裁员|向房东租房|借网贷|去体检|已退休|领养老金)|(?:公司|办公室).{0,8}他在(?:上班|工作))/, '童年不能以成年人身份工作、租房或退休'],
     // 正典：童年是还没上学的年纪，学校整条线属于少年章。
     [/(?:上学|放学|上课|下课|学校|校门|教室|课桌|同学|同桌|老师|班主任|作业|考试|课本|书包|校服|铃声)/, '童年还没有上学，学校要到少年章才开始'],
   ],
   少年: [
     [/(?:妻子|老婆|女儿|儿子|自己的孩子|老伴|结婚|离婚|相亲)/, '少年不能拥有成年后的伴侣或子女关系'],
-    [/(?:工资|公司|办公室|主管|同事|裁员|房东|租房|网贷|体检|退休|养老金)/, '少年不能以成年人身份工作、租房或退休'],
+    [/(?:他.{0,8}(?:领工资|在公司|在办公室|当主管|和同事|被裁员|向房东租房|借网贷|去体检|已退休|领养老金)|(?:公司|办公室).{0,8}他在(?:上班|工作))/, '少年不能以成年人身份工作、租房或退休'],
   ],
   青年: [
     [/(?:女儿|儿子|家长群|老伴|孙子|孙女|退休|养老金|遗照)/, '青年章节不提前进入育儿、退休或暮年关系'],
@@ -128,12 +128,20 @@ export function validateFateAge(event: FateEvent, snapshot: LifeSnapshot): Narra
 }
 
 const FATE_ITEM_MIN_STAGE: Partial<Record<ItemId, number>> = {
+  'loose-button': 1,
+  'red-workbook': 1,
+  'stone-schoolbag': 1,
   'bleach-powder': 1,
+  'cracked-glasses': 1,
+  'small-uniform': 1,
+  'class-break': 1,
+  'last-page': 1,
   'five-ha': 1,
   'red-packet': 1,
   'abstract-lv10': 1,
   'summer-run': 1,
   'card-binder': 1,
+  'shop-freezer': 1,
   'only-key': 2,
   'first-salary': 2,
   'white-bottle': 2,

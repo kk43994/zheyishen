@@ -71,20 +71,23 @@ if "ctx.fillRect(rect.x, rect.y, rect.width, rect.height)" in button_source:
 
 for source_name, source in (("buffered", audio), ("platform", audio_platform)):
     for token in (
-        "export type AudioMixChannel = 'effects' | 'ambience' | 'voice'",
+        "export type AudioMixChannel = 'effects' | 'ambience' | 'music' | 'voice'",
         "getMixVolume(channel: AudioMixChannel)",
         "setMixVolume(channel: AudioMixChannel, value: number)",
         "zhe-yi-shen:effects-volume",
         "zhe-yi-shen:ambience-volume",
+        "zhe-yi-shen:music-volume",
         "zhe-yi-shen:voice-volume",
     ):
         if token not in source:
             fail(f"{source_name} audio runtime missing mix contract: {token}")
 for token in (
     "PAUSE_SETTING_AMBIENCE_RECT",
+    "PAUSE_SETTING_MUSIC_RECT",
     "PAUSE_SETTING_VOICE_RECT",
     "PAUSE_SETTING_EFFECTS_RECT",
     "this.feedback.getMixVolume('ambience')",
+    "this.feedback.getMixVolume('music')",
     "this.feedback.getMixVolume('voice')",
     "this.feedback.getMixVolume('effects')",
     "this.feedback.setMixVolume(channel, next)",
@@ -161,7 +164,7 @@ if "const FATE_FREE_CANCEL_DELAY = 4" not in game or "cancelFreeResponseWait" no
     fail("free-text fate responses need a short-wait escape back to standard choices")
 if "const ORIGIN_LONG_WAIT_SECONDS = 30" not in game:
     fail("birth registration must expose its in-world retry action after 30 seconds")
-if "这页仍在登记，不会重复发起请求" not in game or "this.aiOriginState === 'error'" not in game:
+if "if (this.state !== 'origin' || this.aiOriginState !== 'error') return;" not in game:
     fail("birth registration does not prevent overlapping long-wait retries")
 if "this.originRequestId !== requestId" not in game:
     fail("a late birth request can overwrite the page after the player retries")

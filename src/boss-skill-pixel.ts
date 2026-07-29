@@ -266,7 +266,9 @@ export class PixelBossSkillRenderer {
     // v2 8 帧优先：progress 已知时用连续曲线选帧，动作更顺
     const sprite = (progress !== undefined ? eightFrameAtlas.slice(id, progress) : null)
       ?? bossSkillAtlas.slice(id, frame);
-    if (!sprite) return false;
+    if (!sprite) {
+      throw new Error(`Boss 正式技能帧缺失 ${id}:${frame}；程序化降级动画已取消`);
+    }
     target.save();
     target.imageSmoothingEnabled = false;
     target.translate(Math.round(enemy.x), Math.round(enemy.y));

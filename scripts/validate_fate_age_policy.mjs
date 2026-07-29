@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { LIFE_STAGE_CANON, validateFateAge } from '../src/life-stage.ts';
+import { LIFE_STAGE_CANON, isFateItemAgeAppropriate, validateFateAge } from '../src/life-stage.ts';
 
 const attack = {
   damage: 6.2,
@@ -75,10 +75,16 @@ if (!fateSource.includes('return validateFateAge(event, snapshot).valid ? event 
 if (/ages: \['童年'(?:, '少年')?\][\s\S]{0,180}(?:小学|中学|高中|教室|学校|校门|老师|同学|校服)/.test(fateSource)) {
   errors.push('童年本地保底仍含学校身份');
 }
+if (isFateItemAgeAppropriate('loose-button', 0)) {
+  errors.push('童年候选道具仍会抽到校服纽扣');
+}
+if (!isFateItemAgeAppropriate('loose-button', 1)) {
+  errors.push('少年章没有开放校服纽扣候选');
+}
 
 console.log(JSON.stringify({
   valid: errors.length === 0,
-  checks: 8,
+  checks: 10,
   policy: '童年未入学；少年小学至高中；所有 AI/本地/读档命运牌共用年龄硬校验',
   errors: [...new Set(errors)],
 }, null, 2));

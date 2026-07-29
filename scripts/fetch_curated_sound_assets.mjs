@@ -89,6 +89,43 @@ const sources = {
     landing: 'https://freesound.org/people/Daphne_in_Wonderland/sounds/383484',
     sha256: 'ddfa6fec50da89662e4d283f03547e49c83427c9a0f303ed4eb1ccbd0256819a',
   },
+  rainWindow: {
+    title: 'Rain on window', creator: 'Nickisawsome74', freesoundId: 669621,
+    url: 'https://cdn.freesound.org/previews/669/669621_7738466-hq.mp3',
+    landing: 'https://freesound.org/people/Nickisawsome74/sounds/669621/',
+    sha256: 'ab13fdc468bcc1cbd26f6fea712b6ed28881dc22935dec6ff1b19f62a4cd3e26',
+  },
+  classroomTalk: {
+    title: 'classrom-talk_01.wav', creator: 'finalobserver',
+    openverseId: 'b9034e93-a2e7-474c-8d24-15dd2a814529', freesoundId: 330732,
+    url: 'https://cdn.freesound.org/previews/330/330732_4991814-hq.mp3',
+    landing: 'https://freesound.org/people/finalobserver/sounds/330732/',
+    sha256: '219f32428a642fb5595f5ee3d7845d46420047e7785d6d7062a46081daaa2509',
+  },
+  trainArrival: {
+    title: 'Subway arriving', creator: 'sean_sd2007', freesoundId: 354128,
+    url: 'https://cdn.freesound.org/previews/354/354128_3278999-hq.mp3',
+    landing: 'https://freesound.org/people/sean_sd2007/sounds/354128/',
+    sha256: 'fa39e88f6a78ac59df6d8c54eb00067baf39a5ef5966ac9e87dc99847aeca321',
+  },
+  phoneRing: {
+    title: 'Phone Ringing Sound.wav', creator: 'fspera', freesoundId: 528111,
+    url: 'https://cdn.freesound.org/previews/528/528111_11684955-hq.mp3',
+    landing: 'https://freesound.org/people/fspera/sounds/528111/',
+    sha256: 'c77e494addd87c493084ed6ce0f15efc3435ad39486eab6612abcead613a4626',
+  },
+  officeTyping: {
+    title: 'Office Ambience', creator: 'BeaconStudio', freesoundId: 862604,
+    url: 'https://cdn.freesound.org/previews/862/862604_18689440-hq.mp3',
+    landing: 'https://freesound.org/people/BeaconStudio/sounds/862604/',
+    sha256: '204669d890d5e072832c8bca80dadafacc1c12435992d7b29a3b4f424b9882a3',
+  },
+  monitor: {
+    title: 'Hospital heart monitor beeps', creator: 'vestibule-door', freesoundId: 668978,
+    url: 'https://cdn.freesound.org/previews/668/668978_14100561-hq.mp3',
+    landing: 'https://freesound.org/people/vestibule-door/sounds/668978/',
+    sha256: '8a9b03cac07bba8aa377064a0f528f5b71bc6b1281acaa28f7963ba7e63542ad',
+  },
 };
 
 const sfxRecipes = {
@@ -100,14 +137,17 @@ const sfxRecipes = {
   wear: { source: 'wear', trim: '5.8:8.6', loudness: -23 },
   swallow: { source: 'swallow', trim: '0.09:0.42', loudness: -23 },
   exhale: { source: 'breath', trim: '1.34:2.80', loudness: -26 },
+  phone: { source: 'phoneRing', trim: '0:3.75', loudness: -24 },
+  train: { source: 'trainArrival', trim: '62:73', loudness: -27 },
+  monitor: { source: 'monitor', trim: '0:3.323', loudness: -26 },
 };
 
 const ambienceRecipes = {
-  'childhood-room': { source: 'childhood', offset: 0.8, lowpass: 9200 },
-  classroom: { source: 'classroom', offset: 10, lowpass: 6400 },
+  'childhood-room': { source: 'rainWindow', offset: 6, lowpass: 10500, loudness: -25 },
+  classroom: { source: 'classroomTalk', offset: 3, lowpass: 8200, loudness: -24 },
   station: { source: 'station', offset: 5, lowpass: 7600 },
   apartment: { source: 'apartment', offset: 10, lowpass: 7200 },
-  office: { source: 'office', offset: 8, lowpass: 6500 },
+  office: { source: 'officeTyping', offset: 12, lowpass: 8500, loudness: -22 },
   hospital: { source: 'hospital', offset: 4, lowpass: 8200 },
 };
 
@@ -151,7 +191,7 @@ async function renderAmbience(id, recipe) {
   const input = await fetchSource(recipe.source);
   const output = resolve(OUTPUT_DIR, 'ambience', `${id}.wav`);
   const filter = [
-    `[0:a]atrim=start=${recipe.offset}:duration=9,asetpts=PTS-STARTPTS,highpass=f=55,lowpass=f=${recipe.lowpass},loudnorm=I=-31:TP=-8:LRA=7,asplit=3[h0][m0][t0]`,
+    `[0:a]atrim=start=${recipe.offset}:duration=9,asetpts=PTS-STARTPTS,highpass=f=55,lowpass=f=${recipe.lowpass},loudnorm=I=${recipe.loudness ?? -31}:TP=-8:LRA=7,asplit=3[h0][m0][t0]`,
     '[h0]atrim=start=0:end=1,asetpts=PTS-STARTPTS[h]',
     '[m0]atrim=start=1:end=8,asetpts=PTS-STARTPTS[m]',
     '[t0]atrim=start=8:end=9,asetpts=PTS-STARTPTS[t]',
@@ -172,8 +212,9 @@ function sourceRecord(sourceId) {
   return {
     title: source.title,
     creator: source.creator,
-    provider: 'Freesound via Openverse',
-    openverseId: source.openverseId,
+    provider: source.openverseId ? 'Freesound via Openverse' : 'Freesound',
+    ...(source.openverseId ? { openverseId: source.openverseId } : {}),
+    ...(source.freesoundId ? { freesoundId: source.freesoundId } : {}),
     landing: source.landing,
     license: 'CC0-1.0',
     sourceSha256: source.sha256,

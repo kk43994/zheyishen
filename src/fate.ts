@@ -5,6 +5,7 @@ import type {
   FateEvent,
   FateFactEffect,
   FateProfile,
+  FateReward,
   FateResidueCarrier,
   FateResidueIntensity,
   FateResidueMotif,
@@ -67,6 +68,21 @@ const FATE_RECIPE_MOTIFS: FateResidueMotif[] = [
   'return', 'release', 'debt', 'wound', 'recovery', 'possession', 'loss',
 ];
 const FATE_RECIPE_INTENSITIES: FateResidueIntensity[] = ['normal', 'wild', 'rule_break'];
+
+const FATE_EFFECT_HINTS: Record<Exclude<FateResponseEffect, 'none'>, string> = {
+  store_volleys: '下一战储存攻击',
+  returning_breath: '弹体开始折返',
+  guard: '下一战开局获得护盾',
+  focus: '弹体开始追踪',
+  scatter: '弹体增加，单发稍弱',
+  haste: '攻击间隔缩短',
+  heavy_breath: '伤害提高，弹速降低',
+  delay_pain: '下一次受伤延后',
+  release_pain: '生命越低，伤害越高',
+  gain_coins: '获得零钱',
+  heal: '恢复生命',
+  trade_max_hp: '最大生命换取强力攻击',
+};
 
 const FATE_MECHANIC_RECIPES: FateMechanicRecipe[] = [
   {
@@ -494,6 +510,139 @@ function validateStats(value: unknown): Partial<Record<FateStatKey, number>> | u
   return stats;
 }
 
+function statsRewardHint(stats: Partial<Record<FateStatKey, number>>): string {
+  const labels: Record<FateStatKey, string> = {
+    damage: '伤害',
+    fireRate: '射速',
+    range: '射程',
+    width: '弹宽',
+    moveSpeed: '移速',
+    projSpeed: '弹速',
+  };
+  return (Object.entries(stats) as Array<[FateStatKey, number]>)
+    .map(([key, amount]) => `${labels[key]}${amount > 0 ? '+' : ''}${amount}%`)
+    .join(' · ');
+}
+
+function validateFreeReward(
+  value: unknown,
+  snapshot: LifeSnapshot,
+  result: string,
+): {
+  reward: FateReward;
+  hint: string;
+  effect: FateResponseEffect;
+  stats?: Partial<Record<FateStatKey, number>>;
+  gainItemId?: ItemId;
+  removeItemId?: ItemId;
+  settlement: FateSettlement;
+} | null {
+  if (!isRecord(value) || typeof value.kind !== 'string') return null;
+  const evidence = result.slice(0, 60).trim();
+  if (evidence.length < 4) return null;
+  const baseSettlement = {
+    version: 2 as const,
+    evidence,
+    intensity: 'normal' as const,
+  };
+  if (value.kind === 'none') {
+    return {
+      reward: { kind: 'none' },
+      hint: '只留下记忆',
+      effect: 'none',
+      settlement: {
+        ...baseSettlement,
+        carrier: 'memory',
+        motif: 'echo',
+        recipeId: 'ai_reward:none',
+        primary: 'memory',
+      },
+    };
+  }
+  if (value.kind === 'stats') {
+    const stats = validateStats(value.stats);
+    if (!stats) return null;
+    return {
+      reward: { kind: 'stats', stats },
+      hint: statsRewardHint(stats),
+      effect: 'none',
+      stats,
+      settlement: {
+        ...baseSettlement,
+        carrier: 'body',
+        motif: 'echo',
+        recipeId: `ai_reward:stats:${Object.keys(stats).sort().join('+')}`,
+        primary: 'stats',
+      },
+    };
+  }
+  if (value.kind === 'effect') {
+    const effect = typeof value.effect === 'string'
+      && value.effect !== 'none'
+      && FATE_RESPONSE_EFFECTS.includes(value.effect as FateResponseEffect)
+      ? value.effect as Exclude<FateResponseEffect, 'none'>
+      : null;
+    if (!effect) return null;
+    return {
+      reward: { kind: 'effect', effect },
+      hint: FATE_EFFECT_HINTS[effect],
+      effect,
+      settlement: {
+        ...baseSettlement,
+        carrier: 'memory',
+        motif: 'echo',
+        recipeId: `ai_reward:effect:${effect}`,
+        primary: 'effect',
+      },
+    };
+  }
+  if (value.kind === 'gain_item') {
+    const itemId = typeof value.itemId === 'string'
+      && FATE_ITEM_IDS.includes(value.itemId as ItemId)
+      && snapshot.fateItemCandidates.includes(value.itemId as ItemId)
+      && !snapshot.items.some((item) => item.id === value.itemId)
+      ? value.itemId as ItemId
+      : null;
+    if (!itemId) return null;
+    return {
+      reward: { kind: 'gain_item', itemId },
+      hint: `获得道具「${getItem(itemId).name}」`,
+      effect: 'none',
+      gainItemId: itemId,
+      settlement: {
+        ...baseSettlement,
+        carrier: 'item',
+        motif: 'possession',
+        recipeId: `ai_reward:gain_item:${itemId}`,
+        primary: 'item',
+        candidateItemId: itemId,
+      },
+    };
+  }
+  if (value.kind === 'remove_item') {
+    const itemId = typeof value.itemId === 'string'
+      && snapshot.items.some((item) => item.id === value.itemId)
+      ? value.itemId as ItemId
+      : null;
+    if (!itemId) return null;
+    return {
+      reward: { kind: 'remove_item', itemId },
+      hint: `失去道具「${getItem(itemId).name}」`,
+      effect: 'none',
+      removeItemId: itemId,
+      settlement: {
+        ...baseSettlement,
+        carrier: 'item',
+        motif: 'loss',
+        recipeId: `ai_reward:remove_item:${itemId}`,
+        primary: 'item',
+        candidateItemId: itemId,
+      },
+    };
+  }
+  return null;
+}
+
 function carrierHasConcreteEvidence(
   carrier: FateResidueCarrier,
   evidence: string,
@@ -624,6 +773,37 @@ function validateResponse(
   const poison = validatePoison(value.poison);
   if (!label || !result || !poison) return null;
 
+  const freeReward = snapshot ? validateFreeReward(value.reward, snapshot, result) : null;
+  if (freeReward) {
+    return {
+      label,
+      hint: freeReward.hint,
+      effect: freeReward.effect,
+      result,
+      poison,
+      stats: freeReward.stats,
+      gainItemId: freeReward.gainItemId,
+      removeItemId: freeReward.removeItemId,
+      reward: freeReward.reward,
+      settlement: freeReward.settlement,
+    };
+  }
+  // AI 的现场文字与奖励元数据分开验收：奖励 kind、数值或道具 ID 写错时，
+  // 只把这一项降成 none，不能连同已经合格的剧情和两个选择一起丢回本地保底。
+  if (snapshot && Object.prototype.hasOwnProperty.call(value, 'reward')) {
+    const noReward = validateFreeReward({ kind: 'none' }, snapshot, result);
+    if (!noReward) return null;
+    return {
+      label,
+      hint: noReward.hint,
+      effect: noReward.effect,
+      result,
+      poison,
+      reward: noReward.reward,
+      settlement: noReward.settlement,
+    };
+  }
+
   const rawSettlement = value.residue ?? value.settlement;
   const compiled = snapshot && profile
     ? validateSettlement(rawSettlement, result, snapshot, profile, options, fact)
@@ -664,13 +844,43 @@ export function validateFreeFateResponse(
   fact: string,
 ): FateResponse | null {
   if (!isRecord(value)) return null;
-  return validateResponse(
-    isRecord(value.response) ? value.response : value,
+  const source = isRecord(value.response) ? value.response : value;
+  const compiled = validateResponse(
+    source,
     snapshot,
     profile,
     { requireResidue: true },
     fact,
   );
+  if (compiled) return compiled;
+
+  // “亲口说”的首要承诺是让玩家自己的话得到一张真实回执。模型若把
+  // residue 配方、枚举或证据写错，不能因此丢掉已经合格的现场文字；
+  // 这里仅保留 AI 生成的 label/result/poison，并安全降级为无数值的记忆。
+  if (!isRecord(source)) return null;
+  const label = readText(source.label, 2, 14);
+  const result = readText(source.result, 6, 90);
+  const poison = validatePoison(source.poison);
+  if (!label || !result || !poison) return null;
+  const evidence = result.slice(0, 60).trim();
+  if (evidence.length < 4) return null;
+  return {
+    label,
+    hint: '只留下记忆',
+    effect: 'none',
+    result,
+    poison,
+    reward: { kind: 'none' },
+    settlement: {
+      version: 2,
+      evidence,
+      carrier: 'memory',
+      motif: 'echo',
+      intensity: 'normal',
+      recipeId: 'memory_only',
+      primary: 'memory',
+    },
+  };
 }
 
 function validatePoison(value: unknown): Partial<PoisonVector> | null {
@@ -710,6 +920,9 @@ function cloneEvent(event: FateEvent): FateEvent {
     ...value,
     poison: { ...value.poison },
     stats: value.stats ? { ...value.stats } : undefined,
+    reward: value.reward?.kind === 'stats'
+      ? { ...value.reward, stats: { ...value.reward.stats } }
+      : value.reward ? { ...value.reward } : undefined,
     settlement: value.settlement ? { ...value.settlement } : undefined,
   });
   return {

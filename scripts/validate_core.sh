@@ -7,6 +7,7 @@ checks=(
   validate:box
   validate:late-bosses
   validate:phone-story
+  validate:voice-timeline
   validate:ledger
   validate:previous-life
   validate:breath-specimen
@@ -23,6 +24,7 @@ checks=(
   validate:scene
   validate:childhood-boss
   validate:collector-boss
+  validate:boss-stability
   validate:childhood-enemies
   validate:adulthood-enemies
   validate:school-work-enemies

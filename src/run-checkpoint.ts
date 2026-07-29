@@ -22,9 +22,10 @@ const LEGACY_STORAGE_KEYS = ['zys-run-checkpoint-v1'] as const;
 const INVALID_BACKUP_KEY = 'zys-run-checkpoint-invalid-backup-v1';
 const CHECKPOINT_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
-export type CheckpointScreen = 'origin' | 'battle' | 'fateEvent' | 'itemReward' | 'shop' | 'specialRoom';
+export type CheckpointScreen = 'origin' | 'battle' | 'fateEvent' | 'itemReward' | 'storyDrop' | 'shop' | 'specialRoom';
 export type CheckpointRewardDestination = 'start' | 'advance' | 'battle';
 export type CheckpointFateDestination = 'advance' | 'battle' | 'shop';
+export type CheckpointBossType = 'closet-dark' | 'silent-father' | 'praise-chair' | 'ringing-phone' | 'debt-collector';
 
 export interface CheckpointHero {
   hp: number;
@@ -68,6 +69,34 @@ export interface CheckpointPendingFreeFate {
   direction: FateDirection;
   playerText: string;
   fateItemCandidates: ItemId[];
+}
+
+/**
+ * 只保存 Boss 战可公平重建的稳定进度；前摇、弹道和召唤物属于瞬态，
+ * 恢复时统一清掉，避免把玩家放回无法躲避的结算帧。
+ */
+export interface CheckpointBossState {
+  type: CheckpointBossType;
+  hpRatio: number;
+  offsetX: number;
+  offsetY: number;
+  phase: number;
+  mechTimer: number;
+  voiceStage: number;
+  relocateDamage: number;
+  phoneStoryIndex: number;
+  phoneMissed: number;
+  phoneRelief: number;
+  praiseMoveIndex: number;
+  praiseOneSeatUsed: boolean;
+  closetMoveIndex: number;
+  bingDebt: number;
+  bingPenaltyTimer: number;
+  fatherCycleIndex: number;
+  fatherSecondPhaseLineShown: boolean;
+  fatherCoatOffsetX?: number;
+  fatherCoatOffsetY?: number;
+  collectorBillInterest: number;
 }
 
 export interface CheckpointPersistentState {
@@ -135,6 +164,8 @@ export interface RunCheckpoint {
   preparedFate?: CheckpointPreparedFate;
   /** 玩家已经亲口说出、但 AI 回执尚未兑现的命运；恢复后会在后台重新请求。 */
   pendingFreeFate?: CheckpointPendingFreeFate;
+  /** 活跃大 Boss 的稳定恢复点；旧档缺省为无。 */
+  boss?: CheckpointBossState;
   fateDestination: CheckpointFateDestination;
   fateResultDirection?: FateDirection;
   /** 后台回执关闭后只回战斗，不得再次推进关卡。 */
@@ -158,10 +189,11 @@ export interface RunCheckpoint {
   specialRoomPreviousLifeItem?: ItemId;
 }
 
-const SCREENS: CheckpointScreen[] = ['origin', 'battle', 'fateEvent', 'itemReward', 'shop', 'specialRoom'];
+const SCREENS: CheckpointScreen[] = ['origin', 'battle', 'fateEvent', 'itemReward', 'storyDrop', 'shop', 'specialRoom'];
 const ORIGIN_KINDS: OriginKind[] = ['ordinary', 'mixed', 'favored', 'harsh'];
 const FATE_DESTINATIONS: CheckpointFateDestination[] = ['advance', 'battle', 'shop'];
 const REWARD_DESTINATIONS: CheckpointRewardDestination[] = ['start', 'advance', 'battle'];
+const BOSS_TYPES: CheckpointBossType[] = ['closet-dark', 'silent-father', 'praise-chair', 'ringing-phone', 'debt-collector'];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -262,6 +294,40 @@ function rewardAcquire(value: unknown): CheckpointRewardAcquire | undefined {
     timer: finite(value.timer, total, 0, total),
     total,
     destination,
+  };
+}
+
+function checkpointBossState(value: unknown): CheckpointBossState | undefined {
+  if (!isRecord(value) || typeof value.type !== 'string'
+    || !BOSS_TYPES.includes(value.type as CheckpointBossType)) return undefined;
+  const coatX = typeof value.fatherCoatOffsetX === 'number' && Number.isFinite(value.fatherCoatOffsetX)
+    ? finite(value.fatherCoatOffsetX, 0, -480, 480)
+    : undefined;
+  const coatY = typeof value.fatherCoatOffsetY === 'number' && Number.isFinite(value.fatherCoatOffsetY)
+    ? finite(value.fatherCoatOffsetY, 0, -480, 480)
+    : undefined;
+  return {
+    type: value.type as CheckpointBossType,
+    hpRatio: finite(value.hpRatio, 1, 0.01, 1),
+    offsetX: finite(value.offsetX, 0, -480, 480),
+    offsetY: finite(value.offsetY, -180, -480, 480),
+    phase: integer(value.phase, 1, 1, 3),
+    mechTimer: finite(value.mechTimer, 0, 0, 30),
+    voiceStage: integer(value.voiceStage, 0, 0, 2),
+    relocateDamage: finite(value.relocateDamage, 0, 0, 9999),
+    phoneStoryIndex: integer(value.phoneStoryIndex, 0, 0, 7),
+    phoneMissed: integer(value.phoneMissed, 0, 0, 999),
+    phoneRelief: integer(value.phoneRelief, 0, 0, 99),
+    praiseMoveIndex: integer(value.praiseMoveIndex, 0, 0, 999),
+    praiseOneSeatUsed: value.praiseOneSeatUsed === true,
+    closetMoveIndex: integer(value.closetMoveIndex, 0, 0, 999),
+    bingDebt: integer(value.bingDebt, 0, 0, 99),
+    bingPenaltyTimer: finite(value.bingPenaltyTimer, 0, 0, 600),
+    fatherCycleIndex: integer(value.fatherCycleIndex, 0, 0, 999),
+    fatherSecondPhaseLineShown: value.fatherSecondPhaseLineShown === true,
+    fatherCoatOffsetX: coatX,
+    fatherCoatOffsetY: coatY,
+    collectorBillInterest: integer(value.collectorBillInterest, 0, 0, 99),
   };
 }
 
@@ -489,6 +555,7 @@ export function parseRunCheckpoint(value: unknown): RunCheckpoint | null {
     currentFate,
     preparedFate,
     pendingFreeFate,
+    boss: checkpointBossState(value.boss),
     fateDestination,
     fateResultDirection,
     fateResultReturn,

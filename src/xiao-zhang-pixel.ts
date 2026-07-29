@@ -71,7 +71,9 @@ export class PixelXiaoZhangRenderer {
     display = 56,
   ): boolean {
     const sprite = atlas.slice(action, frame);
-    if (!sprite) return false;
+    if (!sprite) {
+      throw new Error(`小张正式像素帧缺失 ${action}:${frame}；程序化降级动画已取消`);
+    }
     target.save();
     target.imageSmoothingEnabled = false;
     target.translate(Math.round(x), Math.round(y));

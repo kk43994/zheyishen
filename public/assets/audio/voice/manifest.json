@@ -1,13 +1,669 @@
 [
   {
+    "id": "origin-comic-01",
+    "file": "assets/audio/voice/origin-comic-01.mp3",
+    "role": "narrator",
+    "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 10150,
+    "bytes": 82932,
+    "draft": false,
+    "assetRevision": 9,
+    "generatedAt": "2026-07-29T09:07:17.342Z",
+    "delivery": {
+      "voice": "低沉中老年男声",
+      "tone": "像从很久以后回望出生；平静沧桑，不念纪录片腔",
+      "emotion": "calm",
+      "speed": 0.71,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    },
+    "synthesisSegments": [
+      {
+        "text": "人出生的时候，先哭一声。",
+        "speed": 0.72,
+        "volume": 0.88,
+        "pitch": -2,
+        "emotion": "calm",
+        "pauseAfter": 0.65,
+        "weight": "neutral"
+      },
+      {
+        "text": "那是他来到世上，领到的第一口气。",
+        "speed": 0.62,
+        "volume": 0.78,
+        "pitch": -3,
+        "emotion": "calm",
+        "pauseAfter": 0,
+        "weight": "light"
+      }
+    ],
+    "segmentTimings": [
+      {
+        "index": 0,
+        "text": "人出生的时候，先哭一声。",
+        "startMs": 0,
+        "speechEndMs": 3974,
+        "endMs": 4624,
+        "pauseAfterMs": 650
+      },
+      {
+        "index": 1,
+        "text": "那是他来到世上，领到的第一口气。",
+        "startMs": 4624,
+        "speechEndMs": 10188,
+        "endMs": 10188,
+        "pauseAfterMs": 0
+      }
+    ],
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.58,
+      "truePeakDbtp": -2.36
+    }
+  },
+  {
+    "id": "origin-comic-02",
+    "file": "assets/audio/voice/origin-comic-02.mp3",
+    "role": "narrator",
+    "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 13447,
+    "bytes": 109428,
+    "draft": false,
+    "assetRevision": 9,
+    "generatedAt": "2026-07-29T09:07:18.409Z",
+    "delivery": {
+      "voice": "低沉中老年男声",
+      "tone": "把两个事实并排说；门外热闹与推门迟到之间不加评判",
+      "emotion": "calm",
+      "speed": 0.76,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    },
+    "synthesisSegments": [
+      {
+        "text": "有人出生时，门外站满了人。",
+        "speed": 0.8,
+        "volume": 0.9,
+        "pitch": -2,
+        "emotion": "calm",
+        "pauseAfter": 0.36,
+        "weight": "neutral"
+      },
+      {
+        "text": "有人哭了很久，才有人推门。",
+        "speed": 0.72,
+        "volume": 0.84,
+        "pitch": -2,
+        "emotion": "calm",
+        "pauseAfter": 0.58,
+        "weight": "light"
+      },
+      {
+        "text": "芸芸众生，来处不同。",
+        "speed": 0.62,
+        "volume": 0.78,
+        "pitch": -3,
+        "emotion": "calm",
+        "pauseAfter": 0,
+        "weight": "light"
+      }
+    ],
+    "segmentTimings": [
+      {
+        "index": 0,
+        "text": "有人出生时，门外站满了人。",
+        "startMs": 0,
+        "speechEndMs": 4592,
+        "endMs": 4952,
+        "pauseAfterMs": 360
+      },
+      {
+        "index": 1,
+        "text": "有人哭了很久，才有人推门。",
+        "startMs": 4952,
+        "speechEndMs": 9544,
+        "endMs": 10124,
+        "pauseAfterMs": 580
+      },
+      {
+        "index": 2,
+        "text": "芸芸众生，来处不同。",
+        "startMs": 10124,
+        "speechEndMs": 13464,
+        "endMs": 13464,
+        "pauseAfterMs": 0
+      }
+    ],
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.2,
+      "truePeakDbtp": -2.28
+    }
+  },
+  {
+    "id": "origin-comic-03",
+    "file": "assets/audio/voice/origin-comic-03.mp3",
+    "role": "narrator",
+    "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 6120,
+    "bytes": 50676,
+    "draft": false,
+    "assetRevision": 9,
+    "generatedAt": "2026-07-29T09:07:19.441Z",
+    "delivery": {
+      "voice": "低沉中老年男声",
+      "tone": "“争气”与“忍气”咬字清楚，中间留白，不讽刺",
+      "emotion": "calm",
+      "speed": 0.72,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    },
+    "synthesisSegments": [
+      {
+        "text": "后来，大人教他争气。",
+        "speed": 0.75,
+        "volume": 0.92,
+        "pitch": -2,
+        "emotion": "calm",
+        "pauseAfter": 0.52,
+        "weight": "firm"
+      },
+      {
+        "text": "也教他忍气。",
+        "speed": 0.6,
+        "volume": 0.74,
+        "pitch": -3,
+        "emotion": "calm",
+        "pauseAfter": 0,
+        "weight": "light"
+      }
+    ],
+    "segmentTimings": [
+      {
+        "index": 0,
+        "text": "后来，大人教他争气。",
+        "startMs": 0,
+        "speechEndMs": 3468,
+        "endMs": 3988,
+        "pauseAfterMs": 520
+      },
+      {
+        "index": 1,
+        "text": "也教他忍气。",
+        "startMs": 3988,
+        "speechEndMs": 6156,
+        "endMs": 6156,
+        "pauseAfterMs": 0
+      }
+    ],
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.58,
+      "truePeakDbtp": -2.5
+    }
+  },
+  {
+    "id": "origin-comic-04",
+    "file": "assets/audio/voice/origin-comic-04.mp3",
+    "role": "narrator",
+    "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 8440,
+    "bytes": 69396,
+    "draft": false,
+    "assetRevision": 9,
+    "generatedAt": "2026-07-29T09:07:20.604Z",
+    "delivery": {
+      "voice": "低沉中老年男声",
+      "tone": "像翻过几年旧页；自然陈述，不煽情",
+      "emotion": "calm",
+      "speed": 0.74,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    },
+    "synthesisSegments": [
+      {
+        "text": "后来，他们各自长大。",
+        "speed": 0.76,
+        "volume": 0.88,
+        "pitch": -2,
+        "emotion": "calm",
+        "pauseAfter": 0.44,
+        "weight": "neutral"
+      },
+      {
+        "text": "也各自遇见，各自躲不过的事。",
+        "speed": 0.66,
+        "volume": 0.8,
+        "pitch": -3,
+        "emotion": "calm",
+        "pauseAfter": 0,
+        "weight": "light"
+      }
+    ],
+    "segmentTimings": [
+      {
+        "index": 0,
+        "text": "后来，他们各自长大。",
+        "startMs": 0,
+        "speechEndMs": 3222,
+        "endMs": 3662,
+        "pauseAfterMs": 440
+      },
+      {
+        "index": 1,
+        "text": "也各自遇见，各自躲不过的事。",
+        "startMs": 3662,
+        "speechEndMs": 8496,
+        "endMs": 8496,
+        "pauseAfterMs": 0
+      }
+    ],
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.61,
+      "truePeakDbtp": -2.3
+    }
+  },
+  {
+    "id": "origin-comic-05",
+    "file": "assets/audio/voice/origin-comic-05.mp3",
+    "role": "narrator",
+    "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 15067,
+    "bytes": 122388,
+    "draft": false,
+    "assetRevision": 9,
+    "generatedAt": "2026-07-29T09:07:21.746Z",
+    "delivery": {
+      "voice": "低沉中老年男声",
+      "tone": "委屈说得平；最后一句略慢落下，不控诉",
+      "emotion": "calm",
+      "speed": 0.74,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    },
+    "synthesisSegments": [
+      {
+        "text": "受了委屈，咽下去，叫懂事。",
+        "speed": 0.76,
+        "volume": 0.84,
+        "pitch": -2,
+        "emotion": "calm",
+        "pauseAfter": 0.44,
+        "weight": "neutral"
+      },
+      {
+        "text": "吐出来，又有人说他不懂事。",
+        "speed": 0.72,
+        "volume": 0.88,
+        "pitch": -2,
+        "emotion": "calm",
+        "pauseAfter": 0.62,
+        "weight": "firm"
+      },
+      {
+        "text": "每种选择，都有所得，也有所失。",
+        "speed": 0.62,
+        "volume": 0.76,
+        "pitch": -3,
+        "emotion": "calm",
+        "pauseAfter": 0,
+        "weight": "light"
+      }
+    ],
+    "segmentTimings": [
+      {
+        "index": 0,
+        "text": "受了委屈，咽下去，叫懂事。",
+        "startMs": 0,
+        "speechEndMs": 4250,
+        "endMs": 4690,
+        "pauseAfterMs": 440
+      },
+      {
+        "index": 1,
+        "text": "吐出来，又有人说他不懂事。",
+        "startMs": 4690,
+        "speechEndMs": 9364,
+        "endMs": 9984,
+        "pauseAfterMs": 620
+      },
+      {
+        "index": 2,
+        "text": "每种选择，都有所得，也有所失。",
+        "startMs": 9984,
+        "speechEndMs": 15084,
+        "endMs": 15084,
+        "pauseAfterMs": 0
+      }
+    ],
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.56,
+      "truePeakDbtp": -2.15
+    }
+  },
+  {
+    "id": "origin-comic-06",
+    "file": "assets/audio/voice/origin-comic-06.mp3",
+    "role": "narrator",
+    "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 12547,
+    "bytes": 102228,
+    "draft": false,
+    "assetRevision": 9,
+    "generatedAt": "2026-07-29T09:07:22.578Z",
+    "delivery": {
+      "voice": "低沉中老年男声",
+      "tone": "“脾气”与“骨气”咬字清楚；最后一句收轻",
+      "emotion": "calm",
+      "speed": 0.7,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    },
+    "synthesisSegments": [
+      {
+        "text": "有些气，成了脾气。",
+        "speed": 0.74,
+        "volume": 0.84,
+        "pitch": -2,
+        "emotion": "calm",
+        "pauseAfter": 0.34,
+        "weight": "neutral"
+      },
+      {
+        "text": "有些气，撑成了骨气。",
+        "speed": 0.68,
+        "volume": 0.92,
+        "pitch": -2,
+        "emotion": "calm",
+        "pauseAfter": 0.58,
+        "weight": "firm"
+      },
+      {
+        "text": "还有一些，一直留在身体里。",
+        "speed": 0.58,
+        "volume": 0.74,
+        "pitch": -3,
+        "emotion": "calm",
+        "pauseAfter": 0,
+        "weight": "light"
+      }
+    ],
+    "segmentTimings": [
+      {
+        "index": 0,
+        "text": "有些气，成了脾气。",
+        "startMs": 0,
+        "speechEndMs": 3135,
+        "endMs": 3475,
+        "pauseAfterMs": 340
+      },
+      {
+        "index": 1,
+        "text": "有些气，撑成了骨气。",
+        "startMs": 3475,
+        "speechEndMs": 7058,
+        "endMs": 7638,
+        "pauseAfterMs": 580
+      },
+      {
+        "index": 2,
+        "text": "还有一些，一直留在身体里。",
+        "startMs": 7638,
+        "speechEndMs": 12564,
+        "endMs": 12564,
+        "pauseAfterMs": 0
+      }
+    ],
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.56,
+      "truePeakDbtp": -2.51
+    }
+  },
+  {
+    "id": "origin-comic-07",
+    "file": "assets/audio/voice/origin-comic-07.mp3",
+    "role": "narrator",
+    "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 13375,
+    "bytes": 108852,
+    "draft": false,
+    "assetRevision": 9,
+    "generatedAt": "2026-07-29T09:07:23.453Z",
+    "delivery": {
+      "voice": "低沉中老年男声",
+      "tone": "像清点穿在身上的东西；得到与失去等重，克制而非悲腔",
+      "emotion": "calm",
+      "speed": 0.68,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    },
+    "synthesisSegments": [
+      {
+        "text": "得到的，穿在身上。",
+        "speed": 0.7,
+        "volume": 0.84,
+        "pitch": -2,
+        "emotion": "calm",
+        "pauseAfter": 0.4,
+        "weight": "neutral"
+      },
+      {
+        "text": "失去的，也穿在身上。",
+        "speed": 0.66,
+        "volume": 0.82,
+        "pitch": -2,
+        "emotion": "calm",
+        "pauseAfter": 0.64,
+        "weight": "neutral"
+      },
+      {
+        "text": "芸芸众生，各有各的这一身。",
+        "speed": 0.58,
+        "volume": 0.74,
+        "pitch": -3,
+        "emotion": "calm",
+        "pauseAfter": 0,
+        "weight": "light"
+      }
+    ],
+    "segmentTimings": [
+      {
+        "index": 0,
+        "text": "得到的，穿在身上。",
+        "startMs": 0,
+        "speechEndMs": 3326,
+        "endMs": 3726,
+        "pauseAfterMs": 400
+      },
+      {
+        "index": 1,
+        "text": "失去的，也穿在身上。",
+        "startMs": 3726,
+        "speechEndMs": 7526,
+        "endMs": 8166,
+        "pauseAfterMs": 640
+      },
+      {
+        "index": 2,
+        "text": "芸芸众生，各有各的这一身。",
+        "startMs": 8166,
+        "speechEndMs": 13392,
+        "endMs": 13392,
+        "pauseAfterMs": 0
+      }
+    ],
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.58,
+      "truePeakDbtp": -2.39
+    }
+  },
+  {
+    "id": "origin-comic-08",
+    "file": "assets/audio/voice/origin-comic-08.mp3",
+    "role": "narrator",
+    "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 17659,
+    "bytes": 143124,
+    "draft": false,
+    "assetRevision": 9,
+    "generatedAt": "2026-07-29T09:07:24.525Z",
+    "delivery": {
+      "voice": "低沉中老年男声",
+      "tone": "三句逐级放慢；“轮到你了”贴近一点、轻一点，克制而非悲腔",
+      "emotion": "calm",
+      "speed": 0.64,
+      "pitch": -2,
+      "intensity": "low",
+      "tags": [
+        "breath",
+        "exhale",
+        "pause"
+      ]
+    },
+    "synthesisSegments": [
+      {
+        "text": "这一身，并非生来如此。",
+        "speed": 0.7,
+        "volume": 0.82,
+        "pitch": -2,
+        "emotion": "calm",
+        "pauseAfter": 0.56,
+        "weight": "neutral"
+      },
+      {
+        "text": "而是被这一生，一件件，穿成的。",
+        "speed": 0.64,
+        "volume": 0.78,
+        "pitch": -3,
+        "emotion": "calm",
+        "pauseAfter": 0.86,
+        "weight": "light"
+      },
+      {
+        "text": "(breath)现在。",
+        "speed": 0.58,
+        "volume": 0.7,
+        "pitch": -3,
+        "emotion": "calm",
+        "pauseAfter": 0.46,
+        "weight": "light"
+      },
+      {
+        "text": "轮到你了。(exhale)",
+        "speed": 0.54,
+        "volume": 0.72,
+        "pitch": -3,
+        "emotion": "calm",
+        "pauseAfter": 0,
+        "weight": "light"
+      }
+    ],
+    "segmentTimings": [
+      {
+        "index": 0,
+        "text": "这一身，并非生来如此。",
+        "startMs": 0,
+        "speechEndMs": 5265,
+        "endMs": 5825,
+        "pauseAfterMs": 560
+      },
+      {
+        "index": 1,
+        "text": "而是被这一生，一件件，穿成的。",
+        "startMs": 5825,
+        "speechEndMs": 12846,
+        "endMs": 13706,
+        "pauseAfterMs": 860
+      },
+      {
+        "index": 2,
+        "text": "(breath)现在。",
+        "startMs": 13706,
+        "speechEndMs": 14876,
+        "endMs": 15336,
+        "pauseAfterMs": 460
+      },
+      {
+        "index": 3,
+        "text": "轮到你了。(exhale)",
+        "startMs": 15336,
+        "speechEndMs": 17676,
+        "endMs": 17676,
+        "pauseAfterMs": 0
+      }
+    ],
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.6,
+      "truePeakDbtp": -2.49
+    }
+  },
+  {
     "id": "narrator-opening",
     "file": "assets/audio/voice/narrator-opening.mp3",
     "role": "narrator",
     "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 10008,
-    "bytes": 81492,
+    "durationMs": 9991,
+    "bytes": 81780,
     "draft": false,
     "assetRevision": 1,
     "generatedAt": "2026-07-28T13:03:47.050Z",
@@ -24,7 +680,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.62,
+      "truePeakDbtp": -2.49
+    }
   },
   {
     "id": "narrator-start-breath",
@@ -33,7 +696,7 @@
     "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2772,
+    "durationMs": 2728,
     "bytes": 23604,
     "draft": false,
     "assetRevision": 1,
@@ -47,7 +710,14 @@
       "intensity": "low",
       "tags": []
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.19,
+      "truePeakDbtp": -2.51
+    }
   },
   {
     "id": "child-under-bed",
@@ -56,7 +726,7 @@
     "voiceId": "clever_boy",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 5148,
+    "durationMs": 5092,
     "bytes": 42612,
     "draft": false,
     "delivery": {
@@ -71,7 +741,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.44,
+      "truePeakDbtp": -3.56
+    }
   },
   {
     "id": "caregiver-lights-out",
@@ -80,7 +757,7 @@
     "voiceId": "Chinese (Mandarin)_Warm_Bestie",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2772,
+    "durationMs": 2715,
     "bytes": 23604,
     "draft": false,
     "delivery": {
@@ -94,7 +771,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.43,
+      "truePeakDbtp": -5
+    }
   },
   {
     "id": "caregiver-no-monster",
@@ -103,7 +787,7 @@
     "voiceId": "Chinese (Mandarin)_Warm_Bestie",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2124,
+    "durationMs": 2078,
     "bytes": 18420,
     "draft": false,
     "delivery": {
@@ -117,7 +801,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.47,
+      "truePeakDbtp": -4.13
+    }
   },
   {
     "id": "father-childhood-walk",
@@ -126,7 +817,7 @@
     "voiceId": "ttv-voice-2026072409135526-TsjoP4Ow",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1656,
+    "durationMs": 1600,
     "bytes": 14676,
     "draft": false,
     "delivery": {
@@ -138,7 +829,14 @@
       "intensity": "low",
       "tags": []
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.41,
+      "truePeakDbtp": -2.29
+    }
   },
   {
     "id": "classmate-family-late",
@@ -147,7 +845,7 @@
     "voiceId": "clever_boy",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2880,
+    "durationMs": 2817,
     "bytes": 24468,
     "draft": false,
     "delivery": {
@@ -161,7 +859,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.51,
+      "truePeakDbtp": -2.5
+    }
   },
   {
     "id": "school-gate-closing",
@@ -170,7 +875,7 @@
     "voiceId": "Chinese (Mandarin)_News_Anchor",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 4140,
+    "durationMs": 4087,
     "bytes": 34548,
     "draft": false,
     "delivery": {
@@ -182,7 +887,14 @@
       "intensity": "medium",
       "tags": []
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.51,
+      "truePeakDbtp": -2.52
+    }
   },
   {
     "id": "school-bell-start",
@@ -191,7 +903,7 @@
     "voiceId": "Chinese (Mandarin)_News_Anchor",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3348,
+    "durationMs": 3300,
     "bytes": 28212,
     "draft": false,
     "delivery": {
@@ -203,7 +915,14 @@
       "intensity": "medium",
       "tags": []
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.51,
+      "truePeakDbtp": -2.39
+    }
   },
   {
     "id": "teacher-last-row",
@@ -212,7 +931,7 @@
     "voiceId": "female-chengshu",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3276,
+    "durationMs": 3233,
     "bytes": 27636,
     "draft": false,
     "assetRevision": 1,
@@ -228,7 +947,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.49,
+      "truePeakDbtp": -2.52
+    }
   },
   {
     "id": "teacher-answer-format",
@@ -237,7 +963,7 @@
     "voiceId": "female-chengshu",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 4392,
+    "durationMs": 4321,
     "bytes": 36564,
     "draft": false,
     "delivery": {
@@ -251,7 +977,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.61,
+      "truePeakDbtp": -2.57
+    }
   },
   {
     "id": "classmate-score-whisper",
@@ -260,7 +993,7 @@
     "voiceId": "clever_boy",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2052,
+    "durationMs": 1985,
     "bytes": 17844,
     "draft": false,
     "delivery": {
@@ -272,7 +1005,14 @@
       "intensity": "low",
       "tags": []
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -17.94,
+      "truePeakDbtp": -3.52
+    }
   },
   {
     "id": "teacher-paper-back",
@@ -281,7 +1021,7 @@
     "voiceId": "female-chengshu",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2556,
+    "durationMs": 2487,
     "bytes": 21876,
     "draft": false,
     "delivery": {
@@ -295,7 +1035,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.67,
+      "truePeakDbtp": -2.59
+    }
   },
   {
     "id": "father-for-your-good",
@@ -304,7 +1051,7 @@
     "voiceId": "ttv-voice-2026072409135526-TsjoP4Ow",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 4176,
+    "durationMs": 4106,
     "bytes": 34836,
     "draft": false,
     "delivery": {
@@ -318,7 +1065,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.17,
+      "truePeakDbtp": -2.38
+    }
   },
   {
     "id": "school-bell-end",
@@ -327,7 +1081,7 @@
     "voiceId": "Chinese (Mandarin)_News_Anchor",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 4140,
+    "durationMs": 4100,
     "bytes": 34548,
     "draft": false,
     "delivery": {
@@ -339,7 +1093,14 @@
       "intensity": "medium",
       "tags": []
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.49,
+      "truePeakDbtp": -2.51
+    }
   },
   {
     "id": "recruiter-arrival-time",
@@ -348,7 +1109,7 @@
     "voiceId": "Chinese (Mandarin)_Gentle_Senior",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1620,
+    "durationMs": 1556,
     "bytes": 14388,
     "draft": false,
     "delivery": {
@@ -360,7 +1121,14 @@
       "intensity": "medium",
       "tags": []
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.48,
+      "truePeakDbtp": -5.93
+    }
   },
   {
     "id": "landlord-rent-deposit",
@@ -369,7 +1137,7 @@
     "voiceId": "Chinese (Mandarin)_Mature_Woman",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 4032,
+    "durationMs": 3982,
     "bytes": 33684,
     "draft": false,
     "assetRevision": 1,
@@ -385,7 +1153,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.54,
+      "truePeakDbtp": -2.53
+    }
   },
   {
     "id": "last-bus-arrival",
@@ -394,7 +1169,7 @@
     "voiceId": "Chinese (Mandarin)_News_Anchor",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 6120,
+    "durationMs": 6050,
     "bytes": 50388,
     "draft": false,
     "delivery": {
@@ -408,7 +1183,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.45,
+      "truePeakDbtp": -2.54
+    }
   },
   {
     "id": "station-yellow-line",
@@ -417,7 +1199,7 @@
     "voiceId": "Chinese (Mandarin)_News_Anchor",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3564,
+    "durationMs": 3500,
     "bytes": 29940,
     "draft": false,
     "delivery": {
@@ -429,7 +1211,14 @@
       "intensity": "medium",
       "tags": []
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.5,
+      "truePeakDbtp": -2.68
+    }
   },
   {
     "id": "station-doors-closing",
@@ -438,7 +1227,7 @@
     "voiceId": "Chinese (Mandarin)_News_Anchor",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3456,
+    "durationMs": 3419,
     "bytes": 29076,
     "draft": false,
     "delivery": {
@@ -452,7 +1241,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.27,
+      "truePeakDbtp": -2.84
+    }
   },
   {
     "id": "last-bus-departed",
@@ -461,7 +1257,7 @@
     "voiceId": "Chinese (Mandarin)_News_Anchor",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 6228,
+    "durationMs": 6180,
     "bytes": 51252,
     "draft": false,
     "delivery": {
@@ -475,7 +1271,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.47,
+      "truePeakDbtp": -2.57
+    }
   },
   {
     "id": "interview-thank-you",
@@ -484,7 +1287,7 @@
     "voiceId": "Chinese (Mandarin)_Gentle_Senior",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3744,
+    "durationMs": 3680,
     "bytes": 31380,
     "draft": false,
     "delivery": {
@@ -496,7 +1299,14 @@
       "intensity": "medium",
       "tags": []
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.44,
+      "truePeakDbtp": -3.88
+    }
   },
   {
     "id": "phone-wife-fridge",
@@ -505,7 +1315,7 @@
     "voiceId": "Chinese (Mandarin)_Wise_Women",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 5508,
+    "durationMs": 5450,
     "bytes": 45492,
     "draft": false,
     "delivery": {
@@ -519,7 +1329,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.47,
+      "truePeakDbtp": -2.59
+    }
   },
   {
     "id": "phone-hospital-not-call",
@@ -528,7 +1345,7 @@
     "voiceId": "female-yujie-jingpin",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3204,
+    "durationMs": 3154,
     "bytes": 27060,
     "draft": false,
     "assetRevision": 1,
@@ -544,7 +1361,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.44,
+      "truePeakDbtp": -5.51
+    }
   },
   {
     "id": "phone-mother-didnt-ask",
@@ -553,7 +1377,7 @@
     "voiceId": "Chinese (Mandarin)_Kind-hearted_Elder",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 5436,
+    "durationMs": 5371,
     "bytes": 44916,
     "draft": false,
     "delivery": {
@@ -567,7 +1391,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.57,
+      "truePeakDbtp": -2.55
+    }
   },
   {
     "id": "phone-cannot-connect",
@@ -576,7 +1407,7 @@
     "voiceId": "Chinese (Mandarin)_News_Anchor",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 4356,
+    "durationMs": 4300,
     "bytes": 36276,
     "draft": false,
     "delivery": {
@@ -588,7 +1419,14 @@
       "intensity": "medium",
       "tags": []
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.46,
+      "truePeakDbtp": -2.9
+    }
   },
   {
     "id": "family-dinner-cold",
@@ -597,7 +1435,7 @@
     "voiceId": "female-tianmei",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3780,
+    "durationMs": 3710,
     "bytes": 31668,
     "draft": false,
     "delivery": {
@@ -611,7 +1449,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.52,
+      "truePeakDbtp": -2.58
+    }
   },
   {
     "id": "hospital-family-needed",
@@ -620,7 +1465,7 @@
     "voiceId": "female-yujie-jingpin",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 6480,
+    "durationMs": 6418,
     "bytes": 53268,
     "draft": false,
     "assetRevision": 1,
@@ -636,7 +1481,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.5,
+      "truePeakDbtp": -2.68
+    }
   },
   {
     "id": "father-adult-phone",
@@ -645,7 +1497,7 @@
     "voiceId": "ttv-voice-2026072409135526-TsjoP4Ow",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 4860,
+    "durationMs": 4820,
     "bytes": 40308,
     "draft": false,
     "delivery": {
@@ -660,7 +1512,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.44,
+      "truePeakDbtp": -2.41
+    }
   },
   {
     "id": "phone-coworker-group",
@@ -669,7 +1528,7 @@
     "voiceId": "Chinese (Mandarin)_Southern_Young_Man",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1944,
+    "durationMs": 1903,
     "bytes": 16980,
     "draft": false,
     "delivery": {
@@ -683,7 +1542,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.41,
+      "truePeakDbtp": -3.4
+    }
   },
   {
     "id": "hero-not-busy",
@@ -692,7 +1558,7 @@
     "voiceId": "Chinese (Mandarin)_Sincere_Adult",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3492,
+    "durationMs": 3423,
     "bytes": 29364,
     "draft": false,
     "delivery": {
@@ -706,7 +1572,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.1,
+      "truePeakDbtp": -2.4
+    }
   },
   {
     "id": "hero-became-him",
@@ -715,7 +1588,7 @@
     "voiceId": "Chinese (Mandarin)_Lyrical_Voice",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 4788,
+    "durationMs": 4734,
     "bytes": 39732,
     "draft": false,
     "assetRevision": 1,
@@ -731,6 +1604,13 @@
         "exhale",
         "pause"
       ]
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.44,
+      "truePeakDbtp": -3.39
     }
   },
   {
@@ -740,7 +1620,7 @@
     "voiceId": "Chinese (Mandarin)_Sincere_Adult",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1080,
+    "durationMs": 1033,
     "bytes": 10068,
     "draft": false,
     "assetRevision": 1,
@@ -765,7 +1645,19 @@
       }
     ],
     "postprocess": "成年主声 + 低频远置父亲记忆叠声（复用 father-for-your-good 原声）",
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.31,
+      "truePeakDbtp": -2.18
+    },
+    "reviewLoudness": {
+      "file": "assets/audio/voice-review/self-stand-straight.mp3",
+      "integratedLufs": -18.49,
+      "truePeakDbtp": -1.87
+    }
   },
   {
     "id": "self-for-your-good",
@@ -774,7 +1666,7 @@
     "voiceId": "Chinese (Mandarin)_Sincere_Adult",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2052,
+    "durationMs": 2000,
     "bytes": 17844,
     "draft": false,
     "assetRevision": 1,
@@ -799,7 +1691,19 @@
       }
     ],
     "postprocess": "成年主声 + 低频远置父亲记忆叠声（复用 father-for-your-good 原声）",
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.46,
+      "truePeakDbtp": -2.91
+    },
+    "reviewLoudness": {
+      "file": "assets/audio/voice-review/self-for-your-good.mp3",
+      "integratedLufs": -18.48,
+      "truePeakDbtp": -2.87
+    }
   },
   {
     "id": "office-badge-denied",
@@ -808,7 +1712,7 @@
     "voiceId": "Chinese (Mandarin)_News_Anchor",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2952,
+    "durationMs": 2900,
     "bytes": 25044,
     "draft": false,
     "delivery": {
@@ -820,7 +1724,14 @@
       "intensity": "medium",
       "tags": []
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.14,
+      "truePeakDbtp": -2.37
+    }
   },
   {
     "id": "office-meeting-continues",
@@ -829,7 +1740,7 @@
     "voiceId": "female-chengshu-jingpin",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3888,
+    "durationMs": 3831,
     "bytes": 32532,
     "draft": false,
     "assetRevision": 1,
@@ -845,7 +1756,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.58,
+      "truePeakDbtp": -2.56
+    }
   },
   {
     "id": "manager-tonight-hard",
@@ -854,7 +1772,7 @@
     "voiceId": "Chinese (Mandarin)_Reliable_Executive",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2700,
+    "durationMs": 2640,
     "bytes": 23028,
     "draft": false,
     "delivery": {
@@ -868,7 +1786,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.59,
+      "truePeakDbtp": -2.39
+    }
   },
   {
     "id": "bank-payment-due",
@@ -877,7 +1802,7 @@
     "voiceId": "Chinese (Mandarin)_News_Anchor",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 4248,
+    "durationMs": 4200,
     "bytes": 35412,
     "draft": false,
     "delivery": {
@@ -889,7 +1814,14 @@
       "intensity": "medium",
       "tags": []
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.08,
+      "truePeakDbtp": -2.36
+    }
   },
   {
     "id": "clinic-blood-pressure",
@@ -898,7 +1830,7 @@
     "voiceId": "Chinese (Mandarin)_Radio_Host",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3996,
+    "durationMs": 3951,
     "bytes": 33396,
     "draft": false,
     "assetRevision": 1,
@@ -914,7 +1846,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.63,
+      "truePeakDbtp": -2.43
+    }
   },
   {
     "id": "coworker-cardboard-box",
@@ -923,7 +1862,7 @@
     "voiceId": "Chinese (Mandarin)_Straightforward_Boy",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3096,
+    "durationMs": 3043,
     "bytes": 26196,
     "draft": false,
     "assetRevision": 1,
@@ -939,7 +1878,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.09,
+      "truePeakDbtp": -2.27
+    }
   },
   {
     "id": "security-return-card",
@@ -948,7 +1894,7 @@
     "voiceId": "Chinese (Mandarin)_Male_Announcer",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1980,
+    "durationMs": 1927,
     "bytes": 17268,
     "draft": false,
     "assetRevision": 1,
@@ -962,7 +1908,14 @@
       "intensity": "low",
       "tags": []
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.68,
+      "truePeakDbtp": -2.47
+    }
   },
   {
     "id": "clinic-next-number",
@@ -971,7 +1924,7 @@
     "voiceId": "female-yujie-jingpin",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 5364,
+    "durationMs": 5297,
     "bytes": 44340,
     "draft": false,
     "assetRevision": 1,
@@ -987,7 +1940,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.52,
+      "truePeakDbtp": -2.75
+    }
   },
   {
     "id": "pharmacist-after-meals",
@@ -996,7 +1956,7 @@
     "voiceId": "Chinese (Mandarin)_Gentleman",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 5220,
+    "durationMs": 5172,
     "bytes": 43188,
     "draft": false,
     "assetRevision": 1,
@@ -1012,7 +1972,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.21,
+      "truePeakDbtp": -2.46
+    }
   },
   {
     "id": "neighbor-corridor-light",
@@ -1021,7 +1988,7 @@
     "voiceId": "Chinese (Mandarin)_Kind-hearted_Antie",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 4788,
+    "durationMs": 4750,
     "bytes": 39732,
     "draft": false,
     "delivery": {
@@ -1035,7 +2002,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.43,
+      "truePeakDbtp": -3.3
+    }
   },
   {
     "id": "hospital-family-late",
@@ -1044,7 +2018,7 @@
     "voiceId": "female-yujie-jingpin",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2016,
+    "durationMs": 1974,
     "bytes": 17556,
     "draft": false,
     "assetRevision": 1,
@@ -1058,7 +2032,14 @@
       "intensity": "medium",
       "tags": []
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.42,
+      "truePeakDbtp": -5.49
+    }
   },
   {
     "id": "light-room-keeper",
@@ -1067,7 +2048,7 @@
     "voiceId": "Chinese (Mandarin)_Humorous_Elder",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3816,
+    "durationMs": 3748,
     "bytes": 31956,
     "draft": false,
     "delivery": {
@@ -1081,7 +2062,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.42,
+      "truePeakDbtp": -3.02
+    }
   },
   {
     "id": "light-room-left-this",
@@ -1090,7 +2078,7 @@
     "voiceId": "Chinese (Mandarin)_Humorous_Elder",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3060,
+    "durationMs": 3000,
     "bytes": 25908,
     "draft": false,
     "delivery": {
@@ -1102,7 +2090,14 @@
       "intensity": "low",
       "tags": []
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.16,
+      "truePeakDbtp": -2.43
+    }
   },
   {
     "id": "back-room-keeper",
@@ -1111,7 +2106,7 @@
     "voiceId": "Chinese (Mandarin)_Humorous_Elder",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 4140,
+    "durationMs": 4100,
     "bytes": 34548,
     "draft": false,
     "delivery": {
@@ -1125,7 +2120,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -17.91,
+      "truePeakDbtp": -1.06
+    }
   },
   {
     "id": "lamp-time-up",
@@ -1134,7 +2136,7 @@
     "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1440,
+    "durationMs": 1400,
     "bytes": 12948,
     "draft": false,
     "assetRevision": 1,
@@ -1159,7 +2161,24 @@
       }
     ],
     "postprocess": "近声先到 + 远声慢半拍 + 轻微空灵摆动（ethereal-v2，无恐怖长混响）",
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.64,
+      "truePeakDbtp": -2.47
+    },
+    "runtimeLoudness": {
+      "file": "assets/audio/voice-review/lamp-time-up.ethereal-v2.mp3",
+      "integratedLufs": -18.69,
+      "truePeakDbtp": -2.6
+    },
+    "reviewLoudness": {
+      "file": "assets/audio/voice-review/lamp-time-up.ethereal-v2.mp3",
+      "integratedLufs": -18.69,
+      "truePeakDbtp": -2.6
+    }
   },
   {
     "id": "lamp-return-due",
@@ -1168,7 +2187,7 @@
     "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2268,
+    "durationMs": 2200,
     "bytes": 19572,
     "draft": false,
     "assetRevision": 1,
@@ -1193,7 +2212,24 @@
       }
     ],
     "postprocess": "近声先到 + 远声慢半拍 + 轻微空灵摆动（ethereal-v2，无恐怖长混响）",
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.42,
+      "truePeakDbtp": -3.2
+    },
+    "runtimeLoudness": {
+      "file": "assets/audio/voice-review/lamp-return-due.ethereal-v2.mp3",
+      "integratedLufs": -18.47,
+      "truePeakDbtp": -3.08
+    },
+    "reviewLoudness": {
+      "file": "assets/audio/voice-review/lamp-return-due.ethereal-v2.mp3",
+      "integratedLufs": -18.47,
+      "truePeakDbtp": -3.08
+    }
   },
   {
     "id": "lamp-one-returned",
@@ -1202,7 +2238,7 @@
     "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3636,
+    "durationMs": 3594,
     "bytes": 30516,
     "draft": false,
     "assetRevision": 1,
@@ -1229,7 +2265,24 @@
       }
     ],
     "postprocess": "近声先到 + 远声慢半拍 + 轻微空灵摆动（ethereal-v2，无恐怖长混响）",
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.45,
+      "truePeakDbtp": -2.65
+    },
+    "runtimeLoudness": {
+      "file": "assets/audio/voice-review/lamp-one-returned.ethereal-v2.mp3",
+      "integratedLufs": -18.46,
+      "truePeakDbtp": -3.13
+    },
+    "reviewLoudness": {
+      "file": "assets/audio/voice-review/lamp-one-returned.ethereal-v2.mp3",
+      "integratedLufs": -18.46,
+      "truePeakDbtp": -3.13
+    }
   },
   {
     "id": "lamp-pockets-empty",
@@ -1238,7 +2291,7 @@
     "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 4176,
+    "durationMs": 4127,
     "bytes": 34836,
     "draft": false,
     "delivery": {
@@ -1264,7 +2317,24 @@
       }
     ],
     "postprocess": "近声先到 + 远声慢半拍 + 轻微空灵摆动（ethereal-v2，无恐怖长混响）",
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.47,
+      "truePeakDbtp": -2.16
+    },
+    "runtimeLoudness": {
+      "file": "assets/audio/voice-review/lamp-pockets-empty.ethereal-v2.mp3",
+      "integratedLufs": -18.44,
+      "truePeakDbtp": -2.64
+    },
+    "reviewLoudness": {
+      "file": "assets/audio/voice-review/lamp-pockets-empty.ethereal-v2.mp3",
+      "integratedLufs": -18.44,
+      "truePeakDbtp": -2.64
+    }
   },
   {
     "id": "narrator-final-breath",
@@ -1273,7 +2343,7 @@
     "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 9432,
+    "durationMs": 9368,
     "bytes": 76884,
     "draft": false,
     "assetRevision": 1,
@@ -1291,7 +2361,14 @@
         "pause"
       ]
     },
-    "skipped": true
+    "skipped": true,
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.49,
+      "truePeakDbtp": -2.29
+    }
   },
   {
     "id": "boss-praise-only-you",
@@ -1300,7 +2377,7 @@
     "voiceId": "ttv-voice-2026072819561426-prAlwK1P",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1620,
+    "durationMs": 1567,
     "bytes": 14388,
     "draft": false,
     "assetRevision": 0,
@@ -1313,6 +2390,13 @@
       "pitch": -1,
       "intensity": "medium",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.45,
+      "truePeakDbtp": -2.6
     }
   },
   {
@@ -1322,7 +2406,7 @@
     "voiceId": "ttv-voice-2026072819561426-prAlwK1P",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1332,
+    "durationMs": 1277,
     "bytes": 12084,
     "draft": false,
     "assetRevision": 0,
@@ -1335,6 +2419,13 @@
       "pitch": -1,
       "intensity": "medium",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.37,
+      "truePeakDbtp": -2.56
     }
   },
   {
@@ -1344,7 +2435,7 @@
     "voiceId": "ttv-voice-2026072819561426-prAlwK1P",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1116,
+    "durationMs": 1057,
     "bytes": 10356,
     "draft": false,
     "assetRevision": 0,
@@ -1357,6 +2448,13 @@
       "pitch": -1,
       "intensity": "medium",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.13,
+      "truePeakDbtp": -2.45
     }
   },
   {
@@ -1366,7 +2464,7 @@
     "voiceId": "ttv-voice-2026072819561426-prAlwK1P",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1764,
+    "durationMs": 1707,
     "bytes": 15540,
     "draft": false,
     "assetRevision": 0,
@@ -1379,6 +2477,13 @@
       "pitch": -1,
       "intensity": "medium",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.47,
+      "truePeakDbtp": -2.66
     }
   },
   {
@@ -1388,7 +2493,7 @@
     "voiceId": "ttv-voice-2026072819561426-prAlwK1P",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1116,
+    "durationMs": 1080,
     "bytes": 10356,
     "draft": false,
     "assetRevision": 0,
@@ -1401,6 +2506,13 @@
       "pitch": -2,
       "intensity": "low",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.44,
+      "truePeakDbtp": -3.64
     }
   },
   {
@@ -1410,7 +2522,7 @@
     "voiceId": "Chinese (Mandarin)_Pure-hearted_Boy",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3564,
+    "durationMs": 3500,
     "bytes": 29940,
     "draft": false,
     "assetRevision": 0,
@@ -1423,6 +2535,13 @@
       "pitch": 0,
       "intensity": "low",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.57,
+      "truePeakDbtp": -2.48
     }
   },
   {
@@ -1432,7 +2551,7 @@
     "voiceId": "Chinese (Mandarin)_Pure-hearted_Boy",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2052,
+    "durationMs": 2000,
     "bytes": 17844,
     "draft": false,
     "assetRevision": 0,
@@ -1445,6 +2564,13 @@
       "pitch": 0,
       "intensity": "low",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.49,
+      "truePeakDbtp": -2.27
     }
   },
   {
@@ -1454,7 +2580,7 @@
     "voiceId": "Chinese (Mandarin)_Warm_Bestie",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3204,
+    "durationMs": 3168,
     "bytes": 27060,
     "draft": false,
     "assetRevision": 0,
@@ -1469,6 +2595,13 @@
       "tags": [
         "pause"
       ]
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.61,
+      "truePeakDbtp": -6.48
     }
   },
   {
@@ -1478,7 +2611,7 @@
     "voiceId": "Chinese (Mandarin)_Warm_Bestie",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1908,
+    "durationMs": 1869,
     "bytes": 16692,
     "draft": false,
     "assetRevision": 0,
@@ -1491,6 +2624,13 @@
       "pitch": 0,
       "intensity": "low",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.42,
+      "truePeakDbtp": -5.08
     }
   },
   {
@@ -1500,7 +2640,7 @@
     "voiceId": "clever_boy",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2160,
+    "durationMs": 2090,
     "bytes": 18708,
     "draft": false,
     "assetRevision": 0,
@@ -1513,6 +2653,13 @@
       "pitch": 1,
       "intensity": "low",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.44,
+      "truePeakDbtp": -2.66
     }
   },
   {
@@ -1522,7 +2669,7 @@
     "voiceId": "female-chengshu",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1440,
+    "durationMs": 1400,
     "bytes": 12948,
     "draft": false,
     "assetRevision": 0,
@@ -1535,6 +2682,13 @@
       "pitch": 0,
       "intensity": "medium",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.4,
+      "truePeakDbtp": -3.55
     }
   },
   {
@@ -1544,7 +2698,7 @@
     "voiceId": "ttv-voice-2026072900232726-IjGrwGUK",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1800,
+    "durationMs": 1742,
     "bytes": 15828,
     "draft": false,
     "assetRevision": 0,
@@ -1557,6 +2711,13 @@
       "pitch": -2,
       "intensity": "low",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.25,
+      "truePeakDbtp": -2.47
     }
   },
   {
@@ -1566,7 +2727,7 @@
     "voiceId": "Chinese (Mandarin)_News_Anchor",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 4140,
+    "durationMs": 4087,
     "bytes": 34548,
     "draft": false,
     "assetRevision": 0,
@@ -1579,6 +2740,13 @@
       "pitch": 0,
       "intensity": "medium",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.49,
+      "truePeakDbtp": -2.55
     }
   },
   {
@@ -1588,7 +2756,7 @@
     "voiceId": "Chinese (Mandarin)_Unrestrained_Young_Man",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1584,
+    "durationMs": 1521,
     "bytes": 14100,
     "draft": false,
     "assetRevision": 0,
@@ -1601,6 +2769,13 @@
       "pitch": 0,
       "intensity": "medium",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.55,
+      "truePeakDbtp": -2.49
     }
   },
   {
@@ -1610,7 +2785,7 @@
     "voiceId": "male-qn-daxuesheng",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2772,
+    "durationMs": 2719,
     "bytes": 23604,
     "draft": false,
     "assetRevision": 0,
@@ -1625,6 +2800,13 @@
       "tags": [
         "pause"
       ]
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.6,
+      "truePeakDbtp": -2.49
     }
   },
   {
@@ -1634,7 +2816,7 @@
     "voiceId": "male-qn-jingying",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2448,
+    "durationMs": 2392,
     "bytes": 21012,
     "draft": false,
     "assetRevision": 0,
@@ -1647,6 +2829,13 @@
       "pitch": -1,
       "intensity": "medium",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.5,
+      "truePeakDbtp": -2.94
     }
   },
   {
@@ -1656,7 +2845,7 @@
     "voiceId": "Chinese (Mandarin)_Straightforward_Boy",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2448,
+    "durationMs": 2380,
     "bytes": 21012,
     "draft": false,
     "assetRevision": 0,
@@ -1669,6 +2858,13 @@
       "pitch": 0,
       "intensity": "low",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.52,
+      "truePeakDbtp": -2.53
     }
   },
   {
@@ -1678,7 +2874,7 @@
     "voiceId": "Chinese (Mandarin)_Gentle_Youth",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2952,
+    "durationMs": 2902,
     "bytes": 25044,
     "draft": false,
     "assetRevision": 0,
@@ -1693,6 +2889,13 @@
       "tags": [
         "pause"
       ]
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.26,
+      "truePeakDbtp": -1.82
     }
   },
   {
@@ -1702,7 +2905,7 @@
     "voiceId": "female-yujie-jingpin",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 4032,
+    "durationMs": 3963,
     "bytes": 33684,
     "draft": false,
     "assetRevision": 0,
@@ -1717,6 +2920,13 @@
       "tags": [
         "pause"
       ]
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.45,
+      "truePeakDbtp": -4.28
     }
   },
   {
@@ -1726,7 +2936,7 @@
     "voiceId": "Chinese (Mandarin)_Gentleman",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1944,
+    "durationMs": 1881,
     "bytes": 16980,
     "draft": false,
     "assetRevision": 0,
@@ -1739,6 +2949,13 @@
       "pitch": -1,
       "intensity": "medium",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.6,
+      "truePeakDbtp": -1.8
     }
   },
   {
@@ -1748,7 +2965,7 @@
     "voiceId": "ttv-voice-2026072900233926-alwGTIdH",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3060,
+    "durationMs": 3000,
     "bytes": 25908,
     "draft": false,
     "assetRevision": 0,
@@ -1761,6 +2978,13 @@
       "pitch": -2,
       "intensity": "low",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.48,
+      "truePeakDbtp": -2.8
     }
   },
   {
@@ -1770,7 +2994,7 @@
     "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1764,
+    "durationMs": 1700,
     "bytes": 15540,
     "draft": false,
     "assetRevision": 1,
@@ -1794,7 +3018,24 @@
         "purpose": "同一收灯人声线的近声、远声和轻微延迟层"
       }
     ],
-    "postprocess": "近声先到 + 远声慢半拍 + 轻微空灵摆动（ethereal-v2，无恐怖长混响）"
+    "postprocess": "近声先到 + 远声慢半拍 + 轻微空灵摆动（ethereal-v2，无恐怖长混响）",
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.47,
+      "truePeakDbtp": -2.59
+    },
+    "runtimeLoudness": {
+      "file": "assets/audio/voice-review/collector-not-yet.ethereal-v2.mp3",
+      "integratedLufs": -18.45,
+      "truePeakDbtp": -2.92
+    },
+    "reviewLoudness": {
+      "file": "assets/audio/voice-review/collector-not-yet.ethereal-v2.mp3",
+      "integratedLufs": -18.45,
+      "truePeakDbtp": -2.92
+    }
   },
   {
     "id": "narrator-he-fell-asleep",
@@ -1803,7 +3044,7 @@
     "voiceId": "ttv-voice-2026072409132926-WmFF7BxM",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 2088,
+    "durationMs": 2020,
     "bytes": 18132,
     "draft": false,
     "assetRevision": 0,
@@ -1816,6 +3057,13 @@
       "pitch": -2,
       "intensity": "low",
       "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.5,
+      "truePeakDbtp": -2.69
     }
   }
 ]

@@ -42,11 +42,14 @@ import { FATE_ITEM_IDS, getItem, ITEM_IDS, STORY_ITEM_IDS } from './relics';
 import { appendLifeLedger, readLifeLedger, type LifeLedgerEntry } from './run-ledger';
 import { closeItemCodex, isItemCodexOpen, notifyCodexRunEnded, openItemCodex, recordItemAcquired } from './item-codex';
 import { recordTelemetry } from './telemetry';
+import { markPerformance, recordFramePerformance } from './performance-monitor';
 import {
   RUN_CHECKPOINT_VERSION,
   clearRunCheckpoint,
   readRunCheckpoint,
   writeRunCheckpoint,
+  type CheckpointBossState,
+  type CheckpointBossType,
   type RunCheckpoint,
 } from './run-checkpoint';
 import {
@@ -64,6 +67,7 @@ import { sceneArt } from './scene-art';
 import { overlayPanelTexture, uiTextures } from './ui-textures';
 import { POISON_LABELS } from './types';
 import { STAGE_VOICE_PRELOADS, VOICE_CUES, type VoiceCueId, type VoiceTreatment } from './voice-script';
+import originComicVoiceTiming from './origin-comic-voice-timing.json';
 import {
   PROP_VARIANTS,
   stageClutterFloors,
@@ -179,8 +183,13 @@ const LAMP_SHADE_CAP = 6;
 const LAMP_CYCLE_INTERVAL = 8.5;
 const LAMP_SEIZE_RADIUS = 46;
 const LAMP_SEIZE_EXPOSURE = 1.5;
-const LAMP_STRIP_TO_RELEASE_DELAY = 1.4;
-const LAMP_RELEASE_CONFIRM_DELAY = 1.5;
+/** 最后一件离身后先让「这一件，先还回去」完整落句，再进入吹灯。 */
+const LAMP_STRIP_TO_RELEASE_DELAY = 3.8;
+/** 「口袋空了」完整说完以后，暮年旁白才接最后一口气。 */
+const LAMP_POCKETS_EMPTY_TO_FINAL_BREATH_DELAY = 4.3;
+/** 终局按钮要等最后一口气完整落下；静音时仍保留同样的阅读节拍。 */
+const LAMP_RELEASE_CONFIRM_DELAY = 13.85;
+const LAMP_RELEASE_ANIMATION_DURATION = 1.5;
 const BUS_BODY_HALF_LENGTH = 46;
 const BUS_BODY_HALF_WIDTH = 30;
 const BUS_DASH_SPEED = 340;
@@ -314,6 +323,10 @@ const HERO_SCREEN_X = 180;
 const HERO_SCREEN_Y = 310;
 // 主角稍微收小一点：把体量感让给怪物——大多数"困难"都该比一个人高。
 const HERO_WORLD_SCALE = 0.88;
+// 主角世界形态实际按 2x 像素输出；小张也应保持同龄人的相近体量，
+// 只在交互卡片里略微收小，碰撞与攻击判定仍沿用原数值。
+const XIAO_ZHANG_WORLD_DISPLAY = 108;
+const XIAO_ZHANG_PROMPT_DISPLAY = 80;
 const HERO_BASE_SPEED = 132;
 const SUMMER_SLIDE_DURATION = 0.18;
 const SUMMER_SLIDE_SPEED = 96;
@@ -334,13 +347,117 @@ const JOYSTICK_KNOB_TRAVEL = 24;
 const JOYSTICK_SAFE_X = 42;
 const JOYSTICK_SAFE_TOP = 104;
 const JOYSTICK_SAFE_BOTTOM = 548;
-const TITLE_COVER_URL = new URL('./assets/ui/title-life-clutter.png', import.meta.url).href;
-const TITLE_START_RECT = { x: 72, y: 470, width: 216, height: 58 } as const;
+const TITLE_COVER_URL = new URL('./assets/ui/title-confrontation-base-v1.webp', import.meta.url).href;
+const TITLE_COVER_FLARE_URL = new URL('./assets/ui/title-confrontation-flare-v1.webp', import.meta.url).href;
+const ORIGIN_DOSSIER_BACKGROUND_URL = new URL('./assets/ui/origin-dossier-background.webp', import.meta.url).href;
+const ORIGIN_COMIC_PAGE_URLS = [
+  new URL('./assets/ui/origin-comic-page-1.webp', import.meta.url).href,
+  new URL('./assets/ui/origin-comic-page-2.webp', import.meta.url).href,
+] as const;
+const ORIGIN_COMIC_SCENES = [
+  ['人出生的时候，先哭一声。', '那是他来到世上，领到的第一口气。'],
+  ['有人出生时，门外站满了人；', '有人哭了很久，才有人推门。', '芸芸众生，来处不同。'],
+  ['后来大人教他争气，', '也教他忍气。'],
+  ['后来他们各自长大，', '也各自遇见，各自躲不过的事。'],
+  ['受了委屈，咽下去叫懂事；', '吐出来，又有人说他不懂事。', '每种选择，都有所得，也有所失。'],
+  ['有些气成了脾气，有些气撑成了骨气，', '还有一些，一直留在身体里。'],
+  ['得到的，穿在身上；失去的，也穿在身上。', '芸芸众生，各有各的这一身。'],
+  ['这一身并非生来如此，', '而是被这一生，一件件穿成的。', '现在，轮到你了。'],
+] as const;
+const ORIGIN_COMIC_VOICE_CUES: readonly VoiceCueId[] = [
+  'origin-comic-01',
+  'origin-comic-02',
+  'origin-comic-03',
+  'origin-comic-04',
+  'origin-comic-05',
+  'origin-comic-06',
+  'origin-comic-07',
+  'origin-comic-08',
+];
+interface OriginComicSegmentTiming {
+  text: string;
+  startMs: number;
+  speechEndMs: number;
+  endMs: number;
+}
+interface OriginComicCueTiming {
+  durationMs: number;
+  segments: OriginComicSegmentTiming[];
+}
+const ORIGIN_COMIC_VOICE_TIMINGS = originComicVoiceTiming.cues as Partial<Record<VoiceCueId, OriginComicCueTiming>>;
+const ORIGIN_COMIC_FALLBACK_DURATIONS = [10.8, 10.8, 6.2, 8, 12.2, 10, 10.8, 13.5] as const;
+/** 每幕时长由实际成品音频反推；额外 0.35 秒用于让最后一个字落稳。 */
+const ORIGIN_COMIC_SCENE_DURATIONS = ORIGIN_COMIC_VOICE_CUES.map((id, sceneIndex) => {
+  const generatedDuration = ORIGIN_COMIC_VOICE_TIMINGS[id]?.durationMs;
+  return generatedDuration
+    ? generatedDuration / 1000 + 0.35
+    : (ORIGIN_COMIC_FALLBACK_DURATIONS[sceneIndex] ?? 8);
+});
+const ORIGIN_COMIC_SCENE_STARTS = ORIGIN_COMIC_SCENE_DURATIONS.map((_, sceneIndex) => (
+  ORIGIN_COMIC_SCENE_DURATIONS
+    .slice(0, sceneIndex)
+    .reduce((total, duration) => total + duration, 0)
+));
+const ORIGIN_COMIC_DURATION = ORIGIN_COMIC_SCENE_DURATIONS.reduce(
+  (total, duration) => total + duration,
+  0,
+);
+
+function originComicSceneIndex(elapsed: number): number {
+  let sceneEnd = 0;
+  for (let sceneIndex = 0; sceneIndex < ORIGIN_COMIC_SCENE_DURATIONS.length; sceneIndex += 1) {
+    sceneEnd += ORIGIN_COMIC_SCENE_DURATIONS[sceneIndex]!;
+    if (elapsed < sceneEnd) return sceneIndex;
+  }
+  return ORIGIN_COMIC_SCENE_DURATIONS.length - 1;
+}
+
+function originComicSpokenLength(text: string): number {
+  return text
+    .replace(/<#[\d.]+#>/g, '')
+    .replace(/\([a-z-]+\)/g, '')
+    .replace(/[，。；、！？\s]/g, '')
+    .length;
+}
+
+/** 字幕跟随每个合成句段：说话时显字，句后停顿时也停住。 */
+function originComicCaptionProgress(sceneIndex: number, sceneElapsed: number): number | undefined {
+  const cueId = ORIGIN_COMIC_VOICE_CUES[sceneIndex];
+  const timing = cueId ? ORIGIN_COMIC_VOICE_TIMINGS[cueId] : undefined;
+  if (!timing?.segments.length) return undefined;
+  const totalCharacters = timing.segments.reduce(
+    (total, segment) => total + originComicSpokenLength(segment.text),
+    0,
+  );
+  if (totalCharacters <= 0) return 1;
+  const elapsedMs = Math.max(0, sceneElapsed * 1000);
+  let visibleCharacters = 0;
+  for (const segment of timing.segments) {
+    const segmentCharacters = originComicSpokenLength(segment.text);
+    if (elapsedMs >= segment.speechEndMs) {
+      visibleCharacters += segmentCharacters;
+      continue;
+    }
+    if (elapsedMs > segment.startMs) {
+      const speakingDuration = Math.max(1, segment.speechEndMs - segment.startMs);
+      visibleCharacters += segmentCharacters
+        * Math.min(1, (elapsedMs - segment.startMs) / speakingDuration);
+    }
+    break;
+  }
+  return Math.min(1, visibleCharacters / totalCharacters);
+}
+
+const TITLE_START_RECT = { x: 88, y: 520, width: 184, height: 44 } as const;
 const TITLE_AUDIO_RECT = { x: 290, y: 16, width: 54, height: 30 } as const;
 const TITLE_CODEX_RECT = { x: 16, y: 16, width: 54, height: 30 } as const;
 const RESULT_CODEX_RECT = { x: 70, y: 572, width: 220, height: 26 } as const;
 const ORIGIN_CONTINUE_RECT = { x: 64, y: 570, width: 232, height: 42 } as const;
+const ORIGIN_COMIC_SKIP_RECT = { x: 64, y: 548, width: 232, height: 44 } as const;
 const ORIGIN_LEDGER_RECT = { x: 222, y: 532, width: 106, height: 25 } as const;
+const ORIGIN_RETRY_RECT = { x: 73, y: 395, width: 214, height: 70 } as const;
+const ORIGIN_ERROR_HOME_RECT = { x: 32, y: 486, width: 142, height: 46 } as const;
+const ORIGIN_ERROR_CODEX_RECT = { x: 186, y: 486, width: 142, height: 46 } as const;
 const LEDGER_OLDER_RECT = { x: 22, y: 566, width: 88, height: 38 } as const;
 const LEDGER_CLOSE_RECT = { x: 120, y: 566, width: 120, height: 38 } as const;
 const LEDGER_NEWER_RECT = { x: 250, y: 566, width: 88, height: 38 } as const;
@@ -358,12 +475,13 @@ const PAUSE_CONTINUE_RECT = { x: 130, y: 530, width: 204, height: 44 } as const;
 const PAUSE_END_RECT = { x: 152, y: 584, width: 160, height: 26 } as const;
 const PAUSE_TAB_RECT = { x: 130, y: 86, width: 204, height: 30 } as const;
 const PAUSE_SETTING_VOLUME_RECT = { x: 142, y: 154, width: 180, height: 34 } as const;
-const PAUSE_SETTING_AMBIENCE_RECT = { x: 142, y: 196, width: 180, height: 34 } as const;
-const PAUSE_SETTING_VOICE_RECT = { x: 142, y: 238, width: 180, height: 34 } as const;
-const PAUSE_SETTING_EFFECTS_RECT = { x: 142, y: 280, width: 180, height: 34 } as const;
-const PAUSE_SETTING_HAPTICS_RECT = { x: 142, y: 328, width: 180, height: 38 } as const;
-const PAUSE_SETTING_MOTION_RECT = { x: 142, y: 370, width: 180, height: 38 } as const;
-const PAUSE_SETTING_CONTRAST_RECT = { x: 142, y: 412, width: 180, height: 38 } as const;
+const PAUSE_SETTING_MUSIC_RECT = { x: 142, y: 196, width: 180, height: 34 } as const;
+const PAUSE_SETTING_AMBIENCE_RECT = { x: 142, y: 238, width: 180, height: 34 } as const;
+const PAUSE_SETTING_VOICE_RECT = { x: 142, y: 280, width: 180, height: 34 } as const;
+const PAUSE_SETTING_EFFECTS_RECT = { x: 142, y: 322, width: 180, height: 34 } as const;
+const PAUSE_SETTING_HAPTICS_RECT = { x: 142, y: 364, width: 180, height: 38 } as const;
+const PAUSE_SETTING_MOTION_RECT = { x: 142, y: 406, width: 180, height: 38 } as const;
+const PAUSE_SETTING_CONTRAST_RECT = { x: 142, y: 448, width: 180, height: 38 } as const;
 const FATE_FREE_CANCEL_RECT = { x: 105, y: 568, width: 150, height: 30 } as const;
 const FATE_RESULT_CONTINUE_RECT = { x: 90, y: 470, width: 180, height: 44 } as const;
 const ORIGIN_BADGE_RECT = { x: 8, y: H - 104, width: 122, height: 38 } as const;
@@ -641,7 +759,7 @@ interface LanternHandoffState {
 const STAGES: StageSpec[] = [
   {
     chapter: '童年 · 床底王国', title: '没人相信的怪物', subtitle: '恐惧第一次有了形状',
-    situation: ['下雨那天父亲把雨衣披给他，只说了一句「走吧」。', '熄灯以后，他听见床底也在呼吸；大人说，那里什么都没有。'],
+    situation: ['父亲还在，只是很少说话。', '熄灯以后，他听见床底也在呼吸；大人说，那里什么都没有。'],
     duration: 60, pool: ['cry-moth', 'fear', 'hunger-shadow'], spawnEvery: 2.5, rewardAt: 15,
     eliteAt: 19, eliteType: 'coat-rack', bossAt: 34, bossType: 'closet-dark', end: 'advance',
     enterLine: '他只好先学会害怕，再学会一个人睡。',
@@ -649,7 +767,7 @@ const STAGES: StageSpec[] = [
   },
   {
     chapter: '少年 · 千眼教室', title: '统一答案', subtitle: '所有目光都在批改你',
-    situation: ['考试、排名、同学议论。', '每张卷子都像在替所有人决定他是谁。'],
+    situation: ['考试、排名、同学议论。', '放学下雨那天，父亲把雨衣披给他，只说「走吧」。'],
     duration: 70, pool: ['red-mark', 'whisper', 'others-paper', 'sign-here'], spawnEvery: 2.3, rewardAt: 18,
     eliteAt: 25, eliteType: 'uniform-answer', bossAt: 44, bossType: 'silent-father', end: 'fate',
     enterLine: '他把理想写进作文。老师写「偏题，38 分」；父亲只说「站好，都是为你好」。',
@@ -810,6 +928,9 @@ export class ZheYiShenGame {
   private feedback = new LifeFeedback();
   private worldProps = worldPropAtlas;
   private titleCover: HTMLImageElement | null = null;
+  private titleCoverFlare: HTMLImageElement | null = null;
+  private originDossierBackground: HTMLImageElement | null = null;
+  private originComicPages: Array<HTMLImageElement | null> = [null, null];
   private state: ScreenState = 'title';
   private hero: HeroState = { hp: 80, maxHp: 80, block: 0, coins: 4 };
   private items: ItemId[] = [];
@@ -817,6 +938,7 @@ export class ZheYiShenGame {
   private requestedOriginKind: OriginKind = 'ordinary';
   private originModifiers: OriginModifiers = getOriginModifiers([]);
   private originElapsed = 0;
+  private originComicElapsed = 0;
   private originAttempt = 0;
   private originRequestId = 0;
   private originAbortController?: AbortController;
@@ -939,6 +1061,7 @@ export class ZheYiShenGame {
   private auditTimeScale = 1;
   private auditEndurance = false;
   private auditAutoMove = false;
+  private auditFreezeOriginComic = false;
   private auditBossArtActive = false;
   private auditDamageTaken = 0;
   private heroX = 0;
@@ -992,6 +1115,11 @@ export class ZheYiShenGame {
   private worldDoor?: { kind: SpecialRoomKind; x: number; y: number; ttl: number };
   private caption = '';
   private captionTime = 0;
+  /** 命运回响按短句排队，避免 20-70 字一次塞进两行字幕后读不完。 */
+  private fateEchoCaptionQueue: string[] = [];
+  private fateEchoCaption = '';
+  private fateEchoCaptionTime = 0;
+  private fateEchoCaptionDuration = 0;
   private transitionTimer = 0;
   private waitingForStageArt = false;
   private darkActive = false;
@@ -1241,20 +1369,46 @@ export class ZheYiShenGame {
     this.transitionFrame = document.createElement('canvas');
     this.transitionFrame.width = W * dpr;
     this.transitionFrame.height = H * dpr;
+    markPerformance('canvas_ready', {
+      dpr,
+      width: canvas.width,
+      height: canvas.height,
+      transitionPixels: this.transitionFrame.width * this.transitionFrame.height,
+    });
     this.titleCover = loadedArtImage(TITLE_COVER_URL);
     if (!this.titleCover) {
       void loadArtImage(TITLE_COVER_URL, 'critical').then((image) => {
         this.titleCover = image;
       });
     }
+    this.titleCoverFlare = loadedArtImage(TITLE_COVER_FLARE_URL);
+    if (!this.titleCoverFlare) {
+      void loadArtImage(TITLE_COVER_FLARE_URL, 'critical').then((image) => {
+        this.titleCoverFlare = image;
+      });
+    }
+    this.originDossierBackground = loadedArtImage(ORIGIN_DOSSIER_BACKGROUND_URL);
+    if (!this.originDossierBackground) {
+      void loadArtImage(ORIGIN_DOSSIER_BACKGROUND_URL, 'critical').then((image) => {
+        this.originDossierBackground = image;
+      });
+    }
+    this.originComicPages = ORIGIN_COMIC_PAGE_URLS.map((url) => loadedArtImage(url));
+    ORIGIN_COMIC_PAGE_URLS.forEach((url, index) => {
+      if (this.originComicPages[index]) return;
+      void loadArtImage(url, 'critical').then((image) => {
+        this.originComicPages[index] = image;
+      });
+    });
     this.installInput();
-    this.installTestHooks();
+    if (import.meta.env.DEV) this.installTestHooks();
     // 断点恢复：无审计参数时，启动即尝试恢复上一局（豆抖平台可能中途断连）。
     // 恢复沿用存档里已 AI 生成的出生，不是新造出生，不触碰"每局 AI 出生"红线。
     const bootParams = new URLSearchParams(window.location.search);
     if (!bootParams.has('audit') && !bootParams.has('audit-screen')) {
       this.tryResumeFromCheckpoint();
     }
+    this.feedback.setMusic(this.state === 'title' ? 0 : Math.min(6, this.encounterIndex + 1));
     requestAnimationFrame((time) => this.frame(time));
   }
 
@@ -1304,6 +1458,18 @@ export class ZheYiShenGame {
         return;
       }
       if (this.state === 'origin') {
+        if (this.aiOriginState === 'error') {
+          if (pointInRect(p, ORIGIN_RETRY_RECT)) this.retryOrigin();
+          else if (pointInRect(p, ORIGIN_ERROR_HOME_RECT)) this.returnToTitleFromOrigin();
+          else if (pointInRect(p, ORIGIN_ERROR_CODEX_RECT)) this.openCodexOverlay();
+          return;
+        }
+        if (!this.originComicComplete()) {
+          if (this.aiOriginState === 'gpt'
+            && this.origin
+            && pointInRect(p, ORIGIN_COMIC_SKIP_RECT)) this.finishOriginComicEarly();
+          return;
+        }
         if (this.originLedgerOpen) {
           if (pointInRect(p, LEDGER_OLDER_RECT) && this.ledgerPage < this.ledgerEntries.length - 1) {
             this.ledgerPage += 1;
@@ -1325,8 +1491,7 @@ export class ZheYiShenGame {
           }
           return;
         }
-        if (this.aiOriginState === 'error') this.retryOrigin();
-        else if (this.aiOriginState === 'gpt') {
+        if (this.aiOriginState === 'gpt') {
           if (this.originStoryComplete()) this.openInitialItemReward();
           else this.originElapsed = this.originStoryDuration();
         }
@@ -1624,8 +1789,15 @@ export class ZheYiShenGame {
         return;
       }
       if (this.state === 'origin' && (event.key === 'Enter' || event.key === ' ')) {
-        if (this.aiOriginState === 'error') this.retryOrigin();
-        else if (this.aiOriginState === 'gpt') {
+        if (this.aiOriginState === 'error') {
+          this.retryOrigin();
+          return;
+        }
+        if (!this.originComicComplete()) {
+          if (this.aiOriginState === 'gpt' && this.origin) this.finishOriginComicEarly();
+          return;
+        }
+        if (this.aiOriginState === 'gpt') {
           if (this.originStoryComplete()) this.openInitialItemReward();
           else this.originElapsed = this.originStoryDuration();
         }
@@ -1740,6 +1912,7 @@ export class ZheYiShenGame {
     if (this.pauseTab === 'settings') {
       const volumeTarget = [
         { rect: PAUSE_SETTING_VOLUME_RECT, channel: undefined },
+        { rect: PAUSE_SETTING_MUSIC_RECT, channel: 'music' as const },
         { rect: PAUSE_SETTING_AMBIENCE_RECT, channel: 'ambience' as const },
         { rect: PAUSE_SETTING_VOICE_RECT, channel: 'voice' as const },
         { rect: PAUSE_SETTING_EFFECTS_RECT, channel: 'effects' as const },
@@ -1861,14 +2034,14 @@ export class ZheYiShenGame {
 
   /**
    * 断点恢复：把当前对局快照成 RunCheckpoint。返回类型强制包含全部字段，
-   * 漏字段会在编译期报错。仅在稳定的"画面间"时刻可存档（战斗/命运/奖励/商店/特殊房）；
+   * 漏字段会在编译期报错。仅在稳定的"画面间"时刻可存档（战斗/命运/奖励/固定掉落/商店/特殊房）；
    * title/result/origin 与命运牌异步未就绪时返回 null。
    */
   private captureCheckpoint(): RunCheckpoint | null {
     if (!this.origin) return null;
     const screen = this.state;
     if (screen !== 'battle' && screen !== 'fateEvent' && screen !== 'itemReward'
-      && screen !== 'shop' && screen !== 'specialRoom') return null;
+      && screen !== 'storyDrop' && screen !== 'shop' && screen !== 'specialRoom') return null;
     // 命运牌展示后正文已经冻结；选择结算完成便可以保存，避免结果动画期间退出后重新选择。
     if (screen === 'fateEvent' && !this.currentFate) return null;
     const preparedSlot = this.prefetchedFate?.encounterIndex === this.encounterIndex
@@ -1942,6 +2115,7 @@ export class ZheYiShenGame {
         playerText: this.backgroundFateTask.playerText,
         fateItemCandidates: [...this.backgroundFateTask.snapshot.fateItemCandidates],
       } : undefined,
+      boss: this.captureBossCheckpoint(),
       fateDestination: this.fateDestination,
       fateResultDirection: this.fateResultDirection,
       fateResultReturn: this.fateResultReturn,
@@ -1971,7 +2145,7 @@ export class ZheYiShenGame {
     if (!this.origin) return;
     const screen = this.state;
     if (screen !== 'battle' && screen !== 'fateEvent' && screen !== 'itemReward'
-      && screen !== 'shop' && screen !== 'specialRoom') return;
+      && screen !== 'storyDrop' && screen !== 'shop' && screen !== 'specialRoom') return;
     if (screen === 'fateEvent' && !this.currentFate) return;
     if (this.checkpointWriteBackoffUntil > this.visualTime) return;
     const preparedSlot = this.prefetchedFate?.encounterIndex === this.encounterIndex
@@ -1981,6 +2155,7 @@ export class ZheYiShenGame {
     const preparedEvent = preparedSlot?.status === 'ready' && preparedSlot.event
       ? preparedSlot.event
       : preparedSlot?.fallback;
+    const bossCheckpoint = this.captureBossCheckpoint();
     const key = [
       screen,
       this.encounterIndex,
@@ -2005,6 +2180,10 @@ export class ZheYiShenGame {
       [...this.recalledMemories].join(','),
       this.xiaoZhangDecision,
       this.xiaoZhangBetrayed ? 1 : 0,
+      this.storyDropId ?? '',
+      bossCheckpoint
+        ? `${bossCheckpoint.type}:${Math.floor(bossCheckpoint.hpRatio * 20)}:${bossCheckpoint.phase}:${bossCheckpoint.phoneStoryIndex}:${bossCheckpoint.praiseOneSeatUsed ? 1 : 0}`
+        : '',
     ].join('|');
     if (key === this.lastCheckpointKey) return;
     const checkpoint = this.captureCheckpoint();
@@ -2033,6 +2212,7 @@ export class ZheYiShenGame {
     this.originModifiers = getOriginModifiers(checkpoint.origin.traits);
     this.originAttempt = 0;
     this.originElapsed = this.originStoryDuration();
+    this.originComicElapsed = ORIGIN_COMIC_DURATION;
     this.ledgerEntries = readLifeLedger();
     this.originLedgerOpen = false;
     this.ledgerPage = 0;
@@ -2122,6 +2302,7 @@ export class ZheYiShenGame {
         this.startStage(true); // 重建敌人/计时，跳过一次性入场经济
         this.battleTime = checkpoint.battleTime;
         this.restoreStageProgress(checkpoint);
+        this.restoreBossCheckpoint(checkpoint.boss);
         if (STAGES[this.encounterIndex]?.end === 'fate' || STAGES[this.encounterIndex]?.end === 'final') {
           this.restorePreparedFate(checkpoint.preparedFate?.event);
         }
@@ -2162,6 +2343,24 @@ export class ZheYiShenGame {
         }
         this.state = checkpoint.screen;
         break;
+      case 'storyDrop': {
+        this.startStage(true);
+        this.battleTime = checkpoint.battleTime;
+        this.restoreStageProgress(checkpoint);
+        const stage = STAGES[this.encounterIndex];
+        const dropId = STORY_DROPS[this.encounterIndex];
+        if (stage?.bossType && dropId && this.items.includes(dropId)) {
+          this.pendingDefeatReward = stage.bossType;
+          this.storyDropId = dropId;
+          this.storyDropTimer = 0.55;
+          this.state = 'storyDrop';
+        } else {
+          // 旧档或被裁剪的异常档：固定物证已在背包时，至少继续进入正常 Boss 奖励。
+          this.state = 'battle';
+          if (stage?.bossType) this.openDefeatItemReward(stage.bossType, true);
+        }
+        break;
+      }
     }
     if (checkpoint.pendingFreeFate) {
       const pending = checkpoint.pendingFreeFate;
@@ -2201,6 +2400,89 @@ export class ZheYiShenGame {
     this.doorUsed = persistent.doorUsed;
     this.finalFateTriggered = persistent.finalFateTriggered;
     this.voiceCuesSeen = new Set(persistent.voiceCuesSeen as VoiceCueId[]);
+  }
+
+  private captureBossCheckpoint(): CheckpointBossState | undefined {
+    const stageBossType = STAGES[this.encounterIndex]?.bossType as CheckpointBossType | undefined;
+    if (!stageBossType || this.stageBossDefeated) return undefined;
+    const boss = this.enemies.find((enemy) => !enemy.dead && enemy.boss && enemy.type === stageBossType);
+    if (!boss || boss.maxHp <= 0) return undefined;
+    return {
+      type: stageBossType,
+      hpRatio: this.clamp(boss.hp / boss.maxHp, 0.01, 1),
+      offsetX: boss.x - this.heroX,
+      offsetY: boss.y - this.heroY,
+      phase: boss.phase ?? 1,
+      mechTimer: boss.mechTimer ?? 0,
+      voiceStage: boss.voiceStage ?? 0,
+      relocateDamage: boss.relocateDamage ?? 0,
+      phoneStoryIndex: this.phoneStoryIndex,
+      phoneMissed: this.phoneMissed,
+      phoneRelief: this.phoneRelief,
+      praiseMoveIndex: this.praiseMoveIndex,
+      praiseOneSeatUsed: this.praiseOneSeatUsed,
+      closetMoveIndex: this.closetMoveIndex,
+      bingDebt: this.bingDebt,
+      bingPenaltyTimer: this.bingPenaltyTimer,
+      fatherCycleIndex: this.fatherCycleIndex,
+      fatherSecondPhaseLineShown: this.fatherSecondPhaseLineShown,
+      fatherCoatOffsetX: this.fallenCoatX === undefined ? undefined : this.fallenCoatX - this.heroX,
+      fatherCoatOffsetY: this.fallenCoatY === undefined ? undefined : this.fallenCoatY - this.heroY,
+      collectorBillInterest: this.collectorBillInterest,
+    };
+  }
+
+  /**
+   * Boss 恢复只重建血量、阶段和长期机制；正在结算的前摇/弹道全部清空，
+   * 并给两秒重新站位时间，避免刷新后直接吃一记看不见的技能。
+   */
+  private restoreBossCheckpoint(checkpoint?: CheckpointBossState): void {
+    const stage = STAGES[this.encounterIndex];
+    if (!checkpoint || !stage?.bossType || checkpoint.type !== stage.bossType
+      || this.stageBossDefeated) return;
+    const boss = this.createSeekingEnemy(
+      checkpoint.type,
+      this.heroX + checkpoint.offsetX,
+      this.heroY + checkpoint.offsetY,
+    );
+    boss.hp = this.clamp(boss.maxHp * checkpoint.hpRatio, 1, boss.maxHp);
+    boss.phase = checkpoint.phase;
+    // 不恢复已经进入结算的前摇；稳定计时最多回到下一招前半程。
+    boss.mechTimer = Math.min(checkpoint.mechTimer, 1.5);
+    boss.voiceStage = checkpoint.voiceStage;
+    boss.relocateDamage = checkpoint.relocateDamage;
+    boss.windupTimer = 0;
+    boss.attackKind = undefined;
+    if (boss.type === 'praise-chair' && checkpoint.phase >= 2) {
+      boss.radius = 58;
+      boss.speed = 30;
+    }
+    this.phoneStoryIndex = checkpoint.phoneStoryIndex;
+    this.phoneMissed = checkpoint.phoneMissed;
+    this.phoneRelief = checkpoint.phoneRelief;
+    this.praiseMoveIndex = checkpoint.praiseMoveIndex;
+    this.praiseOneSeatUsed = checkpoint.praiseOneSeatUsed;
+    this.closetMoveIndex = checkpoint.closetMoveIndex;
+    this.bingDebt = checkpoint.bingDebt;
+    this.bingPenaltyTimer = checkpoint.bingPenaltyTimer;
+    this.fatherCycleIndex = checkpoint.fatherCycleIndex;
+    this.fatherSecondPhaseLineShown = checkpoint.fatherSecondPhaseLineShown;
+    this.collectorBillInterest = checkpoint.collectorBillInterest;
+    if (boss.type === 'silent-father') {
+      this.rainActive = true;
+      if (checkpoint.fatherCoatOffsetX !== undefined && checkpoint.fatherCoatOffsetY !== undefined) {
+        this.fallenCoatX = this.heroX + checkpoint.fatherCoatOffsetX;
+        this.fallenCoatY = this.heroY + checkpoint.fatherCoatOffsetY;
+      } else if (checkpoint.phase >= 2) {
+        this.fallenCoatX = boss.x;
+        this.fallenCoatY = boss.y + 72;
+      }
+    }
+    if (boss.type === 'ringing-phone') this.updatePhoneStrength(boss);
+    this.enemies.push(boss);
+    this.feedback.setMusicTension(true);
+    this.eliteSpawned = true;
+    this.spawnPause = Math.max(this.spawnPause, 2);
   }
 
   /** 启动时尝试恢复上一局；快照非法或恢复抛错则清档回到标题。 */
@@ -2248,6 +2530,7 @@ export class ZheYiShenGame {
     this.requestedOriginKind = this.pickOriginKind();
     this.originModifiers = getOriginModifiers([]);
     this.originElapsed = 0;
+    this.originComicElapsed = 0;
     this.originAttempt = 0;
     this.ledgerEntries = readLifeLedger();
     this.originLedgerOpen = false;
@@ -2259,6 +2542,8 @@ export class ZheYiShenGame {
     this.aiFateState = 'idle';
     this.prefetchedFate = undefined;
     this.state = 'origin';
+    this.feedback.setMusic(0);
+    this.feedback.setMusicTension(false);
     recordTelemetry('run_started', {
       runSeed: this.runSeed >>> 0,
       requestedOriginKind: this.requestedOriginKind,
@@ -2326,6 +2611,7 @@ export class ZheYiShenGame {
     this.voiceCaption = undefined;
     this.lampGuardHintShown = false;
     this.feedback.stopVoice();
+    this.feedback.preloadVoices(ORIGIN_COMIC_VOICE_CUES);
     this.auditDamageTaken = 0;
     this.toast = '';
     this.toastTime = 0;
@@ -2357,6 +2643,10 @@ export class ZheYiShenGame {
     this.worldDoor = undefined;
     this.caption = '';
     this.captionTime = 0;
+    this.fateEchoCaptionQueue = [];
+    this.fateEchoCaption = '';
+    this.fateEchoCaptionTime = 0;
+    this.fateEchoCaptionDuration = 0;
     this.memoryRecall = undefined;
     this.transitionTimer = 0;
     this.darkActive = false;
@@ -2526,6 +2816,7 @@ export class ZheYiShenGame {
         source: 'local',
       };
       this.aiOriginState = 'gpt';
+      this.originComicElapsed = ORIGIN_COMIC_DURATION;
       this.originElapsed = this.originStoryDuration();
       return;
     }
@@ -2608,8 +2899,45 @@ export class ZheYiShenGame {
     this.launchOriginHydration(requestId);
   }
 
+  private finishOriginComicEarly(): void {
+    if (this.state !== 'origin'
+      || this.aiOriginState !== 'gpt'
+      || !this.origin
+      || this.originComicComplete()) return;
+    ORIGIN_COMIC_VOICE_CUES.forEach((id) => this.voiceCuesSeen.add(id));
+    this.feedback.stopVoice();
+    this.originComicElapsed = ORIGIN_COMIC_DURATION;
+    this.feedback.play('page');
+  }
+
+  private returnToTitleFromOrigin(): void {
+    if (this.state !== 'origin') return;
+    this.originAbortController?.abort();
+    this.originAbortController = undefined;
+    this.originRequestId += 1;
+    this.runSerial += 1;
+    this.aiOriginState = 'idle';
+    this.origin = undefined;
+    this.originElapsed = 0;
+    this.originComicElapsed = 0;
+    this.originLedgerOpen = false;
+    this.resetMovementInput();
+    this.resetFateInput();
+    clearRunCheckpoint();
+    this.lastCheckpointKey = '';
+    this.titleStartedAt = performance.now();
+    this.state = 'title';
+    this.feedback.setMusic(0);
+    this.feedback.setMusicTension(false);
+    this.feedback.play('page');
+  }
+
   private originLongWaitReady(): boolean {
-    return this.aiOriginState === 'requesting' && this.originElapsed >= ORIGIN_LONG_WAIT_SECONDS;
+    return this.aiOriginState === 'requesting' && this.originComicElapsed >= ORIGIN_LONG_WAIT_SECONDS;
+  }
+
+  private originComicComplete(): boolean {
+    return this.originComicElapsed >= ORIGIN_COMIC_DURATION;
   }
 
   private originAIDiagnosticLine(): string {
@@ -2675,30 +3003,35 @@ export class ZheYiShenGame {
 
   /** 可重复语音（好话/免死收灯人等）：不进 seen 集合，但照常出字幕——静音玩家也要看得懂。 */
   private playVoiceRepeatable(id: VoiceCueId): void {
-    const cue = VOICE_CUES[id];
     const treatment = this.voiceTreatmentFor(id);
     this.feedback.playVoice(id, treatment);
-    const textLength = cue.text
-      .replace(/<#[\d.]+#>/g, '')
-      .replace(/\([a-z-]+\)/g, '')
-      .replace(/\s+/g, '').length;
-    const duration = this.clamp(2.2 + textLength / 7, 2.6, 6);
+    const duration = this.voiceCaptionDuration(id);
     this.voiceCaption = { id, time: duration, duration, treatment };
   }
 
   private playVoiceOnce(id: VoiceCueId, showVoiceCaption = true): void {
     if (this.voiceCuesSeen.has(id)) return;
     this.voiceCuesSeen.add(id);
-    const cue = VOICE_CUES[id];
     const treatment = this.voiceTreatmentFor(id);
     this.feedback.playVoice(id, treatment);
+    const duration = this.voiceCaptionDuration(id);
+    if (showVoiceCaption) this.voiceCaption = { id, time: duration, duration, treatment };
+    else this.voiceCaption = undefined;
+  }
+
+  /**
+   * 字幕也是事件时间线的一部分。旧公式只按字数估算，童年耳语等慢声会在音频
+   * 结束前消失，后续怪物/台词就提前顶上来。这里给停顿和慢语速留足落稳时间。
+   */
+  private voiceCaptionDuration(id: VoiceCueId): number {
+    const cue = VOICE_CUES[id];
     const textLength = cue.text
       .replace(/<#[\d.]+#>/g, '')
       .replace(/\([a-z-]+\)/g, '')
       .replace(/\s+/g, '').length;
-    const duration = this.clamp(2.6 + textLength / 7, 3.2, 7.6);
-    if (showVoiceCaption) this.voiceCaption = { id, time: duration, duration, treatment };
-    else this.voiceCaption = undefined;
+    if (id === 'narrator-opening') return 10.25;
+    if (id === 'narrator-final-breath') return 9.65;
+    return this.clamp(3 + textLength / 5, 3.2, 10);
   }
 
   private voiceTreatmentFor(id: VoiceCueId): VoiceTreatment {
@@ -2734,11 +3067,18 @@ export class ZheYiShenGame {
       return Math.min(nearest, Math.hypot(enemy.x - this.heroX, enemy.y - this.heroY));
     }, Infinity);
     if (this.encounterIndex === 0) {
-      // 童年还没上学：校门口与同学的两条已按正典移到少年章。
-      if (time >= 8) this.playVoiceOnce('caregiver-school-send');
+      // 童年最后一晚按固定声画顺序落地：关灯 -> 孩子发问 -> 衣架出现。
+      // “明天上学”只预告下一章；书包送别仍留到正式进入少年学校之前。
       if (time >= 18) this.playVoiceOnce('caregiver-lights-out');
-      if (time >= 22 && this.standStillTime >= 3 && nearestEnemyDistance > 140) this.playVoiceOnce('child-under-bed');
-      if (hpRatio <= 0.6) this.playVoiceOnce('caregiver-fell-again');
+      const childhoodMainlineStarted = this.voiceCuesSeen.has('child-under-bed');
+      const childhoodThreatIntroduced = this.stageEliteSpawned && this.eliteAlertTime <= 0;
+      if (hpRatio <= 0.6 && !this.voiceCaption
+        && (!childhoodMainlineStarted || childhoodThreatIntroduced)) {
+        this.playVoiceOnce('caregiver-fell-again');
+      }
+      if (time >= 22 && this.voiceCuesSeen.has('caregiver-lights-out') && !this.voiceCaption) {
+        this.playVoiceOnce('child-under-bed');
+      }
     } else if (this.encounterIndex === 1) {
       if (alive >= 6) this.playVoiceOnce('teacher-last-row');
       if (time >= 30) this.playVoiceOnce('classmate-slept-late');
@@ -2761,7 +3101,9 @@ export class ZheYiShenGame {
       }
     } else if (this.encounterIndex === 3) {
       if (time >= 18) this.playVoiceOnce('family-dinner-cold');
-      if (time >= 26) this.playVoiceOnce('hospital-family-needed');
+      if ((this.voiceEnemyKills['missed-call'] ?? 0) >= 3 || time >= 26) {
+        this.playVoiceOnce('hospital-family-needed');
+      }
     } else if (this.encounterIndex === 4) {
       if (time >= 14) this.playVoiceOnce('manager-tonight-hard');
       if (hpRatio <= 0.5) this.playVoiceOnce('clinic-blood-pressure');
@@ -2784,6 +3126,10 @@ export class ZheYiShenGame {
     this.resetMovementInput();
     this.resetFateInput();
     this.state = 'battle';
+    markPerformance('stage_entered', {
+      stage: this.encounterIndex,
+      resumed: resume,
+    });
     recordTelemetry('stage_started', {
       runSeed: this.runSeed >>> 0,
       chapterIndex: this.encounterIndex,
@@ -2803,7 +3149,7 @@ export class ZheYiShenGame {
     this.collectorBillInterest = 0;
     this.attackLoreSeen.clear();
     this.boxSavedItem = undefined;
-    this.hero.block = this.fateBuild.openingBlock;
+    if (!resume) this.hero.block = this.fateBuild.openingBlock;
     this.bowlWarmthBlock = 0;
     this.projectiles = [];
     this.bursts = [];
@@ -2953,6 +3299,9 @@ export class ZheYiShenGame {
     this.billTimer = 0;
     this.voiceEnemyKills = {};
     this.feedback.setAmbience(this.encounterIndex);
+    this.feedback.setMusic(this.encounterIndex + 1);
+    this.feedback.setMusicTension(false);
+    if (!resume && this.encounterIndex === 2) this.feedback.play('train', 0.9);
     this.feedback.preloadVoices(STAGE_VOICE_PRELOADS[this.encounterIndex] ?? []);
     if (this.encounterIndex < STAGES.length - 1) {
       void warmProductionArtForStage(this.encounterIndex + 1).catch((error: unknown) => {
@@ -3062,6 +3411,7 @@ export class ZheYiShenGame {
     this.transitionTimer = STAGE_TRANSITION_DURATION;
     this.feedback.play('page', 1.1);
     const transitionCues: Partial<Record<number, VoiceCueId>> = {
+      0: 'caregiver-school-send',
       1: 'school-bell-end',
       2: 'interview-thank-you',
       4: 'security-return-card',
@@ -3522,7 +3872,8 @@ export class ZheYiShenGame {
       trade_max_hp: '最大生命-5 · 伤害提高',
     };
     const itemLine = response.gainItemId ? `获得 · ${getItem(response.gainItemId).name}` : '';
-    return [itemLine, effects[response.effect], this.fateStatsLine(response.stats)].filter(Boolean).join(' · ') || '只留下记忆';
+    const removedItemLine = response.removeItemId ? `失去 · ${getItem(response.removeItemId).name}` : '';
+    return [itemLine, removedItemLine, effects[response.effect], this.fateStatsLine(response.stats)].filter(Boolean).join(' · ') || '只留下记忆';
   }
 
   private fateFactLine(event: FateEvent): string {
@@ -3545,13 +3896,9 @@ export class ZheYiShenGame {
 
     if (this.encounterIndex === 2 && !this.xiaoZhangSpawned && this.battleTime >= 9.5) {
       const angle = this.random() * Math.PI * 2;
-      let spawnX = this.clamp(this.heroX + Math.cos(angle) * 168, 36, W - 36);
-      let spawnY = this.clamp(this.heroY + Math.sin(angle) * 168, 118, H - 82);
-      // 靠场边时径向落点会被裁到玩家脚下，甚至落到不可达区域；改投到对角安全区。
-      if (Math.hypot(spawnX - this.heroX, spawnY - this.heroY) < 96) {
-        spawnX = this.heroX < W / 2 ? W - 44 : 44;
-        spawnY = this.heroY < (118 + H - 82) / 2 ? H - 90 : 126;
-      }
+      // 无限世界里相机跟随主角，交互角色只需保持相对距离；不能夹到首屏坐标。
+      const spawnX = this.heroX + Math.cos(angle) * 168;
+      const spawnY = this.heroY + Math.sin(angle) * 168;
       this.xiaoZhangSpawned = true;
       this.xiaoZhangWorld = { x: spawnX, y: spawnY };
       this.say('一起入职的小张还站在工位边');
@@ -3590,7 +3937,10 @@ export class ZheYiShenGame {
       }
     }
 
-    if (!this.stageEliteSpawned && this.battleTime >= stage.eliteAt) {
+    const childhoodPreludeComplete = this.encounterIndex !== 0
+      || stage.eliteType !== 'coat-rack'
+      || (this.voiceCuesSeen.has('child-under-bed') && !this.voiceCaption);
+    if (!this.stageEliteSpawned && this.battleTime >= stage.eliteAt && childhoodPreludeComplete) {
       this.stageEliteSpawned = true;
       this.spawnPause = 2.4;
       const eliteLines: Partial<Record<EnemyType, string>> = {
@@ -3624,7 +3974,22 @@ export class ZheYiShenGame {
 
     // 一关一 Boss：前置精英清掉后才出场；Boss 不死阶段不结算。
     const minorEliteAlive = this.enemies.some((enemy) => !enemy.dead && enemy.elite && !enemy.boss);
-    if (!minorEliteAlive && !this.eliteSpawned && stage.bossAt !== undefined && stage.bossType && this.battleTime >= stage.bossAt) {
+    const chapterPreludeComplete = (
+      this.encounterIndex !== 0
+      || stage.bossType !== 'closet-dark'
+      || !this.voiceCaption
+    ) && (
+      this.encounterIndex !== 1
+      || stage.bossType !== 'silent-father'
+      || (
+        this.schoolEliteDefeatedAt > 0
+        && this.voiceCuesSeen.has('classmate-family-late')
+        && this.voiceCuesSeen.has('school-gate-closing')
+        && !this.voiceCaption
+      )
+    );
+    if (!minorEliteAlive && !this.eliteSpawned && stage.bossAt !== undefined && stage.bossType
+      && this.battleTime >= stage.bossAt && chapterPreludeComplete) {
       this.eliteSpawned = true;
       this.spawnPause = 3;
       const bossLines: Partial<Record<EnemyType, string>> = {
@@ -3641,6 +4006,7 @@ export class ZheYiShenGame {
       this.eliteAlertName = bossSpawn.name;
       this.eliteAlertTime = 2.4;
       this.feedback.play('boss');
+      this.feedback.setMusicTension(true);
       this.feedback.vibrate([18, 42, 24]);
       this.screenShake = Math.max(this.screenShake, 0.3);
       this.burst('ring', bossSpawn.x, bossSpawn.y, 120, '#d0b264');
@@ -3742,6 +4108,7 @@ export class ZheYiShenGame {
           this.eliteAlertName = '收灯人';
           this.eliteAlertTime = 2.8;
           this.feedback.play('boss', 1.2);
+          this.feedback.setMusicTension(true);
           this.feedback.vibrate([22, 48, 30]);
           this.lanternHandoff = undefined;
           this.lampItemsToReturnTotal = this.items.length;
@@ -3950,7 +4317,11 @@ export class ZheYiShenGame {
   private frame(time: number): void {
     setArtGameplayActive(this.state === 'battle' && this.transitionTimer <= 0 && !this.paused);
     if (!this.lastTime) this.lastTime = time;
-    else reportArtFrameDuration(time - this.lastTime);
+    else {
+      const frameDuration = time - this.lastTime;
+      reportArtFrameDuration(frameDuration);
+      recordFramePerformance(frameDuration, this.paused ? 'paused' : this.state);
+    }
     const delta = Math.min(0.05, (time - this.lastTime) / 1000) * this.auditTimeScale;
     this.lastTime = time;
     this.accumulator += delta;
@@ -4063,11 +4434,14 @@ export class ZheYiShenGame {
       enemy.age += dt;
     });
     if (this.state === 'origin') {
-      if (this.aiOriginState === 'gpt') {
+      if (!this.auditFreezeOriginComic) {
+        this.originComicElapsed = Math.min(ORIGIN_COMIC_DURATION, this.originComicElapsed + dt);
+        const comicVoice = ORIGIN_COMIC_VOICE_CUES[originComicSceneIndex(this.originComicElapsed)];
+        if (comicVoice) this.playVoiceOnce(comicVoice, false);
+      }
+      if (this.aiOriginState === 'gpt' && this.originComicComplete()) {
         this.originElapsed = Math.min(this.originStoryDuration(), this.originElapsed + dt);
         if (this.originStoryComplete()) this.playVoiceOnce('narrator-opening');
-      } else {
-        this.originElapsed += dt;
       }
       return;
     }
@@ -4120,6 +4494,15 @@ export class ZheYiShenGame {
       if (this.phoneTranscript.timer <= 0) this.phoneTranscript = undefined;
     }
     if (this.captionTime > 0) this.captionTime -= dt;
+    if (this.fateEchoCaptionTime > 0) this.fateEchoCaptionTime -= dt;
+    if (this.fateEchoCaptionTime <= 0
+      && this.fateEchoCaptionQueue.length
+      && this.captionTime <= 0
+      && !this.voiceCaption
+      && !this.phoneTranscript
+      && this.eliteAlertTime <= 0) {
+      this.showNextFateEchoCaption();
+    }
     if (this.comboReveal) {
       this.comboReveal.timer -= dt;
       if (this.comboReveal.timer <= 0) this.comboReveal = undefined;
@@ -4210,7 +4593,14 @@ export class ZheYiShenGame {
       return;
     }
 
+    const previousBattleTime = this.battleTime;
     this.battleTime += dt;
+    if (
+      this.encounterIndex === 5
+      && Math.floor(this.battleTime / 9) > Math.floor(previousBattleTime / 9)
+    ) {
+      this.feedback.play('monitor', 0.72);
+    }
     if (this.firstRunGuideActive && this.encounterIndex === 0 && this.battleTime >= 12) {
       this.firstRunGuideActive = false;
       if (!this.auditFirstRunGuide) {
@@ -6677,13 +7067,13 @@ export class ZheYiShenGame {
           facingAngle + Math.PI / 2,
           facingAngle - Math.PI / 2,
         ];
-        const backstabPosition = backstabAngles
-          .map((angle) => ({ x: this.heroX + Math.cos(angle) * 82, y: this.heroY + Math.sin(angle) * 82 }))
-          .find((point) => point.x >= 24 && point.x <= W - 24 && point.y >= 112 && point.y <= H - 76)
-          ?? {
-            x: this.clamp(this.heroX - Math.cos(facingAngle) * 82, 24, W - 24),
-            y: this.clamp(this.heroY - Math.sin(facingAngle) * 82, 112, H - 76),
-          };
+        // 战场使用无限世界坐标，相机始终跟随主角。这里若拿逻辑屏幕 W/H
+        // 夹世界坐标，主角走出首屏后幸存者会瞬移回出生区域。
+        const backstabAngle = backstabAngles[0]!;
+        const backstabPosition = {
+          x: this.heroX + Math.cos(backstabAngle) * 82,
+          y: this.heroY + Math.sin(backstabAngle) * 82,
+        };
         enemy.x = backstabPosition.x;
         enemy.y = backstabPosition.y;
         enemy.attackAngle = Math.atan2(this.heroY - enemy.y, this.heroX - enemy.x);
@@ -7412,7 +7802,10 @@ export class ZheYiShenGame {
       this.playVoiceOnce('hero-not-busy');
     }
     if (enemy.elite || enemy.boss) {
-      if (enemy.boss) this.stageBossDefeated = true;
+      if (enemy.boss) {
+        this.stageBossDefeated = true;
+        this.feedback.setMusicTension(false);
+      }
       else this.stageEliteDefeated = true;
       if (enemy.type === 'ringing-phone') this.clearPhoneState();
       if (this.state === 'battle') {
@@ -7728,7 +8121,10 @@ export class ZheYiShenGame {
     this.phoneAnswerTarget = -1;
     this.phoneResolution = undefined;
     this.phonePostAnswerTimer = 0;
-    this.phoneActiveStoryIndex = this.phoneStoryIndex < PHONE_STORY_STEPS.length ? this.phoneStoryIndex : -1;
+    // 前六通属于一阶段；第七通（同事）必须留到半血后的“全部一起响”。
+    // 一阶段拖得再久也只能轮播普通来电，不能提前消耗二阶段剧情。
+    const storyLimit = phaseTwo ? PHONE_STORY_STEPS.length : 6;
+    this.phoneActiveStoryIndex = this.phoneStoryIndex < storyLimit ? this.phoneStoryIndex : -1;
     if (phaseTwo) {
       const count = Math.min(4, 3 + Math.floor(this.phoneMissed / 10));
       const startAngle = this.random() * Math.PI * 2;
@@ -7751,7 +8147,7 @@ export class ZheYiShenGame {
     }
     this.playBossAnimation(enemy, phaseTwo ? 'phone-p2-ring' : 'phone-p1-ring', this.phoneRingWindow, true);
     this.feedback.vibrate([180, 700, 180, 700]);
-    this.feedback.play('boss', 0.65);
+    this.feedback.play('phone', phaseTwo ? 1.08 : 0.9);
     this.screenShake = Math.max(this.screenShake, phaseTwo ? 0.22 : 0.1);
     const burstPoints = this.phoneCalls;
     for (const call of burstPoints) {
@@ -7993,7 +8389,7 @@ export class ZheYiShenGame {
     this.burst('word', this.heroX, this.heroY - 46, 26, '#cbb98f', stripped.name);
     this.feedback.play('page', 0.9);
     this.say('这一件，先还回去。');
-    this.playVoiceOnce('lamp-one-returned');
+    this.playVoiceRepeatable('lamp-one-returned');
     if (this.items.length === 0) {
       this.lampFinalStripTimer = LAMP_STRIP_TO_RELEASE_DELAY;
       this.resetMovementInput();
@@ -8022,7 +8418,7 @@ export class ZheYiShenGame {
     this.darkR = 70;
     enemy.x = this.darkCX;
     enemy.y = this.darkCY - 108;
-    this.playBossAnimation(enemy, 'keeper-dim', LAMP_RELEASE_CONFIRM_DELAY);
+    this.playBossAnimation(enemy, 'keeper-dim', LAMP_RELEASE_ANIMATION_DURATION);
     for (const unit of this.enemies) {
       if (unit.id !== enemy.id) unit.dead = true;
     }
@@ -8035,7 +8431,7 @@ export class ZheYiShenGame {
     this.captionTime = 4.2;
     this.say('又一盏灯灭了。');
     this.playVoiceOnce('lamp-pockets-empty');
-    this.scheduleVoice('narrator-final-breath', LAMP_STRIP_TO_RELEASE_DELAY);
+    this.scheduleVoice('narrator-final-breath', LAMP_POCKETS_EMPTY_TO_FINAL_BREATH_DELAY);
   }
 
   private releaseFinalBreath(): void {
@@ -8052,8 +8448,8 @@ export class ZheYiShenGame {
     enemy.relocateFromY = enemy.y;
     this.playBossAnimation(enemy, 'collector-relocate', 0.9);
     const relocateAngle = this.random() * Math.PI * 2;
-    enemy.x = this.clamp(this.heroX + Math.cos(relocateAngle) * 170, 44, W - 44);
-    enemy.y = this.clamp(this.heroY + Math.sin(relocateAngle) * 170, 110, H - 92);
+    enemy.x = this.heroX + Math.cos(relocateAngle) * 170;
+    enemy.y = this.heroY + Math.sin(relocateAngle) * 170;
     this.burst('ring', enemy.relocateFromX, enemy.relocateFromY, 58, '#d94b61');
     this.burst('ring', enemy.x, enemy.y, 68, '#75605a');
     this.burst('word', enemy.x, enemy.y - enemy.radius - 10, 30, '#9b7968', '换个门');
@@ -8227,7 +8623,7 @@ export class ZheYiShenGame {
         if (dx <= CLOSET_SLAM_HALF_WIDTH + 10 && dy <= CLOSET_SLAM_HALF_HEIGHT + 10) {
           if (this.hurtHero(6, `${enemy.name} · 门要关了`)) {
             const pushDirection = this.heroX >= targetX ? 1 : -1;
-            this.heroX = this.clamp(this.heroX + pushDirection * 32, 18, W - 18);
+            this.heroX += pushDirection * 32;
             this.heroSlowTimer = Math.max(this.heroSlowTimer, 0.45);
           }
         }
@@ -8303,8 +8699,8 @@ export class ZheYiShenGame {
         if (pullDistance < COLLECTOR_DRAG_RADIUS) {
           const originX = this.heroX;
           const originY = this.heroY;
-          this.heroX = this.clamp(this.heroX + (pullX / pullDistance) * 54, 18, W - 18);
-          this.heroY = this.clamp(this.heroY + (pullY / pullDistance) * 54, 92, H - 64);
+          this.heroX += (pullX / pullDistance) * 54;
+          this.heroY += (pullY / pullDistance) * 54;
           this.burst('ring', originX, originY - 12, 52, '#ef5364');
           this.burst('ring', this.heroX, this.heroY - 12, 72, '#d7bd73');
           // 被拽离地面时脚下擦出的土屑，沿拖拽反方向喷
@@ -8855,6 +9251,7 @@ export class ZheYiShenGame {
     this.adjustPoisons(response.poison);
     this.applyFateStats(response.stats);
     if (response.gainItemId && !this.items.includes(response.gainItemId)) this.acquireItem(response.gainItemId);
+    if (response.removeItemId) this.removeFateItem(response.removeItemId);
     if (this.hasItem('ai-chat')) this.healHero(4);
     this.memories.push(`《${event.title}》他${custom ? '亲口回应' : '选择'}了「${response.label}」`);
     if (this.memories.length > 14) this.memories = this.memories.slice(-14);
@@ -8913,15 +9310,14 @@ export class ZheYiShenGame {
           result: response.result,
           settlement: response.settlement,
           gainItemId: response.gainItemId,
+          removeItemId: response.removeItemId,
+          reward: response.reward,
         },
         snapshot: this.buildLifeSnapshot(),
       }).then((text) => {
         const receipt = this.fateReceipts[receiptIndex];
         if (!text || this.runSerial !== serial || !receipt || receipt.event.id !== event.id || receipt.direction !== direction) return;
-        if (this.fateReceipts.length - 1 === receiptIndex && this.state === 'battle') {
-          this.caption = text;
-          this.captionTime = 7;
-        }
+        if (this.fateReceipts.length - 1 === receiptIndex) this.queueFateEchoCaptions(text);
         receipt.echo = text;
       });
     }
@@ -8963,6 +9359,19 @@ export class ZheYiShenGame {
       this.changeMaxHp(-5);
       this.fateBuild.damageMul *= 1.13;
     }
+  }
+
+  private removeFateItem(id: ItemId): void {
+    if (!this.items.includes(id)) return;
+    this.items = this.items.filter((itemId) => itemId !== id);
+    if (id === 'card-binder') this.binderCards = [];
+    if (id === 'baby-tooth') this.toothReady = false;
+    if (id === 'unsent-phone') this.phoneCharges = 0;
+    if (id === 'retracted-voice') this.voiceCharges = 0;
+    if (id === 'ruma-msg') this.ruCharges = 0;
+    this.feedback.play('page', 0.86);
+    this.feedback.vibrate([10, 18, 10]);
+    this.say(`失去 · ${getItem(id).name}`);
   }
 
   private adjustPoisons(delta: Partial<PoisonVector>): void {
@@ -9323,6 +9732,8 @@ export class ZheYiShenGame {
     this.resultTab = 'seal';
     this.resultStartedAt = performance.now();
     this.feedback.setAmbience(undefined);
+    this.feedback.setMusic(7);
+    this.feedback.setMusicTension(false);
     if (won) this.playVoiceOnce('narrator-final-breath');
     else {
       this.feedback.stopVoice();
@@ -9867,6 +10278,84 @@ export class ZheYiShenGame {
   private say(message: string): void {
     this.toast = message;
     this.toastTime = 1.45;
+  }
+
+  private splitFateEchoCaption(text: string): string[] {
+    const normalized = text.trim().replace(/\s+/g, ' ');
+    if (!normalized) return [];
+    const units = normalized.match(/[^。！？；]+[。！？；]?/g) ?? [normalized];
+    const chunks: string[] = [];
+    for (const unit of units) {
+      if (unit.length <= 28) {
+        chunks.push(unit);
+        continue;
+      }
+      const clauses = unit.match(/[^，、：]+[，、：]?/g) ?? [unit];
+      let current = '';
+      for (const clause of clauses) {
+        if (current && current.length + clause.length > 28) {
+          chunks.push(current);
+          current = '';
+        }
+        if (clause.length <= 28) {
+          current += clause;
+          continue;
+        }
+        if (current) {
+          chunks.push(current);
+          current = '';
+        }
+        for (let offset = 0; offset < clause.length; offset += 28) {
+          chunks.push(clause.slice(offset, offset + 28));
+        }
+      }
+      if (current) chunks.push(current);
+    }
+    // 字数上限只是第一道保险；最终再按真实字体宽度拆成最多两行的页面。
+    // 这里和专用绘制都不调用会补“…”的 wrapLines/fitText，回响原文一字不丢。
+    const pages: string[] = [];
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.font = `bold 11px ${UI_ARCHIVE_FONT_STACK}`;
+    for (const chunk of chunks.filter(Boolean)) {
+      let page = '';
+      for (const character of chunk) {
+        const next = page + character;
+        if (page && this.wrapLinesComplete(next, W - 96).length > 2) {
+          pages.push(page);
+          page = character;
+        } else {
+          page = next;
+        }
+      }
+      if (page) pages.push(page);
+    }
+    ctx.restore();
+    // 算法失配时宁可完整多行显示，也绝不以省略号吞掉 AI 回响。
+    return pages.join('') === normalized ? pages : [normalized];
+  }
+
+  private queueFateEchoCaptions(text: string): void {
+    const chunks = this.splitFateEchoCaption(text);
+    if (!chunks.length) return;
+    // 后到的回响接在现有回响之后，不能覆盖仍未播完的文字。
+    this.fateEchoCaptionQueue.push(...chunks);
+    if (this.state === 'battle'
+      && this.fateEchoCaptionTime <= 0
+      && this.captionTime <= 0
+      && !this.voiceCaption
+      && !this.phoneTranscript) {
+      this.showNextFateEchoCaption();
+    }
+  }
+
+  private showNextFateEchoCaption(): void {
+    const text = this.fateEchoCaptionQueue.shift();
+    if (!text) return;
+    this.fateEchoCaption = text;
+    // 每段至少 4.6 秒；较长的两行字幕最多 6.2 秒，再切下一段。
+    this.fateEchoCaptionDuration = this.clamp(3.2 + text.length * 0.11, 4.6, 6.2);
+    this.fateEchoCaptionTime = this.fateEchoCaptionDuration;
   }
 
   private screenTransitionKind(from: ScreenState, to: ScreenState): ScreenTransitionKind {
@@ -10896,7 +11385,7 @@ export class ZheYiShenGame {
     hostile = false,
     attackProgress = 0,
     action?: XiaoZhangPixelAction,
-    display = 56,
+    display = XIAO_ZHANG_WORLD_DISPLAY,
   ): void {
     const ctx = this.ctx;
     const resolvedAction = action ?? (hostile ? 'backstab' : 'idle');
@@ -10905,10 +11394,12 @@ export class ZheYiShenGame {
       : resolvedAction === 'follow'
         ? Math.floor(this.visualTime * 7) % 4
         : Math.min(3, Math.floor(this.clamp(attackProgress, 0, 0.999) * 4));
-    if (this.pixelXiaoZhang.draw(ctx, x, y, resolvedAction, atlasFrame, faceLeft, display)) return;
+    this.pixelXiaoZhang.draw(ctx, x, y, resolvedAction, atlasFrame, faceLeft, display);
+    return;
     ctx.save();
     ctx.translate(Math.round(x), Math.round(y));
-    if (faceLeft) ctx.scale(-1, 1);
+    const fallbackScale = display / 56;
+    ctx.scale((faceLeft ? -1 : 1) * fallbackScale, fallbackScale);
     const lean = hostile ? Math.round(attackProgress * 4) : 0;
     ctx.fillStyle = 'rgba(8,8,10,.32)';
     ctx.fillRect(-13, 2, 28, 3);
@@ -11127,16 +11618,27 @@ export class ZheYiShenGame {
   }
 
   private renderCaption(): void {
-    if (this.captionTime <= 0 || !this.caption) return;
+    const showingFateEcho = this.fateEchoCaptionTime > 0 && Boolean(this.fateEchoCaption);
+    if (!showingFateEcho && (this.captionTime <= 0 || !this.caption)) return;
     const ctx = this.ctx;
-    const alpha = this.clamp(this.captionTime > 6 ? (7 - this.captionTime) * 2 : this.captionTime / 1.2, 0, 1);
+    const text = showingFateEcho ? this.fateEchoCaption : this.caption;
+    const alpha = showingFateEcho
+      ? this.clamp(Math.min(
+          (this.fateEchoCaptionDuration - this.fateEchoCaptionTime) / 0.24,
+          this.fateEchoCaptionTime / 0.9,
+        ), 0, 1)
+      : this.clamp(this.captionTime > 6 ? (7 - this.captionTime) * 2 : this.captionTime / 1.2, 0, 1);
     const panelY = this.eliteAlertTime > 0 ? 132 : 96;
     ctx.save();
     // 与语音字幕同语言：无底框描边字，直接落在画面上
     ctx.globalAlpha = alpha;
     ctx.textAlign = 'center';
     ctx.font = `bold 11px ${UI_ARCHIVE_FONT_STACK}`;
-    this.drawOutlinedWrapText(this.caption, 180, panelY + 14, W - 96, 15, 2, '#e8e1d3');
+    if (showingFateEcho) {
+      this.drawOutlinedWrapTextComplete(text, 180, panelY + 14, W - 96, 15, '#e8e1d3');
+    } else {
+      this.drawOutlinedWrapText(text, 180, panelY + 14, W - 96, 15, 2, '#e8e1d3');
+    }
     ctx.restore();
   }
 
@@ -11334,25 +11836,233 @@ export class ZheYiShenGame {
     ctx.restore();
   }
 
+  /** 封面上的次要入口要像漫画页码，不与主标题和开始动作争夺视线。 */
+  private drawTitleUtilityButton(
+    rect: { x: number; y: number; width: number; height: number },
+    label: string,
+    accent: string,
+  ): void {
+    const ctx = this.ctx;
+    const interaction = this.actionState(rect);
+    const active = interaction.hovered;
+    const visual = {
+      x: rect.x + 2,
+      y: rect.y + 3 + interaction.offset,
+      width: rect.width - 4,
+      height: rect.height - 6,
+    };
+    ctx.save();
+    ctx.fillStyle = active ? 'rgba(13,14,17,.82)' : 'rgba(5,6,8,.58)';
+    ctx.fillRect(visual.x, visual.y, visual.width, visual.height);
+    ctx.strokeStyle = active ? UI_PALETTE.paper : 'rgba(201,193,178,.38)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(visual.x + 0.5, visual.y + 0.5, visual.width - 1, visual.height - 1);
+    ctx.fillStyle = active ? accent : 'rgba(181,176,167,.86)';
+    ctx.fillRect(visual.x + 7, visual.y + visual.height - 4, active ? 18 : 10, 1);
+    ctx.fillStyle = active ? UI_PALETTE.paperLight : UI_PALETTE.paperDim;
+    ctx.font = `bold 8px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, visual.x + visual.width / 2, visual.y + visual.height / 2 - 1);
+    ctx.textBaseline = 'alphabetic';
+    if (active) this.drawFocusCorners(visual.x, visual.y, visual.width, visual.height, accent);
+    ctx.restore();
+  }
+
+  /** 封面唯一主动作沿用漫画的黑底、月白字与一笔旧红，不再使用厚重印章框。 */
+  private drawTitleStartButton(intro: number): void {
+    const ctx = this.ctx;
+    const rect = TITLE_START_RECT;
+    const interaction = this.actionState(rect);
+    const active = interaction.hovered;
+    const pulse = this.reducedMotion ? 0.5 : (Math.sin(this.visualTime * 2.1) + 1) / 2;
+    const y = rect.y + interaction.offset;
+    ctx.save();
+    ctx.globalAlpha = this.clamp((intro - 0.7) / 0.25, 0, 1);
+    ctx.fillStyle = active ? 'rgba(13,14,17,.86)' : 'rgba(5,6,8,.50)';
+    ctx.fillRect(rect.x, y, rect.width, rect.height);
+    ctx.strokeStyle = active ? 'rgba(232,225,211,.82)' : 'rgba(181,176,167,.52)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(rect.x + 0.5, y + 0.5, rect.width - 1, rect.height - 1);
+    ctx.strokeStyle = active ? UI_PALETTE.oldRed : 'rgba(143,60,75,.74)';
+    ctx.beginPath();
+    ctx.moveTo(rect.x + 14, y + rect.height - 6.5);
+    ctx.lineTo(rect.x + 48 + pulse * 18, y + rect.height - 6.5);
+    ctx.stroke();
+    ctx.globalAlpha *= 0.45 + pulse * 0.4;
+    ctx.fillStyle = UI_PALETTE.breath;
+    ctx.fillRect(rect.x + 17, y + 12, 3, 3);
+    ctx.globalAlpha = this.clamp((intro - 0.7) / 0.25, 0, 1);
+    ctx.fillStyle = active ? UI_PALETTE.paperLight : UI_PALETTE.paper;
+    ctx.font = `bold 14px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('开始呼吸', rect.x + rect.width / 2, y + rect.height / 2 - 1);
+    ctx.textBaseline = 'alphabetic';
+    if (active) this.drawFocusCorners(rect.x, y, rect.width, rect.height, UI_PALETTE.oldRed);
+    ctx.restore();
+  }
+
+  /** 游戏名先是这一“身”，随后最后一字像旧纸显影一样缓慢成为这一“生”。 */
+  private drawTitleMorph(elapsed: number, intro: number): void {
+    const ctx = this.ctx;
+    const rawMorph = this.clamp((elapsed - 2.4) / 2.8, 0, 1);
+    const morph = rawMorph * rawMorph * (3 - 2 * rawMorph);
+    const titleAlpha = this.clamp((intro - 0.2) / 0.3, 0, 1);
+    const titleY = 91 + Math.round((1 - intro) * 6);
+    const prefix = '这一';
+
+    ctx.save();
+    ctx.font = `bold 42px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.textAlign = 'left';
+    const prefixWidth = ctx.measureText(prefix).width;
+    const lastWidth = Math.max(ctx.measureText('身').width, ctx.measureText('生').width);
+    const startX = 180 - (prefixWidth + lastWidth) / 2;
+    const lastX = startX + prefixWidth;
+
+    const drawLayer = (offsetX: number, offsetY: number, color: string, alpha: number): void => {
+      ctx.fillStyle = color;
+      ctx.globalAlpha = titleAlpha * alpha;
+      ctx.fillText(prefix, startX + offsetX, titleY + offsetY);
+      ctx.globalAlpha = titleAlpha * alpha * (1 - morph);
+      ctx.fillText('身', lastX + offsetX, titleY + offsetY);
+      ctx.globalAlpha = titleAlpha * alpha * morph;
+      ctx.fillText('生', lastX + offsetX, titleY + offsetY + Math.round((1 - morph) * 2));
+    };
+
+    drawLayer(2, 2, 'rgba(3,4,6,.88)', 1);
+    drawLayer(0, 0, UI_PALETTE.paperLight, 1);
+    if (morph > 0 && morph < 1) {
+      ctx.globalAlpha = titleAlpha * Math.sin(morph * Math.PI) * 0.55;
+      ctx.strokeStyle = UI_PALETTE.oldRed;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(lastX + lastWidth * 0.18, titleY + 5);
+      ctx.lineTo(lastX + lastWidth * 0.82, titleY + 5);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  /** 约六秒一息：吸气渐强、短暂停住、呼气缓慢落回，避免机械正弦闪烁。 */
+  private titleBreathAmount(): number {
+    if (this.reducedMotion) return 0.36;
+    const cycle = (this.visualTime % 6.2) / 6.2;
+    if (cycle < 0.36) {
+      const t = cycle / 0.36;
+      return t * t * (3 - 2 * t);
+    }
+    if (cycle < 0.46) return 1;
+    if (cycle < 0.88) {
+      const t = (cycle - 0.46) / 0.42;
+      const eased = t * t * (3 - 2 * t);
+      return 1 - eased;
+    }
+    return 0;
+  }
+
+  /** 憋气峰值的两次短截帧；只闪局部剪影，不让整屏高频闪烁。 */
+  private titleBreathCutPulse(): number {
+    if (this.reducedMotion) return 0;
+    const cycle = (this.visualTime % 6.2) / 6.2;
+    if (cycle >= 0.372 && cycle < 0.386) return 1;
+    if (cycle >= 0.425 && cycle < 0.438) return 0.72;
+    return 0;
+  }
+
+  private drawTitleCutoutFlash(
+    pulse: number,
+    intro: number,
+    drawX: number,
+    drawY: number,
+    drawWidth: number,
+    drawHeight: number,
+  ): void {
+    if (pulse <= 0 || !this.titleCoverFlare) return;
+    const ctx = this.ctx;
+    const cutouts: ReadonlyArray<ReadonlyArray<readonly [number, number]>> = [
+      [[0, 104], [108, 117], [154, 228], [131, 369], [74, 443], [0, 454]],
+      [[252, 98], [360, 71], [360, 452], [309, 425], [252, 344], [230, 219]],
+      [[150, 402], [209, 399], [224, 526], [198, 559], [157, 552], [137, 479]],
+    ];
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    ctx.globalAlpha = this.clamp(intro / 0.55, 0, 1) * pulse * 0.34;
+    ctx.filter = 'brightness(1.22) contrast(1.30) saturate(.72)';
+    for (let index = 0; index < cutouts.length; index += 1) {
+      const points = cutouts[index];
+      if (!points) continue;
+      ctx.save();
+      ctx.beginPath();
+      points.forEach(([x, y], pointIndex) => {
+        if (pointIndex === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.closePath();
+      ctx.clip();
+      const offsetX = index === 0 ? -1.4 : index === 1 ? 1.2 : 0.6;
+      const offsetY = index === 2 ? -1.2 : 0.4;
+      ctx.drawImage(
+        this.titleCoverFlare,
+        drawX + offsetX,
+        drawY + offsetY,
+        drawWidth,
+        drawHeight,
+      );
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
   private renderTitleLifePath(intro: number): void {
     const ctx = this.ctx;
+    const breath = this.titleBreathAmount();
+    const cutPulse = this.titleBreathCutPulse();
     ctx.fillStyle = '#121318';
     ctx.fillRect(0, 0, W, H);
-    if (this.titleCover?.complete && this.titleCover.naturalWidth === W && this.titleCover.naturalHeight === H) {
+    if (this.titleCover?.complete && this.titleCover.naturalWidth > 0 && this.titleCover.naturalHeight > 0) {
       ctx.save();
       ctx.globalAlpha = this.clamp(intro / 0.55, 0, 1);
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(this.titleCover, 0, 0, W, H);
+      ctx.imageSmoothingEnabled = true;
+      // 背景本身完成一次伪呼吸：吸气时镜头推进并略微上抬，亮度与反差同步抬升；
+      // 呼气时慢慢回到暗处。标题和按钮不参与缩放，避免整页像 UI 在跳动。
+      const drift = this.reducedMotion ? 0 : Math.sin(this.visualTime * 0.12) * 0.55;
+      const zoom = this.reducedMotion ? 1.018 : 1.014 + breath * 0.032;
+      const drawWidth = W * zoom;
+      const drawHeight = H * zoom;
+      const cutOffset = cutPulse > 0 ? (cutPulse > 0.9 ? -0.8 : 0.65) : 0;
+      const drawX = (W - drawWidth) / 2 + drift + cutOffset;
+      const drawY = (H - drawHeight) / 2 - breath * 4.2 - cutPulse * 0.5;
+      ctx.filter = this.reducedMotion
+        ? 'brightness(.96) contrast(1.08) saturate(.90)'
+        : `brightness(${0.89 + breath * 0.14 + cutPulse * 0.035}) contrast(${1.06 + breath * 0.06 + cutPulse * 0.04}) saturate(${0.86 + breath * 0.10})`;
+      ctx.drawImage(this.titleCover, drawX, drawY, drawWidth, drawHeight);
+      if (this.titleCoverFlare?.complete
+        && this.titleCoverFlare.naturalWidth > 0
+        && this.titleCoverFlare.naturalHeight > 0) {
+        const confrontation = this.reducedMotion ? 0.28 : 0.06 + breath * 0.52;
+        ctx.globalAlpha *= confrontation;
+        ctx.drawImage(this.titleCoverFlare, drawX, drawY, drawWidth, drawHeight);
+      }
       ctx.restore();
+      this.drawTitleCutoutFlash(cutPulse, intro, drawX, drawY, drawWidth, drawHeight);
     } else {
       this.fillSteppedVertical('#312a2b', '#17191d', 10);
     }
-    ctx.fillStyle = 'rgba(7,8,10,.28)';
+    ctx.fillStyle = `rgba(7,8,10,${this.reducedMotion ? 0.10 : 0.17 - breath * 0.08})`;
     ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = 'rgba(7,8,10,.32)';
-    ctx.fillRect(0, 0, W, 142);
-    ctx.fillStyle = 'rgba(7,8,10,.22)';
-    ctx.fillRect(46, 446, 268, 178);
+    const titleVeil = ctx.createLinearGradient(0, 0, 0, 178);
+    titleVeil.addColorStop(0, 'rgba(3,4,6,.76)');
+    titleVeil.addColorStop(0.72, 'rgba(3,4,6,.30)');
+    titleVeil.addColorStop(1, 'rgba(3,4,6,0)');
+    ctx.fillStyle = titleVeil;
+    ctx.fillRect(0, 0, W, 166);
+    const footerVeil = ctx.createLinearGradient(0, 448, 0, H);
+    footerVeil.addColorStop(0, 'rgba(3,4,6,0)');
+    footerVeil.addColorStop(0.38, 'rgba(3,4,6,.20)');
+    footerVeil.addColorStop(1, 'rgba(3,4,6,.84)');
+    ctx.fillStyle = footerVeil;
+    ctx.fillRect(0, 448, W, H - 448);
     ctx.globalAlpha = 0.08;
     drawDeterministicWear(ctx, 0, 0, W, H, 20260724, 4, '#c9c1b2', 1);
     ctx.globalAlpha = 1;
@@ -11367,69 +12077,57 @@ export class ZheYiShenGame {
 
     ctx.textAlign = 'center';
     ctx.globalAlpha = this.clamp((intro - 0.02) / 0.28, 0, 1);
-    ctx.fillStyle = UI_PALETTE.paper;
-    ctx.font = `9px ${UI_FONT_STACK}`;
-    ctx.fillText('从第一口气，到最后一盏灯。', 180, 32);
-
-    ctx.save();
-    ctx.globalAlpha = this.clamp((intro - 0.2) / 0.3, 0, 1);
-    ctx.translate(0, Math.round((1 - intro) * 6));
-    ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(5,6,8,.76)';
-    ctx.font = `bold 42px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillText('这一身', 182, 94);
-    ctx.fillStyle = UI_PALETTE.paperLight;
-    ctx.font = `bold 42px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillText('这一身', 180, 92);
-    ctx.fillStyle = UI_PALETTE.paper;
-    ctx.font = `11px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillText('这一身，最后都穿成了这一生。', 180, 122);
-    ctx.restore();
-
-    const heroReveal = this.clamp((intro - 0.38) / 0.34, 0, 1);
-    ctx.globalAlpha = heroReveal;
-    const heroY = 340 + Math.round((1 - heroReveal) * 9);
-    this.drawHero(180, heroY, 1.48, []);
-    const breathPulse = this.reducedMotion ? 0.5 : (Math.sin(this.visualTime * 2.2) + 1) / 2;
-    ctx.save();
-    ctx.globalAlpha = 0.38 + breathPulse * 0.42;
-    ctx.strokeStyle = UI_PALETTE.breath;
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.fillText('从第一口气，到最后一盏灯', 180, 31);
+    ctx.strokeStyle = 'rgba(181,176,167,.24)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    this.addPixelOctagonPath(ctx, 211, heroY - 39, 4 + Math.round(breathPulse * 2));
+    ctx.moveTo(116, 40.5);
+    ctx.lineTo(244, 40.5);
     ctx.stroke();
-    ctx.restore();
-    ctx.globalAlpha = this.clamp((intro - 0.58) / 0.28, 0, 1);
-    drawLifeChapterTrack(ctx, 62, 418, 236, 8, 0, '降生|童年|少年|青年|成年|中年|老年|死亡', 0);
 
-    ctx.globalAlpha = this.clamp((intro - 0.7) / 0.25, 0, 1);
-    this.drawBreathActionButton(TITLE_START_RECT, '开始呼吸', UI_PALETTE.hospitalBlueGray);
+    this.drawTitleMorph(elapsed, intro);
+    ctx.globalAlpha = this.clamp((intro - 0.34) / 0.3, 0, 1);
+    ctx.textAlign = 'center';
     ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `9px ${UI_FONT_STACK}`;
-    ctx.fillText('从第一口气开始', 180, 563);
+    ctx.font = `9px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText('这一身，最后都穿成了这一生。', 180, 119);
+
+    this.drawTitleStartButton(intro);
+    ctx.globalAlpha = this.clamp((intro - 0.72) / 0.24, 0, 1);
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.fillText('按下以后，和这一生正面相见', 180, 582);
 
     ctx.globalAlpha = 1;
-    this.drawBreathActionButton(
+    this.drawTitleUtilityButton(
       TITLE_AUDIO_RECT,
       this.feedback.audioEnabled() ? '声音开' : '声音关',
       this.feedback.audioEnabled() ? UI_PALETTE.hospitalBlueGray : '#57585d',
     );
-    this.drawBreathActionButton(TITLE_CODEX_RECT, '物证册', UI_PALETTE.oldRed);
-    ctx.textAlign = 'right';
-    ctx.fillStyle = 'rgba(8, 8, 12, 0.78)';
-    ctx.fillRect(229, 591, 119, 29);
-    ctx.strokeStyle = UI_PALETTE.paperDim;
-    ctx.lineWidth = 1;
-    ctx.strokeRect(229.5, 591.5, 118, 28);
-    ctx.fillStyle = UI_PALETTE.paperLight;
-    ctx.font = `bold 18px ${UI_FONT_STACK}`;
-    ctx.fillText('AI生成内容', 342, 613);
+    this.drawTitleUtilityButton(TITLE_CODEX_RECT, '物证册', UI_PALETTE.oldRed);
+    const disclosurePulse = this.reducedMotion ? 0.45 : (Math.sin(this.visualTime * 1.5) + 1) / 2;
+    ctx.textAlign = 'center';
+    ctx.globalAlpha = 0.50 + disclosurePulse * 0.12;
+    ctx.fillStyle = UI_PALETTE.breath;
+    ctx.fillRect(119, 613, 3, 3);
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `18px ${UI_FONT_STACK}`;
+    ctx.fillText('AI生成内容', 180, 620);
+    ctx.globalAlpha = 1;
   }
 
   private renderOrigin(): void {
-    if (this.aiOriginState === 'requesting' || this.aiOriginState === 'idle' || !this.origin) {
-      if (this.aiOriginState === 'error') this.renderOriginError();
-      else this.renderOriginLoading();
+    if (this.aiOriginState === 'error') {
+      this.renderOriginError();
+      return;
+    }
+    if (!this.originComicComplete()
+      || this.aiOriginState === 'requesting'
+      || this.aiOriginState === 'idle'
+      || !this.origin) {
+      this.renderOriginComic();
       return;
     }
     if (this.originLedgerOpen && this.ledgerEntries.length) {
@@ -11448,11 +12146,17 @@ export class ZheYiShenGame {
     applyPixelDiscipline(ctx);
     ctx.fillStyle = UI_PALETTE.night;
     ctx.fillRect(0, 0, W, H);
-    drawArchiveFrame(ctx, 10, 10, 340, 620, UI_PALETTE.paper, UI_PALETTE.ink, UI_PALETTE.oldRed);
-    drawPaperFold(ctx, 319, 17, 24, UI_PALETTE.paper, '#b8ad99', UI_PALETTE.ink);
-    ctx.globalAlpha = 0.18;
-    drawDeterministicWear(ctx, 20, 20, 320, 596, 701, 7, '#8f8577', 1);
-    ctx.globalAlpha = 1;
+    if (this.originDossierBackground?.complete
+      && this.originDossierBackground.naturalWidth > 0
+      && this.originDossierBackground.naturalHeight > 0) {
+      ctx.drawImage(this.originDossierBackground, 0, 0, W, H);
+    } else {
+      drawArchiveFrame(ctx, 10, 10, 340, 620, UI_PALETTE.paper, UI_PALETTE.ink, UI_PALETTE.oldRed);
+      drawPaperFold(ctx, 319, 17, 24, UI_PALETTE.paper, '#b8ad99', UI_PALETTE.ink);
+      ctx.globalAlpha = 0.18;
+      drawDeterministicWear(ctx, 20, 20, 320, 596, 701, 7, '#8f8577', 1);
+      ctx.globalAlpha = 1;
+    }
 
     ctx.textAlign = 'left';
     ctx.fillStyle = UI_PALETTE.ink;
@@ -11657,84 +12361,126 @@ export class ZheYiShenGame {
     this.drawBreathActionButton(LEDGER_NEWER_RECT, '更新', UI_PALETTE.oldRed, this.ledgerPage > 0);
   }
 
-  private renderOriginLoading(): void {
+  private renderOriginComic(): void {
     const ctx = this.ctx;
-    const t = this.originElapsed;
-    const fields = [
-      ['出生时刻', '还没有人记住'],
-      ['出生地点', '纸背后传来推车声'],
-      ['家庭', '有人把门轻轻带上'],
-      ['身体', '轮廓还没有长完整'],
-      ['最早记忆', '第一件小事仍压在纸下'],
-    ] as const;
-    const activeLine = Math.min(fields.length - 1, Math.floor(t / 1.35));
+    const elapsed = this.originComicElapsed;
+    const sceneIndex = originComicSceneIndex(elapsed);
+    const pageIndex = sceneIndex < 4 ? 0 : 1;
+    const sceneOnPage = sceneIndex % 4;
+    const page = this.originComicPages[pageIndex];
+    const sceneStart = ORIGIN_COMIC_SCENE_STARTS[sceneIndex] ?? 0;
+    const sceneDuration = ORIGIN_COMIC_SCENE_DURATIONS[sceneIndex] ?? 5;
+    const sceneProgress = this.clamp(
+      (elapsed - sceneStart) / sceneDuration,
+      0,
+      1,
+    );
+    const aiReady = this.aiOriginState === 'gpt' && Boolean(this.origin);
+    const aiFailed = this.aiOriginState === 'error';
+    const fadeIn = this.reducedMotion ? 1 : this.clamp(sceneProgress / 0.12, 0, 1);
+    const shouldFadeFinalScene = aiReady || aiFailed;
+    const fadeOut = this.reducedMotion
+      || (sceneIndex === ORIGIN_COMIC_SCENES.length - 1 && !shouldFadeFinalScene)
+      ? 1
+      : 1 - this.clamp((sceneProgress - 0.86) / 0.14, 0, 1);
+    const artAlpha = fadeIn * fadeOut;
+    const captionLines = ORIGIN_COMIC_SCENES[sceneIndex]!;
+    const captionCharacters = captionLines.reduce((total, line) => total + line.length, 0);
+    const timedCaptionProgress = originComicCaptionProgress(sceneIndex, elapsed - sceneStart);
+    const captionProgress = this.reducedMotion
+      ? 1
+      : timedCaptionProgress ?? this.clamp((sceneProgress - 0.10) / 0.78, 0, 1);
+    let visibleCharacters = Math.floor(captionCharacters * captionProgress);
 
     applyPixelDiscipline(ctx);
-    ctx.fillStyle = UI_PALETTE.night;
+    ctx.fillStyle = '#030405';
     ctx.fillRect(0, 0, W, H);
-    drawArchiveFrame(ctx, 10, 10, 340, 620, UI_PALETTE.paper, UI_PALETTE.ink, UI_PALETTE.oldRed);
-    drawPaperFold(ctx, 319, 13, 28, UI_PALETTE.paper, '#b8ad99', UI_PALETTE.ink);
-    ctx.globalAlpha = 0.14;
-    drawDeterministicWear(ctx, 18, 18, 324, 604, 700 + this.originAttempt, 7, '#8f8577', 1);
-    ctx.globalAlpha = 1;
-    ctx.textAlign = 'left';
-    ctx.fillStyle = UI_PALETTE.ink;
-    ctx.font = `bold 15px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillText('出生登记处', 30, 47);
     ctx.textAlign = 'right';
-    ctx.fillStyle = '#5e574d';
+    ctx.globalAlpha = 0.34 * fadeIn;
+    ctx.fillStyle = '#b5b0a7';
     ctx.font = `9px ${UI_FONT_STACK}`;
-    ctx.fillText(this.originAttempt > 1 ? '重新登记中' : `第 ${this.runSeed.toString(16).toUpperCase().padStart(8, '0')} 号`, 330, 46);
-    drawLifeChapterTrack(ctx, 30, 69, 300, 8, 0, '降生|童年|少年|青年|成年|中年|老年|死亡', 0);
+    ctx.fillText(
+      `${String(sceneIndex + 1).padStart(2, '0')} / ${String(ORIGIN_COMIC_SCENES.length).padStart(2, '0')}`,
+      342,
+      29,
+    );
+    ctx.globalAlpha = 1;
 
-    fields.forEach(([label, value], index) => {
-      const y = 115 + index * 52;
-      const revealed = index <= activeLine;
-      ctx.textAlign = 'left';
-      ctx.fillStyle = revealed ? '#625b51' : '#aaa08f';
-      ctx.font = `8px ${UI_FONT_STACK}`;
-      ctx.fillText(label, 30, y);
-      ctx.fillStyle = revealed ? (index === activeLine ? UI_PALETTE.oldRed : UI_PALETTE.ink) : '#aaa08f';
-      ctx.font = index === activeLine ? `bold 10px ${UI_ARCHIVE_FONT_STACK}` : `9px ${UI_ARCHIVE_FONT_STACK}`;
-      ctx.fillText(revealed ? value : '· · · · · · · ·', 95, y);
-      drawStitchDivider(ctx, 30, y + 16, 300, 'horizontal', revealed ? '#877d6e' : '#b8ad99', 4, 4);
-    });
+    if (page?.complete && page.naturalWidth > 0 && page.naturalHeight > 0) {
+      const sourceHeight = Math.floor(page.naturalHeight / 4);
+      const sourceY = sceneOnPage * sourceHeight;
+      const breathScale = this.reducedMotion ? 1 : 1 + Math.sin(elapsed * 0.85) * 0.004;
+      const drawWidth = 360 * breathScale;
+      const drawHeight = 160 * breathScale;
+      ctx.save();
+      ctx.globalAlpha = artAlpha;
+      ctx.drawImage(
+        page,
+        0,
+        sourceY,
+        page.naturalWidth,
+        sourceHeight,
+        (W - drawWidth) / 2,
+        92 - (drawHeight - 160) / 2,
+        drawWidth,
+        drawHeight,
+      );
+      ctx.restore();
 
-    const pulse = this.reducedMotion ? 0.5 : (Math.sin(t * 2.2) + 1) / 2;
-    const breathOffsets = [[-15, 2, 11], [0, -4, 15], [16, 3, 10], [-3, 10, 9]] as const;
-    ctx.save();
-    ctx.globalAlpha = 0.32 + pulse * 0.34;
-    ctx.fillStyle = UI_PALETTE.hospitalBlueGray;
-    for (const [dx, dy, radius] of breathOffsets) {
-      ctx.beginPath();
-      this.addPixelOctagonPath(ctx, 180 + dx, 430 + dy, radius + Math.round(pulse * 2));
-      ctx.fill();
+      const topFade = ctx.createLinearGradient(0, 82, 0, 126);
+      topFade.addColorStop(0, '#030405');
+      topFade.addColorStop(1, 'rgba(3,4,5,0)');
+      ctx.fillStyle = topFade;
+      ctx.fillRect(0, 82, W, 46);
+      const bottomFade = ctx.createLinearGradient(0, 214, 0, 264);
+      bottomFade.addColorStop(0, 'rgba(3,4,5,0)');
+      bottomFade.addColorStop(1, '#030405');
+      ctx.fillStyle = bottomFade;
+      ctx.fillRect(0, 212, W, 54);
     }
-    ctx.fillStyle = UI_PALETTE.paperLight;
-    ctx.fillRect(177, 423, 5, 5);
-    ctx.restore();
 
     ctx.textAlign = 'center';
-    ctx.fillStyle = UI_PALETTE.ink;
-    ctx.font = `bold 11px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillText('第一口气，正在变成一个人。', 180, 481);
-    ctx.fillStyle = '#625b51';
-    ctx.font = `9px ${UI_FONT_STACK}`;
-    ctx.fillText(this.originAttempt > 1 ? '上一页没赶上，登记处正在重写' : '家庭、地方和外号都由这一局生成', 180, 513);
-    ctx.fillText('没有完成登记，就不会拿假故事开局', 180, 532);
-    this.drawAIDiagnosticBadge(28, 540, 304);
-    if (this.originLongWaitReady()) {
-      ctx.fillStyle = UI_PALETTE.oldRed;
-      ctx.font = `9px ${UI_ARCHIVE_FONT_STACK}`;
-      ctx.fillText('这页仍在登记，不会重复发起请求', 180, 568);
-      ctx.fillStyle = '#766f64';
-      ctx.font = `8px ${UI_FONT_STACK}`;
-      ctx.fillText('明确失败后才会出现重试入口', 180, 586);
-    } else {
-      ctx.fillStyle = UI_PALETTE.oldRed;
-      ctx.font = `9px ${UI_ARCHIVE_FONT_STACK}`;
-      ctx.fillText('登记的人还没把这一页递回来', 180, 580);
+    ctx.globalAlpha = fadeIn * fadeOut;
+    ctx.fillStyle = '#eee9df';
+    ctx.font = `bold 14px ${UI_ARCHIVE_FONT_STACK}`;
+    let lastVisibleLine = '';
+    let lastVisibleLineIndex = 0;
+    captionLines.forEach((line, index) => {
+      const shown = line.slice(0, Math.max(0, visibleCharacters));
+      visibleCharacters -= line.length;
+      if (!shown) return;
+      ctx.fillText(shown, 180, 324 + index * 31);
+      lastVisibleLine = shown;
+      lastVisibleLineIndex = index;
+    });
+    const fullyTyped = captionProgress >= 1;
+    if (!this.reducedMotion && !fullyTyped && lastVisibleLine && Math.floor(elapsed * 3.2) % 2 === 0) {
+      const caretX = 180 + ctx.measureText(lastVisibleLine).width / 2 + 4;
+      ctx.fillStyle = '#c8c2b8';
+      ctx.fillRect(caretX, 313 + lastVisibleLineIndex * 31, 2, 13);
     }
+    ctx.globalAlpha = 1;
+
+    if (aiReady) {
+      this.drawBreathActionButton(
+        ORIGIN_COMIC_SKIP_RECT,
+        '人生剧本已写好 · 翻开档案',
+        UI_PALETTE.hospitalBlueGray,
+      );
+    } else {
+      const pulse = this.reducedMotion ? 0.72 : 0.44 + (Math.sin(elapsed * 2.15) + 1) * 0.18;
+      const dots = aiFailed ? '' : '·'.repeat(1 + Math.floor(elapsed * 1.4) % 3);
+      ctx.globalAlpha = pulse;
+      ctx.textAlign = 'center';
+      ctx.fillStyle = aiFailed ? '#c5827d' : '#aebbc0';
+      ctx.font = `10px ${UI_FONT_STACK}`;
+      ctx.fillText(
+        aiFailed ? 'AI 生成人生剧本暂时中断' : `AI 正在生成本局人生剧本 ${dots}`,
+        180,
+        594,
+      );
+    }
+    ctx.globalAlpha = 1;
   }
 
   private renderOriginError(): void {
@@ -11753,8 +12499,10 @@ export class ZheYiShenGame {
     ctx.fillStyle = '#625b51'; ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
     this.wrapText('没有使用兜底人物，也不会带着假故事开局。', 180, 322, 260, 16, 2);
     this.drawAIDiagnosticBadge(28, 348, 304);
-    this.drawBreathActionButton({ x: 73, y: 395, width: 214, height: 70 }, '重新等他出生', UI_PALETTE.hospitalBlueGray);
-    ctx.fillStyle = '#766f64'; ctx.font = `9px ${UI_FONT_STACK}`; ctx.fillText('Enter / 空格也可重试', 180, 501);
+    this.drawBreathActionButton(ORIGIN_RETRY_RECT, '重新等他出生', UI_PALETTE.hospitalBlueGray);
+    this.drawBreathActionButton(ORIGIN_ERROR_HOME_RECT, '回到封面', '#57585d');
+    this.drawBreathActionButton(ORIGIN_ERROR_CODEX_RECT, '打开物证册', UI_PALETTE.oldRed);
+    ctx.fillStyle = '#766f64'; ctx.font = `9px ${UI_FONT_STACK}`; ctx.fillText('Enter / 空格也可重试', 180, 558);
   }
 
   private renderFateEvent(): void {
@@ -12054,7 +12802,9 @@ export class ZheYiShenGame {
     ] as const;
     const [title, detail] = lines[step]!;
     ctx.save();
-    drawCutCornerPanel(ctx, 38, 514, 284, 48, 'rgba(18,18,24,.92)', UI_PALETTE.hospitalBlueGray, 3, 1);
+    ctx.shadowColor = 'rgba(8, 8, 12, .95)';
+    ctx.shadowBlur = 3;
+    ctx.shadowOffsetY = 1;
     ctx.fillStyle = UI_PALETTE.oldRed;
     ctx.fillRect(50, 525, 3, 24);
     ctx.textAlign = 'left';
@@ -12084,7 +12834,7 @@ export class ZheYiShenGame {
     ctx.fillStyle = '#3a342d';
     ctx.font = `bold 20px ${UI_ARCHIVE_FONT_STACK}`;
     ctx.fillText('一起入职的小张', 180, 224);
-    this.drawXiaoZhangFigure(180, 308, false, false, 0, 'idle', 72);
+    this.drawXiaoZhangFigure(180, 308, false, false, 0, 'idle', XIAO_ZHANG_PROMPT_DISPLAY);
     ctx.fillStyle = '#5b5348';
     ctx.font = `11px ${UI_ARCHIVE_FONT_STACK}`;
     ctx.fillText('「你先忙，我这边还有点没弄完。」', 180, 330);
@@ -12919,16 +13669,17 @@ export class ZheYiShenGame {
     ctx.font = `8px ${UI_FONT_STACK}`;
     ctx.fillText('声音与显示', 142, 144);
     this.renderPauseVolume(PAUSE_SETTING_VOLUME_RECT, '总声', this.feedback.getVolume());
+    this.renderPauseVolume(PAUSE_SETTING_MUSIC_RECT, '配乐', this.feedback.getMixVolume('music'));
     this.renderPauseVolume(PAUSE_SETTING_AMBIENCE_RECT, '环境', this.feedback.getMixVolume('ambience'));
     this.renderPauseVolume(PAUSE_SETTING_VOICE_RECT, '人声', this.feedback.getMixVolume('voice'));
     this.renderPauseVolume(PAUSE_SETTING_EFFECTS_RECT, '音效', this.feedback.getMixVolume('effects'));
     this.renderPauseToggle(PAUSE_SETTING_HAPTICS_RECT, '振动', this.feedback.hapticsEnabled());
     this.renderPauseToggle(PAUSE_SETTING_MOTION_RECT, '减少动态', this.reducedMotion);
     this.renderPauseToggle(PAUSE_SETTING_CONTRAST_RECT, '高对比 HUD', this.highContrastHud);
-    drawStitchDivider(ctx, 142, 462, 180, 'horizontal', '#4d494d', 4, 3);
+    drawStitchDivider(ctx, 142, 500, 180, 'horizontal', '#4d494d', 4, 3);
     ctx.fillStyle = '#8d8783';
     ctx.font = `8px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText('环境、人声与物件声，可以各自留在这一页。', 142, 484, 180, 11, 2);
+    this.wrapText('配乐、环境、人声与物件声，可以各自留在这一页。', 142, 520, 180, 11, 2);
   }
 
   private renderPauseVolume(
@@ -14132,7 +14883,7 @@ export class ZheYiShenGame {
           ctx.textAlign = 'center';
           ctx.fillText(
             `${enemy.queueNumber ?? 42}号 · 三诊室`,
-            this.clamp(enemy.x, 72, W - 72),
+            enemy.x,
             enemy.y - enemy.radius - 22,
           );
           ctx.fillStyle = '#d87355';
@@ -15108,15 +15859,17 @@ export class ZheYiShenGame {
       : false;
     let storyDrawn = false;
     if (!skillDrawn && enemy.xiaoZhang) {
-      this.drawXiaoZhangFigure(enemy.x, enemy.y, faceLeft, true, attackProgress, 'backstab', 64);
+      this.drawXiaoZhangFigure(enemy.x, enemy.y, faceLeft, true, attackProgress, 'backstab');
       storyDrawn = true;
     }
     if (enemy.shadowVeil) ctx.save();
     if (enemy.shadowVeil) ctx.globalAlpha = 0.32;
-    const pixelDrawn = skillDrawn || storyDrawn || this.pixelEnemies.draw(ctx, enemy, attacking, attackProgress, faceLeft);
+    if (!skillDrawn && !storyDrawn) {
+      this.pixelEnemies.draw(ctx, enemy, attacking, attackProgress, faceLeft);
+    }
     if (enemy.shadowVeil) ctx.restore();
     ctx.save();
-    ctx.translate(enemy.x, enemy.y + (pixelDrawn ? 0 : Math.sin(enemy.age * 3) * 2));
+    ctx.translate(enemy.x, enemy.y);
     if (enemy.elite || enemy.boss) {
       this.drawPixelWarningRing(
         0,
@@ -15150,10 +15903,8 @@ export class ZheYiShenGame {
       }
     }
     if (enemy.xiaoZhangBox) this.drawXiaoZhangBadgeLocal();
-    if (pixelDrawn) {
-      ctx.restore();
-      return;
-    }
+    ctx.restore();
+    return;
     if (enemy.flash > 0) ctx.globalAlpha = 0.5;
     if (enemy.type === 'fear') {
       ctx.fillStyle = '#15141b';
@@ -15407,6 +16158,7 @@ export class ZheYiShenGame {
   }
 
   private drawHeroVectorReference(x: number, y: number, scale: number, equipped: ItemId[]): void {
+    throw new Error('程序化主角矢量降级动画已取消');
     const ctx = this.ctx;
     const owns = (id: ItemId) => equipped.includes(id);
     const dna: AppearanceDNA = this.state === 'title' ? DEFAULT_APPEARANCE : (this.origin?.appearance ?? DEFAULT_APPEARANCE);
@@ -17230,6 +17982,24 @@ export class ZheYiShenGame {
     return lines;
   }
 
+  /** 命运回响专用完整断行：只换行，永远不截字、也不人为添加省略号。 */
+  private wrapLinesComplete(text: string, maxWidth: number): string[] {
+    const ctx = this.ctx;
+    const lines: string[] = [];
+    let line = '';
+    for (const character of text) {
+      const next = line + character;
+      if (ctx.measureText(next).width > maxWidth && line) {
+        lines.push(line);
+        line = character;
+      } else {
+        line = next;
+      }
+    }
+    if (line) lines.push(line);
+    return lines;
+  }
+
   private wrapText(text: string, x: number, y: number, maxWidth: number, lineHeight: number, maxLines: number): void {
     const ctx = this.ctx;
     this.wrapLines(text, maxWidth, maxLines)
@@ -17255,6 +18025,13 @@ export class ZheYiShenGame {
     text: string, x: number, y: number, maxWidth: number, lineHeight: number, maxLines: number, fill: string,
   ): void {
     this.wrapLines(text, maxWidth, maxLines)
+      .forEach((entry, lineIndex) => this.drawOutlinedText(entry, x, y + lineIndex * lineHeight, fill));
+  }
+
+  private drawOutlinedWrapTextComplete(
+    text: string, x: number, y: number, maxWidth: number, lineHeight: number, fill: string,
+  ): void {
+    this.wrapLinesComplete(text, maxWidth)
       .forEach((entry, lineIndex) => this.drawOutlinedText(entry, x, y + lineIndex * lineHeight, fill));
   }
 
@@ -17997,10 +18774,11 @@ export class ZheYiShenGame {
   }
 
   private installTestHooks(): void {
+    if (!import.meta.env.DEV) return;
     const host = window as Window & {
       render_game_to_text?: () => string;
       advanceTime?: (ms: number) => void;
-      zhe_yi_shen_test?: (action: 'start' | 'reveal-origin' | 'clear' | 'choose-first' | 'swallow' | 'exhale' | 'open-fate' | 'special' | 'leave-special' | 'shop' | 'buy-first' | 'reroll-shop' | 'combo' | 'boss' | 'battle' | 'stress-battle' | 'projectile-combo-stress' | 'lantern-stress' | 'origin-badge-audit' | 'projectile-audit' | 'projectile-form' | 'projectile-mechanic' | 'relic-audit' | 'memory-recall' | 'father' | 'father-phase2' | 'boss-art' | 'boss-skill-art' | 'elite-art' | 'enemy-art' | 'scene-art' | 'childhood-boss-hazards' | 'collector-boss-hazards' | 'phone-boss-hazards' | 'childhood-hazards' | 'adult-hazards' | 'school-work-hazards' | 'youth-commute-hazards' | 'youth-task-hazards' | 'middle-age-hazards' | 'old-age-hazards' | 'telegraph' | 'praise-consult' | 'praise-approach' | 'praise-paper-approach' | 'phone-split' | 'phone-approach' | 'phone-caller' | 'phone-missed' | 'xiao-zhang-prompt' | 'xiao-zhang-help' | 'xiao-zhang-one-seat' | 'xiao-zhang-box' | 'win' | 'equip' | 'hurt' | 'defeat-stage-elite' | 'defeat-boss' | 'one-more' | 'pause', payload?: unknown) => void;
+      zhe_yi_shen_test?: (action: 'start' | 'reveal-origin' | 'clear' | 'choose-first' | 'swallow' | 'exhale' | 'open-fate' | 'special' | 'leave-special' | 'shop' | 'buy-first' | 'reroll-shop' | 'combo' | 'boss' | 'battle' | 'stress-battle' | 'projectile-combo-stress' | 'lantern-stress' | 'origin-badge-audit' | 'projectile-audit' | 'projectile-form' | 'projectile-mechanic' | 'relic-audit' | 'memory-recall' | 'fate-echo-caption' | 'father' | 'father-phase2' | 'boss-art' | 'boss-skill-art' | 'elite-art' | 'enemy-art' | 'scene-art' | 'childhood-boss-hazards' | 'collector-boss-hazards' | 'phone-boss-hazards' | 'childhood-hazards' | 'adult-hazards' | 'school-work-hazards' | 'youth-commute-hazards' | 'youth-task-hazards' | 'middle-age-hazards' | 'old-age-hazards' | 'telegraph' | 'praise-consult' | 'praise-approach' | 'praise-paper-approach' | 'phone-split' | 'phone-approach' | 'phone-caller' | 'phone-missed' | 'xiao-zhang-prompt' | 'xiao-zhang-help' | 'xiao-zhang-one-seat' | 'xiao-zhang-box' | 'win' | 'equip' | 'hurt' | 'defeat-stage-elite' | 'defeat-boss' | 'one-more' | 'pause', payload?: unknown) => void;
     };
     const renderGameState = () => JSON.stringify({
       coordinateSystem: 'origin top-left; +x right; +y down; logical 360x640',
@@ -18043,6 +18821,16 @@ export class ZheYiShenGame {
       originProgress: this.aiOriginState === 'gpt'
         ? Number((this.originElapsed / this.originStoryDuration()).toFixed(2))
         : 0,
+      originComic: this.state === 'origin' ? {
+        elapsed: Number(this.originComicElapsed.toFixed(2)),
+        scene: originComicSceneIndex(this.originComicElapsed) + 1,
+        complete: this.originComicComplete(),
+        pages: this.originComicPages.map((page) => ({
+          ready: Boolean(page?.complete && page.naturalWidth > 0),
+          width: page?.naturalWidth ?? 0,
+          height: page?.naturalHeight ?? 0,
+        })),
+      } : null,
       ai: {
         origin: this.aiOriginState,
         originAttempt: this.originAttempt,
@@ -18052,7 +18840,16 @@ export class ZheYiShenGame {
       },
       audio: this.feedback.debugState(),
       voiceHistory: [...this.voiceCuesSeen],
-      caption: this.captionTime > 0 ? { text: this.caption, remaining: Number(this.captionTime.toFixed(2)) } : null,
+      caption: this.fateEchoCaptionTime > 0
+        ? {
+            text: this.fateEchoCaption,
+            remaining: Number(this.fateEchoCaptionTime.toFixed(2)),
+            kind: 'fate-echo',
+          }
+        : this.captionTime > 0
+          ? { text: this.caption, remaining: Number(this.captionTime.toFixed(2)), kind: 'regular' }
+          : null,
+      fateEchoCaptionQueue: [...this.fateEchoCaptionQueue],
       toast: this.toastTime > 0 ? { text: this.toast, remaining: Number(this.toastTime.toFixed(2)) } : null,
       voice: this.voiceCaption ? {
         id: this.voiceCaption.id,
@@ -18687,7 +19484,26 @@ export class ZheYiShenGame {
       this.auditEndurance = auditParams.get('audit-endurance') === '1';
       this.auditAutoMove = auditParams.get('audit-auto-move') === '1';
       const auditRoom = auditParams.get('audit-room');
-      if (auditRoom === 'light' || auditRoom === 'back') {
+      const requestedAuditScreen = auditParams.get('audit-screen');
+      if (requestedAuditScreen === 'origin-comic') {
+        const auditComicPlaying = auditParams.get('audit-play') === '1';
+        this.auditFreezeOriginComic = !auditComicPlaying;
+        this.startRun(0x20260722, true);
+        const requestedScene = Number.parseInt(auditParams.get('audit-scene') ?? '1', 10);
+        const scene = this.clamp(Number.isFinite(requestedScene) ? requestedScene : 1, 1, 8);
+        const sceneIndex = scene - 1;
+        const sceneStart = ORIGIN_COMIC_SCENE_STARTS[sceneIndex] ?? 0;
+        const sceneDuration = ORIGIN_COMIC_SCENE_DURATIONS[sceneIndex] ?? 5;
+        this.originComicElapsed = sceneStart + (auditComicPlaying ? 0 : sceneDuration * 0.5);
+        const auditAI = auditParams.get('audit-ai');
+        if (auditAI === 'ready') {
+          this.aiOriginState = 'gpt';
+        } else {
+          this.origin = undefined;
+          this.aiOriginState = auditAI === 'error' ? 'error' : 'requesting';
+        }
+        this.render();
+      } else if (auditRoom === 'light' || auditRoom === 'back') {
         this.runSeed = 0x20260722;
         this.rngState = this.runSeed;
         this.hero.maxHp = 80;
@@ -18738,7 +19554,7 @@ export class ZheYiShenGame {
             || auditScreen === 'xiao-prompt' || auditScreen === 'xiao-ally' || auditScreen === 'xiao-seat' || auditScreen === 'xiao-box'
             || auditScreen === 'box-count' || auditScreen === 'box-countdown'
             || auditScreen === 'phone-field' || auditScreen === 'phone-answer' || auditScreen === 'phone-story' || auditScreen === 'phone-final'
-            || auditScreen === 'lamp-dark' || auditScreen === 'lamp-choice') {
+            || auditScreen === 'lamp-dark' || auditScreen === 'lamp-choice' || auditScreen === 'checkpoint') {
             this.runSeed = 0x20260722;
             this.rngState = this.runSeed;
             if (auditScreen === 'fate' || auditScreen === 'ai-fate') {
@@ -18880,6 +19696,51 @@ export class ZheYiShenGame {
               if (auditType === 'silent-father') this.rainActive = true;
               this.eliteAlertName = '';
               this.eliteAlertTime = 0;
+            } else if (auditScreen === 'checkpoint') {
+              const checkpointVariant = auditParams.get('checkpoint-state') ?? 'boss';
+              this.startRun(0x20260722, true);
+              this.requestedOriginKind = 'ordinary';
+              this.origin = {
+                title: '断点审阅员',
+                nickname: '小守档',
+                nicknameReason: '每次断线以后，他都先看看上一页还在不在。',
+                story: ['这里只用于验证刷新后，护盾、Boss 阶段与固定物证都能接着走下去。'],
+                kind: 'ordinary',
+                traits: [],
+                appearance: { ...DEFAULT_APPEARANCE },
+                source: 'local',
+              };
+              this.originModifiers = getOriginModifiers([]);
+              this.encounterIndex = checkpointVariant === 'story-drop' ? 0 : 3;
+              this.startStage();
+              this.hero.hp = 61;
+              this.hero.block = 17;
+              this.stageEliteSpawned = true;
+              this.stageEliteDefeated = true;
+              this.eliteSpawned = true;
+              this.spawnPause = 999;
+              this.enemies = [];
+              if (checkpointVariant === 'story-drop') {
+                this.stageBossDefeated = true;
+                this.items = ['admission-notice'];
+                this.pendingDefeatReward = 'closet-dark';
+                this.storyDropId = 'admission-notice';
+                this.storyDropTimer = 1;
+                this.state = 'storyDrop';
+              } else {
+                const phone = this.createSeekingEnemy('ringing-phone', this.heroX + 86, this.heroY - 124);
+                phone.hp = phone.maxHp * 0.4;
+                phone.phase = 2;
+                phone.mechTimer = 1.2;
+                phone.speed = 34;
+                this.phoneStoryIndex = 7;
+                this.phoneMissed = 9;
+                this.phoneRelief = 2;
+                this.enemies.push(phone);
+              }
+              this.lastCheckpointKey = '';
+              this.maybePersistCheckpoint();
+              this.auditBossArtActive = true;
             } else if (auditScreen === 'xiao-prompt') {
               this.items = [];
               this.encounterIndex = 2;
@@ -19142,7 +20003,25 @@ export class ZheYiShenGame {
               if (!this.currentFate) {
                 this.enemies = [];
                 this.state = 'battle';
-                this.openFate('advance');
+                const fallback = this.generateFateFallback(auditSnapshot);
+                this.aiFateState = 'requesting';
+                this.auditBossArtActive = true;
+                this.caption = 'AI 正在按这一身生成命运卡';
+                this.captionTime = 99;
+                void generateAIFate(auditSnapshot).then((generated) => {
+                  const validated = generated ? validateFateEvent(generated, auditSnapshot) : null;
+                  this.currentFate = validated ?? fallback;
+                  this.aiFateState = validated ? 'gpt' : 'fallback';
+                  this.auditBossArtActive = false;
+                  this.screenTransition = undefined;
+                  this.fateDestination = 'advance';
+                  this.fateAnim = 1;
+                  this.fateResultDirection = undefined;
+                  this.caption = '';
+                  this.captionTime = 0;
+                  this.state = 'fateEvent';
+                  this.render();
+                });
               }
             }
           }
@@ -19172,6 +20051,21 @@ export class ZheYiShenGame {
       }
       host.zhe_yi_shen_test = (action, payload?: unknown) => {
         if (action !== 'boss-art' && action !== 'boss-skill-art' && action !== 'elite-art' && action !== 'enemy-art' && action !== 'scene-art') this.auditBossArtActive = false;
+        if (action === 'fate-echo-caption' && typeof payload === 'string') {
+          this.state = 'battle';
+          this.caption = '';
+          this.captionTime = 0;
+          this.fateEchoCaption = '';
+          this.fateEchoCaptionTime = 0;
+          this.fateEchoCaptionDuration = 0;
+          this.fateEchoCaptionQueue = [];
+          this.voiceCaption = undefined;
+          this.phoneTranscript = undefined;
+          this.eliteAlertTime = 0;
+          this.queueFateEchoCaptions(payload);
+          this.render();
+          return;
+        }
         const bossSkillAudit = action === 'boss-skill-art' && typeof payload === 'string' ? payload.split(':') : undefined;
         if (action === 'projectile-mechanic' && typeof payload === 'string') {
           this.setupProjectileMechanicAudit(payload);
@@ -21013,7 +21907,7 @@ export class ZheYiShenGame {
         }
         this.render();
       };
-      if (auditParams.has('audit-screen')) {
+      if (auditParams.has('audit-screen') || auditParams.has('audit-mirror')) {
         const previousMirror = document.querySelector('#game-state-audit');
         previousMirror?.remove();
         const stateMirror = document.createElement('pre');

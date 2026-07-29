@@ -16,18 +16,43 @@ async function walk(directory) {
 }
 
 function included(relativePath) {
-  if (!relativePath.endsWith('.png')) return false;
+  if (!relativePath.endsWith('.png') && !relativePath.endsWith('.webp')) return false;
   if (relativePath.includes('/preview-')) return false;
   if (!relativePath.startsWith('canonical-v1/')) return true;
   return relativePath === 'canonical-v1/enemies/uniform-answer.png'
     || relativePath === 'canonical-v1/enemies/hunger-shadow.png';
 }
 
-function pngPixels(buffer, path) {
-  if (buffer.length < 24 || buffer.toString('ascii', 1, 4) !== 'PNG') {
-    throw new Error(`invalid_png:${path}`);
+function imagePixels(buffer, path) {
+  if (path.endsWith('.png')) {
+    if (buffer.length < 24 || buffer.toString('ascii', 1, 4) !== 'PNG') {
+      throw new Error(`invalid_png:${path}`);
+    }
+    return buffer.readUInt32BE(16) * buffer.readUInt32BE(20);
   }
-  return buffer.readUInt32BE(16) * buffer.readUInt32BE(20);
+  if (buffer.length < 30
+    || buffer.toString('ascii', 0, 4) !== 'RIFF'
+    || buffer.toString('ascii', 8, 12) !== 'WEBP') {
+    throw new Error(`invalid_webp:${path}`);
+  }
+  const chunk = buffer.toString('ascii', 12, 16);
+  if (chunk === 'VP8 ') {
+    const width = buffer.readUInt16LE(26) & 0x3fff;
+    const height = buffer.readUInt16LE(28) & 0x3fff;
+    return width * height;
+  }
+  if (chunk === 'VP8L') {
+    const bits = buffer.readUInt32LE(21);
+    const width = (bits & 0x3fff) + 1;
+    const height = ((bits >>> 14) & 0x3fff) + 1;
+    return width * height;
+  }
+  if (chunk === 'VP8X') {
+    const width = buffer.readUIntLE(24, 3) + 1;
+    const height = buffer.readUIntLE(27, 3) + 1;
+    return width * height;
+  }
+  throw new Error(`unsupported_webp:${path}`);
 }
 
 const files = (await walk(ASSET_ROOT))
@@ -37,7 +62,7 @@ const files = (await walk(ASSET_ROOT))
 
 const weights = {};
 for (const { path, relativePath } of files) {
-  weights[`./assets/${relativePath}`] = pngPixels(await readFile(path), path);
+  weights[`./assets/${relativePath}`] = imagePixels(await readFile(path), path);
 }
 
 await writeFile(OUTPUT, `${JSON.stringify(weights, null, 2)}\n`, 'utf8');

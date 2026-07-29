@@ -1,5 +1,93 @@
 [
   {
+    "id": "origin-comic-01",
+    "expected": "人出生的时候先哭一声那是他来到世上领到的第一口气",
+    "transcript": "人出生的时候 先哭一声 那是他来到世上 领到的第一口气",
+    "normalizedTranscript": "人出生的时候先哭一声那是他来到世上领到的第一口气",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 10.15,
+    "charactersPerSecond": 2.58,
+    "status": "pass"
+  },
+  {
+    "id": "origin-comic-02",
+    "expected": "有人出生时门外站满了人有人哭了很久才有人推门芸芸众生来处不同",
+    "transcript": "有人出生时,门外站满了人,有人哭了很久,才有人推门,云云众生,来处不同。",
+    "normalizedTranscript": "有人出生时门外站满了人有人哭了很久才有人推门云云众生来处不同",
+    "characterErrorRate": 0.0667,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 13.464,
+    "charactersPerSecond": 2.37,
+    "status": "pass"
+  },
+  {
+    "id": "origin-comic-03",
+    "expected": "后来大人教他争气也教他忍气",
+    "transcript": "后来大人教他争气,也教他忍气。",
+    "normalizedTranscript": "后来大人教他争气也教他忍气",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 6.12,
+    "charactersPerSecond": 2.3,
+    "status": "pass"
+  },
+  {
+    "id": "origin-comic-04",
+    "expected": "后来他们各自长大也各自遇见各自躲不过的事",
+    "transcript": "后来他们各自长大,也各自遇见各自躲不过的事。",
+    "normalizedTranscript": "后来他们各自长大也各自遇见各自躲不过的事",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 8.44,
+    "charactersPerSecond": 2.57,
+    "status": "pass"
+  },
+  {
+    "id": "origin-comic-05",
+    "expected": "受了委屈咽下去叫懂事吐出来又有人说他不懂事每种选择都有所得也有所失",
+    "transcript": "受了委屈咽下去叫懂事吐出来又有人说他不懂事每种选择都有所得也有所失",
+    "normalizedTranscript": "受了委屈咽下去叫懂事吐出来又有人说他不懂事每种选择都有所得也有所失",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 15.084,
+    "charactersPerSecond": 2.3,
+    "status": "pass"
+  },
+  {
+    "id": "origin-comic-06",
+    "expected": "有些气成了脾气有些气撑成了骨气还有一些一直留在身体里",
+    "transcript": "有些气成了脾气,有些气成了骨气,还有一些一直留在身体里。",
+    "normalizedTranscript": "有些气成了脾气有些气成了骨气还有一些一直留在身体里",
+    "characterErrorRate": 0.0385,
+    "pronunciationErrorRate": 0.0385,
+    "durationSeconds": 12.564,
+    "charactersPerSecond": 2.18,
+    "status": "pass"
+  },
+  {
+    "id": "origin-comic-07",
+    "expected": "得到的穿在身上失去的也穿在身上芸芸众生各有各的这一身",
+    "transcript": "得到的穿在身上,失去的也穿在身上。云云众生,各有各的这一身。",
+    "normalizedTranscript": "得到的穿在身上失去的也穿在身上云云众生各有各的这一身",
+    "characterErrorRate": 0.0769,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 13.392,
+    "charactersPerSecond": 2.06,
+    "status": "pass"
+  },
+  {
+    "id": "origin-comic-08",
+    "expected": "这一身并非生来如此而是被这一生一件件穿成的现在轮到你了",
+    "transcript": "这一身并非生来如此,而是被这一生一件件穿成的。现在,轮到你了。",
+    "normalizedTranscript": "这一身并非生来如此而是被这一生一件件穿成的现在轮到你了",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 17.676,
+    "charactersPerSecond": 1.65,
+    "status": "pass"
+  },
+  {
     "id": "narrator-opening",
     "expected": "他还没有名字第一口气进来以前谁也不知道这一身会穿上什么",
     "transcript": "他还没有名字第一口气进来以前谁也不知道这一身会穿上什么",

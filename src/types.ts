@@ -141,6 +141,13 @@ export interface FateSettlement {
   candidateItemId?: ItemId;
 }
 
+export type FateReward =
+  | { kind: 'none' }
+  | { kind: 'stats'; stats: Partial<Record<FateStatKey, number>> }
+  | { kind: 'effect'; effect: Exclude<FateResponseEffect, 'none'> }
+  | { kind: 'gain_item'; itemId: ItemId }
+  | { kind: 'remove_item'; itemId: ItemId };
+
 export interface FateResponse {
   label: string;
   hint: string;
@@ -148,6 +155,9 @@ export interface FateResponse {
   poison: Partial<PoisonVector>;
   stats?: Partial<Record<FateStatKey, number>>;
   gainItemId?: ItemId;
+  removeItemId?: ItemId;
+  /** “亲口说”由 AI 选择、程序白名单化后的机械奖励或代价。 */
+  reward?: FateReward;
   settlement?: FateSettlement;
   result: string;
 }

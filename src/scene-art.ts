@@ -48,7 +48,7 @@ class SceneArt {
 
   drawRoom(ctx: CanvasRenderingContext2D, room: RoomArt, alpha = 1): boolean {
     const image = this.rooms[room];
-    if (!image) return false;
+    if (!image) throw new Error(`正式房间美术缺失 ${room}；降级画面已取消`);
     ctx.save();
     ctx.globalAlpha *= alpha;
     ctx.imageSmoothingEnabled = false;
@@ -59,7 +59,7 @@ class SceneArt {
 
   drawEnding(ctx: CanvasRenderingContext2D, ending: EndingArt, alpha = 1): boolean {
     const image = this.endings[ending];
-    if (!image) return false;
+    if (!image) throw new Error(`正式结局美术缺失 ${ending}；降级画面已取消`);
     ctx.save();
     ctx.globalAlpha *= alpha;
     ctx.imageSmoothingEnabled = false;
@@ -77,7 +77,7 @@ class SceneArt {
     height: number,
     alpha = 1,
   ): boolean {
-    if (!this.chapterStrips) return false;
+    if (!this.chapterStrips) throw new Error('正式章节过场美术缺失；降级画面已取消');
     const row = Math.min(5, Math.max(0, chapterIndex));
     ctx.save();
     ctx.globalAlpha *= alpha;
@@ -95,7 +95,7 @@ class SceneArt {
     size: number,
     alpha = 1,
   ): boolean {
-    if (!this.fateProfiles) return false;
+    if (!this.fateProfiles) throw new Error('正式命运头像美术缺失；降级画面已取消');
     const manifest = fateProfilesManifest as FateProfileManifest;
     const index = manifest.index[profile];
     if (index === undefined) return false;

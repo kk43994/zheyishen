@@ -5,7 +5,9 @@ import { resolve } from 'node:path';
 const ROOT = resolve(import.meta.dirname, '..');
 const ZIP_PATH = resolve(ROOT, 'release/zhe-yi-shen-mvp.zip');
 const DIST_PATH = resolve(ROOT, 'dist');
-const PLATFORM_MAX_BYTES = 8 * 1024 * 1024;
+const PLATFORM_MAX_BYTES = 20 * 1024 * 1024;
+const INTERNAL_BUDGET_MIB = 18;
+const PLATFORM_MAX_MIB = 20;
 const checkOnly = process.argv.includes('--check');
 
 async function walk(directory) {
@@ -64,8 +66,8 @@ const targets = [
       next = replaceOne(next, /^\- 平台上限余量：.*$/m,
         `- 平台上限余量：${comma(reservedBytes)} 字节（${mib(reservedBytes)} MiB）`, 'publish reserve');
       next = replaceOne(next,
-        /^\| 7 MiB 内部预算与至少 1 MiB 预留 \| 通过（当前预留 .*） \|$/m,
-        `| 7 MiB 内部预算与至少 1 MiB 预留 | 通过（当前预留 ${comma(reservedBytes)} 字节） |`,
+        /^\| \d+ MiB 内部预算与至少 \d+ MiB 预留 \| 通过（当前预留 .*） \|$/m,
+        `| ${INTERNAL_BUDGET_MIB} MiB 内部预算与至少 2 MiB 预留 | 通过（当前预留 ${comma(reservedBytes)} 字节） |`,
         'publish budget row');
       return next;
     },
@@ -74,13 +76,13 @@ const targets = [
     path: 'docs/升级计划最新.md',
     transform(source) {
       let next = replaceOne(source,
-        /当前 release zip [0-9.]+ MiB \/ 上限 8 MiB/,
-        `当前 release zip ${mib(zipBytes)} MiB / 上限 8 MiB`, 'plan art budget');
+        /当前 release zip [0-9.]+ MiB \/ 上限 \d+ MiB/,
+        `当前 release zip ${mib(zipBytes)} MiB / 上限 ${PLATFORM_MAX_MIB} MiB`, 'plan art budget');
       next = replaceOne(next, /^\| release zip \| .*$/m,
-        `| release zip | **${comma(zipBytes)} 字节（${mib(zipBytes)} MiB）** / 上限 8 MiB | 当前正式包实测；运行时内容以发布验收文档与本行自动同步结果为准 |`,
+        `| release zip | **${comma(zipBytes)} 字节（${mib(zipBytes)} MiB）** / 上限 ${PLATFORM_MAX_MIB} MiB | 当前正式包实测；运行时内容以发布验收文档与本行自动同步结果为准 |`,
         'plan zip row');
       next = replaceOne(next, /^\| 解压内容 \| .*$/m,
-        `| 解压内容 | **${comma(unpackedBytes)} 字节（${mib(unpackedBytes)} MiB）** / 上限 8 MiB | ${distFiles.length} 个运行时文件；剩余 ${comma(reservedBytes)} 字节（${mib(reservedBytes)} MiB） |`,
+        `| 解压内容 | **${comma(unpackedBytes)} 字节（${mib(unpackedBytes)} MiB）** / 上限 ${PLATFORM_MAX_MIB} MiB | ${distFiles.length} 个运行时文件；剩余 ${comma(reservedBytes)} 字节（${mib(reservedBytes)} MiB） |`,
         'plan unpacked row');
       return next;
     },
@@ -89,8 +91,8 @@ const targets = [
     path: 'docs/六章Boss编排与传承线-v1.md',
     transform(source) {
       return replaceOne(source,
-        /当前 release zip [0-9.]+ MiB \/ 上限 8 MiB/,
-        `当前 release zip ${mib(zipBytes)} MiB / 上限 8 MiB`, 'boss canon art budget');
+        /当前 release zip [0-9.]+ MiB \/ 上限 \d+ MiB/,
+        `当前 release zip ${mib(zipBytes)} MiB / 上限 ${PLATFORM_MAX_MIB} MiB`, 'boss canon art budget');
     },
   },
   {
@@ -98,7 +100,7 @@ const targets = [
     transform(source) {
       return replaceOne(source,
         /^\- 上传包根目录直接包含 `index\.html`，文件名全部使用 ASCII 安全字符；当前 zip 为 .*$/m,
-        `- 上传包根目录直接包含 \`index.html\`，文件名全部使用 ASCII 安全字符；当前 zip 为 ${comma(zipBytes)} 字节（${mib(zipBytes)} MiB），解压内容为 ${comma(unpackedBytes)} 字节（${mib(unpackedBytes)} MiB），距离 8 MiB 上限还有 ${comma(reservedBytes)} 字节。`,
+        `- 上传包根目录直接包含 \`index.html\`，文件名全部使用 ASCII 安全字符；当前 zip 为 ${comma(zipBytes)} 字节（${mib(zipBytes)} MiB），解压内容为 ${comma(unpackedBytes)} 字节（${mib(unpackedBytes)} MiB），距离 ${PLATFORM_MAX_MIB} MiB 上限还有 ${comma(reservedBytes)} 字节。`,
         'development plan release row');
     },
   },

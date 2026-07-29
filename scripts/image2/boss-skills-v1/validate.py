@@ -221,7 +221,7 @@ def main() -> None:
         "lamp seize tracking resolution": "private updateLampSeize(enemy: EnemyUnit, dt: number)",
         "lamp choice strip resolution": "private finishLampCycle(enemy: EnemyUnit, stripAt: number)",
         "lamp keeper permanent guard": "if (enemy.type === 'lamp-keeper') {",
-        "lamp keeper final dim action": "this.playBossAnimation(enemy, 'keeper-dim', LAMP_RELEASE_CONFIRM_DELAY)",
+        "lamp keeper final dim action": "this.playBossAnimation(enemy, 'keeper-dim', LAMP_RELEASE_ANIMATION_DURATION)",
         "lamp keeper final strip playback": "keeper?.bossAnim === 'keeper-strip'",
         "lamp keeper final dim playback": "keeper?.bossAnim === 'keeper-dim'",
         "lamp keeper active release": "private releaseFinalBreath(): void",

@@ -48,7 +48,7 @@ for (const item of files) {
   );
 }
 
-if (revisionEntries.length !== 21) {
+if (revisionEntries.length !== 30) {
   failures.push(`revision-count:${revisionEntries.length}`);
 }
 if (files.filter((item) => item.kind === 'review').length !== 7) {

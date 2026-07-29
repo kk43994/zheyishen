@@ -1,4 +1,6 @@
 export type VoiceCueId =
+  | 'origin-comic-01' | 'origin-comic-02' | 'origin-comic-03' | 'origin-comic-04'
+  | 'origin-comic-05' | 'origin-comic-06' | 'origin-comic-07' | 'origin-comic-08'
   | 'narrator-opening' | 'narrator-start-breath'
   | 'child-under-bed' | 'caregiver-lights-out' | 'caregiver-no-monster' | 'father-childhood-walk' | 'classmate-family-late' | 'school-gate-closing'
   | 'school-bell-start' | 'teacher-last-row' | 'teacher-answer-format' | 'classmate-score-whisper' | 'teacher-paper-back' | 'father-for-your-good' | 'school-bell-end'
@@ -23,7 +25,7 @@ export type VoicePerformanceTag =
   | 'exhale' | 'gasps' | 'sniffs' | 'sighs' | 'snorts' | 'burps' | 'lip-smacking' | 'humming'
   | 'hissing' | 'emm' | 'sneezes' | 'pause';
 export type VoiceTriggerEvent =
-  | 'origin_ready' | 'stage_enter' | 'stage_time' | 'stand_still' | 'boss_spawn' | 'boss_phase' | 'boss_defeat'
+  | 'origin_comic_scene' | 'origin_ready' | 'stage_enter' | 'stage_time' | 'stand_still' | 'boss_spawn' | 'boss_phase' | 'boss_defeat'
   | 'enemy_first_kill' | 'enemy_hit' | 'enemy_count' | 'hp_below' | 'shop_open' | 'special_room_open' | 'special_room_take'
   | 'item_trigger' | 'stage_transition' | 'ending_strip' | 'ending_choice'
   | 'npc_encounter' | 'death_save' | 'run_lost';
@@ -71,14 +73,36 @@ export interface VoiceCue {
   context: VoiceCueContext;
 }
 
+export interface VoiceSynthesisSegment {
+  text: string;
+  /** 句段级语速；用于避免整段像匀速播报。 */
+  speed: number;
+  /** 句段级响度，0.1—10；轻音不靠含糊咬字实现。 */
+  volume: number;
+  /** 句段级音高；收尾和内心句可比叙述句更低。 */
+  pitch: number;
+  emotion: VoiceEmotion;
+  /** 这句话落下后真正留出的无声时间。 */
+  pauseAfter: number;
+  weight: 'light' | 'neutral' | 'firm';
+}
+
 /** Player-facing source labels. They keep a short line anchored to a real place and person. */
 export const VOICE_CUE_CONTEXT: Record<VoiceCueId, VoiceCueContext> = {
+  'origin-comic-01': { scene: '开场漫画 · 第一幕', speaker: '暮年的他' },
+  'origin-comic-02': { scene: '开场漫画 · 第二幕', speaker: '暮年的他' },
+  'origin-comic-03': { scene: '开场漫画 · 第三幕', speaker: '暮年的他' },
+  'origin-comic-04': { scene: '开场漫画 · 第四幕', speaker: '暮年的他' },
+  'origin-comic-05': { scene: '开场漫画 · 第五幕', speaker: '暮年的他' },
+  'origin-comic-06': { scene: '开场漫画 · 第六幕', speaker: '暮年的他' },
+  'origin-comic-07': { scene: '开场漫画 · 第七幕', speaker: '暮年的他' },
+  'origin-comic-08': { scene: '开场漫画 · 第八幕', speaker: '暮年的他' },
   'narrator-opening': { scene: '出生档案', speaker: '暮年的他' },
   'narrator-start-breath': { scene: '童年门口', speaker: '暮年的他' },
   'child-under-bed': { scene: '熄灯后的卧室', speaker: '小时候的他' },
   'caregiver-lights-out': { scene: '卧室门外', speaker: '照料者' },
   'caregiver-no-monster': { scene: '卧室门外', speaker: '照料者' },
-  'father-childhood-walk': { scene: '下雨那天', speaker: '父亲' },
+  'father-childhood-walk': { scene: '少年放学时的雨里', speaker: '父亲' },
   'classmate-family-late': { scene: '雨停后的校门', speaker: '同学' },
   'school-gate-closing': { scene: '校门口', speaker: '广播' },
   'school-bell-start': { scene: '教室', speaker: '广播' },
@@ -164,6 +188,14 @@ type DeliverySpec = Omit<VoiceDelivery, 'tags'>;
 
 /** Every line has explicit synthesis direction so casting and delivery survive provider changes. */
 const VOICE_DELIVERY: Record<VoiceCueId, DeliverySpec> = {
+  'origin-comic-01': { voice: '低沉中老年男声', tone: '像从很久以后回望出生；平静沧桑，不念纪录片腔', emotion: 'calm', speed: 0.71, pitch: -2, intensity: 'low' },
+  'origin-comic-02': { voice: '低沉中老年男声', tone: '把两个事实并排说；门外热闹与推门迟到之间不加评判', emotion: 'calm', speed: 0.76, pitch: -2, intensity: 'low' },
+  'origin-comic-03': { voice: '低沉中老年男声', tone: '“争气”与“忍气”咬字清楚，中间留白，不讽刺', emotion: 'calm', speed: 0.72, pitch: -2, intensity: 'low' },
+  'origin-comic-04': { voice: '低沉中老年男声', tone: '像翻过几年旧页；自然陈述，不煽情', emotion: 'calm', speed: 0.74, pitch: -2, intensity: 'low' },
+  'origin-comic-05': { voice: '低沉中老年男声', tone: '委屈说得平；最后一句略慢落下，不控诉', emotion: 'calm', speed: 0.74, pitch: -2, intensity: 'low' },
+  'origin-comic-06': { voice: '低沉中老年男声', tone: '“脾气”与“骨气”咬字清楚；最后一句收轻', emotion: 'calm', speed: 0.70, pitch: -2, intensity: 'low' },
+  'origin-comic-07': { voice: '低沉中老年男声', tone: '像清点穿在身上的东西；得到与失去等重，克制而非悲腔', emotion: 'calm', speed: 0.68, pitch: -2, intensity: 'low' },
+  'origin-comic-08': { voice: '低沉中老年男声', tone: '三句逐级放慢；“轮到你了”贴近一点、轻一点，克制而非悲腔', emotion: 'calm', speed: 0.64, pitch: -2, intensity: 'low' },
   'narrator-opening': { voice: '低沉中老年男声', tone: '自然白描，不拖字，句尾轻收', emotion: 'calm', speed: 0.88, pitch: -2, intensity: 'low' },
   'narrator-start-breath': { voice: '低沉中老年男声', tone: '像随手补记事实，不念旁白腔', emotion: 'calm', speed: 0.92, pitch: -2, intensity: 'low' },
   'child-under-bed': { voice: '自然男童声', tone: '贴近耳语，疑问上扬很轻', emotion: 'fearful', speed: 0.84, pitch: 1, intensity: 'low' },
@@ -270,13 +302,22 @@ const cue = (
 
 /** Fixed production script. No line is generated at runtime. */
 export const VOICE_CUES: Record<VoiceCueId, VoiceCue> = {
+  'origin-comic-01': cue('origin-comic-01', 0, 'narrator', '人出生的时候，先哭一声。<#0.65#>那是他来到世上，领到的第一口气。', '像老人坐下来后自然开口；前句只是说事实，完整停一拍，再把“第一口气”轻轻放低，不拖尾、不表演换气。', 'clear', trigger('origin_comic_scene', '开场漫画第一幕显现', true, 3), '让开场第一声来自暮年的主角，而不是全知旁白。'),
+  'origin-comic-02': cue('origin-comic-02', 0, 'narrator', '有人出生时，门外站满了人；<#0.26#>有人哭了很久，才有人推门。<#0.32#>芸芸众生，来处不同。', '三段平稳说完；第二段不卖惨，末句放慢半拍并轻收。', 'clear', trigger('origin_comic_scene', '开场漫画第二幕显现', true, 3), '把出身差异说清，但不替任何一种人生下判词。'),
+  'origin-comic-03': cue('origin-comic-03', 0, 'narrator', '后来大人教他争气，<#0.28#>也教他忍气。', '“争气”略实，“忍气”略轻；停顿清楚，禁止嘲讽语气。', 'clear', trigger('origin_comic_scene', '开场漫画第三幕显现', true, 3), '建立这一口气在成长中的两种方向。'),
+  'origin-comic-04': cue('origin-comic-04', 0, 'narrator', '后来他们各自长大，<#0.28#>也各自遇见，<#0.18#>各自躲不过的事。', '像翻旧档案一样自然推进；三个“各自”不做朗诵式重音。', 'clear', trigger('origin_comic_scene', '开场漫画第四幕显现', true, 3), '从共同出生推到各自不同的劫。'),
+  'origin-comic-05': cue('origin-comic-05', 0, 'narrator', '受了委屈，咽下去叫懂事；<#0.22#>吐出来，又有人说他不懂事。<#0.32#>每种选择，都有所得，也有所失。', '前两段平静并列，不控诉；最后一句放慢一点，得失两个词等重。', 'clear', trigger('origin_comic_scene', '开场漫画第五幕显现', true, 3), '把玩家之后的咽下与吐出变成选择，而不是标准答案。'),
+  'origin-comic-06': cue('origin-comic-06', 0, 'narrator', '有些气成了脾气，<#0.18#>有些气撑成了骨气，<#0.28#>还有一些，一直留在身体里。', '“脾气、骨气”咬字清楚但不喊；最后一段声音收窄，像说到自己。', 'clear', trigger('origin_comic_scene', '开场漫画第六幕显现', true, 3), '把经历如何留在身体里说成具体变化。'),
+  'origin-comic-07': cue('origin-comic-07', 0, 'narrator', '得到的，穿在身上；<#0.2#>失去的，也穿在身上。<#0.34#>芸芸众生，各有各的这一身。', '得与失保持同样分量；末句沧桑但克制，不拔高。', 'clear', trigger('origin_comic_scene', '开场漫画第七幕显现', true, 3), '把游戏名与一生携带的得失合在一起。'),
+  'origin-comic-08': cue('origin-comic-08', 0, 'narrator', '这一身并非生来如此，<#0.34#>而是被这一生，一件件穿成的。<#0.52#>(breath)现在，<#0.22#>轮到你了。(exhale)', '前两句缓慢落定；长停顿后靠近话筒，最后四字轻而清楚，呼气自然消失。', 'clear', trigger('origin_comic_scene', '开场漫画第八幕显现', true, 3), '把解释权交还给玩家，进入他的这一生。'),
   'narrator-opening': cue('narrator-opening', 0, 'narrator', '(inhale)他还没有名字。<#0.48#>第一口气进来以前，谁也不知道，<#0.3#>这一身会穿上什么。(exhale)', '普通中老年男性，自然说出，不拖长、不使用纪录片旁白腔。', 'clear', trigger('origin_ready', '出生档案文字完全显现', true, 3, true), '确定旁白是暮年的主角本人。'),
   'narrator-start-breath': cue('narrator-start-breath', 0, 'narrator', '后来，他开始呼吸。', '像随手补记一条事实，不抒情、不压低每个字。', 'clear', trigger('stage_enter', '童年章首次开始', true, 2), '把开场按钮变成叙事动作。'),
 
-  'child-under-bed': cue('child-under-bed', 0, 'hero', '(breath)那里……<#0.32#>是不是有东西？', '儿童压低声音，是真的不确定。', 'clear', trigger('stand_still', '熄灯后静止3秒且140像素内没有敌人', false, 1, false, 3), '让床底怪先从孩子真实的提问里出现。'),
+  'child-under-bed': cue('child-under-bed', 0, 'hero', '(breath)那里……<#0.32#>是不是有东西？', '儿童压低声音，是真的不确定。', 'clear', trigger('stage_time', '童年第22秒、照料者关灯台词结束后', true, 2, false, 22), '让童年怪物必然先从孩子真实的提问里出现，再让衣架走出来。'),
   'caregiver-lights-out': cue('caregiver-lights-out', 0, 'caregiver', '灯关了。<#0.3#>明天还要上学。', '门外正常说话，不凶。', 'behind-door', trigger('stage_time', '童年章第18秒', true, 1, false, 18), '交代时间和家庭现场。'),
   'caregiver-no-monster': cue('caregiver-no-monster', 0, 'caregiver', '哪有什么怪物。<#0.22#>快睡吧。', '带一点困倦，不嘲笑孩子。', 'behind-door', trigger('boss_spawn', '没人相信的怪物登场', true, 2), '怪物名字由一次真实的否认成立。'),
-  'father-childhood-walk': cue('father-childhood-walk', 0, 'father', '走吧。', '雨里说完就转身，不表演温柔。', 'memory', trigger('item_trigger', '本局第一次得到父亲的雨衣', false, 2), '父亲线第一次埋点：他会做，但不会说。'),
+  // 资源 ID 沿用旧名以保持存档和成品音频兼容；正典归属是少年放学雨夜。
+  'father-childhood-walk': cue('father-childhood-walk', 1, 'father', '走吧。', '雨里说完就转身，不表演温柔。', 'memory', trigger('item_trigger', '少年章击败父亲、第一次得到父亲的雨衣', false, 2), '父亲线在少年章落地：他会做，但不会说。'),
   // 正典：学校整条线属于少年章——童年还没上学，这两条从童年章移来。
   'classmate-family-late': cue('classmate-family-late', 1, 'classmate', '你家里人，<#0.24#>还没来吗？', '孩子随口问，不带怜悯。', 'behind-door', trigger('stage_time', '少年章第52秒', true, 1, false, 52), '不解释家庭，只让玩家发现别人已经走了。'),
   'school-gate-closing': cue('school-gate-closing', 1, 'announcer', '请还未离校的同学，尽快到校门口等候。', '旧学校广播，清楚但略失真。', 'pa', trigger('stage_time', '少年章第58秒', true, 2, false, 58), '放学没人来接，接在统一答案之后。'),
@@ -303,7 +344,7 @@ export const VOICE_CUES: Record<VoiceCueId, VoiceCue> = {
   'phone-cannot-connect': cue('phone-cannot-connect', 3, 'announcer', '您拨打的用户暂时无法接通，请稍后再拨。', '真实电话系统女声。', 'phone', trigger('boss_phase', '响个不停固定第5通：他打给父亲', true, 3), '玩家主动打出去，系统提示才真正落下。'),
   'family-dinner-cold': cue('family-dinner-cold', 3, 'family', '饭热过两次了。<#0.25#>还等你吗？', '家里人的普通询问，不埋怨。', 'phone', trigger('stage_time', '成年章第18秒', false, 1, false, 18), '交代屋檐下的家为何总坐不齐。'),
   'hospital-family-needed': cue('hospital-family-needed', 3, 'nurse', '家属您好，您父亲已经收住院了。<#0.12#>麻烦尽快过来办理陪护手续。', '护士电话口径，公事公办，一口气交代手续。', 'phone', trigger('enemy_count', '累计击败3个未接来电，或成年章第26秒仍未响起', true, 2), '交代父亲为何在成年章重新出现。'),
-  'father-adult-phone': cue('father-adult-phone', 3, 'father', '(clear-throat)没什么事。<#0.92#>你忙吧。', '与童年“走吧”同音色，句尾收回。', 'phone', trigger('boss_phase', '响个不停固定第6通：父亲回拨', true, 3), '父亲仍然只会把需要说成没事。'),
+  'father-adult-phone': cue('father-adult-phone', 3, 'father', '(clear-throat)没什么事。<#0.92#>你忙吧。', '与少年雨中“走吧”同音色，句尾收回。', 'phone', trigger('boss_phase', '响个不停固定第6通：父亲回拨', true, 3), '父亲仍然只会把需要说成没事。'),
   'phone-coworker-group': cue('phone-coworker-group', 3, 'coworker', '群里@你了。<#0.15#>你没看到吧。', '快、客气，只确认工作消息。', 'phone', trigger('boss_phase', '响个不停固定第7通：同事', true, 2), '二阶段最后一通把玩家从医院重新拉回工作。'),
   'hero-not-busy': cue('hero-not-busy', 3, 'hero', '没事。<#0.88#>不忙。', '成年主角照着父亲刚才的停顿说完。', 'phone', trigger('boss_defeat', '响个不停结束后的固定第8通：他打给家里', true, 3, true), '用同一句否认闭合父子传承，落在父亲的病历本固定掉落页。'),
   'hero-became-him': cue('hero-became-him', 3, 'hero', '我也是……<#0.68#>(exhale)为你好。', '成年主角先脱口而出；父亲的“都是为你好”作为很轻的旧声叠在后面。', 'memory', trigger('stage_enter', '成年章入场，主角第一次听见自己说出旧句', true, 3, true), '少年从父亲那里听见的话，到成年才从主角嘴里回来；双声明确它源自父亲。'),
@@ -337,7 +378,7 @@ export const VOICE_CUES: Record<VoiceCueId, VoiceCue> = {
   'boss-meeting-over': cue('boss-meeting-over', 2, 'boss', '散会。', '椅背上所有的嘴同时说，只说这两个字。', 'clear', trigger('boss_defeat', '你很优秀被击败', true, 3, true), '椅子空出来了，马上会有人坐进去——这句留给玩家自己想。', 0.78),
   'xiaozhang-busy-later': cue('xiaozhang-busy-later', 2, 'xiaozhang', '你先忙，我这边还有点没弄完。', '客气地把忙留给自己。', 'clear', trigger('npc_encounter', '碰到一起入职的小张弹出选择框', false, 2), '他后来在岗位混战里活下来的方式，也是这句。'),
   'xiaozhang-overtime': cue('xiaozhang-overtime', 2, 'xiaozhang', '今晚又得加班了。', '随口一句，不算抱怨。', 'clear', trigger('stage_time', '帮助小张20秒后他跟随时随口说', false, 1, false, 20), '友军也在撑。'),
-  'caregiver-school-send': cue('caregiver-school-send', 0, 'caregiver', '书包背好了吗？<#0.3#>路上慢点。', '出门前的日常叮嘱，不看着他说。', 'behind-door', trigger('stage_time', '童年章第8秒', false, 1, false, 8), '童年唯一的日常送别。'),
+  'caregiver-school-send': cue('caregiver-school-send', 0, 'caregiver', '书包背好了吗？<#0.3#>路上慢点。', '出门前的日常叮嘱，不看着他说。', 'behind-door', trigger('stage_transition', '童年结束、进入少年学校前', true, 2), '童年结束时的日常送别，接到少年章校园广播。'),
   'caregiver-fell-again': cue('caregiver-fell-again', 0, 'caregiver', '男孩子，摔摔没事的。', '门外随口安慰。', 'behind-door', trigger('hp_below', '童年章生命首次低于60%', false, 1), '疼不被承认，是从很小开始的。'),
   'classmate-slept-late': cue('classmate-slept-late', 1, 'classmate', '我昨晚一点才睡。', '考前压低声音的炫耀式诉苦。', 'clear', trigger('stage_time', '少年章第30秒', false, 1, false, 30), '考试前的谎言日常。'),
   'teacher-daydream': cue('teacher-daydream', 1, 'teacher', '发什么呆？', '顺口点名，不停下讲课。', 'clear', trigger('stand_still', '少年章静止3秒且附近没有敌人', false, 1, false, 3), '静止惩罚的少年版。'),
@@ -355,11 +396,57 @@ export const VOICE_CUES: Record<VoiceCueId, VoiceCue> = {
   'narrator-he-fell-asleep': cue('narrator-he-fell-asleep', 'ending', 'narrator', '他睡着了。', '只说事实，把评价留给空白。', 'clear', trigger('run_lost', '战败结算开始', false, 2), '战败不需要审判，一句轻的就够重了。'),
 };
 
+/**
+ * 开场漫画每幕只做一次连续合成，避免硬拼短句切断气息。
+ * pauseAfter 会转成 MiniMax 原生停顿标签；其余字段是表演规划和人工复听标记，
+ * 用来描述句内轻重、落句和字幕节拍，不把一句话拆成多段音频。
+ */
+export const VOICE_SYNTHESIS_SEGMENTS: Partial<Record<VoiceCueId, readonly VoiceSynthesisSegment[]>> = {
+  'origin-comic-01': [
+    { text: '人出生的时候，先哭一声。', speed: 0.72, volume: 0.88, pitch: -2, emotion: 'calm', pauseAfter: 0.65, weight: 'neutral' },
+    { text: '那是他来到世上，领到的第一口气。', speed: 0.62, volume: 0.78, pitch: -3, emotion: 'calm', pauseAfter: 0, weight: 'light' },
+  ],
+  'origin-comic-02': [
+    { text: '有人出生时，门外站满了人。', speed: 0.80, volume: 0.90, pitch: -2, emotion: 'calm', pauseAfter: 0.36, weight: 'neutral' },
+    { text: '有人哭了很久，才有人推门。', speed: 0.72, volume: 0.84, pitch: -2, emotion: 'calm', pauseAfter: 0.58, weight: 'light' },
+    { text: '芸芸众生，来处不同。', speed: 0.62, volume: 0.78, pitch: -3, emotion: 'calm', pauseAfter: 0, weight: 'light' },
+  ],
+  'origin-comic-03': [
+    { text: '后来，大人教他争气。', speed: 0.75, volume: 0.92, pitch: -2, emotion: 'calm', pauseAfter: 0.52, weight: 'firm' },
+    { text: '也教他忍气。', speed: 0.60, volume: 0.74, pitch: -3, emotion: 'calm', pauseAfter: 0, weight: 'light' },
+  ],
+  'origin-comic-04': [
+    { text: '后来，他们各自长大。', speed: 0.76, volume: 0.88, pitch: -2, emotion: 'calm', pauseAfter: 0.44, weight: 'neutral' },
+    { text: '也各自遇见，各自躲不过的事。', speed: 0.66, volume: 0.80, pitch: -3, emotion: 'calm', pauseAfter: 0, weight: 'light' },
+  ],
+  'origin-comic-05': [
+    { text: '受了委屈，咽下去，叫懂事。', speed: 0.76, volume: 0.84, pitch: -2, emotion: 'calm', pauseAfter: 0.44, weight: 'neutral' },
+    { text: '吐出来，又有人说他不懂事。', speed: 0.72, volume: 0.88, pitch: -2, emotion: 'calm', pauseAfter: 0.62, weight: 'firm' },
+    { text: '每种选择，都有所得，也有所失。', speed: 0.62, volume: 0.76, pitch: -3, emotion: 'calm', pauseAfter: 0, weight: 'light' },
+  ],
+  'origin-comic-06': [
+    { text: '有些气，成了脾气。', speed: 0.74, volume: 0.84, pitch: -2, emotion: 'calm', pauseAfter: 0.34, weight: 'neutral' },
+    { text: '有些气，撑成了骨气。', speed: 0.68, volume: 0.92, pitch: -2, emotion: 'calm', pauseAfter: 0.58, weight: 'firm' },
+    { text: '还有一些，一直留在身体里。', speed: 0.58, volume: 0.74, pitch: -3, emotion: 'calm', pauseAfter: 0, weight: 'light' },
+  ],
+  'origin-comic-07': [
+    { text: '得到的，穿在身上。', speed: 0.70, volume: 0.84, pitch: -2, emotion: 'calm', pauseAfter: 0.40, weight: 'neutral' },
+    { text: '失去的，也穿在身上。', speed: 0.66, volume: 0.82, pitch: -2, emotion: 'calm', pauseAfter: 0.64, weight: 'neutral' },
+    { text: '芸芸众生，各有各的这一身。', speed: 0.58, volume: 0.74, pitch: -3, emotion: 'calm', pauseAfter: 0, weight: 'light' },
+  ],
+  'origin-comic-08': [
+    { text: '这一身，并非生来如此。', speed: 0.70, volume: 0.82, pitch: -2, emotion: 'calm', pauseAfter: 0.56, weight: 'neutral' },
+    { text: '而是被这一生，一件件，穿成的。', speed: 0.64, volume: 0.78, pitch: -3, emotion: 'calm', pauseAfter: 0.86, weight: 'light' },
+    { text: '(breath)现在。', speed: 0.58, volume: 0.70, pitch: -3, emotion: 'calm', pauseAfter: 0.46, weight: 'light' },
+    { text: '轮到你了。(exhale)', speed: 0.54, volume: 0.72, pitch: -3, emotion: 'calm', pauseAfter: 0, weight: 'light' },
+  ],
+};
+
 export const VOICE_CUE_IDS = Object.keys(VOICE_CUES) as VoiceCueId[];
 
 export const STAGE_VOICE_PRELOADS: ReadonlyArray<ReadonlyArray<VoiceCueId>> = [
-  ['narrator-opening', 'narrator-start-breath', 'child-under-bed', 'caregiver-lights-out', 'caregiver-no-monster', 'father-childhood-walk', 'caregiver-school-send', 'caregiver-fell-again', 'narrator-he-fell-asleep'],
-  ['school-bell-start', 'classmate-family-late', 'school-gate-closing', 'teacher-last-row', 'teacher-answer-format', 'classmate-score-whisper', 'teacher-paper-back', 'father-for-your-good', 'school-bell-end', 'classmate-slept-late', 'teacher-daydream', 'shopkeeper-fifty-cents'],
+  ['origin-comic-01', 'origin-comic-02', 'origin-comic-03', 'origin-comic-04', 'origin-comic-05', 'origin-comic-06', 'origin-comic-07', 'origin-comic-08', 'narrator-opening', 'narrator-start-breath', 'child-under-bed', 'caregiver-lights-out', 'caregiver-no-monster', 'caregiver-school-send', 'caregiver-fell-again', 'narrator-he-fell-asleep'],
+  ['school-bell-start', 'classmate-family-late', 'school-gate-closing', 'teacher-last-row', 'teacher-answer-format', 'classmate-score-whisper', 'teacher-paper-back', 'father-for-your-good', 'father-childhood-walk', 'school-bell-end', 'classmate-slept-late', 'teacher-daydream', 'shopkeeper-fifty-cents'],
   ['recruiter-arrival-time', 'landlord-rent-deposit', 'last-bus-arrival', 'station-yellow-line', 'station-doors-closing', 'last-bus-departed', 'interview-thank-you', 'boss-praise-only-you', 'boss-praise-watch-you', 'boss-praise-hard-work', 'boss-praise-as-you-said', 'boss-meeting-over', 'xiaozhang-busy-later', 'xiaozhang-overtime', 'station-feel-unwell', 'passerby-excuse-me'],
   ['phone-wife-fridge', 'phone-hospital-not-call', 'phone-mother-didnt-ask', 'phone-cannot-connect', 'father-adult-phone', 'phone-coworker-group', 'hero-not-busy', 'family-dinner-cold', 'hospital-family-needed', 'hero-became-him', 'self-stand-straight', 'self-for-your-good', 'light-room-keeper', 'light-room-left-this', 'back-room-keeper', 'cashier-bag-fee'],
   ['office-badge-denied', 'office-meeting-continues', 'manager-tonight-hard', 'bank-payment-due', 'clinic-blood-pressure', 'coworker-cardboard-box', 'security-return-card', 'light-room-keeper', 'light-room-left-this', 'back-room-keeper', 'meeting-quarter-hard', 'coworker-flower-water', 'courier-timeout'],
@@ -389,6 +476,24 @@ export function validateVoiceScript(): void {
     const inlineTags = [...item.text.matchAll(/\(([^)]+)\)/g)].map((match) => match[1]);
     const unsupported = inlineTags.filter((tag) => !item.delivery.tags.includes(tag as VoicePerformanceTag));
     if (unsupported.length) throw new Error(`unsupported voice tags in ${id}: ${unsupported.join(', ')}`);
+    const synthesisSegments = VOICE_SYNTHESIS_SEGMENTS[id];
+    if (synthesisSegments) {
+      const spoken = (text: string) => text
+        .replace(/<#[\d.]+#>/g, '')
+        .replace(/\([a-z-]+\)/g, '')
+        .replace(/[，。；、！？\s]/g, '');
+      if (spoken(synthesisSegments.map((segment) => segment.text).join('')) !== spoken(item.text)) {
+        throw new Error(`synthesis segments do not match cue text: ${id}`);
+      }
+      synthesisSegments.forEach((segment, segmentIndex) => {
+        if (segment.speed < 0.5 || segment.speed > 2
+          || segment.volume < 0.1 || segment.volume > 10
+          || !Number.isInteger(segment.pitch) || segment.pitch < -12 || segment.pitch > 12
+          || segment.pauseAfter < 0 || segment.pauseAfter > 5) {
+          throw new Error(`invalid synthesis segment: ${id}[${segmentIndex}]`);
+        }
+      });
+    }
   }
 }
 

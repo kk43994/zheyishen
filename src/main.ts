@@ -1,9 +1,13 @@
 import './style.css';
 import {
-  preloadAllProductionArt,
+  preloadProductionArt,
+  preloadRemainingProductionArt,
   ProductionArtError,
+  productionArtCount,
+  productionBootArtCount,
   type ArtProgress,
 } from './art-preload';
+import { installPerformanceMonitor, markPerformance } from './performance-monitor';
 
 type LockableScreenOrientation = ScreenOrientation & {
   lock?: (orientation: 'portrait') => Promise<void>;
@@ -99,22 +103,35 @@ window.addEventListener('error', (event) => {
     console.error('[runtime]', event.error ?? event.message);
     return;
   }
-  showFallback('美术或运行资源校验失败，没有进入降级画面。请重新装订。');
+  showFallback('美术或运行资源校验失败。程序化降级动画已取消，请重新装订。');
 });
 window.addEventListener('unhandledrejection', (event) => {
   if (gameStarted) {
     console.error('[runtime:promise]', event.reason);
     return;
   }
-  showFallback('美术或运行资源校验失败，没有进入降级画面。请重新装订。');
+  showFallback('美术或运行资源校验失败。程序化降级动画已取消，请重新装订。');
 });
 
 installMobileFullscreenIntent();
+installPerformanceMonitor();
+markPerformance('bootstrap_started');
 
 async function init(): Promise<void> {
   const canvas = document.getElementById('game-canvas');
   if (!(canvas instanceof HTMLCanvasElement)) throw new Error('缺少 Canvas 入口');
-  await preloadAllProductionArt(updateArtProgress);
+  // 游戏逻辑块与首屏图片来自同一个本地包，提前并行准备能避免扫码容器
+  // 先等完图片、再串行解析 800KB+ 游戏模块。正式画面仍要等关键图片门禁。
+  const gameModulePromise = import('./game');
+  markPerformance('game_module_requested');
+  markPerformance('boot_art_started', {
+    bootFiles: productionBootArtCount(),
+    allFiles: productionArtCount(),
+  });
+  await preloadProductionArt(updateArtProgress);
+  markPerformance('boot_art_ready', {
+    bootFiles: productionBootArtCount(),
+  });
   if (import.meta.env.DEV) {
     const auditParams = new URLSearchParams(window.location.search);
     if (auditParams.get('audit-art-fail') === '1') throw new ProductionArtError(1);
@@ -124,21 +141,38 @@ async function init(): Promise<void> {
     }
   }
   updateInitProgress(92, '唤醒这一身');
-  const { ZheYiShenGame } = await import('./game');
+  const { ZheYiShenGame } = await gameModulePromise;
+  markPerformance('game_module_ready');
   new ZheYiShenGame(canvas);
   markGameStarted();
+  markPerformance('game_constructed');
   updateInitProgress(97, '准备第一口呼吸');
   // 游戏模块内的图集实例复用统一解码注册表；保留两帧给首轮 Canvas 缓存，
   // 确保童年正式美术已经接管画面。
   await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+  markPerformance('first_frames_ready');
   updateInitProgress(100, '眼前这一页已装订');
   const loading = loadingElement();
   if (loading) loading.hidden = true;
+  markPerformance('interactive_ready');
+  // 标题、出生填写、AI 等待与漫画播放期间，以单通道继续解码后续人生。
+  // 战斗主循环会自动暂停这条队列；进入下一章前仍有严格的正式美术门禁。
+  void preloadRemainingProductionArt()
+    .then(() => markPerformance('all_art_ready', { files: productionArtCount() }))
+    .catch((error: unknown) => {
+      markPerformance('background_art_failed', {
+        message: error instanceof Error ? error.message : 'unknown',
+      });
+      console.error('后续正式美术装订失败；章节门禁将阻止缺图进入画面。', error);
+    });
 }
 
 init().catch((error: unknown) => {
   console.error(error);
+  markPerformance('bootstrap_failed', {
+    message: error instanceof Error ? error.message : 'unknown',
+  });
   showFallback(error instanceof ProductionArtError
-    ? `有 ${error.failedCount} 份美术原件没有通过校验。正式画面不会降级，请重新装订。`
-    : '这一生出了点意外，正式画面不会降级，请重新装订。');
+    ? `有 ${error.failedCount} 份美术原件没有通过校验。程序化降级动画已取消，请重新装订。`
+    : '这一生出了点意外。程序化降级动画已取消，请重新装订。');
 });

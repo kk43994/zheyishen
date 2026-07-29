@@ -58,7 +58,7 @@ for (const [token, message] of [
   ['dx <= CLOSET_SLAM_HALF_WIDTH + 10 && dy <= CLOSET_SLAM_HALF_HEIGHT + 10', '闭门命中没有共用门框几何'],
   ["this.hurtHero(5, `${enemy.name} · 里面还有手`)", '影手伤害不是 5'],
   ["this.hurtHero(6, `${enemy.name} · 门要关了`)", '闭门伤害不是 6'],
-  ['this.heroX = this.clamp(this.heroX + pushDirection * 32', '闭门命中没有横推 32px'],
+  ['this.heroX += pushDirection * 32', '闭门命中没有按世界坐标横推 32px'],
   ['private renderClosetHandsTelegraph(enemy: EnemyUnit): void', '缺少影手专用预警渲染'],
   ['private renderClosetSlamTelegraph(enemy: EnemyUnit): void', '缺少闭门专用预警渲染'],
   ['for (let hand = 0; hand < 12; hand += 1)', '影手视觉不是十二向'],

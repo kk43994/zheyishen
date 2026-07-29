@@ -1,7 +1,5 @@
 import {
   buildFateCandidateItemCatalog,
-  buildFreeFateMechanicBudget,
-  buildFateMechanicBudget,
   validateFreeFateResponse,
   validateFateEvent,
 } from './fate';
@@ -11,6 +9,7 @@ import { recordTelemetry } from './telemetry';
 import type {
   FateDirection,
   FateEvent,
+  FateReward,
   FateResponse,
   FateSettlement,
   ItemId,
@@ -137,7 +136,9 @@ function callPlatformAI(
 ): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const model = platformModelFor(kind);
-    const useStream = kind === 'origin';
+    // 出生档案必须拿到一个完整 JSON 才能进入游戏。SSE 的半截内容对玩家不可用，
+    // 还会把回调收尾时序或末尾截断误判成“这一生没有写下来”；这里使用平台的一次性完整响应。
+    const useStream = false;
     if (signal?.aborted) {
       publishAIDiagnostic(kind, 'platform', 'aborted', '请求在发出前已取消');
       reject(new DOMException('ai_aborted', 'AbortError'));
@@ -198,10 +199,9 @@ function callPlatformAI(
             : kind === 'fate-free' ? 0.55
             : 0.9,
       maxTokens: kind === 'fate' ? 700
-        : kind === 'fate-options' ? 1000
+          : kind === 'fate-options' ? 1000
           : kind === 'fate-free' ? 760
-            : kind === 'fate-review' ? 220
-              : kind === 'origin' ? 760 : 900,
+            : kind === 'fate-review' ? 220 : 900,
       ...(useStream ? {
         onSSE: (event: { eventName: string; data: string }) => {
           if (settled) return;
@@ -442,15 +442,18 @@ function normalizeAIFateOptions(value: unknown, core: AIFateCore): unknown {
 	};
 }
 
-function isGroundedFateFact(fact: string): boolean {
+function isGroundedFateFact(fact: string, scene?: FateEvent['scene']): boolean {
+	const groundedText = scene
+		? `${scene.time}；${scene.place}；${scene.people}；${fact}`
+		: fact;
 	const clauseCount = (fact.match(/[，。！？；]/g) ?? []).length;
 	const impossible = /(魔法|灵异|鬼魂|幽灵|诅咒|穿越|异世界|超能力)/;
 	const inanimateActor = /(情书|信封|衣服|雨衣|照片|相框|橡皮|纽扣|钥匙|药丸|工牌|书包|课桌|纸条|道具).{0,8}(说话|开口|呼吸|叫人|哭|笑|盯着|决定|答应|拒绝|知道|记得|认出|害怕|生气|自己动)/;
 	const forcedCoincidence = /(严丝合缝|恰好补上|正好补上|突然认出.{0,10}(花纹|气味|划痕|缺口)|原来竟是.{0,12}(那张|那封|那件))/;
 	const concreteTime = /(周[一二三四五六日天]|星期|早上|上午|中午|下午|傍晚|晚上|夜里|凌晨|清晨|放学|下班|开学|午休|课间|饭前|饭后|复诊|当天|那天|月底|发薪|工作日|周末|今天|第二天|\d{1,2}[点时])/;
-	const concretePlace = /(教室|学校|家里|家中|客厅|卧室|厨房|公司|办公室|医院|车站|地铁|站台|公交|宿舍|出租屋|小区|社区|街口|街边|路上|楼下|楼道|楼梯|食堂|餐馆|饭店|商场|商店|店里|便利店|快递柜|银行|派出所|网吧|工地|诊室|病房|会议室|门口|走廊|饭桌)/;
-	return concreteTime.test(fact)
-		&& concretePlace.test(fact)
+	const concretePlace = /(小学|初中|中学|高中|教室|学校|家里|家中|客厅|卧室|厨房|公司|办公室|医院|车站|地铁|站台|公交|宿舍|出租屋|小区|社区|街口|街边|路上|楼下|楼道|楼梯|食堂|餐馆|饭店|商场|商店|店里|便利店|快递柜|银行|派出所|网吧|工地|诊室|病房|会议室|门口|走廊|饭桌)/;
+	return concreteTime.test(groundedText)
+		&& concretePlace.test(groundedText)
 		&& fact.includes('他')
 		&& clauseCount >= 3
 		&& !impossible.test(fact)
@@ -466,7 +469,7 @@ function isGroundedFateNarrative(event: FateEvent): boolean {
 	const chargedAlready = /(?:已经|已|整整).{0,8}(?:扣费|扣款|扣了)|(?:扣费|扣款)(?:成功|完成)/;
 	const paysAgain = /(?:把钱付了|再次?付款|又付|再付|交钱|补交|重新缴费)/;
 	const forcedLastOne = /最后一(?:台|个|份).{0,10}(?:刚好|正好|恰好).{0,8}(?:被|让)/;
-	return isGroundedFateFact(event.fact)
+	return isGroundedFateFact(event.fact, event.scene)
 		&& !impossible.test(fullText)
 		&& !inanimateActor.test(fullText)
 		&& !(chargedAlready.test(event.fact) && paysAgain.test(`${event.swallow.result}；${event.exhale.result}`))
@@ -534,7 +537,7 @@ export async function generateAIFate(snapshot: LifeSnapshot, signal?: AbortSigna
 	// Fate is prefetched while the chapter is still running, so use that idle
 	// time to rewrite rejected drafts instead of showing a logically weak event.
 	const previousRejections: string[] = [];
-	for (let attempt = 1; attempt <= 2; attempt += 1) {
+	for (let attempt = 1; attempt <= 3; attempt += 1) {
 		if (signal?.aborted) return null;
 		try {
 			const rawCore = await requestAI('fate', {
@@ -543,15 +546,14 @@ export async function generateAIFate(snapshot: LifeSnapshot, signal?: AbortSigna
 				previousRejections,
 			}, 14000, signal);
 			const core = validateAIFateCore(normalizeAIFateCore(rawCore, snapshot), snapshot);
-			if (!core || !isGroundedFateFact(core.fact)) {
+			if (!core || !isGroundedFateFact(core.fact, core.scene)) {
 				previousRejections.push('事件核心没有写清现实中的时间、地点、人物、动作与直接结果');
-				console.info(`[AI] 命运事件核心未通过，正在重写 ${attempt}/2`);
+				console.info(`[AI] 命运事件核心未通过，正在重写 ${attempt}/3`);
 				continue;
 			}
 			const rawOptions = await requestAI('fate-options', {
 				snapshot,
 				event: core,
-				mechanicBudget: buildFateMechanicBudget(snapshot, core.profile, core.fact),
 			}, 14000, signal);
 			const candidate = validateFateEvent(
 				normalizeAIFateOptions(rawOptions, core),
@@ -561,23 +563,23 @@ export async function generateAIFate(snapshot: LifeSnapshot, signal?: AbortSigna
 			const event = candidate ? { ...candidate, memoryText: deriveFateMemory(candidate.fact) } : null;
 			if (event && isGroundedFateNarrative(event)) {
 				const review = await reviewFateReality(snapshot, event, undefined, signal);
-				if (review?.valid) {
+				if (review?.valid !== false) {
 					return event;
 				}
-				previousRejections.push(review?.reason ?? '现实审稿没有返回明确通过结果');
+				previousRejections.push(review.reason);
 			} else {
 				previousRejections.push('场景、正文或两个回应没有通过基础写实与格式规则');
 			}
-			console.info(`[AI] 命运事件格式或现实逻辑未通过，正在重写 ${attempt}/2`);
+			console.info(`[AI] 命运事件格式或现实逻辑未通过，正在重写 ${attempt}/3`);
 		} catch (error) {
 			if (signal?.aborted) return null;
 			console.info(
-				`[AI] 命运事件请求失败 ${attempt}/2`,
+				`[AI] 命运事件请求失败 ${attempt}/3`,
 				error instanceof Error ? error.message : error,
 			);
 		}
 	}
-	console.info('[AI] 命运事件两次生成均未通过，回退到写实本地事件');
+	console.info('[AI] 命运事件三次生成均未通过，回退到写实本地事件');
   return null;
 }
 
@@ -590,12 +592,6 @@ export async function generateAIFreeFate(payload: {
   let previousRejection = '';
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     try {
-      const mechanicBudget = buildFreeFateMechanicBudget(
-        payload.snapshot,
-        payload.event.profile,
-        payload.event.fact,
-        payload.playerText,
-      ) as { preferredRecipeId?: string };
       const raw = await requestAI('fate-free', {
         event: {
           id: payload.event.id,
@@ -607,7 +603,6 @@ export async function generateAIFreeFate(payload: {
         direction: payload.direction,
         playerText: payload.playerText,
         snapshot: payload.snapshot,
-        mechanicBudget,
         previousRejection,
       }, 16000);
       const source = isRecord(raw) && isRecord(raw.response) ? raw.response : raw;
@@ -618,16 +613,6 @@ export async function generateAIFreeFate(payload: {
         payload.event.fact,
       );
       if (response) {
-        const rawResidue = isRecord(source) && isRecord(source.residue) ? source.residue : undefined;
-        const rawRecipeId = rawResidue && typeof rawResidue.recipeId === 'string'
-          ? rawResidue.recipeId
-          : '';
-        if (rawRecipeId && rawRecipeId !== 'memory_only'
-          && response.settlement?.recipeId === 'memory_only') {
-          previousRejection = `你选择了${rawRecipeId}，但证据没有写出主角自己的具体载体，程序只能降级成memory_only。请让result与evidence明确写出主角的身体、习惯、穿戴物或账目变化；若做不到就主动选择memory_only。`;
-          console.info(`[AI] 亲口回应机械证据被降级，正在重写 ${attempt}/2`);
-          continue;
-        }
         const continuity = reviewFreeFateContinuity(payload.event, payload.playerText, response);
         if (!continuity.valid) {
           previousRejection = continuity.reason;
@@ -636,9 +621,10 @@ export async function generateAIFreeFate(payload: {
         }
         const candidateEvent = { ...payload.event, [payload.direction]: response };
         const review = await reviewFateReality(payload.snapshot, candidateEvent);
-        if (review?.valid) return response;
-        previousRejection = review?.reason
-          ?? '上一稿没有通过现实连续性审稿，请只写原场景人物位置与当场直接反应';
+        // 本地格式、白名单与现场连续性已是硬门。二次 AI 审稿明确指出
+        // 现实硬伤时才退稿；审稿超时/无返回不应否决一份已合格的 AI 回执。
+        if (review?.valid !== false) return response;
+        previousRejection = review.reason;
       } else {
         previousRejection = '上一稿没有通过剧情证据或格式校验，请换一种更直接、可验证的现场结果';
       }
@@ -663,6 +649,8 @@ export async function generateAIFateResult(payload: {
     result: string;
     settlement?: FateSettlement;
     gainItemId?: ItemId;
+    removeItemId?: ItemId;
+    reward?: FateReward;
   };
   snapshot: LifeSnapshot;
 }): Promise<string | null> {

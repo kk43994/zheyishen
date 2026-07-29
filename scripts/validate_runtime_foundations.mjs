@@ -5,6 +5,9 @@ const ai = fs.readFileSync('src/ai.ts', 'utf8');
 const checkpoint = fs.readFileSync('src/run-checkpoint.ts', 'utf8');
 const onboarding = fs.readFileSync('src/onboarding.ts', 'utf8');
 const telemetry = fs.readFileSync('src/telemetry.ts', 'utf8');
+const performanceMonitor = fs.readFileSync('src/performance-monitor.ts', 'utf8');
+const artRuntime = fs.readFileSync('src/art-runtime.ts', 'utf8');
+const main = fs.readFileSync('src/main.ts', 'utf8');
 const workflow = fs.readFileSync('.github/workflows/quality.yml', 'utf8');
 
 const errors = [];
@@ -41,11 +44,25 @@ requireToken(game, "recordTelemetry('run_started'", '缺少开局遥测');
 requireToken(game, "recordTelemetry('fate_choice'", '缺少命运选择遥测');
 requireToken(game, "recordTelemetry('run_ended'", '缺少结局遥测');
 
+requireToken(performanceMonitor, "const PERFORMANCE_STORAGE_KEY = 'zys-performance-v1'", '缺少设备本地性能报告');
+requireToken(performanceMonitor, "PerformanceObserver.supportedEntryTypes?.includes('longtask')", '没有监控主线程长任务');
+requireToken(performanceMonitor, 'recordFramePerformance', '没有帧率与长帧采样');
+requireToken(performanceMonitor, 'recordArtPerformance', '没有图片解码耗时采样');
+requireToken(performanceMonitor, 'cornerTapCount >= 6', '扫码环境缺少隐藏的开发者监控入口');
+requireToken(performanceMonitor, "copy.textContent = '查看 JSON'", '开发者不能查看完整性能报告');
+requireToken(performanceMonitor, 'JSON.stringify(report, null, 2)', '性能报告缺少可读 JSON 视图');
+rejectToken(performanceMonitor, 'fetch(', '本地性能监控不应发送网络请求');
+rejectToken(performanceMonitor, 'navigator.clipboard', '互动空间性能监控不能访问敏感剪贴板能力');
+rejectToken(performanceMonitor, 'document.execCommand', '互动空间性能监控不能使用废弃复制接口');
+requireToken(artRuntime, 'recordArtPerformance(', '图片加载器没有上报性能样本');
+requireToken(game, 'recordFramePerformance(frameDuration', '游戏主循环没有上报帧样本');
+requireToken(main, "markPerformance('interactive_ready')", '没有记录首屏可交互时间');
+
 requireToken(ai, 'signal?: AbortSignal', 'AI 请求没有取消信号');
 requireToken(game, 'this.originAbortController?.abort()', '新局没有取消旧出生请求');
 requireToken(game, 'controller.signal', '出生请求没有转发取消信号');
-requireToken(game, '这页仍在登记，不会重复发起请求', '长等待文案没有明确禁止重复计费请求');
-requireToken(game, '明确失败后才会出现重试入口', '重试入口没有限制在明确失败后');
+requireToken(game, 'for (let attempt = 1; attempt <= 1; attempt += 1)', '出生请求仍可能因长等待重复计费');
+requireToken(game, "if (this.state !== 'origin' || this.aiOriginState !== 'error') return;", '重试入口没有限制在明确失败后');
 
 requireToken(game, 'separateCircularBodies(this.enemies)', '敌群分离仍未使用空间桶');
 requireToken(game, 'Math.min(3, Math.max(1, Math.floor(window.devicePixelRatio || 1)))', 'Canvas 没有保留高密度手机的 3x 原生清晰度');
@@ -60,6 +77,7 @@ const result = {
   checkpoint: 'v1 -> v2 migration with invalid backup',
   onboarding: 'first 12 seconds; audit-safe',
   telemetry: 'device-local; bounded; no network sender',
+  performanceMonitor: 'hidden six-tap panel; startup, image decode, frames, long tasks and optional JS heap; no network sender',
   aiRequests: 'abortable; no overlapping long-wait retry',
   renderScale: '1x-3x integer backing; native art quality retained',
   renderCulling: 'offscreen-only; visible art and simulation unchanged',

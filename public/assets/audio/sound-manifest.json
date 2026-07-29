@@ -131,6 +131,51 @@
       "file": "sfx/deny.wav",
       "seconds": 0.31,
       "origin": "project-authored-procedural"
+    },
+    "phone": {
+      "file": "sfx/phone.wav",
+      "seconds": 3.75,
+      "origin": "curated-field-recording",
+      "sha256": "c8c493f88365ee2259399d7bd9b9ed3f06d40a6434c11120258a24903a6fff1a",
+      "source": {
+        "title": "Phone Ringing Sound.wav",
+        "creator": "fspera",
+        "provider": "Freesound",
+        "freesoundId": 528111,
+        "landing": "https://freesound.org/people/fspera/sounds/528111/",
+        "license": "CC0-1.0",
+        "sourceSha256": "c77e494addd87c493084ed6ce0f15efc3435ad39486eab6612abcead613a4626"
+      }
+    },
+    "train": {
+      "file": "sfx/train.wav",
+      "seconds": 11,
+      "origin": "curated-field-recording",
+      "sha256": "c574dbecbbce815331174007ab1dddd26e21071d3c281f0828d48144fcc48cc2",
+      "source": {
+        "title": "Subway arriving",
+        "creator": "sean_sd2007",
+        "provider": "Freesound",
+        "freesoundId": 354128,
+        "landing": "https://freesound.org/people/sean_sd2007/sounds/354128/",
+        "license": "CC0-1.0",
+        "sourceSha256": "fa39e88f6a78ac59df6d8c54eb00067baf39a5ef5966ac9e87dc99847aeca321"
+      }
+    },
+    "monitor": {
+      "file": "sfx/monitor.wav",
+      "seconds": 3.323,
+      "origin": "curated-field-recording",
+      "sha256": "01440d02e4b6bdd7ef3ba78142051f0588486fa20aa1c672d78214ac6283b290",
+      "source": {
+        "title": "Hospital heart monitor beeps",
+        "creator": "vestibule-door",
+        "provider": "Freesound",
+        "freesoundId": 668978,
+        "landing": "https://freesound.org/people/vestibule-door/sounds/668978/",
+        "license": "CC0-1.0",
+        "sourceSha256": "8a9b03cac07bba8aa377064a0f528f5b71bc6b1281acaa28f7963ba7e63542ad"
+      }
     }
   },
   "ambience": {
@@ -138,30 +183,31 @@
       "file": "ambience/childhood-room.wav",
       "seconds": 8,
       "origin": "curated-field-recording",
-      "sha256": "835508f1d8af9fdcc138f8e48c6fe05a51154cf4c18a68a53dd48cd6ec1dff77",
+      "sha256": "65fd9a83296a2703df3cc713af6b7b8e73eca544f525a15d1b6656ea838b420c",
       "source": {
-        "title": "INT Rainy ambience (rain heard from inside a room)",
-        "creator": "Sayuri_Odin",
-        "provider": "Freesound via Openverse",
-        "openverseId": "b746d546-707c-4662-a010-6bc4e001a615",
-        "landing": "https://freesound.org/people/Sayuri_Odin/sounds/216134",
+        "title": "Rain on window",
+        "creator": "Nickisawsome74",
+        "provider": "Freesound",
+        "freesoundId": 669621,
+        "landing": "https://freesound.org/people/Nickisawsome74/sounds/669621/",
         "license": "CC0-1.0",
-        "sourceSha256": "3da42a205347c7b5a44e81830a471895836636cda505a37644ddc8161bdf8699"
+        "sourceSha256": "ab13fdc468bcc1cbd26f6fea712b6ed28881dc22935dec6ff1b19f62a4cd3e26"
       }
     },
     "1": {
       "file": "ambience/classroom.wav",
       "seconds": 8,
       "origin": "curated-field-recording",
-      "sha256": "ace384cd8e5a32e8e9dd55292352f510fc6776932ae04b5a2f8a7c0680becfda",
+      "sha256": "283d66b0d94808eac8954f8699d2ee1e8a76a008f97201d90b5647c5e6d0d0d5",
       "source": {
-        "title": "Classroom Ambience - High School Class",
-        "creator": "okieactor",
+        "title": "classrom-talk_01.wav",
+        "creator": "finalobserver",
         "provider": "Freesound via Openverse",
-        "openverseId": "b3572f02-df33-44ce-aca0-07bff0c6d8d2",
-        "landing": "https://freesound.org/people/okieactor/sounds/417041",
+        "openverseId": "b9034e93-a2e7-474c-8d24-15dd2a814529",
+        "freesoundId": 330732,
+        "landing": "https://freesound.org/people/finalobserver/sounds/330732/",
         "license": "CC0-1.0",
-        "sourceSha256": "e3c94b9678d37134111a7d08f8c843be8c3caa489e192a62a9ad3a5c2a94795b"
+        "sourceSha256": "219f32428a642fb5595f5ee3d7845d46420047e7785d6d7062a46081daaa2509"
       }
     },
     "2": {
@@ -198,15 +244,15 @@
       "file": "ambience/office.wav",
       "seconds": 8,
       "origin": "curated-field-recording",
-      "sha256": "8336f9b1ea81af87f1a3dfe96d40450906b22192e45f2f8220b2375767423a30",
+      "sha256": "283ee84ff45f9ea7ab03e20e03c79c795c04c3850ae3b6822b3b5f9d6f1a4abe",
       "source": {
-        "title": "Office Room Tone",
-        "creator": "holidayparade",
-        "provider": "Freesound via Openverse",
-        "openverseId": "214e7b59-acbb-4ee1-9d28-7bf3180f8950",
-        "landing": "https://freesound.org/people/holidayparade/sounds/278154",
+        "title": "Office Ambience",
+        "creator": "BeaconStudio",
+        "provider": "Freesound",
+        "freesoundId": 862604,
+        "landing": "https://freesound.org/people/BeaconStudio/sounds/862604/",
         "license": "CC0-1.0",
-        "sourceSha256": "dac00a4a8148270bdde8dfcc5fd5f06303852d9b3faa6bbce517a27df4293af1"
+        "sourceSha256": "204669d890d5e072832c8bca80dadafacc1c12435992d7b29a3b4f424b9882a3"
       }
     },
     "5": {
@@ -225,5 +271,61 @@
       }
     }
   },
-  "generatedAt": "2026-07-24T01:52:50.211Z"
+  "generatedAt": "2026-07-29T11:37:39.088Z",
+  "music": {
+    "fluorescent-name": {
+      "file": "music/fluorescent-name.wav",
+      "seconds": 18,
+      "origin": "project-authored-procedural",
+      "role": "narrative-bgm"
+    },
+    "last-lamp": {
+      "file": "music/last-lamp.wav",
+      "seconds": 18,
+      "origin": "project-authored-procedural",
+      "role": "narrative-bgm"
+    },
+    "after-breath": {
+      "file": "music/after-breath.wav",
+      "seconds": 18,
+      "origin": "project-authored-procedural",
+      "role": "narrative-bgm"
+    },
+    "first-breath": {
+      "file": "music/first-breath.wav",
+      "seconds": 18,
+      "origin": "project-authored-procedural",
+      "role": "narrative-bgm"
+    },
+    "under-bed": {
+      "file": "music/under-bed.wav",
+      "seconds": 18,
+      "origin": "project-authored-procedural",
+      "role": "narrative-bgm"
+    },
+    "red-marks": {
+      "file": "music/red-marks.wav",
+      "seconds": 18,
+      "origin": "project-authored-procedural",
+      "role": "narrative-bgm"
+    },
+    "missed-train": {
+      "file": "music/missed-train.wav",
+      "seconds": 18,
+      "origin": "project-authored-procedural",
+      "role": "narrative-bgm"
+    },
+    "lukewarm-home": {
+      "file": "music/lukewarm-home.wav",
+      "seconds": 18,
+      "origin": "project-authored-procedural",
+      "role": "narrative-bgm"
+    },
+    "pressure": {
+      "file": "music/pressure.wav",
+      "seconds": 18,
+      "origin": "project-authored-procedural",
+      "role": "adaptive-boss-layer"
+    }
+  }
 }

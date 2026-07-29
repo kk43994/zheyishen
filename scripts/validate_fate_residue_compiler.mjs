@@ -272,6 +272,59 @@ const vagueAccountBranch = fate.validateFateEvent(eventWith('交换', {
 }, accountFact), accountSnapshot, { requireResidue: true });
 assert.equal(vagueAccountBranch, null, 'merely seeing an account item must not grant it');
 
+const malformedFreeResidue = fate.validateFreeFateResponse({
+  label: '请老师停下',
+  poison: { doubt: 1 },
+  result: '老师停了两秒，把练习本放回讲台，示意他下课后再来问。',
+  residue: {
+    carrier: 'body',
+    motif: 'invented_motif',
+    intensity: 'wild',
+    evidence: '并不存在于结果里的机械证据',
+    recipeId: 'one_giant_breath',
+  },
+}, snapshot, '反噬', '老师在讲台前念出他的错误答案，全班笑了几声。');
+assert(malformedFreeResidue, 'valid AI scene text must survive malformed residue metadata');
+assert.equal(malformedFreeResidue.effect, 'none', 'malformed residue must never grant a mechanic');
+assert.equal(malformedFreeResidue.settlement.recipeId, 'memory_only', 'malformed residue must safely become memory_only');
+
+const aiStatReward = fate.validateFreeFateResponse({
+  label: '重新问一次',
+  poison: { pride: 1 },
+  result: '老师停下红笔重新讲了一遍，周围同学也把笑声收了回去。',
+  reward: { kind: 'stats', stats: { damage: 12, moveSpeed: -8 } },
+}, snapshot, '反噬', '老师在讲台前念出他的错误答案，全班笑了几声。');
+assert(aiStatReward, 'AI-selected stat reward should compile');
+assert.deepEqual(aiStatReward.stats, { damage: 12, moveSpeed: -8 });
+assert.equal(aiStatReward.reward.kind, 'stats');
+
+const aiGainItemReward = fate.validateFreeFateResponse({
+  label: '把纽扣收好',
+  poison: {},
+  result: '老师点点头，把讲台上的纽扣交回他手里，示意他先回座位。',
+  reward: { kind: 'gain_item', itemId: 'loose-button' },
+}, snapshot, '交换', looseButtonFact);
+assert(aiGainItemReward, 'AI may grant an item from the current fate candidate pool');
+assert.equal(aiGainItemReward.gainItemId, 'loose-button');
+
+const aiRemoveItemReward = fate.validateFreeFateResponse({
+  label: '把纽扣留下',
+  poison: { doubt: 1 },
+  result: '老师收起那枚纽扣，转身回到讲台继续上课。',
+  reward: { kind: 'remove_item', itemId: 'loose-button' },
+}, ownedSnapshot, '反噬', looseButtonFact);
+assert(aiRemoveItemReward, 'AI may remove an item the player currently owns');
+assert.equal(aiRemoveItemReward.removeItemId, 'loose-button');
+
+const invalidAIItemReward = fate.validateFreeFateResponse({
+  label: '凭空拿走木剑',
+  poison: {},
+  result: '老师停了两秒，随后让他先回到自己的座位。',
+  reward: { kind: 'remove_item', itemId: 'wooden-sword' },
+}, ownedSnapshot, '反噬', looseButtonFact);
+assert(invalidAIItemReward, 'invalid reward metadata must not discard valid AI scene text');
+assert.equal(invalidAIItemReward.reward.kind, 'none', 'invalid item ids must safely lose their mechanical effect');
+
 const hardCoinResource = fate.validateFateEvent(eventWith('反噬', {
   label: '把找零收下',
   poison: { greed: 1 },

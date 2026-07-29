@@ -1,0 +1,229 @@
+{
+  "version": 1,
+  "cues": {
+    "origin-comic-01": {
+      "durationMs": 10188,
+      "assetRevision": 9,
+      "segments": [
+        {
+          "index": 0,
+          "text": "人出生的时候，先哭一声。",
+          "startMs": 0,
+          "speechEndMs": 3974,
+          "endMs": 4624,
+          "pauseAfterMs": 650
+        },
+        {
+          "index": 1,
+          "text": "那是他来到世上，领到的第一口气。",
+          "startMs": 4624,
+          "speechEndMs": 10188,
+          "endMs": 10188,
+          "pauseAfterMs": 0
+        }
+      ]
+    },
+    "origin-comic-02": {
+      "durationMs": 13464,
+      "assetRevision": 9,
+      "segments": [
+        {
+          "index": 0,
+          "text": "有人出生时，门外站满了人。",
+          "startMs": 0,
+          "speechEndMs": 4592,
+          "endMs": 4952,
+          "pauseAfterMs": 360
+        },
+        {
+          "index": 1,
+          "text": "有人哭了很久，才有人推门。",
+          "startMs": 4952,
+          "speechEndMs": 9544,
+          "endMs": 10124,
+          "pauseAfterMs": 580
+        },
+        {
+          "index": 2,
+          "text": "芸芸众生，来处不同。",
+          "startMs": 10124,
+          "speechEndMs": 13464,
+          "endMs": 13464,
+          "pauseAfterMs": 0
+        }
+      ]
+    },
+    "origin-comic-03": {
+      "durationMs": 6156,
+      "assetRevision": 9,
+      "segments": [
+        {
+          "index": 0,
+          "text": "后来，大人教他争气。",
+          "startMs": 0,
+          "speechEndMs": 3468,
+          "endMs": 3988,
+          "pauseAfterMs": 520
+        },
+        {
+          "index": 1,
+          "text": "也教他忍气。",
+          "startMs": 3988,
+          "speechEndMs": 6156,
+          "endMs": 6156,
+          "pauseAfterMs": 0
+        }
+      ]
+    },
+    "origin-comic-04": {
+      "durationMs": 8496,
+      "assetRevision": 9,
+      "segments": [
+        {
+          "index": 0,
+          "text": "后来，他们各自长大。",
+          "startMs": 0,
+          "speechEndMs": 3222,
+          "endMs": 3662,
+          "pauseAfterMs": 440
+        },
+        {
+          "index": 1,
+          "text": "也各自遇见，各自躲不过的事。",
+          "startMs": 3662,
+          "speechEndMs": 8496,
+          "endMs": 8496,
+          "pauseAfterMs": 0
+        }
+      ]
+    },
+    "origin-comic-05": {
+      "durationMs": 15084,
+      "assetRevision": 9,
+      "segments": [
+        {
+          "index": 0,
+          "text": "受了委屈，咽下去，叫懂事。",
+          "startMs": 0,
+          "speechEndMs": 4250,
+          "endMs": 4690,
+          "pauseAfterMs": 440
+        },
+        {
+          "index": 1,
+          "text": "吐出来，又有人说他不懂事。",
+          "startMs": 4690,
+          "speechEndMs": 9364,
+          "endMs": 9984,
+          "pauseAfterMs": 620
+        },
+        {
+          "index": 2,
+          "text": "每种选择，都有所得，也有所失。",
+          "startMs": 9984,
+          "speechEndMs": 15084,
+          "endMs": 15084,
+          "pauseAfterMs": 0
+        }
+      ]
+    },
+    "origin-comic-06": {
+      "durationMs": 12564,
+      "assetRevision": 9,
+      "segments": [
+        {
+          "index": 0,
+          "text": "有些气，成了脾气。",
+          "startMs": 0,
+          "speechEndMs": 3135,
+          "endMs": 3475,
+          "pauseAfterMs": 340
+        },
+        {
+          "index": 1,
+          "text": "有些气，撑成了骨气。",
+          "startMs": 3475,
+          "speechEndMs": 7058,
+          "endMs": 7638,
+          "pauseAfterMs": 580
+        },
+        {
+          "index": 2,
+          "text": "还有一些，一直留在身体里。",
+          "startMs": 7638,
+          "speechEndMs": 12564,
+          "endMs": 12564,
+          "pauseAfterMs": 0
+        }
+      ]
+    },
+    "origin-comic-07": {
+      "durationMs": 13392,
+      "assetRevision": 9,
+      "segments": [
+        {
+          "index": 0,
+          "text": "得到的，穿在身上。",
+          "startMs": 0,
+          "speechEndMs": 3326,
+          "endMs": 3726,
+          "pauseAfterMs": 400
+        },
+        {
+          "index": 1,
+          "text": "失去的，也穿在身上。",
+          "startMs": 3726,
+          "speechEndMs": 7526,
+          "endMs": 8166,
+          "pauseAfterMs": 640
+        },
+        {
+          "index": 2,
+          "text": "芸芸众生，各有各的这一身。",
+          "startMs": 8166,
+          "speechEndMs": 13392,
+          "endMs": 13392,
+          "pauseAfterMs": 0
+        }
+      ]
+    },
+    "origin-comic-08": {
+      "durationMs": 17676,
+      "assetRevision": 9,
+      "segments": [
+        {
+          "index": 0,
+          "text": "这一身，并非生来如此。",
+          "startMs": 0,
+          "speechEndMs": 5265,
+          "endMs": 5825,
+          "pauseAfterMs": 560
+        },
+        {
+          "index": 1,
+          "text": "而是被这一生，一件件，穿成的。",
+          "startMs": 5825,
+          "speechEndMs": 12846,
+          "endMs": 13706,
+          "pauseAfterMs": 860
+        },
+        {
+          "index": 2,
+          "text": "(breath)现在。",
+          "startMs": 13706,
+          "speechEndMs": 14876,
+          "endMs": 15336,
+          "pauseAfterMs": 460
+        },
+        {
+          "index": 3,
+          "text": "轮到你了。(exhale)",
+          "startMs": 15336,
+          "speechEndMs": 17676,
+          "endMs": 17676,
+          "pauseAfterMs": 0
+        }
+      ]
+    }
+  }
+}

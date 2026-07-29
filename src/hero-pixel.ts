@@ -290,12 +290,10 @@ export class PixelHeroRenderer {
       state.appearance.stature,
       state.appearance.bodyBuild,
     );
-    if (atlasFrame) {
-      this.paintAtlasFrame(context, atlasFrame, state);
-    } else {
-      const surface = new PixelSurface(context);
-      this.paint(surface, state);
+    if (!atlasFrame) {
+      throw new Error('主角正式像素帧缺失；程序化降级动画已取消');
     }
+    this.paintAtlasFrame(context, atlasFrame, state);
     this.cache.set(key, canvas);
     if (this.cache.size > CACHE_LIMIT) {
       const oldest = this.cache.keys().next().value as string | undefined;
@@ -800,6 +798,7 @@ export class PixelHeroRenderer {
   }
 
   private paint(surface: PixelSurface, state: PixelHeroState): void {
+    throw new Error('程序化主角降级动画已取消');
     surface.clear();
     const owns = (id: ItemId) => state.items.includes(id);
     const pose = this.resolvePose(state, owns);
@@ -857,6 +856,7 @@ export class PixelHeroRenderer {
   }
 
   private resolvePose(state: PixelHeroState, owns: (id: ItemId) => boolean): HeroPose {
+    throw new Error('程序化主角降级姿态已取消');
     const age = state.ageStep;
     const bodyBuild = state.appearance.bodyBuild;
     const torsoWidth = { slim: 7, average: 9, sturdy: 11, soft: 10 }[bodyBuild];
@@ -896,6 +896,7 @@ export class PixelHeroRenderer {
     owns: (id: ItemId) => boolean,
     outline: string,
   ): void {
+    throw new Error('程序化主角降级图层已取消');
     if (owns('empty-frame')) {
       surface.rect(pose.centerX - 13, pose.torsoTop - 7, 27, 2, '#6d4c35');
       surface.rect(pose.centerX - 13, pose.torsoTop + 19, 27, 2, '#6d4c35');
@@ -922,6 +923,7 @@ export class PixelHeroRenderer {
   }
 
   private paintBaseClothes(surface: PixelSurface, pose: HeroPose, dna: AppearanceDNA): void {
+    throw new Error('程序化主角降级服装已取消');
     if (dna.outfit === 'undershirt') {
       surface.rect(pose.centerX - 2, pose.torsoTop + 1, 5, 1, '#c2b5a4');
     } else if (dna.outfit === 'old_sweater') {
@@ -937,6 +939,7 @@ export class PixelHeroRenderer {
   }
 
   private paintRaincoat(surface: PixelSurface, pose: HeroPose, outline: string): void {
+    throw new Error('程序化主角降级雨衣已取消');
     const left = pose.centerX - Math.ceil(pose.torsoWidth / 2) - 3;
     const right = pose.centerX + Math.ceil(pose.torsoWidth / 2) + 3;
     surface.polygon([
@@ -968,6 +971,7 @@ export class PixelHeroRenderer {
     owns: (id: ItemId) => boolean,
     ageStep: number,
   ): void {
+    throw new Error('程序化主角降级头像已取消');
     surface.ellipse(pose.headX, pose.headY, Math.ceil(pose.headWidth / 2) + 1, Math.ceil(pose.headHeight / 2) + 1, outline);
     surface.ellipse(pose.headX, pose.headY, Math.floor(pose.headWidth / 2), Math.floor(pose.headHeight / 2), skin);
 
@@ -1048,6 +1052,7 @@ export class PixelHeroRenderer {
     owns: (id: ItemId) => boolean,
     outline: string,
   ): void {
+    throw new Error('程序化主角降级道具已取消');
     if (owns('nameless-tie')) {
       surface.polygon([
         [pose.centerX, pose.torsoTop + 2], [pose.centerX + 2, pose.torsoTop + 7],

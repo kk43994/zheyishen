@@ -5,6 +5,7 @@ import { loadVoiceContract } from './load_voice_contract.mjs';
 const ROOT = resolve(import.meta.dirname, '..');
 const OUTPUT_DIR = resolve(ROOT, 'public/assets/audio/voice');
 const MANIFEST_PATH = resolve(OUTPUT_DIR, 'manifest.json');
+const ORIGIN_COMIC_TIMING_PATH = resolve(ROOT, 'src/origin-comic-voice-timing.json');
 const MODEL = process.env.MINIMAX_SPEECH_MODEL || 'speech-2.8-hd';
 const force = process.argv.includes('--force');
 const draft = process.argv.includes('--draft');
@@ -37,7 +38,12 @@ if (!draft && (!narratorVoice || !fatherVoice)) {
   throw new Error('production generation requires MINIMAX_NARRATOR_VOICE_ID and MINIMAX_FATHER_VOICE_ID; use --draft only for auditions');
 }
 
-const { VOICE_CUES, VOICE_CUE_IDS, validateVoiceScript } = await loadVoiceContract(ROOT);
+const {
+  VOICE_CUES,
+  VOICE_CUE_IDS,
+  VOICE_SYNTHESIS_SEGMENTS,
+  validateVoiceScript,
+} = await loadVoiceContract(ROOT);
 validateVoiceScript();
 
 // Casting table mirrors VOICE_DELIVERY's voice direction in voice-script.ts.
@@ -107,27 +113,27 @@ function voiceFor(cue) {
   return systemVoiceByRole[cue.role] || 'Chinese (Mandarin)_Southern_Young_Man';
 }
 
-function voiceSetting(cue) {
+function voiceSetting(cue, segment) {
   return {
     voice_id: voiceFor(cue),
-    speed: cue.delivery.speed,
-    vol: 1,
-    pitch: cue.delivery.pitch,
-    emotion: cue.delivery.emotion,
+    speed: segment?.speed ?? cue.delivery.speed,
+    vol: segment?.volume ?? 1,
+    pitch: segment?.pitch ?? cue.delivery.pitch,
+    emotion: segment?.emotion ?? cue.delivery.emotion,
   };
 }
 
-async function callTts(cue) {
+async function callTts(cue, segment) {
   const response = await fetch(`${apiBaseUrl}/v1/t2a_v2`, {
     method: 'POST',
     headers: { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
     body: JSON.stringify({
       model: MODEL,
-      text: cue.text,
+      text: segment?.text ?? cue.text,
       stream: false,
       language_boost: 'Chinese',
       output_format: 'hex',
-      voice_setting: voiceSetting(cue),
+      voice_setting: voiceSetting(cue, segment),
       audio_setting: { sample_rate: 32000, bitrate: 64000, format: 'mp3', channel: 1 },
       ...(pronunciationByCue[cue.id] ? { pronunciation_dict: { tone: pronunciationByCue[cue.id] } } : {}),
     }),
@@ -141,12 +147,86 @@ async function callTts(cue) {
   return { bytes: Buffer.from(audioHex, 'hex'), durationMs: result?.extra_info?.audio_length ?? null };
 }
 
+async function synthesizeCue(cue) {
+  const segments = VOICE_SYNTHESIS_SEGMENTS?.[cue.id];
+  if (!segments?.length) return callTts(cue);
+
+  const continuousText = segments.map((segment, segmentIndex) => (
+    `${segment.text}${segment.pauseAfter > 0 && segmentIndex < segments.length - 1
+      ? `<#${segment.pauseAfter.toFixed(2)}#>`
+      : ''}`
+  )).join('');
+  segments.forEach((segment, segmentIndex) => {
+    console.info(
+      `[voice]   phrase ${segmentIndex + 1}/${segments.length}`
+      + ` weight=${segment.weight} planned-speed=${segment.speed.toFixed(2)}`
+      + ` planned-pitch=${segment.pitch} planned-volume=${segment.volume.toFixed(2)}`
+      + ` pause=${segment.pauseAfter.toFixed(2)}s`,
+    );
+  });
+  // One MiniMax request preserves a single breath and continuous prosody.
+  // Phrase-level values above remain the performance plan; pauses are native
+  // MiniMax tags. Hard-splicing separately synthesized phrases sounded mechanical.
+  const generated = await callTts(cue, {
+    text: continuousText,
+    speed: cue.delivery.speed,
+    volume: 1,
+    pitch: cue.delivery.pitch,
+    emotion: cue.delivery.emotion,
+  });
+  const pauseTotalMs = segments.reduce((total, segment) => total + segment.pauseAfter * 1000, 0);
+  const spokenTotalMs = Math.max(1, (generated.durationMs ?? 0) - pauseTotalMs);
+  const spokenCharacterTotal = Math.max(1, segments.reduce(
+    (total, segment) => total + segment.text
+      .replace(/\([a-z-]+\)/g, '')
+      .replace(/[，。；、！？\s]/g, '')
+      .length,
+    0,
+  ));
+  const segmentTimings = [];
+  let cursorMs = 0;
+  for (let segmentIndex = 0; segmentIndex < segments.length; segmentIndex += 1) {
+    const segment = segments[segmentIndex];
+    const characters = segment.text
+      .replace(/\([a-z-]+\)/g, '')
+      .replace(/[，。；、！？\s]/g, '')
+      .length;
+    const speechDurationMs = spokenTotalMs * characters / spokenCharacterTotal;
+    const startMs = cursorMs;
+    const speechEndMs = startMs + speechDurationMs;
+    cursorMs = speechEndMs + segment.pauseAfter * 1000;
+    segmentTimings.push({
+      index: segmentIndex,
+      text: segment.text,
+      startMs: Math.round(startMs),
+      speechEndMs: Math.round(speechEndMs),
+      endMs: Math.round(cursorMs),
+      pauseAfterMs: Math.round(segment.pauseAfter * 1000),
+    });
+  }
+  return { ...generated, segmentTimings };
+}
+
 await mkdir(OUTPUT_DIR, { recursive: true });
 const previousManifest = JSON.parse(await readFile(MANIFEST_PATH, 'utf8').catch(() => '[]'));
 const manifestById = new Map(previousManifest.map((entry) => [entry.id, entry]));
 const writeManifest = async () => {
   const manifest = VOICE_CUE_IDS.flatMap((id) => manifestById.has(id) ? [manifestById.get(id)] : []);
   await writeFile(MANIFEST_PATH, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+  const originComicTimings = Object.fromEntries(
+    manifest
+      .filter((entry) => entry.id?.startsWith('origin-comic-') && entry.segmentTimings?.length)
+      .map((entry) => [entry.id, {
+        durationMs: entry.durationMs,
+        assetRevision: entry.assetRevision,
+        segments: entry.segmentTimings,
+      }]),
+  );
+  await writeFile(
+    ORIGIN_COMIC_TIMING_PATH,
+    `${JSON.stringify({ version: 1, cues: originComicTimings }, null, 2)}\n`,
+    'utf8',
+  );
 };
 for (const id of VOICE_CUE_IDS) {
   if (onlyIds && !onlyIds.has(id)) continue;
@@ -164,7 +244,7 @@ for (const id of VOICE_CUE_IDS) {
   let generated;
   for (let attempt = 0; ; attempt += 1) {
     try {
-      generated = await callTts(cue);
+      generated = await synthesizeCue(cue);
       break;
     } catch (error) {
       if (attempt >= 5 || !/rate limit/i.test(String(error?.message))) throw error;
@@ -180,6 +260,12 @@ for (const id of VOICE_CUE_IDS) {
     assetRevision: requestedRevision ?? manifestById.get(id)?.assetRevision ?? 0,
     generatedAt: new Date().toISOString(),
     delivery: cue.delivery,
+    ...(VOICE_SYNTHESIS_SEGMENTS?.[id]
+      ? {
+        synthesisSegments: VOICE_SYNTHESIS_SEGMENTS[id],
+        segmentTimings: generated.segmentTimings,
+      }
+      : {}),
   });
   await writeManifest();
 }

@@ -6,7 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from PIL import Image, ImageEnhance
+from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -25,6 +25,18 @@ def sha256(path: Path) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", default="output/imagegen/zhe-yi-shen-release-icon-v1/raw/release-icon-v1.png")
+    parser.add_argument(
+        "--logical-size",
+        type=int,
+        default=0,
+        help="collapse pixel art to this logical square size before nearest-neighbor export",
+    )
+    parser.add_argument(
+        "--colors",
+        type=int,
+        default=0,
+        help="maximum flat palette size for pixel-art export",
+    )
     args = parser.parse_args()
     source = ROOT / args.source
     if not source.is_file():
@@ -35,8 +47,16 @@ def main() -> None:
     if image.width != image.height or image.width < 1024:
         raise SystemExit(f"expected a square source at least 1024px wide, got {image.size}")
 
-    final = image.resize((300, 300), Image.Resampling.LANCZOS)
-    final = ImageEnhance.Sharpness(final).enhance(1.08)
+    logical = image
+    if args.logical_size > 0:
+        logical = image.resize((args.logical_size, args.logical_size), Image.Resampling.NEAREST)
+    if args.colors > 0:
+        logical = logical.quantize(
+            colors=args.colors,
+            method=Image.Quantize.MEDIANCUT,
+            dither=Image.Dither.NONE,
+        ).convert("RGB")
+    final = logical.resize((300, 300), Image.Resampling.NEAREST)
     FINAL.parent.mkdir(parents=True, exist_ok=True)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     final.save(FINAL, optimize=True)
@@ -50,6 +70,8 @@ def main() -> None:
         "source": str(source.relative_to(ROOT)),
         "sourceSha256": sha256(source),
         "sourceSize": list(image.size),
+        "logicalSize": list(logical.size),
+        "paletteColors": args.colors or None,
         "prompt": str(PROMPT.relative_to(ROOT)),
         "promptSha256": sha256(PROMPT),
         "final": str(FINAL.relative_to(ROOT)),

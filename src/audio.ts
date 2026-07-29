@@ -10,7 +10,10 @@ export type LifeSound =
   | 'swallow'
   | 'exhale'
   | 'boss'
-  | 'deny';
+  | 'deny'
+  | 'phone'
+  | 'train'
+  | 'monitor';
 
 const VOLUME_KEY = 'zhe-yi-shen:volume';
 const LAST_VOLUME_KEY = 'zhe-yi-shen:last-audible-volume';
@@ -19,9 +22,19 @@ const DEFAULT_AUDIO_MIGRATION_KEY = 'zhe-yi-shen:default-audio-v2';
 const HAPTICS_KEY = 'zhe-yi-shen:haptics';
 const EFFECTS_VOLUME_KEY = 'zhe-yi-shen:effects-volume';
 const AMBIENCE_VOLUME_KEY = 'zhe-yi-shen:ambience-volume';
+const MUSIC_VOLUME_KEY = 'zhe-yi-shen:music-volume';
 const VOICE_VOLUME_KEY = 'zhe-yi-shen:voice-volume';
+// Dialogue assets are deliberately performed with restrained dynamics. Give
+// them enough runtime headroom to stay intelligible on phone speakers, then
+// make the rest of the mix step back while a line is playing.
+const VOICE_PLAYBACK_GAIN = 1.6;
+const VOICE_SFX_DUCK = 0.42;
+const VOICE_AMBIENCE_DUCK = 0.42;
+const VOICE_MUSIC_DUCK = 0.26;
+const MUSIC_BUS_GAIN = 0.34;
+const TENSION_BUS_GAIN = 0.24;
 
-export type AudioMixChannel = 'effects' | 'ambience' | 'voice';
+export type AudioMixChannel = 'effects' | 'ambience' | 'music' | 'voice';
 
 const SFX_FILES: Record<LifeSound, string> = {
   page: 'assets/audio/sfx/page.mp3',
@@ -34,6 +47,9 @@ const SFX_FILES: Record<LifeSound, string> = {
   exhale: 'assets/audio/sfx/exhale.mp3',
   boss: 'assets/audio/sfx/boss.mp3',
   deny: 'assets/audio/sfx/deny.mp3',
+  phone: 'assets/audio/sfx/phone.mp3',
+  train: 'assets/audio/sfx/train.mp3',
+  monitor: 'assets/audio/sfx/monitor.mp3',
 };
 
 const AMBIENCE_FILES = [
@@ -44,6 +60,19 @@ const AMBIENCE_FILES = [
   'assets/audio/ambience/office.mp3',
   'assets/audio/ambience/hospital.mp3',
 ] as const;
+
+const MUSIC_FILES = [
+  'assets/audio/music/first-breath.mp3',
+  'assets/audio/music/under-bed.mp3',
+  'assets/audio/music/red-marks.mp3',
+  'assets/audio/music/missed-train.mp3',
+  'assets/audio/music/lukewarm-home.mp3',
+  'assets/audio/music/fluorescent-name.mp3',
+  'assets/audio/music/last-lamp.mp3',
+  'assets/audio/music/after-breath.mp3',
+] as const;
+
+const MUSIC_TENSION_FILE = 'assets/audio/music/pressure.mp3';
 
 interface QueuedVoice {
   id: VoiceCueId;
@@ -90,12 +119,16 @@ function readInitialVolume(): number {
 export class LifeFeedback {
   private context?: AudioContext;
   private masterGain?: GainNode;
+  private outputLimiter?: DynamicsCompressorNode;
   private sfxGain?: GainNode;
   private voiceGain?: GainNode;
   private ambienceGain?: GainNode;
+  private musicGain?: GainNode;
+  private tensionGain?: GainNode;
   private volume = readInitialVolume();
   private effectsVolume = Math.max(0, Math.min(1, readNumber(EFFECTS_VOLUME_KEY, 1)));
   private ambienceVolume = Math.max(0, Math.min(1, readNumber(AMBIENCE_VOLUME_KEY, 1)));
+  private musicVolume = Math.max(0, Math.min(1, readNumber(MUSIC_VOLUME_KEY, 0.78)));
   private voiceVolume = Math.max(0, Math.min(1, readNumber(VOICE_VOLUME_KEY, 1)));
   private haptics = readBoolean(HAPTICS_KEY, true);
   private readonly lastPlayed = new Map<LifeSound, number>();
@@ -105,6 +138,12 @@ export class LifeFeedback {
   private readonly ambienceBuffers = new Map<number, AudioBuffer>();
   private readonly ambienceLoads = new Map<number, Promise<AudioBuffer>>();
   private readonly unavailableAmbience = new Set<number>();
+  private readonly musicBuffers = new Map<number, AudioBuffer>();
+  private readonly musicLoads = new Map<number, Promise<AudioBuffer>>();
+  private readonly unavailableMusic = new Set<number>();
+  private tensionBuffer?: AudioBuffer;
+  private tensionLoad?: Promise<AudioBuffer>;
+  private tensionUnavailable = false;
   private readonly lastVoicePlayed = new Map<VoiceCueId, number>();
   private readonly voiceBuffers = new Map<VoiceCueId, AudioBuffer>();
   private readonly voiceLoads = new Map<VoiceCueId, Promise<AudioBuffer>>();
@@ -119,32 +158,56 @@ export class LifeFeedback {
   private activeAmbienceStage?: number;
   private activeAmbience?: AudioBufferSourceNode;
   private activeAmbienceLevel?: GainNode;
+  private musicRequestSerial = 0;
+  private requestedMusic?: number;
+  private activeMusicTrack?: number;
+  private activeMusic?: AudioBufferSourceNode;
+  private activeMusicLevel?: GainNode;
+  private musicTension = false;
+  private activeTension?: AudioBufferSourceNode;
+  private activeTensionLevel?: GainNode;
 
   unlock(): void {
     if (!this.context && typeof AudioContext !== 'undefined') {
       try {
         this.context = new AudioContext();
         this.masterGain = this.context.createGain();
+        this.outputLimiter = this.context.createDynamicsCompressor();
         this.sfxGain = this.context.createGain();
         this.voiceGain = this.context.createGain();
         this.ambienceGain = this.context.createGain();
+        this.musicGain = this.context.createGain();
+        this.tensionGain = this.context.createGain();
         this.masterGain.gain.value = this.volume;
+        this.outputLimiter.threshold.value = -1;
+        this.outputLimiter.knee.value = 0;
+        this.outputLimiter.ratio.value = 20;
+        this.outputLimiter.attack.value = 0.003;
+        this.outputLimiter.release.value = 0.08;
         this.sfxGain.gain.value = this.effectsVolume;
         this.voiceGain.gain.value = this.voiceVolume;
         this.ambienceGain.gain.value = 0.58 * this.ambienceVolume;
+        this.musicGain.gain.value = MUSIC_BUS_GAIN * this.musicVolume;
+        this.tensionGain.gain.value = TENSION_BUS_GAIN * this.musicVolume;
         this.sfxGain.connect(this.masterGain);
         this.voiceGain.connect(this.masterGain);
         this.ambienceGain.connect(this.masterGain);
-        this.masterGain.connect(this.context.destination);
+        this.musicGain.connect(this.masterGain);
+        this.tensionGain.connect(this.masterGain);
+        this.masterGain.connect(this.outputLimiter);
+        this.outputLimiter.connect(this.context.destination);
         for (const sound of Object.keys(SFX_FILES) as LifeSound[]) {
           void this.loadSfx(sound).catch(() => undefined);
         }
       } catch {
         this.context = undefined;
         this.masterGain = undefined;
+        this.outputLimiter = undefined;
         this.sfxGain = undefined;
         this.voiceGain = undefined;
         this.ambienceGain = undefined;
+        this.musicGain = undefined;
+        this.tensionGain = undefined;
       }
     }
     if (this.context?.state === 'suspended') void this.context.resume().catch(() => undefined);
@@ -157,6 +220,7 @@ export class LifeFeedback {
   getMixVolume(channel: AudioMixChannel): number {
     if (channel === 'effects') return this.effectsVolume;
     if (channel === 'ambience') return this.ambienceVolume;
+    if (channel === 'music') return this.musicVolume;
     return this.voiceVolume;
   }
 
@@ -164,19 +228,36 @@ export class LifeFeedback {
     const next = Math.max(0, Math.min(1, value));
     if (channel === 'effects') this.effectsVolume = next;
     else if (channel === 'ambience') this.ambienceVolume = next;
+    else if (channel === 'music') this.musicVolume = next;
     else this.voiceVolume = next;
     try {
       const key = channel === 'effects'
         ? EFFECTS_VOLUME_KEY
-        : channel === 'ambience' ? AMBIENCE_VOLUME_KEY : VOICE_VOLUME_KEY;
+        : channel === 'ambience'
+          ? AMBIENCE_VOLUME_KEY
+          : channel === 'music' ? MUSIC_VOLUME_KEY : VOICE_VOLUME_KEY;
       localStorage.setItem(key, next.toFixed(2));
     } catch {
       // Persistence is optional in restricted webviews.
     }
     if (this.context) {
       const now = this.context.currentTime;
-      if (channel === 'effects' && this.sfxGain) this.sfxGain.gain.setTargetAtTime(next, now, 0.02);
-      if (channel === 'ambience' && this.ambienceGain) this.ambienceGain.gain.setTargetAtTime(0.58 * next, now, 0.04);
+      const voiceActive = Boolean(this.activeVoice);
+      if (channel === 'effects' && this.sfxGain) {
+        this.sfxGain.gain.setTargetAtTime(next * (voiceActive ? VOICE_SFX_DUCK : 1), now, 0.02);
+      }
+      if (channel === 'ambience' && this.ambienceGain) {
+        this.ambienceGain.gain.setTargetAtTime(
+          0.58 * next * (voiceActive ? VOICE_AMBIENCE_DUCK : 1),
+          now,
+          0.04,
+        );
+      }
+      if (channel === 'music') {
+        const duck = voiceActive ? VOICE_MUSIC_DUCK : 1;
+        this.musicGain?.gain.setTargetAtTime(MUSIC_BUS_GAIN * next * duck, now, 0.08);
+        this.tensionGain?.gain.setTargetAtTime(TENSION_BUS_GAIN * next * duck, now, 0.08);
+      }
       if (channel === 'voice' && this.voiceGain) this.voiceGain.gain.setTargetAtTime(next, now, 0.02);
     }
   }
@@ -187,8 +268,12 @@ export class LifeFeedback {
     ambienceReady: number;
     requestedAmbience: number | null;
     activeAmbience: number | null;
+    musicReady: number;
+    requestedMusic: number | null;
+    activeMusic: number | null;
+    musicTension: boolean;
     voiceReady: number;
-    mix: { effects: number; ambience: number; voice: number };
+    mix: { effects: number; ambience: number; music: number; voice: number };
   } {
     return {
       context: this.context?.state ?? 'unavailable',
@@ -196,10 +281,15 @@ export class LifeFeedback {
       ambienceReady: this.ambienceBuffers.size,
       requestedAmbience: this.requestedAmbience ?? null,
       activeAmbience: this.activeAmbienceStage ?? null,
+      musicReady: this.musicBuffers.size,
+      requestedMusic: this.requestedMusic ?? null,
+      activeMusic: this.activeMusicTrack ?? null,
+      musicTension: this.musicTension,
       voiceReady: this.voiceBuffers.size,
       mix: {
         effects: this.effectsVolume,
         ambience: this.ambienceVolume,
+        music: this.musicVolume,
         voice: this.voiceVolume,
       },
     };
@@ -215,9 +305,12 @@ export class LifeFeedback {
     if (value) {
       this.unlock();
       void this.syncAmbience();
+      void this.syncMusic();
+      void this.syncMusicTension();
     } else {
       this.stopVoice();
       this.stopAmbience(0.18, false);
+      this.stopMusic(0.18, false);
     }
   }
 
@@ -237,9 +330,12 @@ export class LifeFeedback {
     if (wasSilent && this.volume > 0) {
       this.unlock();
       void this.syncAmbience();
+      void this.syncMusic();
+      void this.syncMusicTension();
     } else if (!wasSilent && this.volume <= 0) {
       this.stopVoice();
       this.stopAmbience(0.18, false);
+      this.stopMusic(0.18, false);
     }
   }
 
@@ -296,6 +392,29 @@ export class LifeFeedback {
     void this.syncAmbience();
   }
 
+  setMusic(track?: number): void {
+    this.requestedMusic = track === undefined
+      ? undefined
+      : Math.max(0, Math.min(MUSIC_FILES.length - 1, Math.floor(track)));
+    this.musicRequestSerial += 1;
+    if (this.requestedMusic === undefined) {
+      this.stopMusic(1.35, true);
+      return;
+    }
+    this.unlock();
+    void this.syncMusic();
+  }
+
+  setMusicTension(active: boolean): void {
+    this.musicTension = active;
+    if (!active) {
+      this.stopMusicTension(0.85);
+      return;
+    }
+    this.unlock();
+    void this.syncMusicTension();
+  }
+
   private playSfxBuffer(sound: LifeSound, buffer: AudioBuffer, strength: number): void {
     const context = this.context;
     const output = this.sfxGain ?? this.masterGain;
@@ -305,8 +424,11 @@ export class LifeFeedback {
     const baseGain: Record<LifeSound, number> = {
       page: 0.52, breath: 0.34, hit: 0.48, hurt: 0.58, coin: 0.48,
       wear: 0.46, swallow: 0.52, exhale: 0.42, boss: 0.64, deny: 0.5,
+      phone: 0.66, train: 0.65, monitor: 0.45,
     };
-    const pitchVariance = sound === 'boss' || sound === 'deny' ? 0 : (Math.random() - 0.5) * 0.045;
+    const pitchVariance = ['boss', 'deny', 'phone', 'train', 'monitor'].includes(sound)
+      ? 0
+      : (Math.random() - 0.5) * 0.045;
     source.buffer = buffer;
     source.playbackRate.value = Math.max(0.82, Math.min(1.16, 1 + pitchVariance));
     gain.gain.value = baseGain[sound] * strength;
@@ -341,6 +463,13 @@ export class LifeFeedback {
     } else if (sound === 'deny') {
       this.tone(150, 82, 0.026 * strength, 'square', 112);
       this.tone(112, 100, 0.022 * strength, 'square', 88, 0.075);
+    } else if (sound === 'phone') {
+      this.tone(880, 320, 0.026 * strength, 'square', 880);
+      this.tone(660, 320, 0.018 * strength, 'square', 660, 0.36);
+    } else if (sound === 'train') {
+      this.tone(112, 980, 0.024 * strength, 'sawtooth', 62);
+    } else if (sound === 'monitor') {
+      this.tone(1040, 92, 0.024 * strength, 'sine', 1040);
     }
   }
 
@@ -383,6 +512,45 @@ export class LifeFeedback {
       throw error;
     } finally {
       this.ambienceLoads.delete(stage);
+    }
+  }
+
+  private async loadMusic(track: number): Promise<AudioBuffer> {
+    const cached = this.musicBuffers.get(track);
+    if (cached) return cached;
+    if (this.unavailableMusic.has(track)) throw new Error(`music unavailable: ${track}`);
+    const pending = this.musicLoads.get(track);
+    if (pending) return pending;
+    const load = this.loadBuffer(MUSIC_FILES[track]!).then((buffer) => {
+      this.musicBuffers.set(track, buffer);
+      return buffer;
+    });
+    this.musicLoads.set(track, load);
+    try {
+      return await load;
+    } catch (error) {
+      this.unavailableMusic.add(track);
+      throw error;
+    } finally {
+      this.musicLoads.delete(track);
+    }
+  }
+
+  private async loadMusicTension(): Promise<AudioBuffer> {
+    if (this.tensionBuffer) return this.tensionBuffer;
+    if (this.tensionUnavailable) throw new Error('music tension unavailable');
+    if (this.tensionLoad) return this.tensionLoad;
+    this.tensionLoad = this.loadBuffer(MUSIC_TENSION_FILE).then((buffer) => {
+      this.tensionBuffer = buffer;
+      return buffer;
+    });
+    try {
+      return await this.tensionLoad;
+    } catch (error) {
+      this.tensionUnavailable = true;
+      throw error;
+    } finally {
+      this.tensionLoad = undefined;
     }
   }
 
@@ -448,6 +616,99 @@ export class LifeFeedback {
     try { source.stop(now + fadeSeconds + 0.04); } catch { /* Already stopped. */ }
   }
 
+  private async syncMusic(): Promise<void> {
+    const track = this.requestedMusic;
+    if (track === undefined || this.volume <= 0 || track === this.activeMusicTrack) return;
+    const serial = this.musicRequestSerial;
+    try {
+      const buffer = await this.loadMusic(track);
+      if (serial !== this.musicRequestSerial || track !== this.requestedMusic || this.volume <= 0) return;
+      const context = this.context;
+      const output = this.musicGain;
+      if (!context || !output) return;
+      const previous = this.activeMusic;
+      const previousLevel = this.activeMusicLevel;
+      const source = context.createBufferSource();
+      const level = context.createGain();
+      const now = context.currentTime;
+      source.buffer = buffer;
+      source.loop = true;
+      level.gain.setValueAtTime(0.0001, now);
+      level.gain.exponentialRampToValueAtTime(1, now + 2.1);
+      source.connect(level);
+      level.connect(output);
+      source.start(now);
+      this.activeMusic = source;
+      this.activeMusicLevel = level;
+      this.activeMusicTrack = track;
+      if (previous && previousLevel) {
+        previousLevel.gain.cancelScheduledValues(now);
+        previousLevel.gain.setValueAtTime(Math.max(0.0001, previousLevel.gain.value), now);
+        previousLevel.gain.exponentialRampToValueAtTime(0.0001, now + 2.1);
+        try { previous.stop(now + 2.16); } catch { /* Already stopped. */ }
+      }
+    } catch {
+      // Music is additive polish; a missing loop must never block the run.
+    }
+  }
+
+  private stopMusic(fadeSeconds: number, clearRequest: boolean): void {
+    if (clearRequest) this.requestedMusic = undefined;
+    this.musicRequestSerial += 1;
+    const source = this.activeMusic;
+    const level = this.activeMusicLevel;
+    const context = this.context;
+    this.activeMusic = undefined;
+    this.activeMusicLevel = undefined;
+    this.activeMusicTrack = undefined;
+    this.stopMusicTension(fadeSeconds);
+    if (!source || !level || !context) return;
+    const now = context.currentTime;
+    level.gain.cancelScheduledValues(now);
+    level.gain.setValueAtTime(Math.max(0.0001, level.gain.value), now);
+    level.gain.exponentialRampToValueAtTime(0.0001, now + fadeSeconds);
+    try { source.stop(now + fadeSeconds + 0.04); } catch { /* Already stopped. */ }
+  }
+
+  private async syncMusicTension(): Promise<void> {
+    if (!this.musicTension || this.activeTension || this.volume <= 0) return;
+    try {
+      const buffer = await this.loadMusicTension();
+      if (!this.musicTension || this.activeTension || this.volume <= 0) return;
+      const context = this.context;
+      const output = this.tensionGain;
+      if (!context || !output) return;
+      const source = context.createBufferSource();
+      const level = context.createGain();
+      const now = context.currentTime;
+      source.buffer = buffer;
+      source.loop = true;
+      level.gain.setValueAtTime(0.0001, now);
+      level.gain.exponentialRampToValueAtTime(1, now + 1.15);
+      source.connect(level);
+      level.connect(output);
+      source.start(now);
+      this.activeTension = source;
+      this.activeTensionLevel = level;
+    } catch {
+      // The chapter theme continues even when the optional pressure layer fails.
+    }
+  }
+
+  private stopMusicTension(fadeSeconds: number): void {
+    const source = this.activeTension;
+    const level = this.activeTensionLevel;
+    const context = this.context;
+    this.activeTension = undefined;
+    this.activeTensionLevel = undefined;
+    if (!source || !level || !context) return;
+    const now = context.currentTime;
+    level.gain.cancelScheduledValues(now);
+    level.gain.setValueAtTime(Math.max(0.0001, level.gain.value), now);
+    level.gain.exponentialRampToValueAtTime(0.0001, now + fadeSeconds);
+    try { source.stop(now + fadeSeconds + 0.04); } catch { /* Already stopped. */ }
+  }
+
   preloadVoices(ids: readonly VoiceCueId[]): void {
     this.unlock();
     for (const id of ids) void this.loadVoice(id).catch(() => undefined);
@@ -490,25 +751,20 @@ export class LifeFeedback {
       const gain = context.createGain();
       const selected = treatment ?? cue.treatment;
       source.buffer = buffer;
-      gain.gain.value = cue.volume;
+      gain.gain.value = cue.volume * VOICE_PLAYBACK_GAIN;
       this.configureVoiceFilter(filter, selected);
       source.connect(filter);
       filter.connect(gain);
       gain.connect(voiceOutput);
 
-      const sfxOutput = this.sfxGain;
-      if (sfxOutput) {
-        const time = context.currentTime;
-        sfxOutput.gain.cancelScheduledValues(time);
-        sfxOutput.gain.setTargetAtTime(0.48 * this.effectsVolume, time, 0.045);
-      }
+      this.duckBackgroundForVoice();
       this.activeVoice = source;
       this.activeVoicePriority = cue.trigger.priority;
       source.onended = () => {
         if (this.activeVoice !== source) return;
         this.activeVoice = undefined;
         this.activeVoicePriority = 0;
-        this.restoreSfxGain();
+        this.restoreBackgroundMix();
         this.playQueuedVoice();
       };
       source.start();
@@ -533,7 +789,7 @@ export class LifeFeedback {
     if (source) {
       try { source.stop(); } catch { /* Already stopped. */ }
     }
-    this.restoreSfxGain();
+    this.restoreBackgroundMix();
   }
 
   private playQueuedVoice(): void {
@@ -542,11 +798,58 @@ export class LifeFeedback {
     if (queued) this.playVoice(queued.id, queued.treatment);
   }
 
-  private restoreSfxGain(): void {
-    if (!this.sfxGain || !this.context) return;
+  private duckBackgroundForVoice(): void {
+    if (!this.context) return;
     const time = this.context.currentTime;
-    this.sfxGain.gain.cancelScheduledValues(time);
-    this.sfxGain.gain.setTargetAtTime(this.effectsVolume, time, 0.12);
+    if (this.sfxGain) {
+      this.sfxGain.gain.cancelScheduledValues(time);
+      this.sfxGain.gain.setTargetAtTime(VOICE_SFX_DUCK * this.effectsVolume, time, 0.045);
+    }
+    if (this.ambienceGain) {
+      this.ambienceGain.gain.cancelScheduledValues(time);
+      this.ambienceGain.gain.setTargetAtTime(
+        0.58 * VOICE_AMBIENCE_DUCK * this.ambienceVolume,
+        time,
+        0.08,
+      );
+    }
+    if (this.musicGain) {
+      this.musicGain.gain.cancelScheduledValues(time);
+      this.musicGain.gain.setTargetAtTime(
+        MUSIC_BUS_GAIN * VOICE_MUSIC_DUCK * this.musicVolume,
+        time,
+        0.11,
+      );
+    }
+    if (this.tensionGain) {
+      this.tensionGain.gain.cancelScheduledValues(time);
+      this.tensionGain.gain.setTargetAtTime(
+        TENSION_BUS_GAIN * VOICE_MUSIC_DUCK * this.musicVolume,
+        time,
+        0.11,
+      );
+    }
+  }
+
+  private restoreBackgroundMix(): void {
+    if (!this.context) return;
+    const time = this.context.currentTime;
+    if (this.sfxGain) {
+      this.sfxGain.gain.cancelScheduledValues(time);
+      this.sfxGain.gain.setTargetAtTime(this.effectsVolume, time, 0.12);
+    }
+    if (this.ambienceGain) {
+      this.ambienceGain.gain.cancelScheduledValues(time);
+      this.ambienceGain.gain.setTargetAtTime(0.58 * this.ambienceVolume, time, 0.18);
+    }
+    if (this.musicGain) {
+      this.musicGain.gain.cancelScheduledValues(time);
+      this.musicGain.gain.setTargetAtTime(MUSIC_BUS_GAIN * this.musicVolume, time, 0.28);
+    }
+    if (this.tensionGain) {
+      this.tensionGain.gain.cancelScheduledValues(time);
+      this.tensionGain.gain.setTargetAtTime(TENSION_BUS_GAIN * this.musicVolume, time, 0.28);
+    }
   }
 
   private async loadVoice(id: VoiceCueId): Promise<AudioBuffer> {
