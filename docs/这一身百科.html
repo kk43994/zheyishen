@@ -693,6 +693,62 @@
   .wall.wall-gen{grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:3px}
   .wall.wall-gen img{border-radius:2px;opacity:.86}
   .wall.wall-gen img:hover{opacity:1;transform:scale(4);image-rendering:auto}
+
+  /* ── 一局是怎么玩的 · 动画影格 ── */
+  .loop-cine{display:grid;grid-template-columns:264px minmax(0,1fr);gap:22px;align-items:stretch;border:1px solid var(--line);border-radius:9px;background:var(--card);padding:18px;margin:16px 0 8px}
+  .lc-stage{position:relative;aspect-ratio:9/16;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#0c0c10}
+  .lc-scene{position:absolute;inset:0;opacity:0;transition:opacity .55s ease;pointer-events:none}
+  .lc-scene.on{opacity:1}
+  .lc-scene .cover{width:100%;height:100%;object-fit:cover;object-position:center top;image-rendering:pixelated}
+  .lc-battle{background:url("assets/ground-1.png");background-size:96px 96px;image-rendering:pixelated}
+  .lc-battle::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 40%,rgba(6,6,9,.72))}
+  .lc-battle .px,.lc-wear .px,.lc-morph .px{position:absolute;image-rendering:pixelated}
+  .lc-battle .hero{width:80px;left:50%;top:52%;transform:translate(-50%,-50%);z-index:2;animation:lc-bob 1.6s ease-in-out infinite}
+  .lc-battle .foe{width:56px;top:30%;z-index:1}
+  .lc-battle .foe.l{left:12%;animation:lc-drift-l 3.2s ease-in-out infinite}
+  .lc-battle .foe.r{right:10%;top:62%;animation:lc-drift-r 3.6s ease-in-out infinite}
+  @keyframes lc-bob{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-50%,calc(-50% - 5px))}}
+  @keyframes lc-drift-l{0%,100%{transform:translateX(0)}50%{transform:translateX(16px)}}
+  @keyframes lc-drift-r{0%,100%{transform:translateX(0)}50%{transform:translateX(-14px)}}
+  .lc-wear{background:linear-gradient(180deg,#131318,#0c0c10)}
+  .lc-wear .hero{width:104px;left:50%;top:46%;transform:translate(-50%,-50%)}
+  .lc-wear .hero.a{animation:lc-swap-a 3.4s ease-in-out infinite}
+  .lc-wear .hero.b{animation:lc-swap-b 3.4s ease-in-out infinite}
+  @keyframes lc-swap-a{0%,42%{opacity:1}52%,100%{opacity:0}}
+  @keyframes lc-swap-b{0%,42%{opacity:0}52%,100%{opacity:1}}
+  .lc-morph{background:linear-gradient(180deg,#131318,#0c0c10)}
+  .lc-morph .shot{width:88px;top:40%;transform:translateY(-50%)}
+  .lc-morph .shot.a{left:12%}
+  .lc-morph .shot.b{right:12%}
+  .lc-arrow{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);color:var(--moon);font-size:26px;opacity:.8}
+  .lc-tag{position:absolute;left:50%;bottom:20%;transform:translateX(-50%);white-space:nowrap;font-size:13px;color:var(--moon);text-shadow:0 1px 6px rgba(0,0,0,.9)}
+  .lc-cap{position:absolute;left:0;right:0;bottom:0;margin:0;padding:26px 14px 12px;font-size:13px;line-height:1.6;color:var(--fg);background:linear-gradient(180deg,transparent,rgba(8,8,11,.92) 46%);z-index:3}
+  .lc-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;justify-content:center}
+  .lc-step{position:relative;display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;align-items:baseline;padding:11px 14px 13px;border:1px solid var(--line);border-radius:8px;background:transparent;cursor:pointer;text-align:left;font:inherit;color:inherit;overflow:hidden}
+  .lc-step .no{font:700 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;color:var(--fg-3)}
+  .lc-step b{font-size:14.5px}
+  .lc-step p{margin:3px 0 0;font-size:12.5px;line-height:1.6;color:var(--fg-3)}
+  .lc-step .bar{position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--oldred)}
+  .lc-step.on{border-color:color-mix(in srgb,var(--oldred) 55%,var(--line));background:color-mix(in srgb,var(--oldred) 6%,var(--card))}
+  .lc-step.on .no{color:var(--oldred)}
+  .lc-step.on .bar{animation:lc-bar var(--lc-ms,3400ms) linear forwards}
+  @keyframes lc-bar{to{width:100%}}
+  @media(max-width:820px){
+    .loop-cine{grid-template-columns:1fr}
+    .lc-stage{max-width:300px;margin:0 auto}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .lc-step .bar{display:none}
+    .lc-battle .hero,.lc-battle .foe,.lc-wear .hero.a,.lc-wear .hero.b{animation:none}
+    .lc-wear .hero.a{opacity:0}.lc-wear .hero.b{opacity:1}
+  }
+
+  /* ── 命运档案柜 · 形状语言对齐全站（内容不动） ── */
+  .ai-drawers{border-radius:9px;background:var(--card)}
+  .ai-drawer{border-radius:8px}
+  .ai-drawer-no{border:none;width:auto;height:auto;font:700 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:var(--drawer-accent);background:transparent}
+  .ai-origin-step{border-radius:7px}
+  .ai-origin-example{border-radius:7px}
 </style>
 </head>
 <body>
@@ -806,10 +862,10 @@
           </tbody></table>
       </aside>
       <div class="lead-body">
-          <p class="one-line serif"><b>《这一身》是一款竖屏 AI 人生构筑 roguelike。</b>一局就是一生：从还没上学的年纪一直打到病房，而你从头到尾只有一个攻击——《一口气》。</p>
-          <p>每一局的出生都由 AI 现场生成：家庭、地域、外号、童年经历，<b>没有预设主角，也没有本地兜底档案</b>——开局那一页每次都不一样。之后遇到的怪，是这个年纪真正会遇到的困难：哭蛾、红叉、未接来电、打包的纸箱；掉下来的道具，是困难留在身上的东西：同桌的修眉刀、断掉的脊梁骨、已经注销的旧工牌。</p>
-          <p>道具真的穿在身上。书包让人驼背，雨衣挡住雨，旧伤改变站姿——同一件东西同时改写外形、数值和那一口气的形状，<b>故事、美术和打法共用同一个结果</b>。</p>
-          <p>终局不是击杀。最后一关的收灯人打不死：他提着灯，一盏一盏把你身上的道具收走，收到空为止；然后画面停住，由玩家自己按下<b>「放下这一口气」</b>。</p>
+          <p class="one-line serif"><b>《这一身》是一款竖屏 AI 人生构筑 roguelike。</b>一局就是一生：从还没上学的年纪一直打到病房，而你从头到尾只有一个攻击——《一口气》。它想说的只有一句话：<b>事情是改不了的，怎么做是可以选择的。</b></p>
+          <p>每一局的出生都由 AI 现场生成：家庭、地域、外号、童年经历，<b>没有预设主角，也没有本地兜底档案</b>——开局那一页每次都不一样，而且这份档案会被之后的命运一直记着、一直续写。遇到的怪，是这个年纪真正会遇到的困难：哭蛾、红叉、未接来电、打包的纸箱；掉下来的道具，是困难留在身上的东西：同桌的修眉刀、断掉的脊梁骨、已经注销的旧工牌。</p>
+          <p>事情发生时不能重抽，只能选怎么回应：<b>咽下，吐出，或者亲口说一句</b>。回应会变成道具，道具真的穿在身上——书包让人驼背，雨衣挡住雨，旧伤改变站姿；同一件东西同时改写外形、数值和那一口气的形状，<b>故事、美术和打法共用同一个结果</b>。</p>
+          <p>终局不是击杀。最后一关的收灯人打不死：他提着灯，把你身上的道具一件一件收走，每收走一件，闪回一段；收到空为止，画面停住——最后那一下<b>「放下这一口气」</b>，必须玩家自己按。</p>
         </div>
       </div>
       <div class="stat-band" aria-label="当前内容规模">
@@ -833,6 +889,39 @@
       </div>
       <h3 class="wiki-h serif" id="core-mechanics"><span class="h-no">02</span>玩法 · 一辈子只有一个攻击</h3>
       <p class="sec-lede">主角没有武器栏，从第一秒到最后一秒都只吐出《一口气》。所有道具做的是同一件事——<b>改写这同一发攻击</b>的形状、轨迹、材质、节奏和命中反应。下面是<b>全部 21 种运行时弹体形态</b>——四态是《一口气》本身的凝实成长，十七种是被具体道具改写后的样子。</p>
+      <div class="loop-cine" id="loop-cine" aria-label="一局是怎么玩的 · 六步动画">
+        <div class="lc-stage">
+          <div class="lc-scene" data-s="0"><img class="cover" src="assets/screens/origin-comic.png" alt="出生 · AI 现场生成档案" loading="lazy"></div>
+          <div class="lc-scene lc-battle" data-s="1">
+            <img class="px foe l" src="assets/wiki/gif/enemy/cry-moth-move.gif" alt="" loading="lazy">
+            <img class="px hero" src="assets/wiki/gif/hero/hero-walk.gif" alt="主角走位" loading="lazy">
+            <img class="px foe r" src="assets/wiki/gif/enemy/red-mark-move.gif" alt="" loading="lazy">
+          </div>
+          <div class="lc-scene" data-s="2"><img class="cover" src="assets/screens/fate.png" alt="命运牌 · 咽下或吐出" loading="lazy"></div>
+          <div class="lc-scene lc-wear" data-s="3">
+            <img class="px hero a" src="assets/wiki/gif/hero/hero-idle.gif" alt="穿上雨衣前" loading="lazy">
+            <img class="px hero b" src="assets/wiki/gif/hero/hero-idle-raincoat.gif" alt="穿上雨衣后" loading="lazy">
+            <span class="lc-tag serif">《父亲的雨衣》上身</span>
+          </div>
+          <div class="lc-scene lc-morph" data-s="4">
+            <img class="px shot a" src="assets/wiki/gif/projectile/breath.gif" alt="一口气 · 原形" loading="lazy">
+            <span class="lc-arrow" aria-hidden="true">→</span>
+            <img class="px shot b" src="assets/wiki/gif/projectile/rain.gif" alt="一口气 · 被雨衣改写成雨" loading="lazy">
+            <span class="lc-tag serif">雾，变成了雨</span>
+          </div>
+          <div class="lc-scene" data-s="5"><img class="cover" src="assets/screens/lamp-seize.png" alt="终局 · 收灯" loading="lazy"></div>
+          <p class="lc-cap serif" id="lc-cap"></p>
+        </div>
+        <ol class="lc-steps" id="lc-steps">
+          <li><button class="lc-step" type="button"><span class="no">01</span><span><b class="serif">出生</b><p>AI 现场写出这个人：家庭、外号、开局属性，没有兜底档案。</p></span><span class="bar"></span></button></li>
+          <li><button class="lc-step" type="button"><span class="no">02</span><span><b class="serif">走位活下去</b><p>你只管走，《一口气》自动索敌；怪是这个年纪真正的困难。</p></span><span class="bar"></span></button></li>
+          <li><button class="lc-step" type="button"><span class="no">03</span><span><b class="serif">命运牌</b><p>事情已经发生，不能重抽——咽下，还是吐出？</p></span><span class="bar"></span></button></li>
+          <li><button class="lc-step" type="button"><span class="no">04</span><span><b class="serif">回应穿上身</b><p>选择变成道具：雨衣真的披上了，站姿真的变了。</p></span><span class="bar"></span></button></li>
+          <li><button class="lc-step" type="button"><span class="no">05</span><span><b class="serif">一口气被改写</b><p>同一发攻击，被雨衣改成了雨。所有道具都在改写它。</p></span><span class="bar"></span></button></li>
+          <li><button class="lc-step" type="button"><span class="no">06</span><span><b class="serif">走到终局</b><p>收灯人把这一身一件件收走。最后一下，由你自己按。</p></span><span class="bar"></span></button></li>
+        </ol>
+      </div>
+
       <p class="strip-h"><b>基础 · 呼吸凝实四态</b><span>没穿任何道具时的《一口气》；凝实度随伤害、重量与锋利度生长，从无形的雾长成实心珠光</span></p>
       <div class="breath-strip">
         <figure class="base"><img src="assets/wiki/gif/projectile/breath0.gif" alt="态一 · 无形雾 的弹体形态" loading="lazy"><figcaption>态一 · 无形雾</figcaption></figure>
@@ -862,8 +951,7 @@
       </div>
       <p class="dim" style="font-size:12px;margin:0 0 6px">形态与道具的对应关系取自 <code>src/projectile-item-signatures.ts</code>；两件道具同时在身上时按优先级与协同规则合成，详见<a href="#breath">卷五 ·《一口气》</a>。</p>
       <!-- ART-BLOCKS:overview-START -->
-<div class="stage-h"><h3>一局游戏的核心循环</h3><span class="cnt">77 件道具 · 12 个组合 · 26 个现役普通敌怪 · 12 个大小 Boss</span></div>
-<div class="core-loop" aria-label="一局游戏的五步循环"><div class="core-step"><span class="step-no">01 · 出生</span><b>AI 生成主角</b><p>每局都是不同家庭、地域与起点。</p></div><div class="core-step"><span class="step-no">02 · 走位</span><b>在怪潮里活下去</b><p>你控制移动，《一口气》自动攻击。</p></div><div class="core-step"><span class="step-no">03 · 回应</span><b>咽下、吐出或亲口说</b><p>事情已经发生，回应方式由你选择。</p></div><div class="core-step"><span class="step-no">04 · 构筑</span><b>把经历穿上身</b><p>道具同时改变身体与唯一攻击。</p></div><div class="core-step"><span class="step-no">05 · 长大</span><b>进入下一段人生</b><p>场景、怪物与问题随年龄改变。</p></div></div><p class="reader-note"><b>读卡方法：</b>先看动画认出它，再看“会做什么”，最后看“怎么应对”。精确数值保留在机制说明里，但不再抢占阅读顺序。</p>
+
 <!-- ART-BLOCKS:overview-END -->
       <div class="control-split">
           <div class="fixed"><h4>你不能决定的</h4><p>出生、发生的事件、时间向前、这一阶段会遇到的困难。</p></div>
@@ -2132,6 +2220,40 @@
 
 <script src="wiki-runtime-status-v1.js"></script>
 <script src="wiki-runtime-ui-v1.js"></script>
+
+<script>
+(function(){
+  var root=document.getElementById('loop-cine'); if(!root) return;
+  var scenes=root.querySelectorAll('.lc-scene');
+  var steps=root.querySelectorAll('.lc-step');
+  var cap=document.getElementById('lc-cap');
+  var caps=Array.prototype.map.call(steps,function(s){return s.querySelector('p').textContent;});
+  var cur=0, timer=null, MS=3400, paused=false;
+  var still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function show(i){
+    cur=i;
+    scenes.forEach(function(sc){sc.classList.toggle('on', +sc.dataset.s===i);});
+    steps.forEach(function(st,k){
+      st.classList.remove('on');
+      if(k===i){void st.offsetWidth; st.classList.add('on');}
+    });
+    cap.textContent=caps[i];
+  }
+  function tick(){ if(!paused) show((cur+1)%steps.length); }
+  steps.forEach(function(st,i){ st.addEventListener('click',function(){ show(i); restart(); }); });
+  root.addEventListener('mouseenter',function(){paused=true;});
+  root.addEventListener('mouseleave',function(){paused=false;});
+  function restart(){ if(timer)clearInterval(timer); if(!still) timer=setInterval(tick,MS); }
+  root.style.setProperty('--lc-ms',MS+'ms');
+  show(0);
+  if('IntersectionObserver' in window && !still){
+    var seen=false;
+    new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting&&!seen){seen=true;restart();} });
+    },{threshold:.35}).observe(root);
+  } else { restart(); }
+})();
+</script>
 <script src="wiki-shell-v1.js?v=20260725-enemy-detail"></script>
 <script>
 (function(){

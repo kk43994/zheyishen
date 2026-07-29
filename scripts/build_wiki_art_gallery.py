@@ -32,7 +32,7 @@ USED_INLINE: set[str] = set()
 
 # 子节标题前缀 -> 承接它的卷。SPLIT 要再拆，CANDIDATES 去独立页。
 BLOCK_ROUTE = (
-    ("一局游戏的核心循环", "SPLIT_LOOP"),
+    ("一局游戏的核心循环", "DROP"),      # 静态五步已被 §02 的动画影格取代（loop-cine）
     ("标题画", "world"),
     ("主角人偶", "world"),
     ("UI 纹理与饰件", "world"),
@@ -51,7 +51,7 @@ BLOCK_ROUTE = (
 
 # 各卷内的落位顺序（键用前缀，标题里有动态计数）
 SECTION_ORDER = {
-    "overview": ["一局游戏的核心循环"],
+    "overview": [],
     "world": ["标题画", "主角人偶", "UI 纹理与饰件"],
     "chapters": ["场景摆设", "__GROUNDS__"],
     "breath": ["《一口气》弹体"],
