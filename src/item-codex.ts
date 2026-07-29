@@ -30,6 +30,8 @@ export interface CodexOpenOptions {
   combos: readonly CodexComboInfo[];
   /** 未收录剪影允许透出的唯一线索：来源（如"里屋"）。 */
   sourceHint: (id: ItemId) => string;
+  /** 本局跨人生首次收录的道具（格子上盖红点「新」）。 */
+  freshIds?: readonly ItemId[];
   playPageSound?: () => void;
   onClose?: () => void;
 }
@@ -110,10 +112,16 @@ export function codexCollectedCount(): number {
   return Object.keys(loadStore().first).length;
 }
 
+function escapeHtml(text: string): string {
+  return text.replace(/[&<>"']/g, (ch) => (
+    ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch === '"' ? '&quot;' : '&#39;'
+  ));
+}
+
 function firstRecordText(record: CodexFirstRecord | undefined): string {
   if (!record) return '';
   if (record.life <= 0) return '很久以前第一次得到';
-  const who = record.nickname ? `「${record.nickname}」` : '他';
+  const who = record.nickname ? `「${escapeHtml(record.nickname)}」` : '他';
   return `第 ${record.life} 世，${who}第一次得到`;
 }
 
@@ -191,9 +199,10 @@ export function openItemCodex(options: CodexOpenOptions): void {
       const item = ITEM_DEFINITIONS[id];
       const has = collected.has(id);
       const visible = has || quality === 5;
+      const fresh = options.freshIds?.includes(id) ?? false;
       const cell = document.createElement('button');
       cell.type = 'button';
-      cell.className = `cdx-cell${visible ? '' : ' locked'}${has ? '' : ' unowned'}`;
+      cell.className = `cdx-cell${visible ? '' : ' locked'}${has ? '' : ' unowned'}${fresh ? ' fresh' : ''}`;
       cell.dataset.item = id;
       cell.setAttribute('aria-label', visible ? item.name : '未收录的物证');
       cell.innerHTML = `<span class="cdx-ico" style="${iconStyle(id, 44)}"></span>`;

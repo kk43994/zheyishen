@@ -40,7 +40,7 @@ import { DEFAULT_APPEARANCE, commitOriginWheels, getOriginModifiers, getOriginTr
 import { completeFirstRunGuide, hasCompletedFirstRunGuide } from './onboarding';
 import { FATE_ITEM_IDS, getItem, ITEM_IDS, STORY_ITEM_IDS } from './relics';
 import { appendLifeLedger, readLifeLedger, type LifeLedgerEntry } from './run-ledger';
-import { notifyCodexRunEnded, openItemCodex, recordItemAcquired } from './item-codex';
+import { closeItemCodex, isItemCodexOpen, notifyCodexRunEnded, openItemCodex, recordItemAcquired } from './item-codex';
 import { recordTelemetry } from './telemetry';
 import {
   RUN_CHECKPOINT_VERSION,
@@ -1077,6 +1077,9 @@ export class ZheYiShenGame {
   private fateFreeWaiting = false;
   private fateFreeWaitElapsed = 0;
   private fateFreeRequestId = 0;
+  private frameErrorCount = 0;
+  private pendingStageEndSkipRest = false;
+  private checkpointWriteBackoffUntil = 0;
   private backgroundFateTask?: BackgroundFateTask;
   private backgroundFateReady?: BackgroundFateReady;
   private fateResultReturn: 'destination' | 'battle' = 'destination';
@@ -1129,8 +1132,9 @@ export class ZheYiShenGame {
   private oneMoreOpeningTimer = 0;
   // —— 青年到中年的传承线《一起入职的小张》——
   private helpedXiaoZhang = false;
-  /** 本局跨人生首次收录进物证册的件数（结算页展示）。 */
+  /** 本局跨人生首次收录进物证册的件数与清单（结算页展示 + 册内红点）。 */
   private codexNewCount = 0;
+  private codexNewIds: ItemId[] = [];
   private xiaoZhangBetrayed = false;
   private xiaoZhangDecision: 'none' | 'helped' | 'declined' = 'none';
   private xiaoZhangSpawned = false;
@@ -1535,6 +1539,17 @@ export class ZheYiShenGame {
 
     window.addEventListener('keydown', (event) => {
       this.feedback.unlock();
+      // 物证册（DOM 抽屉）打开时，键盘不许穿透到画布——Esc 合上册子，其余全吞。
+      if (isItemCodexOpen()) {
+        if (event.key === 'Escape') {
+          closeItemCodex();
+          this.feedback.play('page');
+        }
+        event.preventDefault();
+        return;
+      }
+      // 自由输入弹窗打开时同理：焦点落在按钮上的按键不许结算命运牌/开暂停。
+      if (this.freeInputWrap) return;
       const lower = event.key.toLowerCase();
       if (this.state === 'origin' && this.originLedgerOpen) {
         if ((event.key === 'ArrowLeft' || event.key === 'ArrowUp') && this.ledgerPage < this.ledgerEntries.length - 1) {
@@ -1951,35 +1966,56 @@ export class ZheYiShenGame {
 
   /** 每帧调用：仅当可存档且状态签名变化时写盘，避免每帧 localStorage 写入。 */
   private maybePersistCheckpoint(): void {
-    const checkpoint = this.captureCheckpoint();
-    if (!checkpoint) return;
+    // 签名先行：直接从活状态算 key，签名没变就不做任何数组拷贝/序列化
+    // （旧实现每帧 captureCheckpoint 的深拷贝是 60fps 的白白分配）。
+    if (!this.origin) return;
+    const screen = this.state;
+    if (screen !== 'battle' && screen !== 'fateEvent' && screen !== 'itemReward'
+      && screen !== 'shop' && screen !== 'specialRoom') return;
+    if (screen === 'fateEvent' && !this.currentFate) return;
+    if (this.checkpointWriteBackoffUntil > this.visualTime) return;
+    const preparedSlot = this.prefetchedFate?.encounterIndex === this.encounterIndex
+      && this.prefetchedFate.runSerial === this.runSerial
+      ? this.prefetchedFate
+      : undefined;
+    const preparedEvent = preparedSlot?.status === 'ready' && preparedSlot.event
+      ? preparedSlot.event
+      : preparedSlot?.fallback;
     const key = [
-      checkpoint.screen,
-      checkpoint.encounterIndex,
-      checkpoint.items.length,
-      Math.round(checkpoint.hero.hp),
-      checkpoint.hero.coins,
-      checkpoint.currentFate?.title ?? '',
-      checkpoint.fateResultDirection ?? '',
-      checkpoint.preparedFate ? `${checkpoint.preparedFate.event.source}:${checkpoint.preparedFate.event.id}` : '',
-      checkpoint.pendingFreeFate
-        ? `${checkpoint.pendingFreeFate.encounterIndex}:${checkpoint.pendingFreeFate.event.id}:${checkpoint.pendingFreeFate.direction}`
+      screen,
+      this.encounterIndex,
+      this.items.length,
+      Math.round(this.hero.hp),
+      this.hero.coins,
+      this.currentFate?.title ?? '',
+      this.fateResultDirection ?? '',
+      preparedEvent ? `${preparedEvent.source}:${preparedEvent.id}` : '',
+      this.backgroundFateTask
+        ? `${this.backgroundFateTask.encounterIndex}:${this.backgroundFateTask.event.id}:${this.backgroundFateTask.direction}`
         : '',
-      checkpoint.fateResultReturn ?? 'destination',
-      checkpoint.fatePlayerText ?? '',
-      checkpoint.memories.length,
-      checkpoint.fateReceipts.length,
-      checkpoint.fateReceipts[checkpoint.fateReceipts.length - 1]?.echo ?? '',
-      checkpoint.itemRewardChoices.join(','),
-      checkpoint.shopOffers.map((offer) => `${offer.item}:${offer.sold ? 1 : 0}`).join(','),
-      checkpoint.specialRoomOffers.join(','),
-      checkpoint.specialRoomTaken.length,
-      checkpoint.recalledMemories.join(','),
-      checkpoint.persistent.xiaoZhangDecision,
-      checkpoint.persistent.xiaoZhangBetrayed ? 1 : 0,
+      this.fateResultReturn ?? 'destination',
+      this.fatePlayerText ?? '',
+      this.memories.length,
+      this.fateReceipts.length,
+      this.fateReceipts[this.fateReceipts.length - 1]?.echo ?? '',
+      this.itemRewardChoices.join(','),
+      this.shopOffers.map((offer) => `${offer.item}:${offer.sold ? 1 : 0}`).join(','),
+      this.specialRoomOffers.join(','),
+      this.specialRoomTaken.size,
+      [...this.recalledMemories].join(','),
+      this.xiaoZhangDecision,
+      this.xiaoZhangBetrayed ? 1 : 0,
     ].join('|');
     if (key === this.lastCheckpointKey) return;
-    if (writeRunCheckpoint(checkpoint)) this.lastCheckpointKey = key;
+    const checkpoint = this.captureCheckpoint();
+    if (!checkpoint) return;
+    if (writeRunCheckpoint(checkpoint)) {
+      this.lastCheckpointKey = key;
+      this.checkpointWriteBackoffUntil = 0;
+    } else {
+      // 写失败（配额满/隐私模式）退避 10 秒，别在 60fps 里反复序列化+抛异常。
+      this.checkpointWriteBackoffUntil = this.visualTime + 10;
+    }
   }
 
   /** 把快照写回对局字段，并按画面重建场景。任何异常由调用方兜底清档回标题。 */
@@ -2191,6 +2227,7 @@ export class ZheYiShenGame {
     clearRunCheckpoint();
     this.lastCheckpointKey = '';
     this.codexNewCount = 0;
+    this.codexNewIds = [];
     this.feedback.play('page');
     this.resetMovementInput();
     this.resetFateInput();
@@ -2636,6 +2673,19 @@ export class ZheYiShenGame {
     return this.aiOriginState === 'gpt' && Boolean(this.origin) && this.originElapsed >= this.originStoryDuration();
   }
 
+  /** 可重复语音（好话/免死收灯人等）：不进 seen 集合，但照常出字幕——静音玩家也要看得懂。 */
+  private playVoiceRepeatable(id: VoiceCueId): void {
+    const cue = VOICE_CUES[id];
+    const treatment = this.voiceTreatmentFor(id);
+    this.feedback.playVoice(id, treatment);
+    const textLength = cue.text
+      .replace(/<#[\d.]+#>/g, '')
+      .replace(/\([a-z-]+\)/g, '')
+      .replace(/\s+/g, '').length;
+    const duration = this.clamp(2.2 + textLength / 7, 2.6, 6);
+    this.voiceCaption = { id, time: duration, duration, treatment };
+  }
+
   private playVoiceOnce(id: VoiceCueId, showVoiceCaption = true): void {
     if (this.voiceCuesSeen.has(id)) return;
     this.voiceCuesSeen.add(id);
@@ -3070,6 +3120,9 @@ export class ZheYiShenGame {
   private stageEndReward(skipRest = false): void {
     const stage = STAGES[this.encounterIndex];
     if (!stage || stage.end === 'final') return;
+    // 美术未就绪的重入路径会以默认参数再调一次，skipRest 必须在这里补挂。
+    if (skipRest) this.pendingStageEndSkipRest = true;
+    else skipRest = this.pendingStageEndSkipRest;
     const nextStageIndex = this.encounterIndex + 1;
     if (!productionArtStageReady(nextStageIndex)) {
       // 罕见的低速解码只会延长章节过场，不会让下一章以缺图或程序化回退
@@ -3090,6 +3143,7 @@ export class ZheYiShenGame {
       return;
     }
     this.waitingForStageArt = false;
+    this.pendingStageEndSkipRest = false;
     if (!skipRest) this.healHero(6);
     if (stage.end === 'fate') {
       this.openFate('advance');
@@ -3346,9 +3400,11 @@ export class ZheYiShenGame {
       playerText: task.playerText,
       snapshot: task.snapshot,
     }).then((response) => {
+      // 注意：不比对 fateFreeRequestId——那是"自由输入弹窗"的令牌，每张新命运牌
+      // 都会关一次弹窗使其自增；用它做守卫会把晚到的回执静默丢弃并让任务
+      // 永远卡在 requesting（本局自由输入被锁死）。任务身份由引用+runSerial 保证。
       if (this.backgroundFateTask !== task
-        || this.runSerial !== task.runSerial
-        || this.fateFreeRequestId !== task.requestId) return;
+        || this.runSerial !== task.runSerial) return;
       if (response) {
         this.backgroundFateReady = { task, response };
         this.aiFateState = 'gpt';
@@ -3363,6 +3419,20 @@ export class ZheYiShenGame {
         this.maybePresentBackgroundFateResult();
         return;
       }
+      if (task.attempts >= 6) {
+        // 重试有上限：放弃后解锁自由输入，那句话保留在记忆里。
+        this.backgroundFateTask = undefined;
+        this.backgroundFateReady = undefined;
+        this.aiFateState = 'fallback';
+        this.lastCheckpointKey = '';
+        this.say('回执没有写成 · 那句话记在了名册里');
+        recordTelemetry('fate_free_giveup', {
+          runSeed: this.runSeed >>> 0,
+          chapterIndex: task.encounterIndex,
+          attempts: task.attempts,
+        });
+        return;
+      }
       task.status = 'retry';
       task.retryAt = this.visualTime + Math.min(18, 4 + task.attempts * 4);
       this.aiFateState = 'error';
@@ -3373,6 +3443,11 @@ export class ZheYiShenGame {
         chapterIndex: task.encounterIndex,
         attempts: task.attempts,
       });
+    }).catch(() => {
+      if (this.backgroundFateTask !== task || this.runSerial !== task.runSerial) return;
+      task.status = 'retry';
+      task.retryAt = this.visualTime + Math.min(18, 4 + task.attempts * 4);
+      this.aiFateState = 'error';
     });
   }
 
@@ -3879,11 +3954,21 @@ export class ZheYiShenGame {
     const delta = Math.min(0.05, (time - this.lastTime) / 1000) * this.auditTimeScale;
     this.lastTime = time;
     this.accumulator += delta;
-    while (this.accumulator >= FIXED_STEP) {
-      this.update(FIXED_STEP);
-      this.accumulator -= FIXED_STEP;
+    try {
+      while (this.accumulator >= FIXED_STEP) {
+        this.update(FIXED_STEP);
+        this.accumulator -= FIXED_STEP;
+      }
+      this.render();
+    } catch (error) {
+      // 单帧异常不许终结整局：吞掉这一帧、继续下一帧；只记日志，
+      // 不再让全局兜底把普通逻辑异常伪装成"资源校验失败"。
+      this.frameErrorCount += 1;
+      if (this.frameErrorCount <= 10 || this.frameErrorCount % 300 === 0) {
+        console.error('[frame]', error);
+      }
+      this.accumulator = 0;
     }
-    this.render();
     requestAnimationFrame((next) => this.frame(next));
   }
 
@@ -6312,9 +6397,9 @@ export class ZheYiShenGame {
             this.praiseSpawnCount % 2 === 0 ? 'praise-p1-delegate' : 'praise-p1-praise',
             0.9,
           );
-          if (praiseKind === 0) { this.praiseDamage = Math.min(0.96, this.praiseDamage + 0.08); this.burst('word', this.heroX, this.heroY - 60, 30, '#c9a24a', '「这个只有你能做」伤害+8%'); this.feedback.playVoice('boss-praise-only-you'); }
-          else if (praiseKind === 1) { this.praiseFire = Math.min(0.96, this.praiseFire + 0.08); this.burst('word', this.heroX, this.heroY - 60, 30, '#c9a24a', '「我看好你」攻速+8%'); this.feedback.playVoice('boss-praise-watch-you'); }
-          else { this.praiseMove = Math.min(0.6, this.praiseMove + 0.05); this.burst('word', this.heroX, this.heroY - 60, 30, '#c9a24a', '「辛苦一下」移速+5%'); this.feedback.playVoice('boss-praise-hard-work'); }
+          if (praiseKind === 0) { this.praiseDamage = Math.min(0.96, this.praiseDamage + 0.08); this.burst('word', this.heroX, this.heroY - 60, 30, '#c9a24a', '「这个只有你能做」伤害+8%'); this.playVoiceRepeatable('boss-praise-only-you'); }
+          else if (praiseKind === 1) { this.praiseFire = Math.min(0.96, this.praiseFire + 0.08); this.burst('word', this.heroX, this.heroY - 60, 30, '#c9a24a', '「我看好你」攻速+8%'); this.playVoiceRepeatable('boss-praise-watch-you'); }
+          else { this.praiseMove = Math.min(0.6, this.praiseMove + 0.05); this.burst('word', this.heroX, this.heroY - 60, 30, '#c9a24a', '「辛苦一下」移速+5%'); this.playVoiceRepeatable('boss-praise-hard-work'); }
           this.feedback.play('coin', 0.5);
           const taskAlive = this.enemies.filter((unit) => !unit.dead && unit.type.startsWith('task-')).length;
           const batchSize = 1 + Math.floor(this.praiseSpawnCount / 4);
@@ -7518,7 +7603,8 @@ export class ZheYiShenGame {
   }
 
   private areaDamage(amount: number, color: string): void {
-    for (const enemy of this.enemies) if (!enemy.dead) this.damageEnemy(enemy, amount, color);
+    // 快照遍历：死亡分裂出的子怪不应吃到同一发 AoE。
+    for (const enemy of [...this.enemies]) if (!enemy.dead) this.damageEnemy(enemy, amount, color);
   }
 
   private playBossAnimation(enemy: EnemyUnit, id: BossSkillId, duration: number, loop = bossSkillLoops(id)): void {
@@ -7631,7 +7717,7 @@ export class ZheYiShenGame {
     this.burst('ring', consult.x, consult.y, 62, '#b84954');
     this.burst('word', consult.x, consult.y - 32, 30, '#c9a24a', '加成翻倍 · 活也翻倍');
     this.say('很好，就按你说的办。');
-    this.feedback.playVoice('boss-praise-as-you-said');
+    this.playVoiceRepeatable('boss-praise-as-you-said');
     this.praiseConsult = undefined;
   }
 
@@ -8477,7 +8563,7 @@ export class ZheYiShenGame {
       this.hurtCooldown = Math.max(this.hurtCooldown, 1.2);
       this.burst('word', this.heroX, this.heroY - 60, 60, '#9fd0b8', '它替你挡下了');
       this.say('关服那天 · 它没等到告别');
-      this.feedback.playVoice('collector-not-yet');
+      this.playVoiceRepeatable('collector-not-yet');
       this.saveEffect = { kind: 'shutdown', timer: 0.8, duration: 0.8 };
     }
     if (this.hero.hp <= 0 && this.hasItem('funeral-photo') && !this.graceUsed && this.deathSaves < 3) {
@@ -8489,7 +8575,7 @@ export class ZheYiShenGame {
       this.flash = 0;
       this.burst('ring', this.heroX, this.heroY - 20, 90, '#d8cfae');
       this.say('遗照上的笑 · 再撑五秒');
-      this.feedback.playVoice('collector-not-yet');
+      this.playVoiceRepeatable('collector-not-yet');
       this.saveEffect = { kind: 'photo', timer: 0.7, duration: 0.7 };
     }
     if (this.hero.hp <= 0 && this.hasItem('snow-screen') && !this.snowUsed && this.deathSaves < 3) {
@@ -8499,7 +8585,7 @@ export class ZheYiShenGame {
       this.flash = 0.5;
       this.burst('word', this.heroX, this.heroY - 58, 70, '#c8d2d8', '雪花');
       this.say('雪花屏 · 这次伤害没有发生');
-      this.feedback.playVoice('collector-not-yet');
+      this.playVoiceRepeatable('collector-not-yet');
       this.saveEffect = { kind: 'static', timer: 0.6, duration: 0.6 };
     }
     if (this.hero.hp <= 0 && this.toothReady && this.deathSaves < 3) {
@@ -8507,7 +8593,7 @@ export class ZheYiShenGame {
       this.deathSaves += 1;
       this.hero.hp = 1;
       this.areaDamage(24, '#efe5c8');
-      this.feedback.playVoice('collector-not-yet');
+      this.playVoiceRepeatable('collector-not-yet');
       this.burst('word', this.heroX, this.heroY - 58, 90, '#efe5c8', '爸爸');
       this.say('女儿的乳牙 · 再留下来一次');
       this.saveEffect = { kind: 'tooth', timer: 0.7, duration: 0.7 };
@@ -8965,6 +9051,7 @@ export class ZheYiShenGame {
     this.feedback.play('page');
     openItemCodex({
       combos: COMBO_DEFS,
+      freshIds: this.codexNewIds,
       sourceHint: (id) => {
         if (BACK_ROOM_POOL.includes(id)) return '来源：里屋';
         if (LIGHT_ROOM_POOL.includes(id)) return '来源：留灯间';
@@ -8983,7 +9070,10 @@ export class ZheYiShenGame {
     this.feedback.play('wear', getItem(id).quality >= 4 ? 1.25 : 0.9);
     this.feedback.vibrate(12);
     this.stats.itemsTaken += 1;
-    if (recordItemAcquired(id, this.origin?.nickname ?? '')) this.codexNewCount += 1;
+    if (recordItemAcquired(id, this.origin?.nickname ?? '')) {
+      this.codexNewCount += 1;
+      this.codexNewIds.push(id);
+    }
     if (id === 'small-uniform') this.changeMaxHp(-6);
     if (id === 'nameless-tie') this.changeMaxHp(-10);
     if (id === 'eyebrow-razor') this.changeMaxHp(-8);

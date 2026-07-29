@@ -10,8 +10,11 @@ const stageLabels = ['童年', '少年', '青年', '成年', '中年', '暮年']
 const roleLabels = {
   narrator: '暮年主角旁白', father: '父亲', hero: '主角', caregiver: '照料者', teacher: '老师',
   classmate: '同学', announcer: '系统广播', recruiter: '招聘者', landlord: '房东', family: '家里人',
-  nurse: '护士', office: '门禁/会议', manager: '经理', bank: '银行客服', doctor: '医生', coworker: '同事',
+  wife: '妻子', mother: '母亲', nurse: '护士', office: '门禁/会议', manager: '经理',
+  bank: '银行客服', doctor: '医生', coworker: '同事', boss: '上级', xiaozhang: '一起入职的小张',
   security: '保安', pharmacist: '药师', neighbor: '邻居', 'room-keeper': '房间看守', 'lamp-keeper': '收灯人',
+  shopkeeper: '小卖部店主', passerby: '路人', cashier: '收银员', meeting: '会议室同事',
+  courier: '配送员', bedside: '邻床',
 };
 
 function cleanSpeech(text) {

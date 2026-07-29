@@ -53,8 +53,20 @@ rm -f dist/assets/audio/sfx/*.wav
 
 # 语音发布档降码率：public 里保留 64k 母版，进包统一转 56k 单声道（听感差异
 # 可忽略，省约 300KB——8MB 硬限下的常备腾挪位）。
-for voice_file in dist/assets/audio/voice/*.mp3; do
-  ffmpeg -hide_banner -loglevel error -y -i "$voice_file" -ac 1 -b:a 56k "${voice_file%.mp3}.tmp.mp3"
+ffmpeg_bin="${FFMPEG_BIN:-ffmpeg}"
+if ! command -v "$ffmpeg_bin" >/dev/null 2>&1; then
+  printf '%s\n' "package.sh: ffmpeg unavailable (set FFMPEG_BIN); voice bitrate downscale is required for the release budget" >&2
+  exit 1
+fi
+shopt -s nullglob
+voice_files=(dist/assets/audio/voice/*.mp3)
+shopt -u nullglob
+if [ "${#voice_files[@]}" -eq 0 ]; then
+  printf '%s\n' 'package.sh: no voice mp3 files found in dist; build output is incomplete' >&2
+  exit 1
+fi
+for voice_file in "${voice_files[@]}"; do
+  "$ffmpeg_bin" -hide_banner -loglevel error -y -i "$voice_file" -ac 1 -b:a 56k "${voice_file%.mp3}.tmp.mp3"
   mv "${voice_file%.mp3}.tmp.mp3" "$voice_file"
 done
 

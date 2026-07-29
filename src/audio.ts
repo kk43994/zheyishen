@@ -37,12 +37,12 @@ const SFX_FILES: Record<LifeSound, string> = {
 };
 
 const AMBIENCE_FILES = [
-  'assets/audio/ambience/childhood-room.wav',
-  'assets/audio/ambience/classroom.wav',
-  'assets/audio/ambience/station.wav',
-  'assets/audio/ambience/apartment.wav',
-  'assets/audio/ambience/office.wav',
-  'assets/audio/ambience/hospital.wav',
+  'assets/audio/ambience/childhood-room.mp3',
+  'assets/audio/ambience/classroom.mp3',
+  'assets/audio/ambience/station.mp3',
+  'assets/audio/ambience/apartment.mp3',
+  'assets/audio/ambience/office.mp3',
+  'assets/audio/ambience/hospital.mp3',
 ] as const;
 
 interface QueuedVoice {

@@ -467,7 +467,7 @@ def build_section() -> str:
 
     # 标题画
     parts.append('<div class="stage-h"><h3>标题画</h3><span class="cnt">360×640 · 开屏背景</span></div>')
-    parts.append('<p style="text-align:center">' + img_tag(file_uri(TITLE_PNG), 300, "标题画 · 人生之夜") + "</p>")
+    parts.append('<p style="text-align:center">' + img_tag(file_uri(TITLE_PNG), 300, "标题画 · 一生在同一片地面上经过") + "</p>")
 
     # 主角
     parts.append('<div class="stage-h"><h3>主角人偶 · 标准身形四态</h3>'
@@ -719,7 +719,7 @@ def build_section() -> str:
         )
     parts.append(f'<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end">{"".join(room_tiles)}</div>')
     ground_tiles = []
-    for index, name in enumerate(("童年木地板", "少年水磨石", "青年机械地", "成年旧地毯", "中年医院地胶", "暮年夜路")):
+    for index, name in enumerate(("童年木地板", "少年水磨石", "青年机械地", "成年旧地毯", "中年医院地胶", "暮年苍白院廊")):
         ground_tiles.append(
             '<figure style="margin:0;text-align:center">'
             + img_tag(file_uri(Path("src/assets/world") / f"stage-floor-{index}.png"), 96, name)

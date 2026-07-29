@@ -88,8 +88,26 @@ function showFallback(message: string): void {
   retry.focus();
 }
 
-window.addEventListener('error', () => showFallback('美术或运行资源校验失败，没有进入降级画面。请重新装订。'));
-window.addEventListener('unhandledrejection', () => showFallback('美术或运行资源校验失败，没有进入降级画面。请重新装订。'));
+// 全屏兜底只属于预载阶段；游戏跑起来之后，普通逻辑异常不应被伪装成
+// "资源校验失败"并盖掉整局（frame 循环里另有 try/catch 自愈）。
+let gameStarted = false;
+export function markGameStarted(): void {
+  gameStarted = true;
+}
+window.addEventListener('error', (event) => {
+  if (gameStarted) {
+    console.error('[runtime]', event.error ?? event.message);
+    return;
+  }
+  showFallback('美术或运行资源校验失败，没有进入降级画面。请重新装订。');
+});
+window.addEventListener('unhandledrejection', (event) => {
+  if (gameStarted) {
+    console.error('[runtime:promise]', event.reason);
+    return;
+  }
+  showFallback('美术或运行资源校验失败，没有进入降级画面。请重新装订。');
+});
 
 installMobileFullscreenIntent();
 
@@ -108,6 +126,7 @@ async function init(): Promise<void> {
   updateInitProgress(92, '唤醒这一身');
   const { ZheYiShenGame } = await import('./game');
   new ZheYiShenGame(canvas);
+  markGameStarted();
   updateInitProgress(97, '准备第一口呼吸');
   // 游戏模块内的图集实例复用统一解码注册表；保留两帧给首轮 Canvas 缓存，
   // 确保童年正式美术已经接管画面。

@@ -333,6 +333,23 @@ body::before {
   justify-content: center;
 }
 #item-codex .cdx-cell.unowned { border-style: dashed; }
+#item-codex .cdx-cell { position: relative; }
+#item-codex .cdx-cell.fresh::after {
+  content: '新';
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 9px;
+  color: #e8e1d3;
+  background: #9f3548;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(10deg);
+}
 #item-codex .cdx-ico { display: inline-block; image-rendering: pixelated; }
 #item-codex .locked .cdx-ico, #item-codex .cdx-ico.locked { filter: brightness(0) invert(0.28); opacity: 0.7; }
 #item-codex .cdx-foot { margin: 22px 0 8px; text-align: center; font-size: 11px; color: #786f69; }

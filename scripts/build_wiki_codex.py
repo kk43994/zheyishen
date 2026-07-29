@@ -94,7 +94,7 @@ ENTITIES = [
     ("没有招牌的当铺", "怪潮间隙路边出现"),
     ("终局路灯", "黑暗收拢的圆心 · 收灯人在它底下现身"),
 ]
-FLOOR_NAMES = ["童年木地板", "少年水磨石", "青年机械地", "成年旧地毯", "中年医院地胶", "暮年夜路"]
+FLOOR_NAMES = ["童年木地板", "少年水磨石", "青年机械地", "成年旧地毯", "中年医院地胶", "暮年苍白院廊"]
 
 COMBO_NAMES = {
     "rain-letter": "那天雨太大，我没有听见", "for-your-own-good": "大人说这都是为你好",
@@ -672,7 +672,7 @@ def build_world_page() -> str:
     )
     parts.append(
         '<section class="bx"><div class="g">'
-        '<figure class="anim"><img src="assets/wiki/img/title.png" alt="开屏标题画" loading="lazy" style="width:220px"><figcaption>开屏 · 人生之夜</figcaption></figure>'
+        '<figure class="anim"><img src="assets/wiki/img/title.png" alt="开屏标题画" loading="lazy" style="width:220px"><figcaption>开屏 · 一生在同一片地面上经过</figcaption></figure>'
         + floors + "</div>"
         + (f'<img class="shot" src="assets/wiki/img/lighting.png" alt="六章战场照明" loading="lazy" style="margin-top:16px;width:100%">'
            '<p class="dim" style="font-size:12px;margin:6px 0 0">六章战场照明 · 清晨 / 白昼 / 傍晚 / 饭桌灯 / 日光灯 / 苍白午后</p>'
