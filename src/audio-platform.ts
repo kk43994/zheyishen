@@ -197,6 +197,7 @@ class SfxEngine {
    * 不必重导素材：解码后扫一遍波形定位起声点，播放时用 start(when, offset) 跳过。
    */
   private readonly leads = new Map<string, number>();
+  private readonly elementFilters = new Map<HTMLAudioElement, BiquadFilterNode>();
   private decoding = false;
   private failed = false;
 
@@ -257,6 +258,42 @@ class SfxEngine {
     }
   }
 
+  /**
+   * 把语音元素接进 Web Audio 图，返回它专属的滤波器节点。
+   *
+   * 生产包此前完全没有滤波器，76 条语音全是干声——电话/广播/门后/回忆/咽下/吐出
+   * 零区别，而开发端（audio.ts 走 Web Audio）听着是对的，所以"本地正常、发布就没了"。
+   * createMediaElementSource 不需要 ArrayBuffer，因此不碰零网络请求红线。
+   *
+   * 只在 context 确实 running 时连接：一旦接进图，音频就只走图输出，
+   * 若 context 是 suspended，语音会变成完全无声——今天已经在音效上踩过这个坑。
+   */
+  elementFilter(element: HTMLAudioElement): BiquadFilterNode | undefined {
+    const context = this.context;
+    if (!context) return undefined;
+    if (context.state !== 'running') {
+      void context.resume?.();
+      return this.elementFilters.get(element);
+    }
+    const cached = this.elementFilters.get(element);
+    if (cached) return cached;
+    try {
+      // 每个元素只能建一次 MediaElementSource，重复调用会抛错。
+      const source = context.createMediaElementSource(element);
+      const filter = context.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 18_000;
+      filter.Q.value = 0;
+      source.connect(filter);
+      filter.connect(context.destination);
+      this.elementFilters.set(element, filter);
+      return filter;
+    } catch {
+      // 接不进去就保持原样播放：干声总好过无声。
+      return undefined;
+    }
+  }
+
   ready(name: string): boolean {
     return !this.failed && !!this.context && this.buffers.has(name);
   }
@@ -314,13 +351,33 @@ class SfxEngine {
     const latency = `base ${ms(context.baseLatency)} · out ${ms(
       (context as AudioContext & { outputLatency?: number }).outputLatency,
     )}`;
+    const filtered = this.elementFilters.size;
     const hitLead = this.leads.get('hit');
     const trim = typeof hitLead === 'number' ? ` · hit裁${Math.round(hitLead * 1000)}ms` : '';
-    return `${context.state} · ${this.buffers.size}/${Object.keys(SFX_INLINE_BASE64).length} · ${latency}${trim}`;
+    return `${context.state} · ${this.buffers.size}/${Object.keys(SFX_INLINE_BASE64).length} · ${latency}${trim} · 语音滤波${filtered}`;
   }
 }
 
 const sfxEngine = new SfxEngine();
+
+/** 与 audio.ts 的 configureVoiceFilter 保持逐参数一致，两端听感必须相同。 */
+function configureVoiceFilter(filter: BiquadFilterNode, treatment: VoiceTreatment): void {
+  if (treatment === 'phone') {
+    filter.type = 'bandpass'; filter.frequency.value = 1700; filter.Q.value = 0.72;
+  } else if (treatment === 'pa') {
+    filter.type = 'highpass'; filter.frequency.value = 220; filter.Q.value = 0.55;
+  } else if (treatment === 'behind-door') {
+    filter.type = 'lowpass'; filter.frequency.value = 1050; filter.Q.value = 0.5;
+  } else if (treatment === 'memory') {
+    filter.type = 'lowpass'; filter.frequency.value = 2450; filter.Q.value = 0.35;
+  } else if (treatment === 'swallowed') {
+    filter.type = 'lowpass'; filter.frequency.value = 880; filter.Q.value = 0.8;
+  } else if (treatment === 'exhaled') {
+    filter.type = 'highshelf'; filter.frequency.value = 1800; filter.gain.value = 2.5;
+  } else {
+    filter.type = 'lowpass'; filter.frequency.value = 18_000; filter.Q.value = 0;
+  }
+}
 
 // 从后台切回时 AudioContext 会停在 suspended，且不会因为一次点击自动恢复
 // （Phaser 的最佳实践文章专门点名过 iOS 上这个行为）。unlock() 不一定在切回后
@@ -629,6 +686,8 @@ export class LifeFeedback {
     this.lastVoicePlayed.set(id, now);
     const serial = ++this.voiceRequestSerial;
     const player = this.ensureVoice(id);
+    const filter = sfxEngine.elementFilter(player);
+    if (filter) configureVoiceFilter(filter, treatment ?? cue.treatment);
     player.pause();
     player.currentTime = 0;
     player.playbackRate = voicePlaybackRate(id, treatment);
