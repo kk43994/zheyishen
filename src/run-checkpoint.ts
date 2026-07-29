@@ -89,6 +89,23 @@ export interface CheckpointPersistentState {
   xiaoZhangDecision: 'none' | 'helped' | 'declined';
   comboSeen: string[];
   synergySeen: string[];
+  /** 以下为 2026-07-29 断点审阅补齐的字段；旧档缺省走安全默认值。 */
+  praiseDamage: number;
+  praiseFire: number;
+  praiseMove: number;
+  praiseSpawnCount: number;
+  razorScars: number;
+  drankLayers: number;
+  drankStoredDamage: number;
+  xiaoZhangHelpedAt: number;
+  schoolEliteDefeatedAt: number;
+  stageEliteDefeated: boolean;
+  stageBossDefeated: boolean;
+  stallSpawnedAt: number;
+  rewardSpawnedAt: number;
+  doorUsed: boolean;
+  finalFateTriggered: boolean;
+  voiceCuesSeen: string[];
 }
 
 export interface RunCheckpoint {
@@ -274,6 +291,22 @@ function persistentState(value: unknown): CheckpointPersistentState {
     xiaoZhangDecision,
     comboSeen: strings(input.comboSeen, 24, 48),
     synergySeen: strings(input.synergySeen, 32, 64),
+    praiseDamage: finite(input.praiseDamage, 0, 0, 0.96),
+    praiseFire: finite(input.praiseFire, 0, 0, 0.96),
+    praiseMove: finite(input.praiseMove, 0, 0, 0.6),
+    praiseSpawnCount: integer(input.praiseSpawnCount, 0, 0, 999),
+    razorScars: integer(input.razorScars, 0, 0, 99),
+    drankLayers: integer(input.drankLayers, 0, 0, 99),
+    drankStoredDamage: finite(input.drankStoredDamage, 0, 0, 999),
+    xiaoZhangHelpedAt: finite(input.xiaoZhangHelpedAt, 0, 0, 600),
+    schoolEliteDefeatedAt: finite(input.schoolEliteDefeatedAt, 0, 0, 600),
+    stageEliteDefeated: input.stageEliteDefeated === true,
+    stageBossDefeated: input.stageBossDefeated === true,
+    stallSpawnedAt: integer(input.stallSpawnedAt, -1, -1, 7),
+    rewardSpawnedAt: integer(input.rewardSpawnedAt, -1, -1, 7),
+    doorUsed: input.doorUsed === true,
+    finalFateTriggered: input.finalFateTriggered === true,
+    voiceCuesSeen: strings(input.voiceCuesSeen, 40, 128),
   };
 }
 

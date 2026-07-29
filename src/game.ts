@@ -927,7 +927,7 @@ export class ZheYiShenGame {
   private stats: RunStats = { fateChoices: 0, swallowed: 0, exhaled: 0, volleys: 0, kills: 0, damage: 0, itemsTaken: 0, coinsSpent: 0 };
   private voiceCuesSeen = new Set<VoiceCueId>();
   private voiceEnemyKills: Partial<Record<EnemyType, number>> = {};
-  private scheduledVoices: Array<{ id: VoiceCueId; playAt: number }> = [];
+  private scheduledVoices: Array<{ id: VoiceCueId; playAt: number; encounterIndex: number }> = [];
   private voiceCaption?: { id: VoiceCueId; time: number; duration: number; treatment: VoiceTreatment };
   private memoryRecall?: { text: string; time: number; duration: number };
   private lampGuardHintShown = false;
@@ -962,6 +962,11 @@ export class ZheYiShenGame {
   private spawnTimer = 1;
   private spawnPause = 0;
   private stageEliteSpawned = false;
+  /** 本章精英/大Boss是否已被击败（进断点，防恢复后重刷白拿奖励）。 */
+  private stageEliteDefeated = false;
+  private stageBossDefeated = false;
+  /** 同帧多只精英/Boss死亡时，后到的奖励排队到回到battle再发。 */
+  private pendingDefeatRewards: Array<{ type: EnemyType; boss: boolean }> = [];
   private eliteSpawned = false;
   /** 少年章《统一答案》倒下的 battleTime；放学后的三段声音以它为锚点。 */
   private schoolEliteDefeatedAt = 0;
@@ -1894,6 +1899,22 @@ export class ZheYiShenGame {
         xiaoZhangDecision: this.xiaoZhangDecision,
         comboSeen: [...this.comboSeen],
         synergySeen: [...this.synergySeen],
+        praiseDamage: this.praiseDamage,
+        praiseFire: this.praiseFire,
+        praiseMove: this.praiseMove,
+        praiseSpawnCount: this.praiseSpawnCount,
+        razorScars: this.razorScars,
+        drankLayers: this.drankLayers,
+        drankStoredDamage: this.drankStoredDamage,
+        xiaoZhangHelpedAt: this.xiaoZhangHelpedAt,
+        schoolEliteDefeatedAt: this.schoolEliteDefeatedAt,
+        stageEliteDefeated: this.stageEliteDefeated,
+        stageBossDefeated: this.stageBossDefeated,
+        stallSpawnedAt: this.stallSpawnedAt,
+        rewardSpawnedAt: this.rewardSpawnedAt,
+        doorUsed: this.doorUsed,
+        finalFateTriggered: this.finalFateTriggered,
+        voiceCuesSeen: [...this.voiceCuesSeen],
       },
       battleTime: this.battleTime,
       permanentHpLost: this.permanentHpLost,
@@ -2015,6 +2036,14 @@ export class ZheYiShenGame {
     this.xiaoZhangDecision = checkpoint.persistent.xiaoZhangDecision;
     this.comboSeen = new Set(checkpoint.persistent.comboSeen);
     this.synergySeen = new Set(checkpoint.persistent.synergySeen);
+    this.praiseDamage = checkpoint.persistent.praiseDamage;
+    this.praiseFire = checkpoint.persistent.praiseFire;
+    this.praiseMove = checkpoint.persistent.praiseMove;
+    this.praiseSpawnCount = checkpoint.persistent.praiseSpawnCount;
+    this.razorScars = checkpoint.persistent.razorScars;
+    this.drankLayers = checkpoint.persistent.drankLayers;
+    this.drankStoredDamage = checkpoint.persistent.drankStoredDamage;
+    this.xiaoZhangHelpedAt = checkpoint.persistent.xiaoZhangHelpedAt;
     this.battleTime = checkpoint.battleTime;
     this.permanentHpLost = checkpoint.permanentHpLost;
     this.initialItemReward = checkpoint.initialItemReward;
@@ -2056,6 +2085,7 @@ export class ZheYiShenGame {
       case 'battle':
         this.startStage(true); // 重建敌人/计时，跳过一次性入场经济
         this.battleTime = checkpoint.battleTime;
+        this.restoreStageProgress(checkpoint);
         if (STAGES[this.encounterIndex]?.end === 'fate' || STAGES[this.encounterIndex]?.end === 'final') {
           this.restorePreparedFate(checkpoint.preparedFate?.event);
         }
@@ -2067,11 +2097,33 @@ export class ZheYiShenGame {
         this.fateAnim = this.fateResultDirection ? 1 : 0;
         this.fateExitTimer = 0;
         this.fateResultMinTimer = 0;
+        this.restoreStageProgress(checkpoint);
         this.state = 'fateEvent';
         break;
       case 'itemReward':
       case 'shop':
       case 'specialRoom':
+        // 修复：这些画面都是章中打开的——不跑 startStage 会让整章 per-stage
+        // 初始化（雨衣/乳牙武装、环境音、小张盟友等）全部停在默认值。
+        this.startStage(true);
+        this.battleTime = checkpoint.battleTime;
+        this.restoreStageProgress(checkpoint);
+        if (STAGES[this.encounterIndex]?.end === 'fate' || STAGES[this.encounterIndex]?.end === 'final') {
+          this.restorePreparedFate(checkpoint.preparedFate?.event);
+        }
+        if (checkpoint.screen === 'itemReward' && checkpoint.rewardAcquire) {
+          // 修复：拾取动画期间落盘的档，道具已经发出去了——直接按去向收尾，
+          // 不再回到三选一（否则可以再拿第二件）。
+          this.itemRewardChoices = [];
+          this.rewardAcquire = undefined;
+          if (checkpoint.rewardAcquire.destination === 'start') this.initialItemReward = false;
+          else if (checkpoint.rewardAcquire.destination === 'advance') {
+            this.advanceStage();
+            break;
+          }
+          this.state = 'battle';
+          break;
+        }
         this.state = checkpoint.screen;
         break;
     }
@@ -2098,6 +2150,21 @@ export class ZheYiShenGame {
       this.aiFateState = 'requesting';
       this.launchBackgroundFateTask(task);
     }
+  }
+
+  /** 恢复本章一次性里程碑：已击败/已生成的不再重刷，已看过的语音不齐射。 */
+  private restoreStageProgress(checkpoint: RunCheckpoint): void {
+    const persistent = checkpoint.persistent;
+    this.stageEliteDefeated = persistent.stageEliteDefeated;
+    this.stageBossDefeated = persistent.stageBossDefeated;
+    if (persistent.stageEliteDefeated) this.stageEliteSpawned = true;
+    if (persistent.stageBossDefeated) this.eliteSpawned = true;
+    this.schoolEliteDefeatedAt = persistent.schoolEliteDefeatedAt;
+    this.stallSpawnedAt = persistent.stallSpawnedAt;
+    this.rewardSpawnedAt = persistent.rewardSpawnedAt;
+    this.doorUsed = persistent.doorUsed;
+    this.finalFateTriggered = persistent.finalFateTriggered;
+    this.voiceCuesSeen = new Set(persistent.voiceCuesSeen as VoiceCueId[]);
   }
 
   /** 启动时尝试恢复上一局；快照非法或恢复抛错则清档回到标题。 */
@@ -2235,6 +2302,10 @@ export class ZheYiShenGame {
     this.stageEliteSpawned = false;
     this.eliteSpawned = false;
     this.schoolEliteDefeatedAt = 0;
+    this.stageEliteDefeated = false;
+    this.stageBossDefeated = false;
+    this.pendingDefeatRewards = [];
+    this.scheduledVoices = this.scheduledVoices.filter((entry) => entry.encounterIndex === this.encounterIndex);
     this.eliteAlertName = '';
     this.eliteAlertTime = 0;
     this.eliteAlertKind = 'elite';
@@ -2591,11 +2662,14 @@ export class ZheYiShenGame {
 
   private scheduleVoice(id: VoiceCueId, delaySeconds: number): void {
     if (this.voiceCuesSeen.has(id) || this.scheduledVoices.some((entry) => entry.id === id)) return;
-    this.scheduledVoices.push({ id, playAt: this.visualTime + delaySeconds });
+    this.scheduledVoices.push({ id, playAt: this.visualTime + delaySeconds, encounterIndex: this.encounterIndex });
   }
 
   private flushScheduledVoices(): void {
     if (!this.scheduledVoices.length) return;
+    // 围栏：换章/离开战斗的延迟台词直接作废——会议台词不该在病房或结算页响起。
+    this.scheduledVoices = this.scheduledVoices.filter((entry) => entry.encounterIndex === this.encounterIndex);
+    if (this.state !== 'battle') return;
     const ready = this.scheduledVoices.filter((entry) => entry.playAt <= this.visualTime);
     this.scheduledVoices = this.scheduledVoices.filter((entry) => entry.playAt > this.visualTime);
     for (const entry of ready) this.playVoiceOnce(entry.id);
@@ -3817,6 +3891,11 @@ export class ZheYiShenGame {
     if (this.paused) return;
     if (this.auditBossArtActive) return;
     if (this.pendingFateOpen && this.state === 'battle') this.presentPendingFate();
+    if (this.pendingDefeatRewards.length && this.state === 'battle') {
+      const next = this.pendingDefeatRewards.shift()!;
+      this.resetMovementInput();
+      if (!(next.boss && this.maybeStartStoryDrop(next.type))) this.openDefeatItemReward(next.type, next.boss);
+    }
     this.maybePersistCheckpoint();
     this.visualTime += dt;
     this.updateBackgroundFate();
@@ -7247,12 +7326,28 @@ export class ZheYiShenGame {
       this.memories.push('成年：最后一通打给家里，他说“没事。不忙。”');
       this.playVoiceOnce('hero-not-busy');
     }
-    if ((enemy.elite || enemy.boss) && this.state === 'battle') {
-      this.resetMovementInput();
-      // 第五档「这一身」：打完每章大 Boss 先固定掉落（不进三选一、不可拒绝），再开正常奖励
-      if (enemy.boss && this.maybeStartStoryDrop(enemy.type)) return;
-      this.openDefeatItemReward(enemy.type, Boolean(enemy.boss));
+    if (enemy.elite || enemy.boss) {
+      if (enemy.boss) this.stageBossDefeated = true;
+      else this.stageEliteDefeated = true;
+      if (enemy.type === 'ringing-phone') this.clearPhoneState();
+      if (this.state === 'battle') {
+        this.resetMovementInput();
+        // 第五档「这一身」：打完每章大 Boss 先固定掉落（不进三选一、不可拒绝），再开正常奖励
+        if (enemy.boss && this.maybeStartStoryDrop(enemy.type)) return;
+        this.openDefeatItemReward(enemy.type, Boolean(enemy.boss));
+      } else {
+        // 同帧多杀：第一只已经切走了 state，后到的奖励排队等回到战斗再发。
+        this.pendingDefeatRewards.push({ type: enemy.type, boss: Boolean(enemy.boss) });
+      }
     }
+  }
+
+  /** 《响个不停》死亡/清场时的电话状态收尾，防幽灵来电箭头压住站定回忆。 */
+  private clearPhoneState(): void {
+    this.phoneRinging = false;
+    this.phoneCalls = [];
+    this.phoneAnswer = 0;
+    this.phoneAnswerTarget = -1;
   }
 
   private openDefeatItemReward(enemyType: EnemyType, boss: boolean): void {
@@ -7721,6 +7816,7 @@ export class ZheYiShenGame {
     }
     this.phonePostAnswerTimer = 0.65;
     this.phoneCalls = [];
+    this.phoneAnswer = 0;
     this.phoneAnswerTarget = -1;
   }
 
@@ -11197,7 +11293,7 @@ export class ZheYiShenGame {
     ctx.fillText('这一身', 180, 92);
     ctx.fillStyle = UI_PALETTE.paper;
     ctx.font = `11px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillText('这一生，最后都穿成了这一身。', 180, 122);
+    ctx.fillText('这一身，最后都穿成了这一生。', 180, 122);
     ctx.restore();
 
     const heroReveal = this.clamp((intro - 0.38) / 0.34, 0, 1);
