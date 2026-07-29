@@ -1,10 +1,8 @@
 import './style.css';
 import {
-  preloadProductionArt,
-  preloadRemainingProductionArt,
+  preloadAllProductionArt,
   ProductionArtError,
   productionArtCount,
-  productionBootArtCount,
   type ArtProgress,
 } from './art-preload';
 import { installPerformanceMonitor, markPerformance } from './performance-monitor';
@@ -124,14 +122,12 @@ async function init(): Promise<void> {
   // 先等完图片、再串行解析 800KB+ 游戏模块。正式画面仍要等关键图片门禁。
   const gameModulePromise = import('./game');
   markPerformance('game_module_requested');
-  markPerformance('boot_art_started', {
-    bootFiles: productionBootArtCount(),
-    allFiles: productionArtCount(),
-  });
-  await preloadProductionArt(updateArtProgress);
-  markPerformance('boot_art_ready', {
-    bootFiles: productionBootArtCount(),
-  });
+  markPerformance('all_art_started', { files: productionArtCount() });
+  // 六章正式美术一次性全部装订完再进游戏：首屏多等一会，换来的是玩起来
+  // 全程零解码。分批后台预热会让主线程在过场、命运和商店里继续 decode，
+  // 本地几乎察觉不到，扫码在手机上就是持续掉帧。
+  await preloadAllProductionArt(updateArtProgress);
+  markPerformance('all_art_ready', { files: productionArtCount() });
   if (import.meta.env.DEV) {
     const auditParams = new URLSearchParams(window.location.search);
     if (auditParams.get('audit-art-fail') === '1') throw new ProductionArtError(1);
@@ -155,16 +151,8 @@ async function init(): Promise<void> {
   const loading = loadingElement();
   if (loading) loading.hidden = true;
   markPerformance('interactive_ready');
-  // 标题、出生填写、AI 等待与漫画播放期间，以单通道继续解码后续人生。
-  // 战斗主循环会自动暂停这条队列；进入下一章前仍有严格的正式美术门禁。
-  void preloadRemainingProductionArt()
-    .then(() => markPerformance('all_art_ready', { files: productionArtCount() }))
-    .catch((error: unknown) => {
-      markPerformance('background_art_failed', {
-        message: error instanceof Error ? error.message : 'unknown',
-      });
-      console.error('后续正式美术装订失败；章节门禁将阻止缺图进入画面。', error);
-    });
+  // 这里不再挂后台预热队列：六章美术已经在进游戏前全部装订完，
+  // 游戏内 productionArtStageReady() 会直接放行，不会有任何运行时解码。
 }
 
 init().catch((error: unknown) => {

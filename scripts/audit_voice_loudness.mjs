@@ -281,8 +281,12 @@ const report = {
   cues: rows,
 };
 
-await mkdir(dirname(REPORT_PATH), { recursive: true });
-await writeFile(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+// --check 是 validate:voice:strict 的一环，必须只读：CI 上写报告会让工作区变脏，
+// 本地也会让 qa-report.json 反复出现在 git status 里。只有审计/归一化模式才落盘。
+if (!CHECK) {
+  await mkdir(dirname(REPORT_PATH), { recursive: true });
+  await writeFile(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+}
 
 if (WRITE) {
   const orderedManifest = manifest.map((entry) => manifestById.get(entry.id) ?? entry);

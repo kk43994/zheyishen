@@ -66,7 +66,7 @@ import { projectileAtlas, projectileAnimAtlas, projectileFlightFrame, breathAnim
 import { sceneArt } from './scene-art';
 import { overlayPanelTexture, uiTextures } from './ui-textures';
 import { POISON_LABELS } from './types';
-import { STAGE_VOICE_PRELOADS, VOICE_CUES, type VoiceCueId, type VoiceTreatment } from './voice-script';
+import { ORIGIN_COMIC_PACE, STAGE_VOICE_PRELOADS, VOICE_CUES, type VoiceCueId, type VoiceTreatment } from './voice-script';
 import originComicVoiceTiming from './origin-comic-voice-timing.json';
 import {
   PROP_VARIANTS,
@@ -390,8 +390,8 @@ const ORIGIN_COMIC_FALLBACK_DURATIONS = [10.8, 10.8, 6.2, 8, 12.2, 10, 10.8, 13.
 const ORIGIN_COMIC_SCENE_DURATIONS = ORIGIN_COMIC_VOICE_CUES.map((id, sceneIndex) => {
   const generatedDuration = ORIGIN_COMIC_VOICE_TIMINGS[id]?.durationMs;
   return generatedDuration
-    ? generatedDuration / 1000 + 0.35
-    : (ORIGIN_COMIC_FALLBACK_DURATIONS[sceneIndex] ?? 8);
+    ? generatedDuration / 1000 / ORIGIN_COMIC_PACE + 0.35
+    : (ORIGIN_COMIC_FALLBACK_DURATIONS[sceneIndex] ?? 8) / ORIGIN_COMIC_PACE;
 });
 const ORIGIN_COMIC_SCENE_STARTS = ORIGIN_COMIC_SCENE_DURATIONS.map((_, sceneIndex) => (
   ORIGIN_COMIC_SCENE_DURATIONS
@@ -430,7 +430,7 @@ function originComicCaptionProgress(sceneIndex: number, sceneElapsed: number): n
     0,
   );
   if (totalCharacters <= 0) return 1;
-  const elapsedMs = Math.max(0, sceneElapsed * 1000);
+  const elapsedMs = Math.max(0, sceneElapsed * 1000 * ORIGIN_COMIC_PACE);
   let visibleCharacters = 0;
   for (const segment of timing.segments) {
     const segmentCharacters = originComicSpokenLength(segment.text);
@@ -2869,6 +2869,8 @@ export class ZheYiShenGame {
     if (this.originAbortController === controller) this.originAbortController = undefined;
     this.aiOriginState = 'error';
     this.originElapsed = 0;
+    // 错误页接管画面，正在播的那句漫画旁白也要一起停，不能在错误页背后念完。
+    this.feedback.stopVoice();
   }
 
   private applyGeneratedOrigin(generated: OriginProfile): void {
@@ -2920,6 +2922,9 @@ export class ZheYiShenGame {
     this.origin = undefined;
     this.originElapsed = 0;
     this.originComicElapsed = 0;
+    // 漫画旁白正在播时退回标题，必须掐掉这一轨，否则它会一直压在标题界面上，
+    // 而 update 已经不再推进漫画，音画彻底脱节。
+    this.feedback.stopVoice();
     this.originLedgerOpen = false;
     this.resetMovementInput();
     this.resetFateInput();
@@ -2955,6 +2960,7 @@ export class ZheYiShenGame {
       timeout: '等待平台回调超时',
       failed: '平台调用失败',
       invalid_json: '返回内容不是JSON',
+      empty_response: '回调了但没有内容',
       aborted: '请求已取消',
     };
     const detail = diagnostic.detail ? ` · ${diagnostic.detail}` : '';
@@ -2964,19 +2970,37 @@ export class ZheYiShenGame {
   private drawAIDiagnosticBadge(x: number, y: number, width: number): void {
     const ctx = this.ctx;
     const diagnostic = readAIDiagnostic();
-    const isError = ['rejected', 'unavailable', 'timeout', 'failed', 'invalid_json'].includes(diagnostic.status);
+    const isError = ['rejected', 'unavailable', 'timeout', 'failed', 'invalid_json', 'empty_response'].includes(diagnostic.status);
     const tone = isError ? UI_PALETTE.oldRed : '#4f6470';
     ctx.save();
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    // 平台原始 errMsg + errorCode + errorType 是排查上传后 AI 调不通的唯一线索，
+    // 一行截断等于把它丢掉。这里按可用宽度折行，最多三行（下方 395 是重试按钮）。
+    const inner = width - 14;
+    const lines: string[] = [];
+    let current = '';
+    for (const char of this.originAIDiagnosticLine()) {
+      const next = current + char;
+      if (ctx.measureText(next).width > inner && current) {
+        lines.push(current);
+        current = char;
+        if (lines.length === 3) break;
+      } else current = next;
+    }
+    if (lines.length < 3 && current) lines.push(current);
+    if (!lines.length) lines.push('AI接入 · 等待发起');
+    const height = 8 + lines.length * 11;
     ctx.fillStyle = 'rgba(235, 226, 208, 0.78)';
-    ctx.fillRect(x, y, width, 20);
+    ctx.fillRect(x, y, width, height);
     ctx.strokeStyle = tone;
     ctx.lineWidth = 1;
-    ctx.strokeRect(x + 0.5, y + 0.5, width - 1, 19);
+    ctx.strokeRect(x + 0.5, y + 0.5, width - 1, height - 1);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = tone;
-    ctx.font = `8px ${UI_FONT_STACK}`;
-    ctx.fillText(this.fitText(this.originAIDiagnosticLine(), width - 14), x + width / 2, y + 10);
+    lines.forEach((line, index) => {
+      ctx.fillText(line, x + width / 2, y + 10 + index * 11);
+    });
     ctx.restore();
   }
 
@@ -4120,11 +4144,14 @@ export class ZheYiShenGame {
       }
     } else if (this.battleTime >= stage.duration) {
       const elite = this.livingStageElite();
-      if (elite) {
+      // 一关一 Boss 是硬约束：本章配了大 Boss 但前置台词还没走完时，章节时长到了也不能收场，
+      // 否则父亲战（以及它固定掉落的雨衣）会被整场跳过。等 chapterPreludeComplete 放行后再结算。
+      const bossStillOwed = stage.bossAt !== undefined && Boolean(stage.bossType) && !this.eliteSpawned;
+      if (elite || bossStillOwed) {
         if (!this.stageWaitingForElite) {
           this.stageWaitingForElite = true;
           // 父亲战严格遵守设计书的少台词规则；血条本身已经足够说明战斗未结束。
-          if (elite.type !== 'silent-father') {
+          if (elite && elite.type !== 'silent-father') {
             this.caption = `${elite.name}还没有结束。`;
             this.captionTime = 4.2;
             this.say('这件事不能靠跑过去');
@@ -4339,6 +4366,15 @@ export class ZheYiShenGame {
         console.error('[frame]', error);
       }
       this.accumulator = 0;
+      // 抛在 ctx.save() 与 ctx.restore() 之间时，那一层 save 永远弹不回来。
+      // render() 每帧不重置坐标系（基础缩放只在构造函数设过一次），于是那次
+      // translate/rotate 会永久留在画笔上、并且每帧再叠一层，整局画面越来越歪。
+      // 空栈上调 restore() 是无副作用的 no-op，这里统一把画笔状态收回原点。
+      for (let depth = 0; depth < 64; depth += 1) this.ctx.restore();
+      this.ctx.setTransform(this.renderScale, 0, 0, this.renderScale, 0, 0);
+      this.ctx.globalAlpha = 1;
+      this.ctx.filter = 'none';
+      this.ctx.imageSmoothingEnabled = false;
     }
     requestAnimationFrame((next) => this.frame(next));
   }
@@ -4434,7 +4470,10 @@ export class ZheYiShenGame {
       enemy.age += dt;
     });
     if (this.state === 'origin') {
-      if (!this.auditFreezeOriginComic) {
+      // 出生失败页盖住漫画时不能继续推进：否则玩家盯着错误页，背后把剩下几十秒
+      // 旁白空放完（还没有字幕），重试后漫画从偷跑掉的位置继续，中间那几幕
+      // 因为 playVoiceOnce 的一次性语义再也不会响。
+      if (!this.auditFreezeOriginComic && this.aiOriginState !== 'error') {
         this.originComicElapsed = Math.min(ORIGIN_COMIC_DURATION, this.originComicElapsed + dt);
         const comicVoice = ORIGIN_COMIC_VOICE_CUES[originComicSceneIndex(this.originComicElapsed)];
         if (comicVoice) this.playVoiceOnce(comicVoice, false);
@@ -8392,6 +8431,13 @@ export class ZheYiShenGame {
     this.playVoiceRepeatable('lamp-one-returned');
     if (this.items.length === 0) {
       this.lampFinalStripTimer = LAMP_STRIP_TO_RELEASE_DELAY;
+      // 终局这段世界是冻结的，update 不再推进字幕计时。此时若还压着一条 AI 回响，
+      // 它会永远停在屏幕上、并且优先级高于 this.caption，把结局台词整段挡掉。
+      // 《吹灯》从这一刻起独占字幕位。
+      this.fateEchoCaptionQueue = [];
+      this.fateEchoCaption = '';
+      this.fateEchoCaptionTime = 0;
+      this.fateEchoCaptionDuration = 0;
       this.resetMovementInput();
       return;
     }
@@ -9365,6 +9411,10 @@ export class ZheYiShenGame {
     if (!this.items.includes(id)) return;
     this.items = this.items.filter((itemId) => itemId !== id);
     if (id === 'card-binder') this.binderCards = [];
+    // 被摘掉的道具也可能正夹在卡册里。不同步清掉的话 items 少了一件，
+    // 但 hasProjectileTrigger / 弹体签名仍按 [...items, ...binderCards] 计算，
+    // 玩家会看到「失去 · X」却发现 X 的效果原封不动。
+    else this.binderCards = this.binderCards.filter((cardId) => cardId !== id);
     if (id === 'baby-tooth') this.toothReady = false;
     if (id === 'unsent-phone') this.phoneCharges = 0;
     if (id === 'retracted-voice') this.voiceCharges = 0;
@@ -13537,7 +13587,9 @@ export class ZheYiShenGame {
 
     ctx.save();
     ctx.beginPath();
-    ctx.rect(132, 126, 204, 390);
+    // 下边界 528 紧贴「继续往前走」按钮的 y=530。设置页加了「配乐」一条滑条后
+    // 整列下移，旧的 390（下边界 516）会把页脚说明整段剪掉。
+    ctx.rect(132, 126, 204, 402);
     ctx.clip();
     if (this.pauseTab === 'body') this.renderPauseBody();
     else if (this.pauseTab === 'origin') this.renderPauseOrigin();
@@ -13676,10 +13728,11 @@ export class ZheYiShenGame {
     this.renderPauseToggle(PAUSE_SETTING_HAPTICS_RECT, '振动', this.feedback.hapticsEnabled());
     this.renderPauseToggle(PAUSE_SETTING_MOTION_RECT, '减少动态', this.reducedMotion);
     this.renderPauseToggle(PAUSE_SETTING_CONTRAST_RECT, '高对比 HUD', this.highContrastHud);
-    drawStitchDivider(ctx, 142, 500, 180, 'horizontal', '#4d494d', 4, 3);
+    drawStitchDivider(ctx, 142, 496, 180, 'horizontal', '#4d494d', 4, 3);
     ctx.fillStyle = '#8d8783';
     ctx.font = `8px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText('配乐、环境、人声与物件声，可以各自留在这一页。', 142, 520, 180, 11, 2);
+    // 两行基线落在 508 / 519，都在剪裁区下边界 528 以内。
+    this.wrapText('配乐、环境、人声与物件声，可以各自留在这一页。', 142, 508, 180, 11, 2);
   }
 
   private renderPauseVolume(

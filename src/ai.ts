@@ -30,6 +30,7 @@ export type AIDiagnosticStatus =
   | 'timeout'
   | 'failed'
   | 'invalid_json'
+  | 'empty_response'
   | 'aborted';
 
 export interface AIDiagnostic {
@@ -74,13 +75,13 @@ interface AIEnvelope {
   error?: string;
 }
 
-/** 互动空间全链路统一使用 Seed 2.0 Pro，命运请求在战斗后台预生成。 */
+/** 互动空间全链路统一使用 Seed 2.1 Pro，命运请求在战斗后台预生成。 */
 const PLATFORM_AI_MODELS = {
-  origin: 'doubao-seed-2-0-pro-260215',
-  default: 'doubao-seed-2-0-pro-260215',
+  origin: 'doubao-seed-2-1-pro-260628',
+  default: 'doubao-seed-2-1-pro-260628',
 } as const;
 
-// 40 秒出生漫画完整播放后，仍给扫码宿主与 Seed 2.0 Pro 留出回调余量。
+// 40 秒出生漫画完整播放后，仍给扫码宿主与 Seed 2.1 Pro 留出回调余量。
 const ORIGIN_AI_TIMEOUT_MS = 55_000;
 
 function platformModelFor(kind: keyof typeof AI_SYSTEM_PROMPTS): string {
@@ -173,10 +174,21 @@ function callPlatformAI(
       }
     }, timeoutMs);
     signal?.addEventListener('abort', onAbort, { once: true });
-    const resolveText = (text: string): void => {
+    // text 来自平台回调，必须当作不可信输入：settled 与 finish() 已经把 55 秒安全超时拆掉了，
+    // 这之后任何同步抛错都会让 Promise 永远不结算——出生没有兜底，玩家会永久停在
+    // 「AI 正在生成本局人生剧本」上，既没有报错也没有重试入口。所以先验类型再动它。
+    const resolveText = (text: unknown): void => {
       if (settled) return;
       settled = true;
       finish();
+      if (typeof text !== 'string' || !text.trim()) {
+        const shape = text === undefined ? '缺少 data 字段'
+          : text === null ? 'data 为空'
+            : typeof text !== 'string' ? `data 不是字符串（${typeof text}）` : 'data 是空字符串';
+        publishAIDiagnostic(kind, 'platform', 'empty_response', `平台已回调，但${shape}`);
+        reject(new Error('platform_ai_empty_response'));
+        return;
+      }
       publishAIDiagnostic(kind, 'platform', 'returned', `平台已回调 · ${text.length}字`);
       try {
         resolve(parseFirstAIJson(text));
@@ -216,16 +228,18 @@ function callPlatformAI(
           if (!settled) resolveText(streamedText);
         },
       } : {
-        success: (res: { errMsg: string; data: string }) => resolveText(res.data),
+        // 宿主可能回调一个没有 data 的对象、甚至不传参；这里绝不能解引用出异常，
+        // 否则超时已拆、Promise 永不结算，玩家看到的就是「一直在生成」而不是错误页。
+        success: (res?: { errMsg?: string; data?: unknown }) => resolveText(res?.data),
       }),
-      fail: (err) => {
+      fail: (err?: { errMsg?: string; errorCode?: number | string; errorType?: string }) => {
         if (settled) return;
         settled = true;
         finish();
-        const code = err.errorCode === undefined ? '' : ` · ${err.errorCode}`;
-        const type = err.errorType ? ` · ${err.errorType}` : '';
-        publishAIDiagnostic(kind, 'platform', 'failed', `${err.errMsg || '平台调用失败'}${code}${type}`);
-        reject(new Error(err.errMsg || 'platform_ai_failed'));
+        const code = err?.errorCode === undefined ? '' : ` · ${err.errorCode}`;
+        const type = err?.errorType ? ` · ${err.errorType}` : '';
+        publishAIDiagnostic(kind, 'platform', 'failed', `${err?.errMsg || '平台调用失败'}${code}${type}`);
+        reject(new Error(err?.errMsg || 'platform_ai_failed'));
       },
     });
   });

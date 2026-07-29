@@ -32,14 +32,21 @@ const requireToken = (source, token, message) => {
   if (!source.includes(token)) errors.push(message);
 };
 
+const rejectToken = (source, token, message) => {
+  if (source.includes(token)) errors.push(message);
+};
+
 if (!choice) errors.push('找不到小张选择结算方法');
 requireToken(choice, 'this.hero.coins < 10', '帮助选择没有阻止零钱不足的误扣');
 requireToken(choice, 'this.hero.coins -= 10', '帮助小张没有真实扣除 10 零钱');
 requireToken(choice, 'this.stats.coinsSpent += 10', '帮助花费没有进入统计');
 requireToken(choice, "this.xiaoZhangDecision = 'declined'", '拒绝选择没有持久状态');
 requireToken(choice, "this.xiaoZhangDecision = 'helped'", '帮助选择没有持久状态');
-requireToken(game, 'let spawnX = this.clamp(this.heroX + Math.cos(angle) * 168', '小张随机落点没有限制在可达区域');
-requireToken(game, 'Math.hypot(spawnX - this.heroX, spawnY - this.heroY) < 96', '小张落点被场边裁近后没有远距回退');
+// 无限世界化之后不再有首屏边界，旧的「夹到 W/H 之内 + 贴脸回退」两条断言已经失效：
+// 固定半径投放本身就同时保证了可达（相机跟随，任何方向都能走到）与不贴脸（恒为 168 > 96）。
+requireToken(game, 'const spawnX = this.heroX + Math.cos(angle) * 168', '小张落点没有按固定半径投在主角周围');
+requireToken(game, 'const spawnY = this.heroY + Math.sin(angle) * 168', '小张落点没有按固定半径投在主角周围');
+rejectToken(game, 'let spawnX = this.clamp(this.heroX', '小张落点又被夹回首屏坐标（无限世界里会落到不可达处）');
 
 if (!ally) errors.push('找不到小张友军更新方法');
 for (const [token, message] of [

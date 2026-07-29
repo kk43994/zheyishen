@@ -795,7 +795,7 @@ window.WIKI_RUNTIME_STATUS_V1 = {
       },
       "runtime": {
         "status": "有运行时证据",
-        "refs": 10,
+        "refs": 11,
         "reviewed": false,
         "review": "",
         "artConsumers": [
@@ -838,7 +838,7 @@ window.WIKI_RUNTIME_STATUS_V1 = {
       },
       "runtime": {
         "status": "有运行时证据",
-        "refs": 10,
+        "refs": 11,
         "reviewed": true,
         "review": "baby-tooth immediate death save",
         "artConsumers": [
@@ -1665,7 +1665,7 @@ window.WIKI_RUNTIME_STATUS_V1 = {
       },
       "runtime": {
         "status": "有运行时证据",
-        "refs": 5,
+        "refs": 6,
         "reviewed": false,
         "review": "",
         "artConsumers": [
@@ -2222,7 +2222,7 @@ window.WIKI_RUNTIME_STATUS_V1 = {
       },
       "runtime": {
         "status": "有运行时证据",
-        "refs": 4,
+        "refs": 5,
         "reviewed": false,
         "review": "",
         "artConsumers": [
@@ -3077,7 +3077,7 @@ window.WIKI_RUNTIME_STATUS_V1 = {
       },
       "runtime": {
         "status": "有运行时证据",
-        "refs": 11,
+        "refs": 12,
         "reviewed": false,
         "review": "",
         "artConsumers": [
@@ -3380,7 +3380,7 @@ window.WIKI_RUNTIME_STATUS_V1 = {
       },
       "runtime": {
         "status": "有运行时证据",
-        "refs": 4,
+        "refs": 6,
         "reviewed": false,
         "review": "",
         "artConsumers": [

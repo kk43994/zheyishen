@@ -41,7 +41,9 @@ for (const [token, message] of [
   ['enemy.attackKind = undefined', '父亲转阶段没有取消旧攻击'],
   ['enemy.mechTimer = 0', '父亲转阶段没有清空旧攻击计时'],
   ['private showFatherAttackNameOnce(name: string)', '父亲招式名缺少只显示一次的门禁'],
-  ["if (elite.type !== 'silent-father')", '父亲战仍会在超时时混入通用“还没有结束”字幕'],
+  // 只断言「父亲战不走通用字幕」这半句本身；前面的 null 守卫（elite 可能为空——
+  // 章节时长到点但 Boss 还没生成时也会进这一支）允许存在。
+  ["elite.type !== 'silent-father'", '父亲战仍会在超时时混入通用“还没有结束”字幕'],
   ["this.showFatherAttackNameOnce(move === 0 ? '进去。' : '站好。')", '父亲一阶段招式名没有进入首次门禁'],
   ["this.showFatherAttackNameOnce('不许看')", '《不许看》没有进入首次门禁'],
   ["this.showFatherAttackNameOnce('都怪你')", '《都怪你》没有进入首次门禁'],

@@ -30,8 +30,8 @@ for (const token of [
   'fail:',
   'complete:',
 ]) assert(platformCall.includes(token), `平台 AI 调用缺少 ${token}`);
-assert(ai.includes("origin: 'doubao-seed-2-0-pro-260215'"), '出生档案没有使用 Seed 2.0 Pro');
-assert(ai.includes("default: 'doubao-seed-2-0-pro-260215'"), '后台命运链路没有统一使用 Seed 2.0 Pro');
+assert(ai.includes("origin: 'doubao-seed-2-1-pro-260628'"), '出生档案没有使用 Seed 2.1 Pro');
+assert(ai.includes("default: 'doubao-seed-2-1-pro-260628'"), '后台命运链路没有统一使用 Seed 2.1 Pro');
 assert(ai.includes('const useStream = false'), '出生档案必须使用平台完整响应，避免半截 JSON 被判成生成失败');
 assert(ai.includes('const ORIGIN_AI_TIMEOUT_MS = 55_000'), '出生档案没有为扫码环境保留 55 秒回调时间');
 assert(ai.includes("requestAI('origin', { runSeed, kind, requestNonce, wheels }, ORIGIN_AI_TIMEOUT_MS"), '出生档案没有使用统一等待窗');
@@ -76,8 +76,8 @@ console.log(JSON.stringify({
   valid: true,
   platformAPI: 'tt.callAIChatCompletion',
   models: {
-    origin: 'doubao-seed-2-0-pro-260215',
-    background: 'doubao-seed-2-0-pro-260215',
+    origin: 'doubao-seed-2-1-pro-260628',
+    background: 'doubao-seed-2-1-pro-260628',
   },
   keyBoundary: 'platform account configuration; never bundled',
   textInput: 'kept by product decision; player chooses swallow or exhale',

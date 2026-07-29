@@ -241,7 +241,9 @@ export function recordFramePerformance(durationMs: number, state: string): void 
   frameDurations.push(Math.min(2000, durationMs));
   if (frameDurations.length > FRAME_LIMIT) frameDurations.shift();
   lastFrameState = state.slice(0, 32);
-  persist();
+  // 这里刻意不落盘。persist() 要排序 600 个帧样本、JSON.parse 读回历史、再
+  // JSON.stringify 整份报告同步写 localStorage；哪怕有 4 秒节流，也等于测帧率
+  // 的模块自己每 4 秒造一个长帧。改由里程碑、切后台和 pagehide 落盘。
 }
 
 function performanceText(): string {
@@ -372,6 +374,10 @@ export function installPerformanceMonitor(): void {
     }
   }, true);
   window.addEventListener('pagehide', () => persist(true));
+  // 帧采样不再每帧落盘，改在切后台时补一次，保证被杀进程前数据已经写下。
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') persist(true);
+  });
   window.addEventListener('resize', () => {
     report.device.viewport = `${window.innerWidth}x${window.innerHeight}`;
     persist();

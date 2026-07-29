@@ -1,4 +1,4 @@
-import { VOICE_CUES, type VoiceCueId, type VoiceTreatment } from './voice-script';
+import { VOICE_CUES, voicePlaybackRate, type VoiceCueId, type VoiceTreatment } from './voice-script';
 
 export type LifeSound =
   | 'page'
@@ -253,7 +253,10 @@ export class LifeFeedback {
       this.syncMusicTension();
     } else {
       this.stopVoice();
-      this.stopAmbience(true);
+      // 关声只是静音，不是「这一章不再需要环境音」。清掉 requestedAmbience 会让
+      // 重新开声后 syncAmbience() 直接 return，本章底噪一直缺到下一次 setAmbience()。
+      // 与 audio.ts 的 buffered 版保持一致：只有 setAmbience(undefined) 才清请求。
+      this.stopAmbience(false);
       this.stopMusic(false);
     }
   }
@@ -385,7 +388,7 @@ export class LifeFeedback {
     const player = this.ensureVoice(id);
     player.pause();
     player.currentTime = 0;
-    player.playbackRate = treatment === 'swallowed' ? 0.96 : treatment === 'exhaled' ? 1.02 : 1;
+    player.playbackRate = voicePlaybackRate(id, treatment);
     this.activeVoiceBaseVolume = cue.volume;
     this.activeVoice = player;
     this.activeVoicePriority = cue.trigger.priority;

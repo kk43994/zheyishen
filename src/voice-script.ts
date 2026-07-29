@@ -444,6 +444,14 @@ export const VOICE_SYNTHESIS_SEGMENTS: Partial<Record<VoiceCueId, readonly Voice
 
 export const VOICE_CUE_IDS = Object.keys(VOICE_CUES) as VoiceCueId[];
 
+/** 出生漫画整体略快于成品音频；幕时长、字幕推进与播放速率必须共用这一个系数。 */
+export const ORIGIN_COMIC_PACE = 1.12;
+
+export function voicePlaybackRate(id: VoiceCueId, treatment?: VoiceTreatment): number {
+  if (id.startsWith('origin-comic-')) return ORIGIN_COMIC_PACE;
+  return treatment === 'swallowed' ? 0.96 : treatment === 'exhaled' ? 1.02 : 1;
+}
+
 export const STAGE_VOICE_PRELOADS: ReadonlyArray<ReadonlyArray<VoiceCueId>> = [
   ['origin-comic-01', 'origin-comic-02', 'origin-comic-03', 'origin-comic-04', 'origin-comic-05', 'origin-comic-06', 'origin-comic-07', 'origin-comic-08', 'narrator-opening', 'narrator-start-breath', 'child-under-bed', 'caregiver-lights-out', 'caregiver-no-monster', 'caregiver-school-send', 'caregiver-fell-again', 'narrator-he-fell-asleep'],
   ['school-bell-start', 'classmate-family-late', 'school-gate-closing', 'teacher-last-row', 'teacher-answer-format', 'classmate-score-whisper', 'teacher-paper-back', 'father-for-your-good', 'father-childhood-walk', 'school-bell-end', 'classmate-slept-late', 'teacher-daydream', 'shopkeeper-fifty-cents'],

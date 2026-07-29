@@ -1,4 +1,4 @@
-import { VOICE_CUES, type VoiceCueId, type VoiceTreatment } from './voice-script';
+import { VOICE_CUES, voicePlaybackRate, type VoiceCueId, type VoiceTreatment } from './voice-script';
 
 export type LifeSound =
   | 'page'
@@ -751,6 +751,7 @@ export class LifeFeedback {
       const gain = context.createGain();
       const selected = treatment ?? cue.treatment;
       source.buffer = buffer;
+      source.playbackRate.value = voicePlaybackRate(id, selected);
       gain.gain.value = cue.volume * VOICE_PLAYBACK_GAIN;
       this.configureVoiceFilter(filter, selected);
       source.connect(filter);
