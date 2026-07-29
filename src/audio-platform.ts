@@ -165,6 +165,13 @@ class SfxEngine {
   private context?: AudioContext;
   private master?: GainNode;
   private readonly buffers = new Map<string, AudioBuffer>();
+  /**
+   * 每种音效同时发声数上限。元素路径天然有这层限制——hit 只有 4 个池化元素，
+   * 打快了就复用，而复用要先 pause()，等于把前一声掐掉。Web Audio 每次都是独立
+   * BufferSource、彼此不干扰，密集攻击时会真的叠三四声，听感突然变厚变响。
+   * 这里显式恢复旧的复音上限，超了就掐掉最早那一声。
+   */
+  private readonly voices = new Map<string, AudioBufferSourceNode[]>();
   private decoding = false;
   private failed = false;
 
@@ -239,6 +246,12 @@ class SfxEngine {
       return false;
     }
     try {
+      const limit = name === 'hit' || name === 'breath' ? 4 : 2;
+      const live = this.voices.get(name) ?? [];
+      while (live.length >= limit) {
+        const oldest = live.shift();
+        try { oldest?.stop(); } catch { /* 可能已自然结束 */ }
+      }
       const source = context.createBufferSource();
       source.buffer = buffer;
       source.playbackRate.value = rate;
@@ -246,8 +259,17 @@ class SfxEngine {
       gain.gain.value = volume;
       source.connect(gain);
       gain.connect(master);
-      source.onended = () => { try { source.disconnect(); gain.disconnect(); } catch { /* 已断开 */ } };
+      source.onended = () => {
+        const list = this.voices.get(name);
+        if (list) {
+          const at = list.indexOf(source);
+          if (at >= 0) list.splice(at, 1);
+        }
+        try { source.disconnect(); gain.disconnect(); } catch { /* 已断开 */ }
+      };
       source.start();
+      live.push(source);
+      this.voices.set(name, live);
       return true;
     } catch {
       return false;
