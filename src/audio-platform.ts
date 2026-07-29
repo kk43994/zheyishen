@@ -182,7 +182,13 @@ class SfxEngine {
       : (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctor) { this.failed = true; return; }
     try {
-      this.context = new Ctor();
+      // 不显式要 interactive 的话，部分 Android WebView 会退到 balanced/playback，
+      // 输出缓冲翻几倍，听感就是「音效慢半拍」。老实现不吃 options 就退回无参构造。
+      try {
+        this.context = new Ctor({ latencyHint: 'interactive' });
+      } catch {
+        this.context = new Ctor();
+      }
       this.master = this.context.createGain();
       this.master.gain.value = 1;
       this.master.connect(this.context.destination);
@@ -250,8 +256,14 @@ class SfxEngine {
 
   state(): string {
     if (this.failed) return 'unavailable';
-    if (!this.context) return 'idle';
-    return `${this.context.state} · ${this.buffers.size}/${Object.keys(SFX_INLINE_BASE64).length}`;
+    const context = this.context;
+    if (!context) return 'idle';
+    // 延迟靠体感说不清，直接把宿主给的两个数打出来：base=输出缓冲，out=端到端。
+    const ms = (value?: number) => (typeof value === 'number' ? `${Math.round(value * 1000)}ms` : '?');
+    const latency = `base ${ms(context.baseLatency)} · out ${ms(
+      (context as AudioContext & { outputLatency?: number }).outputLatency,
+    )}`;
+    return `${context.state} · ${this.buffers.size}/${Object.keys(SFX_INLINE_BASE64).length} · ${latency}`;
   }
 }
 
