@@ -18609,9 +18609,11 @@ export class ZheYiShenGame {
     ctx.font = `9px ${UI_FONT_STACK}`;
     ctx.fillText(`${'ⅠⅡⅢⅣⅤ'[item.quality - 1]} · ${item.qualityName}`, 128, 195);
     ctx.fillStyle = '#3f6b52';
-    this.wrapText(`得到 · ${item.positive}`, 128, 213, 196, 12, 3);
+    // 正负效果与卡底两行一起抬到 11/12px：名称放大后，9px 的说明字被压得读不动。
+    ctx.font = `11px ${UI_FONT_STACK}`;
+    this.wrapText(`得到 · ${item.positive}`, 128, 213, 196, 14, 3);
     ctx.fillStyle = '#8d3f4c';
-    this.wrapText(`留下 · ${item.negative}`, 128, 253, 196, 12, 3);
+    this.wrapText(`留下 · ${item.negative}`, 128, 255, 196, 14, 3);
 
     // 下栏：flavor 与机制说明占整幅宽度
     drawStitchDivider(ctx, 34, 296, 292, 'horizontal', '#a49882', 5, 4);
@@ -18622,14 +18624,15 @@ export class ZheYiShenGame {
     this.wrapText(item.flavor, 34, 316, 292, 19, 3);
     ctx.letterSpacing = '0px';
     ctx.fillStyle = '#6b6355';
-    ctx.font = `9px ${UI_FONT_STACK}`;
-    this.wrapText(item.summary, 34, 362, 292, 13, 3);
+    ctx.font = `12px ${UI_FONT_STACK}`;
+    this.wrapText(item.summary, 34, 361, 292, 15, 2);
     // 卡底压一行「反讽在哪里」——七层母表的第六层，文案与百科道具志同源。
+    // 最长一条 26 字，11px 下会折成两行，行高按面板底边（406）留够。
     const irony = itemIrony(id);
     if (irony) {
       ctx.fillStyle = '#8a7a63';
-      ctx.font = `9px ${UI_FONT_STACK}`;
-      this.wrapText(`设计理念 · ${irony}`, 34, 386, 292, 12, 2);
+      ctx.font = `11px ${UI_FONT_STACK}`;
+      this.wrapText(`设计理念 · ${irony}`, 34, 383, 296, 14, 2);
     }
 
     this.drawBreathActionButton(
