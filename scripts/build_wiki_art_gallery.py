@@ -964,6 +964,13 @@ def prune_inline() -> int:
 
 
 def main() -> None:
+    # 百科的道具图标墙走 docs 内副本（本地预览也能出图；线上 deploy 会再覆盖一次同名文件）
+    icons_src = Path("src/assets/items/icons.png")
+    icons_dst = Path("docs/assets/icons.png")
+    payload = icons_src.read_bytes()
+    if not icons_dst.exists() or icons_dst.read_bytes() != payload:
+        icons_dst.write_bytes(payload)
+
     html = WIKI.read_text(encoding="utf-8")
     placed, candidates = route(split_blocks(build_section()))
 
