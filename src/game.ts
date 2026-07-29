@@ -451,7 +451,7 @@ function originComicCaptionProgress(sceneIndex: number, sceneElapsed: number): n
 
 // 标题页右下角与 AI 诊断行都会带上它：上传后扫码第一眼就能确认平台跑的是哪个包，
 // 排查「上传了但行为没变」时不再靠猜。每次要重新上传前手动 +1。
-const BUILD_TAG = '0729-13';
+const BUILD_TAG = '0729-14';
 const TITLE_START_RECT = { x: 88, y: 520, width: 184, height: 44 } as const;
 const TITLE_AUDIO_RECT = { x: 290, y: 16, width: 54, height: 30 } as const;
 const TITLE_CODEX_RECT = { x: 16, y: 16, width: 54, height: 30 } as const;
@@ -487,6 +487,11 @@ const PAUSE_SETTING_HAPTICS_RECT = { x: 142, y: 364, width: 180, height: 38 } as
 const PAUSE_SETTING_MOTION_RECT = { x: 142, y: 406, width: 180, height: 38 } as const;
 const PAUSE_SETTING_CONTRAST_RECT = { x: 142, y: 448, width: 180, height: 38 } as const;
 const FATE_FREE_CANCEL_RECT = { x: 105, y: 568, width: 150, height: 30 } as const;
+// 咽下/吐出：此前只有横拖 1/4 屏能确认，两块画得像按钮却没接命中（审阅 S2）。
+// 尺寸必须跟 drawResponseMarker 的面板高 46 一致，且绘制与命中共用这两个常量，
+// 避免再出现「画在一处、点在另一处」。
+const FATE_SWALLOW_RECT = { x: 8, y: 510, width: 168, height: 46 } as const;
+const FATE_EXHALE_RECT = { x: 184, y: 510, width: 168, height: 46 } as const;
 const FATE_RESULT_CONTINUE_RECT = { x: 90, y: 470, width: 180, height: 44 } as const;
 const ORIGIN_BADGE_RECT = { x: 8, y: H - 104, width: 122, height: 38 } as const;
 const ORIGIN_BADGE_HIT_RECT = { x: 4, y: H - 112, width: 132, height: 54 } as const;
@@ -1546,8 +1551,17 @@ export class ZheYiShenGame {
           return;
         }
         if (!this.currentFate || this.fateAnim < 0.75 || this.fatePointerId !== -1) return;
-        if (p.y > 560 && p.y < 602 && p.x > 96 && p.x < 264) {
+        if (pointInPaddedRect(p, FATE_FREE_CANCEL_RECT, 9, 8)) {
           this.openFreeInput();
+          return;
+        }
+        // 点按直接确认；横拖保留为进阶手势（两条路都通向 resolveFate）。
+        if (pointInRect(p, FATE_SWALLOW_RECT)) {
+          this.resolveFate('swallow');
+          return;
+        }
+        if (pointInRect(p, FATE_EXHALE_RECT)) {
+          this.resolveFate('exhale');
           return;
         }
         this.fateDragging = true;
@@ -12684,11 +12698,13 @@ export class ZheYiShenGame {
       ctx.save();
       ctx.globalAlpha = optionAlpha;
       drawResponseMarker(
-        ctx, 8, 510, 168, 'swallow', `咽下 · ${event.swallow.label}`,
+        ctx, FATE_SWALLOW_RECT.x, FATE_SWALLOW_RECT.y, FATE_SWALLOW_RECT.width,
+        'swallow', `咽下 · ${event.swallow.label}`,
         this.fateResponseMechanics(event.swallow),
       );
       drawResponseMarker(
-        ctx, 184, 510, 168, 'exhale', `吐出 · ${event.exhale.label}`,
+        ctx, FATE_EXHALE_RECT.x, FATE_EXHALE_RECT.y, FATE_EXHALE_RECT.width,
+        'exhale', `吐出 · ${event.exhale.label}`,
         this.fateResponseMechanics(event.exhale),
       );
       ctx.restore();
