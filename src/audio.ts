@@ -1,3 +1,4 @@
+import { MATERIAL_TONES, type ItemMaterial } from './item-material';
 import { VOICE_CUES, voicePlaybackRate, type VoiceCueId, type VoiceTreatment } from './voice-script';
 
 export type LifeSound =
@@ -13,7 +14,11 @@ export type LifeSound =
   | 'deny'
   | 'phone'
   | 'train'
-  | 'monitor';
+  | 'monitor'
+  | 'pickup-paper'
+  | 'pickup-cloth'
+  | 'pickup-metal'
+  | 'pickup-coin';
 
 const VOLUME_KEY = 'zhe-yi-shen:volume';
 const LAST_VOLUME_KEY = 'zhe-yi-shen:last-audible-volume';
@@ -50,6 +55,12 @@ const SFX_FILES: Record<LifeSound, string> = {
   phone: 'assets/audio/sfx/phone.mp3',
   train: 'assets/audio/sfx/train.mp3',
   monitor: 'assets/audio/sfx/monitor.mp3',
+  // 按材质分化的拾取音（Kenney RPG Audio，CC0；来源见 docs/licenses/README.md）。
+  // 77 件道具此前共用同一个 wear 音，纸条和钥匙听起来毫无区别。
+  'pickup-paper': 'assets/audio/sfx/pickup-paper.mp3',
+  'pickup-cloth': 'assets/audio/sfx/pickup-cloth.mp3',
+  'pickup-metal': 'assets/audio/sfx/pickup-metal.mp3',
+  'pickup-coin': 'assets/audio/sfx/pickup-coin.mp3',
 };
 
 const AMBIENCE_FILES = [
@@ -362,7 +373,7 @@ export class LifeFeedback {
     }
   }
 
-  play(sound: LifeSound, intensity = 1): void {
+  play(sound: LifeSound, intensity = 1, material?: ItemMaterial): void {
     const now = performance.now();
     const throttle = sound === 'hit' ? 55 : sound === 'breath' ? 95 : 18;
     if (now - (this.lastPlayed.get(sound) ?? -Infinity) < throttle) return;
@@ -425,6 +436,7 @@ export class LifeFeedback {
       page: 0.52, breath: 0.34, hit: 0.48, hurt: 0.58, coin: 0.48,
       wear: 0.46, swallow: 0.52, exhale: 0.42, boss: 0.64, deny: 0.5,
       phone: 0.66, train: 0.65, monitor: 0.45,
+      'pickup-paper': 0.5, 'pickup-cloth': 0.55, 'pickup-metal': 0.46, 'pickup-coin': 0.5,
     };
     const pitchVariance = ['boss', 'deny', 'phone', 'train', 'monitor'].includes(sound)
       ? 0

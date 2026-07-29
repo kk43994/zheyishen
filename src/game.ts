@@ -15,7 +15,8 @@ import {
   reportArtFrameDuration,
   setArtGameplayActive,
 } from './art-runtime';
-import { LifeFeedback } from './audio-runtime';
+import { LifeFeedback, type LifeSound } from './audio-runtime';
+import { itemMaterialOf, type ItemMaterial } from './item-material';
 import {
   PixelEnemyRenderer,
   resolveEnemyPixelAsset,
@@ -923,6 +924,8 @@ interface BackgroundFateTask {
   status: 'requesting' | 'retry';
   retryAt: number;
   attempts: number;
+  /** 换局/读档时要能把还在飞的回执掐掉，否则它会回来污染下一局。 */
+  controller: AbortController;
 }
 
 interface BackgroundFateReady {
@@ -1038,7 +1041,6 @@ export class ZheYiShenGame {
   private fateDragStartX = 0;
   private fateDragX = 0;
   private fateResultDirection?: FateDirection;
-  private fateResultTimer = 0;
   private fateBuild: FateBuildState = { ...EMPTY_FATE_BUILD };
   private fateDelayReady = false;
   private firstFateDamageReduction = 0;
@@ -2383,6 +2385,7 @@ export class ZheYiShenGame {
     this.specialRoomPreviousLifeItem = checkpoint.specialRoomPreviousLifeItem;
     this.fateDestination = checkpoint.fateDestination;
     this.currentFate = checkpoint.currentFate;
+    this.backgroundFateTask?.controller.abort();
     this.backgroundFateTask = undefined;
     this.backgroundFateReady = undefined;
     this.fateResultReturn = checkpoint.fateResultReturn ?? 'destination';
@@ -2415,7 +2418,6 @@ export class ZheYiShenGame {
       case 'fateEvent':
         this.aiFateState = this.currentFate?.source === 'gpt' ? 'gpt' : 'fallback';
         this.fateResultDirection = checkpoint.fateResultDirection;
-        this.fateResultTimer = 0;
         this.fateAnim = this.fateResultDirection ? 1 : 0;
         this.fateExitTimer = 0;
         this.fateResultMinTimer = 0;
@@ -2488,7 +2490,9 @@ export class ZheYiShenGame {
         status: 'requesting',
         retryAt: 0,
         attempts: 0,
+        controller: new AbortController(),
       };
+      // 上一局在飞的回执已在读档入口 abort 过，这里直接接管。
       this.backgroundFateTask = task;
       this.aiFateState = 'requesting';
       this.launchBackgroundFateTask(task);
@@ -2682,7 +2686,7 @@ export class ZheYiShenGame {
     this.currentFate = undefined;
     this.fateDestination = 'advance';
     this.fateResultDirection = undefined;
-    this.fateResultTimer = 0;
+    this.backgroundFateTask?.controller.abort();
     this.backgroundFateTask = undefined;
     this.backgroundFateReady = undefined;
     this.fateResultReturn = 'destination';
@@ -3894,7 +3898,9 @@ export class ZheYiShenGame {
       status: 'requesting',
       retryAt: 0,
       attempts: 0,
+      controller: new AbortController(),
     };
+    this.backgroundFateTask?.controller.abort();
     this.backgroundFateTask = task;
     this.backgroundFateReady = undefined;
     this.fatePlayerText = '';
@@ -3938,7 +3944,7 @@ export class ZheYiShenGame {
       direction: task.direction,
       playerText: task.playerText,
       snapshot: task.snapshot,
-    }).then((response) => {
+    }, task.controller.signal).then((response) => {
       // 注意：不比对 fateFreeRequestId——那是"自由输入弹窗"的令牌，每张新命运牌
       // 都会关一次弹窗使其自增；用它做守卫会把晚到的回执静默丢弃并让任务
       // 永远卡在 requesting（本局自由输入被锁死）。任务身份由引用+runSerial 保证。
@@ -3958,8 +3964,10 @@ export class ZheYiShenGame {
         this.maybePresentBackgroundFateResult();
         return;
       }
-      if (task.attempts >= 6) {
+      if (task.attempts >= 3) {
         // 重试有上限：放弃后解锁自由输入，那句话保留在记忆里。
+        // 单次等待窗从 16s 抬到 60s 之后，上限必须跟着降——6 次退避重试
+        // 最坏能把一局挂住六分钟。
         this.backgroundFateTask = undefined;
         this.backgroundFateReady = undefined;
         this.aiFateState = 'fallback';
@@ -6282,7 +6290,10 @@ export class ZheYiShenGame {
       }
 
       if (projectile.hitTerminated) continue;
-      const outOfBounds = Math.abs(projectile.x - this.heroX) >= 340 || Math.abs(projectile.y - this.heroY) >= 430;
+      // 触发线要比下面那道回收线(340/430)早一截：门锁把出界弹改成回返，
+      // 可它这一帧还站在原地，回收线一视同仁会当场把它删掉——留 20px 缓冲，
+      // 够最快的弹体在下一帧掉头往回走。
+      const outOfBounds = Math.abs(projectile.x - this.heroX) >= 320 || Math.abs(projectile.y - this.heroY) >= 410;
       if (projectile.distance >= projectile.maxDistance || projectile.life <= 0 || outOfBounds) {
         if (this.hasItem('old-door-lock') && projectile.homePhase === undefined) {
           projectile.homePhase = 'returning';
@@ -6406,7 +6417,9 @@ export class ZheYiShenGame {
     const radius = (45 + projectile.explosion * 1.5) * (heavyBlast ? 1.4 : 1) * frameScale;
     const damage = projectile.explosion;
     projectile.explosion = 0;
-    for (const enemy of this.enemies) {
+    // 快照遍历，与 areaDamage 对齐：damageEnemy 会当场分裂/召唤，
+    // 边遍历边往 this.enemies 里塞会让新生怪吃到同一发爆炸。
+    for (const enemy of [...this.enemies]) {
       if (!enemy.dead && Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y) < radius + enemy.radius) {
         if ((enemy.readDamage ?? 0) > 0) {
           this.settleReadDebt(enemy, '提前清算');
@@ -8037,7 +8050,12 @@ export class ZheYiShenGame {
     if (enemy.boss) this.hero.coins += coins;
     else this.spawnCoinDrop(enemy.x, enemy.y, coins);
     this.burst('ring', enemy.x, enemy.y, enemy.radius * 2.3, '#d1b36b');
-    if (enemy.type === 'revolving-lantern') return;
+    if (enemy.type === 'revolving-lantern') {
+      // 走马灯是暮年的小 Boss：按设计不掉道具、不开奖励页，但精英记账必须落下，
+      // 否则这一章的进度里它等于没被打过（断点续局会以为精英还在）。
+      this.stageEliteDefeated = true;
+      return;
+    }
     if (enemy.boss && enemy.type === 'ringing-phone') {
       this.phoneStoryIndex = 8;
       this.phoneActiveStoryIndex = -1;
@@ -8676,7 +8694,12 @@ export class ZheYiShenGame {
       })),
       keeperSlain: this.lampKeeperSlain,
     };
+    // 身份令牌：abort() 只是「请求方尽快放弃」，不保证 then 不再跑；换局后
+    // 迟到的回执会把上一局的封卷写进新局。runSerial + controller 双对照才算同一局。
+    const serial = this.runSerial;
+    const controller = this.lifeSummaryAbort;
     void generateLifeSummary(payload, this.lifeSummaryAbort.signal).then((text) => {
+      if (this.runSerial !== serial || this.lifeSummaryAbort !== controller) return;
       if (text) {
         this.lifeSummary = text;
         this.lifeSummaryState = 'ready';
@@ -8685,6 +8708,7 @@ export class ZheYiShenGame {
       // 写不出来不是终点：把状态落到 failed，结局页会亮出重写按钮让玩家自己触发。
       this.lifeSummaryState = 'failed';
     }).catch(() => {
+      if (this.runSerial !== serial || this.lifeSummaryAbort !== controller) return;
       this.lifeSummaryState = 'failed';
     });
   }
@@ -9492,7 +9516,6 @@ export class ZheYiShenGame {
     this.resetMovementInput();
     this.resetFateInput();
     this.fateResultDirection = undefined;
-    this.fateResultTimer = 0;
     this.fateResultReturn = 'destination';
     this.fateDisplayEncounterIndex = undefined;
     this.closeFreeInput();
@@ -9715,6 +9738,7 @@ export class ZheYiShenGame {
     // 玩家会看到「失去 · X」却发现 X 的效果原封不动。
     else this.binderCards = this.binderCards.filter((cardId) => cardId !== id);
     if (id === 'baby-tooth') this.toothReady = false;
+    if (id === 'fathers-raincoat') this.raincoatReady = false;
     if (id === 'unsent-phone') this.phoneCharges = 0;
     if (id === 'retracted-voice') this.voiceCharges = 0;
     if (id === 'ruma-msg') this.ruCharges = 0;
@@ -9825,7 +9849,19 @@ export class ZheYiShenGame {
     this.items.push(id);
     if (id === 'card-binder') this.syncBinderCardsFromInventory();
     else this.recordBinderCard(id);
-    this.feedback.play('wear', getItem(id).quality >= 4 ? 1.25 : 0.9);
+    // 按材质挑拾取音：纸/布/金属有 CC0 真实采样，其余材质没有对应素材，
+    // 退回 wear 并由 SfxEngine 用音高+滤波塑形（见 item-material.ts 的 MATERIAL_TONES）。
+    const material = itemMaterialOf(id, getItem(id).name);
+    const materialSound: Partial<Record<ItemMaterial, LifeSound>> = {
+      paper: 'pickup-paper',
+      cloth: 'pickup-cloth',
+      metal: 'pickup-metal',
+    };
+    this.feedback.play(
+      materialSound[material] ?? 'wear',
+      getItem(id).quality >= 4 ? 1.25 : 0.9,
+      materialSound[material] ? undefined : material,
+    );
     this.feedback.vibrate(12);
     this.stats.itemsTaken += 1;
     if (recordItemAcquired(id, this.origin?.nickname ?? '')) {
@@ -9838,6 +9874,9 @@ export class ZheYiShenGame {
     if (id === 'eyebrow-razor') this.razorScars = Math.max(1, this.razorScars);
     if (id === 'broken-spine') this.changeMaxHp(-12);
     if (id === 'baby-tooth') this.toothReady = true;
+    // 雨衣原来只在 startStage 上膛，可它是少年章 Boss 的固定掉落——
+    // 当章拿到手却要等下一章才挡得住第一次，等于白拿一章。
+    if (id === 'fathers-raincoat') this.raincoatReady = true;
     if (['eyebrow-razor', 'od-pill', 'white-bottle', 'broken-spine', 'spent-decade', 'painless-night'].includes(id)) this.strainTendency += 2;
     if (['fathers-raincoat', 'baby-tooth', 'missing-photo'].includes(id)) this.lightTendency += 2;
     if (id === 'checkup-arrows') {
@@ -18483,6 +18522,16 @@ export class ZheYiShenGame {
     this.encounterIndex = index;
     this.startStage();
     if (stage.bossAt !== undefined) this.battleTime = stage.bossAt;
+    // 章节序曲门禁：光把 battleTime 推过 bossAt 是叫不出 Boss 的——每章还压着
+    // 「前置台词播完/前置精英打掉」的条件。跳关是开发入口，直接把前置补齐，
+    // 战斗侧的门槛一行不动（改那边会让正常流程的 Boss 提前登场）。
+    this.voiceCaption = undefined;
+    if (index === 0) this.voiceCuesSeen.add('child-under-bed');
+    if (index === 1) {
+      this.schoolEliteDefeatedAt = 0.01;
+      this.voiceCuesSeen.add('classmate-family-late');
+      this.voiceCuesSeen.add('school-gate-closing');
+    }
     this.say(`已跳到 ${AGE_LABELS[index]} · ${stage.title}`);
   }
 

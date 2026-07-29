@@ -89,6 +89,7 @@
     "validate:run-state": "node scripts/validate_run_state_reset.mjs"
   },
   "devDependencies": {
+    "playwright-core": "^1.62.0",
     "typescript": "^5.9.2",
     "vite": "^7.0.6"
   }

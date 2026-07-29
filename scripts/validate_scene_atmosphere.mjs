@@ -194,7 +194,6 @@ for (const token of [
   'const waveIndex = enemy.lanternWaveIndex ?? 0;',
   'enemy.lanternWaveIndex = waveIndex + 1;',
   "if (enemy.type !== 'revolving-lantern') coins += this.redPacketDrop(enemy);",
-  "if (enemy.type === 'revolving-lantern') return;",
   'this.lanternHandoff = { startX: enemy.x, startY: enemy.y, startedAt: this.battleTime };',
   'private lanternHandoffPose()',
   'this.pixelEnemies.drawHandoff(this.ctx, {',
@@ -202,6 +201,21 @@ for (const token of [
   'const targetY = this.darkCY - 70;',
 ]) {
   if (!game.includes(token)) errors.push(`revolving-lantern lifecycle contract missing: ${token}`);
+}
+
+// 走马灯死亡分支守的是两条不变量，不再锁某一行字面量：
+// ①它按设计不掉道具、不开奖励页，所以必须在奖励流程之前 early return；
+// ②但精英记账要落下，否则本章进度里它等于没被打过（断点续局会以为精英还在）。
+const lanternDeathAnchor = game.indexOf("if (enemy.type !== 'revolving-lantern') coins += this.redPacketDrop(enemy);");
+const lanternDeathSection = lanternDeathAnchor >= 0 ? game.slice(lanternDeathAnchor, lanternDeathAnchor + 1200) : '';
+const lanternReturnAt = lanternDeathSection.indexOf("if (enemy.type === 'revolving-lantern')");
+const lanternRewardAt = lanternDeathSection.indexOf('this.openDefeatItemReward(');
+if (lanternReturnAt < 0) {
+  errors.push('走马灯死亡分支不见了：它不掉道具、不开奖励页的出口没有了');
+} else {
+  const lanternBranch = lanternDeathSection.slice(lanternReturnAt, lanternRewardAt > lanternReturnAt ? lanternRewardAt : undefined);
+  if (!/\breturn;/.test(lanternBranch)) errors.push('走马灯死亡分支必须在奖励流程之前 return');
+  if (!lanternBranch.includes('this.stageEliteDefeated = true;')) errors.push('走马灯打灭后没有记账为本章精英已解决');
 }
 if (game.includes("'last-bus-dash': { windup: 0.8, reach: 390, band: 28")) {
   errors.push('last bus warning has regressed to the shorter and narrower pre-body lane');

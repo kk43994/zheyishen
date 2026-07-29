@@ -6,6 +6,7 @@ import {
   probeRegisterPlayingCounter,
 } from './audio-probe';
 import { SFX_INLINE_BASE64 } from './audio-sfx-inline';
+import { MATERIAL_TONES, type ItemMaterial } from './item-material';
 import { VOICE_CUES, voicePlaybackRate, type VoiceCueId, type VoiceTreatment } from './voice-script';
 
 export type LifeSound =
@@ -21,7 +22,11 @@ export type LifeSound =
   | 'deny'
   | 'phone'
   | 'train'
-  | 'monitor';
+  | 'monitor'
+  | 'pickup-paper'
+  | 'pickup-cloth'
+  | 'pickup-metal'
+  | 'pickup-coin';
 
 const VOLUME_KEY = 'zhe-yi-shen:volume';
 const LAST_VOLUME_KEY = 'zhe-yi-shen:last-audible-volume';
@@ -55,6 +60,12 @@ const SFX_FILES: Record<LifeSound, string> = {
   phone: 'assets/audio/sfx/phone.mp3',
   train: 'assets/audio/sfx/train.mp3',
   monitor: 'assets/audio/sfx/monitor.mp3',
+  // 按材质分化的拾取音（Kenney RPG Audio，CC0；来源见 docs/licenses/README.md）。
+  // 77 件道具此前共用同一个 wear 音，纸条和钥匙听起来毫无区别。
+  'pickup-paper': 'assets/audio/sfx/pickup-paper.mp3',
+  'pickup-cloth': 'assets/audio/sfx/pickup-cloth.mp3',
+  'pickup-metal': 'assets/audio/sfx/pickup-metal.mp3',
+  'pickup-coin': 'assets/audio/sfx/pickup-coin.mp3',
 };
 
 const SFX_GAIN: Record<LifeSound, number> = {
@@ -71,6 +82,10 @@ const SFX_GAIN: Record<LifeSound, number> = {
   phone: 0.66,
   train: 0.65,
   monitor: 0.45,
+  'pickup-paper': 0.5,
+  'pickup-cloth': 0.55,
+  'pickup-metal': 0.46,
+  'pickup-coin': 0.5,
 };
 
 const AMBIENCE_FILES = [
@@ -298,7 +313,7 @@ class SfxEngine {
     return !this.failed && !!this.context && this.buffers.has(name);
   }
 
-  play(name: string, volume: number, rate: number): boolean {
+  play(name: string, volume: number, rate: number, material?: ItemMaterial): boolean {
     const context = this.context;
     const master = this.master;
     const buffer = this.buffers.get(name);
@@ -322,7 +337,19 @@ class SfxEngine {
       source.playbackRate.value = rate;
       const gain = context.createGain();
       gain.gain.value = volume;
-      source.connect(gain);
+      // 材质音色：玻璃/塑料/肉感没有对应采样，靠音高 + 滤波从既有声音塑形。
+      // 有真实采样的材质不会走到这里（调用方直接选了对应的音效文件）。
+      const tone = material ? MATERIAL_TONES[material] : undefined;
+      if (tone && tone.frequency < 18_000) {
+        const filter = context.createBiquadFilter();
+        filter.type = tone.filterType;
+        filter.frequency.value = tone.frequency;
+        filter.Q.value = tone.q;
+        source.connect(filter);
+        filter.connect(gain);
+      } else {
+        source.connect(gain);
+      }
       gain.connect(master);
       source.onended = () => {
         const list = this.voices.get(name);
@@ -579,7 +606,7 @@ export class LifeFeedback {
     }
   }
 
-  play(sound: LifeSound, intensity = 1): void {
+  play(sound: LifeSound, intensity = 1, material?: ItemMaterial): void {
     const now = performance.now();
     const throttle = sound === 'hit' ? 55 : sound === 'breath' ? 95 : 18;
     // 音量 0 时也要真的不播：HTMLAudioElement 即使 volume=0 仍然走完整解码/起播，
@@ -597,10 +624,11 @@ export class LifeFeedback {
       SFX_GAIN[sound] * intensity * this.volume * this.effectsVolume
         * (this.activeVoice ? VOICE_SFX_DUCK : 1),
     ));
-    const rate = ['boss', 'deny', 'phone', 'train', 'monitor'].includes(sound)
+    const baseRate = ['boss', 'deny', 'phone', 'train', 'monitor'].includes(sound)
       ? 1
       : Math.max(0.92, Math.min(1.08, 1 + (Math.random() - 0.5) * 0.045));
-    if (sfxEngine.play(sound, gain, rate)) {
+    const rate = material ? baseRate * MATERIAL_TONES[material].rate : baseRate;
+    if (sfxEngine.play(sound, gain, rate, material)) {
       probePlay(sound);
       return;
     }

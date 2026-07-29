@@ -685,10 +685,12 @@ export async function generateAIFreeFate(payload: {
   direction: FateDirection;
   playerText: string;
   snapshot: LifeSnapshot;
-}): Promise<FateResponse | null> {
+}, signal?: AbortSignal): Promise<FateResponse | null> {
   let previousRejection = '';
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     try {
+      // 等待窗与命运链路统一：这里曾写死 16 秒，而实测 fate-free 在 doubao 上要 24.7 秒，
+      // 等于每一次亲口回应都必然超时、再靠外层重试硬扛出一分多钟。
       const raw = await requestAI('fate-free', {
         event: {
           id: payload.event.id,
@@ -701,7 +703,7 @@ export async function generateAIFreeFate(payload: {
         playerText: payload.playerText,
         snapshot: payload.snapshot,
         previousRejection,
-      }, 16000);
+      }, FATE_AI_TIMEOUT_MS, signal);
       const source = isRecord(raw) && isRecord(raw.response) ? raw.response : raw;
       const response = validateFreeFateResponse(
         normalizeAIResponse(source),

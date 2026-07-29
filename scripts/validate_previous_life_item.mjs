@@ -25,7 +25,10 @@ const rejectToken = (source, token, message) => {
 };
 
 for (const [token, message] of [
-  ['const previousLife = this.ledgerEntries[0]', '没有从最近一世读取候选物证'],
+  // 只守「从最近一世读」这件事本身；它外面套的解锁条件另立一条，
+  // 不再把整行赋值锁成字面量（加一层三元就会误报）。
+  ['this.ledgerEntries[0]', '没有从最近一世读取候选物证'],
+  ['const inheritanceUnlocked = this.ledgerEntries.some((entry) => entry.keeperSlain)', '传承没有被「杀过收灯人」的彩蛋条件解锁'],
   ['[...new Set(previousLife.items)]', '上一世重复物证没有去重'],
   ['!this.items.includes(id) && !STORY_ITEM_IDS.includes(id)', '当前已有物证或固定传承物没有排除'],
   ['previousCandidates[Math.floor(this.random() * previousCandidates.length)]', '上一世物证没有走本局可复现 RNG 随机抽取'],
