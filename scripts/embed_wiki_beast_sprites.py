@@ -131,7 +131,8 @@ def main() -> None:
         build_portrait(spec)
 
     beast_start = html.index('<section class="entry" id="beasts">')
-    beast_end = html.index('<!-- ART-GALLERY-START -->', beast_start)
+    # 卡片目录到本卷的美术块为止（美术馆附卷已拆散，图集挂在这一卷的后半段）
+    beast_end = html.index('<!-- ART-BLOCKS:beasts-START -->', beast_start)
     beast_section = html[beast_start:beast_end]
     if beast_section.count('class="enemy-portrait"') != len(PORTRAITS) + 6:
         raise AssertionError("wiki beast portrait count is incomplete")

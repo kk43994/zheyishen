@@ -50,8 +50,16 @@ chmod 644 "$tmp_html"
 rsync -az "$tmp_html" "$HOST":"$ROOT"/wiki-public/index.html
 rm -f "$tmp_html"
 
+# 美术候选与校验（不是现役资源，从卷目单独进）
+tmp_cand=$(mktemp)
+sed -E "s/(href=\"wiki-runtime-v1\.css|src=\"[a-z0-9-]+-v1\.js)\"/\1?v=$V\"/g" docs/art-candidates.html \
+  | sed "s|\.\./src/assets/items/icons\.png|assets/icons.png?v=$V|g" > "$tmp_cand"
+chmod 644 "$tmp_cand"
+rsync -az "$tmp_cand" "$HOST":"$ROOT"/wiki-public/art-candidates.html
+rm -f "$tmp_cand"
+
 echo "⑤ 线上自检"
-for u in "wiki/" "wiki/wiki-runtime-v1.css?v=$V" "wiki/wiki-runtime-ui-v1.js?v=$V" "wiki/wiki-shell-v1.js?v=$V" "wiki/wiki-runtime-status-v1.js?v=$V"; do
+for u in "wiki/" "wiki/art-candidates.html" "wiki/wiki-runtime-v1.css?v=$V" "wiki/wiki-runtime-ui-v1.js?v=$V" "wiki/wiki-shell-v1.js?v=$V" "wiki/wiki-runtime-status-v1.js?v=$V"; do
   code=$(curl -s -o /dev/null -w '%{http_code}' "https://shen.kk666.best/$u")
   echo "  $code  $u"
   [ "$code" = "200" ] || { echo "  ✗ 自检失败"; exit 1; }

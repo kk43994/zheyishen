@@ -3293,6 +3293,14 @@ export class ZheYiShenGame {
     this.spawnPause = 0;
     this.stageEliteSpawned = false;
     this.eliteSpawned = false;
+    // 这两个「本章已击败」标记此前只在 startRun 里重置，进新章时是留着上一章的值。
+    // 在「打死 Boss 即结算」之前没人读它们，所以一直没暴露；那条判断加上之后，
+    // 第二章开局第一帧就满足「Boss 已死 + 场上没精英」，直接跳章。
+    // 读档恢复由 restoreStageProgress 负责回填，所以只在非恢复时清零。
+    if (!resume) {
+      this.stageBossDefeated = false;
+      this.stageEliteDefeated = false;
+    }
     this.schoolEliteDefeatedAt = 0;
     this.eliteAlertName = '';
     this.eliteAlertTime = 0;

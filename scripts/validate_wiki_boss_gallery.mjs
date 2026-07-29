@@ -7,8 +7,9 @@ const [wiki, source, manifestText] = await Promise.all([
 ]);
 
 const manifest = JSON.parse(manifestText);
-const start = wiki.indexOf('<!-- ART-GALLERY-START -->');
-const end = wiki.indexOf('<!-- ART-GALLERY-END -->');
+// 美术馆附卷已拆散，敌怪图集与 Boss 逐帧现在挂在「怪物图鉴」卷的美术块里。
+const start = wiki.indexOf('<!-- ART-BLOCKS:beasts-START -->');
+const end = wiki.indexOf('<!-- ART-BLOCKS:beasts-END -->');
 const gallery = start >= 0 && end > start ? wiki.slice(start, end) : '';
 const errors = [];
 let checks = 0;

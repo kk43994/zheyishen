@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
-"""把全部实机在用的美术资源嵌入百科「附卷 · 美术馆」板块。
+"""把全部实机在用的美术资源写进百科各卷对应的位置。
 
-数据源全部取自运行时真实图集（src/assets/**），切帧规则与运行时代码一致；
-重复执行会整体替换 ART-GALLERY 标记之间的内容。
+数据源全部取自运行时真实图集（src/assets/**），切帧规则与运行时代码一致。
+
+2026-07-29 拆掉了原来的「附卷 · 美术馆」：那一卷把 166 张图以 base64 内嵌，
+一个人占了首页 96% 的体积（8.6MB / 8.9MB），而且美术和它解释的机制隔着十几屏。
+现在每个子节直接落到讲这件事的卷里（人偶→世界观、摆设→八章人生、弹体→一口气……），
+图落地成 docs/assets/wiki/inline/ 下的外链文件（文件名带内容哈希，改图必换名）。
+重复执行会整体替换各卷 ART-BLOCKS:<卷 id> 标记之间的内容。
 """
 
 from __future__ import annotations
 
-import base64
+import hashlib
 import html
 import io
 import json
@@ -21,6 +26,41 @@ START = "<!-- ART-GALLERY-START -->"
 END = "<!-- ART-GALLERY-END -->"
 WIKI_DATA_DIR = Path("docs/wiki-data")
 WIKI_GIF_DIR = Path("docs/assets/wiki/gif")
+INLINE_DIR = Path("docs/assets/wiki/inline")
+CANDIDATES_PAGE = Path("docs/art-candidates.html")
+USED_INLINE: set[str] = set()
+
+# 子节标题前缀 -> 承接它的卷。SPLIT 要再拆，CANDIDATES 去独立页。
+BLOCK_ROUTE = (
+    ("一局游戏的核心循环", "overview"),
+    ("标题画", "world"),
+    ("主角人偶", "world"),
+    ("UI 纹理与饰件", "world"),
+    ("场景摆设", "chapters"),
+    ("《一口气》弹体", "breath"),
+    ("道具图标", "items"),
+    ("道具与主角体现", "items"),
+    ("敌怪图集", "beasts"),
+    ("大小 Boss", "beasts"),
+    ("奥义插画", "combos"),
+    ("世界实体", "doors"),
+    ("房间内景与六章地面", "SPLIT"),
+    ("结局定格", "mottos"),
+    ("生产中的美术候选", "CANDIDATES"),
+)
+
+# 各卷内的落位顺序（键用前缀，标题里有动态计数）
+SECTION_ORDER = {
+    "overview": ["一局游戏的核心循环"],
+    "world": ["标题画", "主角人偶", "UI 纹理与饰件"],
+    "chapters": ["场景摆设", "__GROUNDS__"],
+    "breath": ["《一口气》弹体"],
+    "items": ["道具图标", "道具与主角体现"],
+    "beasts": ["敌怪图集", "大小 Boss"],
+    "combos": ["奥义插画"],
+    "doors": ["世界实体", "__ROOMS__"],
+    "mottos": ["结局定格"],
+}
 
 ENEMY_DIR = Path("src/assets/enemies")
 BOSS_SKILL_DIR = ENEMY_DIR / "boss-skills-v1"
@@ -306,14 +346,25 @@ ENTITIES = [
 ]
 
 
-def to_uri(image: Image.Image) -> str:
+def _land(payload: bytes, prefix: str) -> str:
+    """把图落地成外链文件。文件名带内容哈希，改图必换名，绕开 CF 边缘缓存。"""
+    INLINE_DIR.mkdir(parents=True, exist_ok=True)
+    name = f"{prefix}-{hashlib.sha1(payload).hexdigest()[:10]}.png"
+    target = INLINE_DIR / name
+    if not target.exists():
+        target.write_bytes(payload)
+    USED_INLINE.add(name)
+    return (target.relative_to(Path("docs"))).as_posix()
+
+
+def to_uri(image: Image.Image, prefix: str = "art") -> str:
     buffer = io.BytesIO()
     image.save(buffer, format="PNG", optimize=True)
-    return "data:image/png;base64," + base64.b64encode(buffer.getvalue()).decode("ascii")
+    return _land(buffer.getvalue(), prefix)
 
 
 def file_uri(path: Path) -> str:
-    return "data:image/png;base64," + base64.b64encode(path.read_bytes()).decode("ascii")
+    return _land(path.read_bytes(), path.stem[:24])
 
 
 def enemy_frame(asset: str, motion: str, frame: int, frame_size: int) -> Image.Image:
@@ -392,15 +443,7 @@ def build_section() -> str:
     item_data = json.loads((WIKI_DATA_DIR / "items.json").read_text(encoding="utf-8"))
     enemy_data = json.loads((WIKI_DATA_DIR / "enemies.json").read_text(encoding="utf-8"))
     boss_data = json.loads((WIKI_DATA_DIR / "bosses.json").read_text(encoding="utf-8"))
-    parts: list[str] = [START]
-    parts.append('<section class="entry" id="gallery">')
-    parts.append('<p class="vol">附 卷</p>')
-    parts.append('<h2 class="serif">实机图鉴 · 看懂角色与机制</h2>')
-    parts.append(
-        '<p class="lede">先看前面的核心循环、普通敌人和 Boss 卡，就能理解这款游戏怎样玩。'
-        '后面的完整动作、场景与特效图集是制作档案，供想继续查细节的读者展开阅读；'
-        '除明确标注“未接入”的候选外，画面均来自游戏现役资源。</p>'
-    )
+    parts: list[str] = []
     parts.append('<div class="stage-h"><h3>一局游戏的核心循环</h3>'
                  f'<span class="cnt">{len(item_data["items"])} 件道具 · {len(item_data["combos"])} 个组合 · '
                  f'{len(enemy_data)} 个现役普通敌怪 · {len(boss_data)} 个大小 Boss</span></div>')
@@ -790,25 +833,145 @@ def build_section() -> str:
         f'<p class="dim" style="margin-top:18px">全部运行时栅格资源合计 {total / 1024:.0f} KB'
         '（参赛包体上限 100MB）；所有图集均保留程序绘制或基础色块兜底，贴图未加载时不会阻断游玩。</p>'
     )
-    parts.append("</section>")
-    parts.append(END)
     return "\n".join(parts)
+
+
+def split_blocks(section_html: str) -> dict[str, str]:
+    """把生成结果按 stage-h 切成子节，键是子节标题。"""
+    heads = [(m.start(), m.group(1)) for m in
+             re.finditer(r'<div class="stage-h"><h3>([^<]+)</h3>', section_html)]
+    if not heads:
+        raise AssertionError("生成结果里没有 stage-h 子节")
+    blocks: dict[str, str] = {}
+    for index, (pos, title) in enumerate(heads):
+        end = heads[index + 1][0] if index + 1 < len(heads) else len(section_html)
+        blocks[title] = section_html[pos:end].rstrip()
+    return blocks
+
+
+def split_rooms_and_grounds(block: str) -> tuple[str, str]:
+    """「房间内景与六章地面」是两组图，房间归两扇门、地面归八章人生。"""
+    body = block[block.index("</div>", block.index('<div class="stage-h">')) + len("</div>"):]
+    starts = [m.start() for m in re.finditer(r'<div style="display:flex', body)]
+    if len(starts) != 2:
+        raise AssertionError(f"房间/地面分组数异常：{len(starts)}")
+    bounds = starts + [len(body)]
+    rooms, grounds = (body[bounds[k]:bounds[k + 1]].strip() for k in range(2))
+    rooms_html = (
+        '<div class="stage-h"><h3>房间内景</h3>'
+        '<span class="cnt">留灯间 / 里屋 / 没有招牌的当铺 · 实机内景</span></div>\n' + rooms
+    )
+    grounds_html = (
+        '<div class="stage-h"><h3>六章地面</h3>'
+        '<span class="cnt">童年至暮年 · 六种地表随年龄换代</span></div>\n'
+        + grounds.replace("margin-top:16px", "margin-top:0")
+    )
+    return rooms_html, grounds_html
+
+
+def route(blocks: dict[str, str]) -> tuple[dict[str, list[str]], str]:
+    """按内容把子节分派到各卷；返回 (卷 id -> 片段列表, 候选档案片段)。"""
+    resolved: dict[str, str] = {}
+    candidates = ""
+    for title, block in blocks.items():
+        target = next((sec for prefix, sec in BLOCK_ROUTE if title.startswith(prefix)), None)
+        if target is None:
+            raise AssertionError(f"子节未归类：{title}")
+        if target == "CANDIDATES":
+            candidates = block
+        elif target == "SPLIT":
+            rooms, grounds = split_rooms_and_grounds(block)
+            resolved["__ROOMS__"] = rooms
+            resolved["__GROUNDS__"] = grounds
+        else:
+            resolved[title] = block
+
+    placed: dict[str, list[str]] = {}
+    for section_id, keys in SECTION_ORDER.items():
+        chunks = []
+        for key in keys:
+            match = next((k for k in resolved if k == key or k.startswith(key)), None)
+            if match is None:
+                raise AssertionError(f"卷 {section_id} 缺子节：{key}")
+            chunks.append(resolved.pop(match))
+        placed[section_id] = chunks
+    if resolved:
+        raise AssertionError(f"有子节没有落位：{sorted(resolved)}")
+    return placed, candidates
+
+
+def graft(html: str, section_id: str, chunks: list[str]) -> str:
+    """把片段写进指定卷的标记之间；标记不存在就在卷末尾建一对。"""
+    start = f"<!-- ART-BLOCKS:{section_id}-START -->"
+    end = f"<!-- ART-BLOCKS:{section_id}-END -->"
+    payload = start + "\n" + "\n".join(chunks) + "\n" + end
+    if start in html:
+        head, rest = html.split(start, 1)
+        _, tail = rest.split(end, 1)
+        return head + payload + tail
+    anchor = html.find(f'<section class="entry" id="{section_id}"')
+    if anchor < 0:
+        raise AssertionError(f"找不到卷 {section_id}")
+    close = html.find("</section>", anchor)
+    if close < 0:
+        raise AssertionError(f"卷 {section_id} 没有闭合")
+    return html[:close] + "\n" + payload + "\n" + html[close:]
+
+
+def write_candidates_page(wiki_html: str, block: str) -> None:
+    head = wiki_html[:wiki_html.index("</head>") + len("</head>")]
+    head = head.replace("<title>", "<title>美术生产档案 · ", 1)
+    CANDIDATES_PAGE.write_text(
+        head + "\n<body>\n"
+        '<div class="topbar" id="wiki-topbar">'
+        '<a class="tb-mark serif" href="index.html">这一身<i>百科</i></a>'
+        '<nav class="tb-links" aria-label="快捷卷目"><a href="index.html">回百科</a></nav>'
+        "</div>\n"
+        '<main class="wrap">\n<section class="entry" id="candidates">\n'
+        '<p class="vol">生产档案</p>\n'
+        '<h2 class="serif">美术候选与实机校验</h2>\n'
+        '<p class="lede">这一页收的是<b>尚未写入 <code>src/assets</code></b> 的候选稿与同屏比例复核图，'
+        "不是现役资源；现役美术已经分散在百科各卷对应的位置。</p>\n"
+        + block + "\n</section>\n</main>\n"
+        '<script src="wiki-shell-v1.js"></script>\n</body></html>\n',
+        encoding="utf-8",
+    )
+
+
+def prune_inline() -> int:
+    """删掉本轮没有再引用的落地图，避免 inline 目录只增不减。"""
+    removed = 0
+    for path in INLINE_DIR.glob("*.png"):
+        if path.name not in USED_INLINE:
+            path.unlink()
+            removed += 1
+    return removed
 
 
 def main() -> None:
     html = WIKI.read_text(encoding="utf-8")
-    section = build_section()
+    placed, candidates = route(split_blocks(build_section()))
+
+    # 旧版附卷整块删除（含标记），内容改由各卷承接
     if START in html:
         head, rest = html.split(START, 1)
         _, tail = rest.split(END, 1)
-        html = head + section + tail
-    else:
-        anchor = "    <!-- 组合名鉴 -->"
-        if anchor not in html:
-            raise AssertionError("未找到插入锚点")
-        html = html.replace(anchor, section + "\n\n" + anchor, 1)
+        html = head.rstrip("\n") + "\n" + tail.lstrip("\n")
+    html = html.replace('<li><a href="#gallery">美术馆</a></li>\n      ', "")
+    html = html.replace('<a href="#gallery">实机图鉴</a>', "")
+
+    for section_id, chunks in placed.items():
+        html = graft(html, section_id, chunks)
+
     WIKI.write_text(html, encoding="utf-8")
-    print(f"gallery embedded · wiki now {WIKI.stat().st_size / 1024:.0f} KB")
+    write_candidates_page(html, candidates)
+    pruned = prune_inline()
+    print(
+        f"gallery distributed · {len(placed)} 卷承接 · "
+        f"落地图 {len(USED_INLINE)} 张 / {sum(p.stat().st_size for p in INLINE_DIR.glob('*.png')) / 1024:.0f} KB"
+        + (f" · 清理 {pruned} 张" if pruned else "")
+    )
+    print(f"wiki now {WIKI.stat().st_size / 1024:.0f} KB · 候选档案 {CANDIDATES_PAGE.name}")
 
 
 if __name__ == "__main__":

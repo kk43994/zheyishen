@@ -136,7 +136,8 @@ if (enemyPortraitFiles.length !== expectedEnemyPortraitCount) {
 }
 
 const beastStart = wiki.indexOf('<section class="entry" id="beasts">');
-const beastEnd = wiki.indexOf('<!-- ART-GALLERY-START -->', beastStart);
+// 卡片目录到本卷的美术块为止；美术块之后是敌怪图集与 Boss 逐帧，不算目录。
+const beastEnd = wiki.indexOf('<!-- ART-BLOCKS:beasts-START -->', beastStart);
 const beastSection = beastStart >= 0 && beastEnd > beastStart ? wiki.slice(beastStart, beastEnd) : '';
 if (!beastSection) errors.push('wiki beast catalog section is missing');
 if ((beastSection.match(/class="item beast"/g) ?? []).length !== enemyPortraitIds.length) {

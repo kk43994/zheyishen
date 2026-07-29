@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../src/assets/items/icons.png">
+<link rel="stylesheet" href="wiki-runtime-v1.css?v=20260725-enemy-detail-3">
+<script>(function(){try{var t=localStorage.getItem('wiki-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<title>美术生产档案 · 《这一身》百科 · 故事线正典</title>
+<style>
+  :root{
+    /* 夜桌 · 与游戏 UI_PALETTE 同源（src/ui-theme.ts） */
+    --paper:#D8D0C1; --paper-2:#AAA297;
+    --ink:#17151A; --ink-2:#3E3A3D; --ink-3:#6E675B;
+    --oldred:#9F3548;     /* 旧红 · 唯一高饱和（游戏红章色） */
+    --oldred-soft:#B06961;
+    --rainyellow:#C6A44A; /* 雨衣黄 */
+    --wardblue:#71818A;   /* 病房蓝灰 */
+    --moon:#E8E1D3;       /* 月白 · 一口气 */
+    --bg:#111116; --card:#1B1A20; --line:#34323A;
+    --fg:#E8E1D3; --fg-2:#D8D0C1; --fg-3:#AAA297;
+    --moon-face:#E8E1D3; --moon-halo:rgba(232,225,211,.10);
+    --q1:#786F69; --q2:#71818A; --q3:#9F3548; --q4:#C6A44A; --q5:#E8E1D3;
+    --positive:#779887; --warning:#B06961;
+    --desk:url("assets/desk-texture.png");
+  }
+  :root[data-theme="light"]{
+    --bg:#E9E3D4; --card:#F1ECDF; --line:#C8C0AC;
+    --fg:#1A1713; --fg-2:#453F36; --fg-3:#6E675B;
+    --oldred:#9E3B33; --oldred-soft:#B0554A;
+    --rainyellow:#A8842F; --wardblue:#63737B;
+    --moon-face:#E5DCC4; --moon-halo:rgba(110,103,91,.14);
+    --q1:#7E7A6E; --q2:#5F7581; --q3:#9E3B33; --q4:#8A6E22; --q5:#8A2F3F;
+    --positive:#5c7a63; --warning:#a1554d;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    background-image:linear-gradient(rgba(17,17,22,.90),rgba(17,17,22,.90)),var(--desk); background-attachment:fixed;
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    line-height:1.85; font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .serif{font-family:"Songti SC","STSong","Noto Serif CJK SC","SimSun",serif}
+  :root[data-theme="light"] body{background-image:none}
+
+  .frame{max-width:1180px;margin:0 auto;padding:0 20px}
+  .cols{display:grid;grid-template-columns:200px minmax(0,1fr);gap:48px}
+  @media (max-width:900px){.cols{grid-template-columns:minmax(0,1fr)}}
+
+  /* ── 卷首 ── */
+  header.hero{position:relative;overflow:hidden;padding:96px 0 72px;text-align:center}
+  .moonwrap{position:absolute;inset:0;display:flex;justify-content:center;pointer-events:none}
+  .moon{
+    width:420px;height:420px;border-radius:50%;margin-top:-60px;
+    background:radial-gradient(circle at 38% 32%, var(--moon-face) 0%, var(--moon-face) 55%, transparent 72%);
+    box-shadow:0 0 140px 60px var(--moon-halo);
+    opacity:.5;
+  }
+  .hero .frame{position:relative}
+  .eyebrow{font-size:12px;letter-spacing:.5em;color:var(--fg-3);text-indent:.5em;margin-bottom:26px}
+  h1.title{
+    margin:0;font-size:clamp(56px,11vw,104px);font-weight:900;line-height:1.15;
+    letter-spacing:.06em;text-wrap:balance;
+  }
+  .flip{position:relative;display:inline-block;color:var(--oldred)}
+  .flip .g{position:absolute;left:0;top:0;opacity:0;animation:flip 12s ease-in-out infinite}
+  .flip .s{animation:flop 12s ease-in-out infinite}
+  @keyframes flip{0%,58%{opacity:0}70%,88%{opacity:1}100%{opacity:0}}
+  @keyframes flop{0%,58%{opacity:1}70%,88%{opacity:0}100%{opacity:1}}
+  @media (prefers-reduced-motion: reduce){
+    .flip .g{animation:none;opacity:0}
+    .flip .s{animation:none;opacity:1}
+  }
+  .tagline{margin:30px auto 8px;font-size:clamp(18px,3vw,24px);color:var(--fg-2);letter-spacing:.12em}
+  .tagline2{font-size:14px;color:var(--fg-3);letter-spacing:.2em}
+  .meta-line{margin-top:44px;font-size:12px;color:var(--fg-3);letter-spacing:.15em}
+  .meta-line b{color:var(--fg-2);font-weight:600}
+
+  /* ── 目录轨 ── */
+  nav.rail{position:sticky;top:24px;align-self:start;font-size:13px}
+  nav.rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+  nav.rail a{
+    display:block;padding:7px 0 7px 16px;color:var(--fg-3);text-decoration:none;
+    border-left:2px solid transparent;margin-left:-1.5px;letter-spacing:.05em;
+  }
+  nav.rail a:hover{color:var(--oldred)}
+  nav.rail a:focus-visible{outline:2px solid var(--oldred);outline-offset:2px}
+  nav.rail .rl{font-size:11px;letter-spacing:.35em;color:var(--fg-3);margin:0 0 12px;text-indent:.1em}
+  @media (max-width:900px){
+    nav.rail{position:sticky;top:54px;background:var(--bg);z-index:9;padding:10px 0;border-bottom:1px solid var(--line)}
+    nav.rail .rl{display:none}
+    nav.rail ol{display:flex;gap:4px;overflow-x:auto;border-left:none;padding-bottom:4px}
+    nav.rail a{white-space:nowrap;border-left:none;border-bottom:2px solid transparent;padding:4px 10px;margin:0}
+  }
+
+  /* ── 词条 ── */
+  main{padding:24px 0 120px}
+  section.entry{padding:64px 0 8px;border-top:1px dashed var(--line);margin-top:56px}
+  section.entry:first-of-type{border-top:none;margin-top:0;padding-top:24px}
+  .vol{font-size:12px;letter-spacing:.45em;color:var(--oldred);margin:0 0 14px;text-indent:.1em}
+  h2{font-size:clamp(26px,4vw,36px);font-weight:900;margin:0 0 10px;letter-spacing:.06em;text-wrap:balance}
+  .lede{color:var(--fg-2);max-width:38em;margin:0 0 28px}
+  h3{font-size:18px;font-weight:700;margin:40px 0 12px;letter-spacing:.05em}
+  p{max-width:40em}
+  .dim{color:var(--fg-3)}
+
+  /* 命运牌式引文 */
+  blockquote.fate{
+    margin:28px 0;padding:26px 28px;max-width:34em;
+    background:var(--card);border:1px solid var(--line);border-radius:3px;
+    position:relative;
+  }
+  blockquote.fate::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--oldred);
+  }
+  blockquote.fate p{margin:0;font-size:clamp(17px,2.6vw,21px);line-height:1.9;font-weight:600}
+  blockquote.fate cite{display:block;margin-top:14px;font-style:normal;font-size:12px;color:var(--fg-3);letter-spacing:.15em}
+
+  /* 表 */
+  .tbl-wrap{overflow-x:auto;margin:20px 0}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+  th{font-size:12px;font-weight:600;letter-spacing:.15em;color:var(--fg-3);text-align:left;padding:10px 14px;border-bottom:1px dashed var(--fg-3)}
+  td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  td:first-child{font-weight:700;white-space:nowrap}
+  tr:hover td{background:var(--card)}
+  .num{font-variant-numeric:tabular-nums}
+  .voice-canon-table{min-width:980px;table-layout:fixed}
+  .voice-canon-table th:nth-child(1){width:7%}
+  .voice-canon-table th:nth-child(2){width:11%}
+  .voice-canon-table th:nth-child(3){width:20%}
+  .voice-canon-table th:nth-child(4){width:22%}
+  .voice-canon-table th:nth-child(5){width:28%}
+  .voice-canon-table th:nth-child(6){width:12%}
+  .voice-canon-table td{white-space:normal;line-height:1.62}
+  .voice-canon-table td:first-child{white-space:nowrap;color:var(--oldred)}
+  .voice-state{display:inline-block;padding:1px 7px;border:1px solid var(--line);border-radius:2px;font-size:11px}
+  .voice-state.ready{color:var(--wardblue);border-color:var(--wardblue)}
+  .voice-state.pending{color:var(--oldred);border-color:var(--oldred)}
+  .voice-review-link{display:inline-block;margin-top:12px;padding:8px 12px;border:1px solid var(--wardblue);color:var(--wardblue);text-decoration:none}
+  .voice-review-link:hover{background:var(--card)}
+
+  /* 77 件道具叙事机制母表 */
+  .canon-intro{
+    max-width:none;margin:24px 0 30px;padding:20px 22px;background:var(--card);
+    border:1px solid var(--line);border-left:3px solid var(--oldred);border-radius:3px;
+  }
+  .canon-intro p{margin:0;max-width:58em}
+  .canon-intro p+p{margin-top:8px}
+  .canon-wrap{margin-top:12px}
+  .canon-table{min-width:940px;table-layout:fixed;font-size:13px;line-height:1.68}
+  .canon-table th:nth-child(1){width:19%}
+  .canon-table th:nth-child(2){width:25%}
+  .canon-table th:nth-child(3){width:22%}
+  .canon-table th:nth-child(4){width:34%}
+  .canon-table td:first-child{white-space:normal}
+  .canon-table td{padding:15px 14px}
+  .canon-line{display:block;color:var(--fg-2)}
+  .canon-line+.canon-line{margin-top:7px;padding-top:7px;border-top:1px dashed var(--line)}
+  .canon-line b{
+    display:block;margin-bottom:2px;color:var(--fg-3);font-size:10.5px;
+    letter-spacing:.16em;font-weight:700;
+  }
+  .canon-道具 span{font-size:14.5px;font-weight:800;color:var(--fg)}
+  .canon-简介 span{font-family:"Songti SC","STSong","Noto Serif CJK SC","SimSun",serif;color:var(--oldred)}
+  .canon-游戏机制 span{color:var(--fg);font-weight:600}
+  .canon-group>.stage-h{margin-top:36px}
+  .prod-taxonomy{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0 26px}
+  .prod-taxonomy>div{padding:13px 14px;border:1px solid var(--line);background:var(--card);border-radius:3px}
+  .prod-taxonomy b{display:block;margin-bottom:4px;color:var(--fg);font-size:12px}
+  .prod-taxonomy span{display:block;color:var(--fg-3);font-size:11px;line-height:1.6}
+  .prod-filter{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:18px 0 12px;padding:12px;background:var(--card);border:1px solid var(--line);border-radius:3px}
+  .prod-filter label{display:flex;align-items:center;gap:6px;color:var(--fg-3);font-size:11px;letter-spacing:.08em}
+  .prod-filter select{min-height:32px;padding:5px 26px 5px 9px;border:1px solid var(--line);border-radius:2px;background:var(--bg);color:var(--fg);font:inherit;letter-spacing:0}
+  .prod-filter .result{margin-left:auto;color:var(--oldred);font-size:11px;font-variant-numeric:tabular-nums}
+  .canon-production-row>td{padding:0 14px 14px;background:rgba(0,0,0,.08)}
+  .canon-production-row:hover td{background:rgba(0,0,0,.08)}
+  .prod-details{border:1px solid var(--line);border-radius:3px;background:var(--bg)}
+  .prod-details>summary{display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-height:42px;padding:8px 11px;cursor:pointer;color:var(--fg-2);font-size:11px;list-style:none}
+  .prod-details>summary::-webkit-details-marker{display:none}
+  .prod-details>summary::before{content:'＋';display:inline-grid;place-items:center;width:18px;height:18px;border:1px solid var(--line);color:var(--fg-3)}
+  .prod-details[open]>summary::before{content:'－'}
+  .prod-badge{display:inline-flex;align-items:center;min-height:22px;padding:2px 7px;border:1px solid var(--line);border-radius:2px;background:var(--card);color:var(--fg-2)}
+  .prod-badge.source-light{border-color:#9b8748;color:#d4bd72}
+  .prod-badge.source-inner{border-color:#77525b;color:#c78895}
+  .prod-badge.stat{border-color:#4f6870;color:#8eb2bb}
+  .prod-badge.rule{border-color:#7a6343;color:#c8a466}
+  .prod-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--line)}
+  .prod-field{padding:12px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .prod-field:nth-child(even){border-right:0}
+  .prod-field b{display:block;margin-bottom:4px;color:var(--fg-3);font-size:10.5px;letter-spacing:.16em}
+  .prod-field span{display:block;color:var(--fg-2);font-size:12px;line-height:1.7}
+  .prod-missing{padding:12px 14px;border-top:1px solid var(--line);color:var(--oldred);font-size:11px}
+  .canon-item-hidden{display:none!important}
+  @media (max-width:720px){
+    .canon-wrap{overflow:visible}
+    .canon-table{display:block;min-width:0;font-size:13.5px}
+    .canon-table thead{display:none}
+    .canon-table tbody{display:grid;gap:14px}
+    .canon-table tr{
+      display:block;border:1px solid var(--line);border-radius:3px;background:var(--card);overflow:hidden;
+    }
+    .canon-table td{display:block;padding:13px 15px;border-bottom:1px solid var(--line)}
+    .canon-table td:last-child{border-bottom:0}
+    .canon-table td::before{
+      content:attr(data-label);display:block;margin-bottom:7px;color:var(--fg-3);
+      font-size:10.5px;letter-spacing:.16em;font-weight:700;
+    }
+    .canon-table tr:hover td{background:transparent}
+    .prod-taxonomy{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .prod-filter{align-items:stretch}
+    .prod-filter label{flex:1 1 140px;display:grid;gap:4px}
+    .prod-filter select{width:100%}
+    .prod-filter .result{flex-basis:100%;margin-left:0}
+    .canon-production-row>td{padding:0 8px 10px}
+    .canon-production-row>td::before{display:none}
+    .prod-grid{grid-template-columns:1fr}
+    .prod-field{border-right:0}
+  }
+
+  /* 红线 */
+  .redlines{display:grid;gap:16px;margin:24px 0}
+  .redline{
+    border:1px solid var(--line);border-radius:3px;background:var(--card);
+    padding:22px 24px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;
+  }
+  .redline .no{
+    font-family:"Songti SC","STSong",serif;font-size:28px;font-weight:900;color:var(--oldred);
+    line-height:1;padding-top:2px;
+  }
+  .redline h4{margin:0 0 6px;font-size:16px;letter-spacing:.05em}
+  .redline p{margin:0;font-size:14px;color:var(--fg-2)}
+  .redline .src{display:block;margin-top:10px;font-size:12px;color:var(--fg-3)}
+  .redline .src q{color:var(--oldred-soft);quotes:"「" "」"}
+
+  /* 五类对象 litany */
+  .litany{margin:26px 0;padding:0;list-style:none;max-width:36em}
+  .litany li{
+    padding:14px 0;border-bottom:1px dashed var(--line);
+    font-size:15px;color:var(--fg-2);
+  }
+  .litany li b{color:var(--fg);font-weight:700;margin-right:.8em}
+
+  /* 一口气七龄 */
+  .breaths{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:24px 0}
+  .breath{
+    border:1px solid var(--line);border-radius:3px;padding:16px 16px 14px;background:var(--card);
+  }
+  .breath .age{font-size:11px;letter-spacing:.3em;color:var(--fg-3);margin-bottom:8px}
+  .breath .line{font-size:14px;font-weight:700;line-height:1.6}
+  .breath.last{border-color:var(--oldred);}
+  .breath.last .line{color:var(--oldred)}
+
+  /* 五毒 */
+  .poisons{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin:24px 0}
+  .poison{border:1px solid var(--line);border-radius:3px;background:var(--card);padding:18px}
+  .poison .ch{font-family:"Songti SC","STSong",serif;font-size:34px;font-weight:900;line-height:1;color:var(--oldred)}
+  .poison .mean{font-size:13px;color:var(--fg-2);margin:10px 0 12px;min-height:3.2em}
+  .poison dl{margin:0;font-size:12px}
+  .poison dt{color:var(--fg-3);letter-spacing:.2em;font-size:11px;margin-top:8px}
+  .poison dd{margin:2px 0 0;color:var(--fg-2)}
+
+  /* 咽吐 */
+  .swipe{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:40em;margin:26px 0}
+  @media (max-width:560px){.swipe{grid-template-columns:1fr}}
+  .swipe .side{border:1px solid var(--line);border-radius:3px;padding:20px 22px;background:var(--card)}
+  .swipe .dir{font-size:11px;letter-spacing:.3em;color:var(--fg-3)}
+  .swipe h4{margin:6px 0 8px;font-size:22px;font-weight:900}
+  .swipe p{margin:0;font-size:13.5px;color:var(--fg-2)}
+  .swipe .l h4{color:var(--wardblue)}
+  .swipe .r h4{color:var(--oldred)}
+
+  /* 道具卡 */
+  .stage-h{display:flex;align-items:baseline;gap:14px;margin:44px 0 14px}
+  .stage-h h3{margin:0}
+  .stage-h .cnt{font-size:12px;color:var(--fg-3);letter-spacing:.1em}
+  .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:14px}
+  .item{
+    border:1px solid var(--line);border-radius:3px;background:var(--card);
+    padding:16px 16px 14px;display:flex;flex-direction:column;gap:8px;
+  }
+  .item .top{display:flex;align-items:center;gap:12px}
+  .glyph{
+    width:40px;height:40px;flex:none;border-radius:3px;display:flex;align-items:center;justify-content:center;
+    font-family:"Songti SC","STSong",serif;font-weight:900;font-size:20px;color:var(--bg);
+  }
+  .item .nm{font-weight:700;font-size:14.5px;line-height:1.4}
+  .q{font-size:10.5px;letter-spacing:.15em;padding:2px 7px;border-radius:2px;border:1px solid currentColor;white-space:nowrap}
+  .q1{color:var(--q1)} .q2{color:var(--q2)} .q3{color:var(--q3)} .q4{color:var(--q4)}
+  .q5{color:var(--oldred);border-width:2px;border-radius:0;transform:rotate(-1deg);font-family:"Songti SC","STSong",serif;font-weight:800}
+  .item .fl{font-size:12.5px;color:var(--fg-3);font-family:"Songti SC","STSong",serif;min-height:2.6em}
+  .item .fx{font-size:12px;display:grid;gap:3px}
+  .item .fx span{display:block}
+  .fx .pos::before{content:"得到 ";color:var(--positive);font-weight:700;letter-spacing:.08em}
+  .fx .neg::before{content:"留下 ";color:var(--oldred);font-weight:700;letter-spacing:.08em}
+  .fx .eff::before{content:"效 ";color:var(--rainyellow);font-weight:700;letter-spacing:.1em}
+  .fx .look::before{content:"貌 ";color:var(--wardblue);font-weight:700;letter-spacing:.1em}
+  .fx .iron::before{content:"讽 ";color:var(--fg-3);font-weight:700;letter-spacing:.1em}
+  .fx .pos,.fx .neg,.fx .eff,.fx .look,.fx .iron{color:var(--fg-2)}
+  .item.plan{border-style:dashed}
+  .item.plan .glyph{opacity:.8}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+  .chip{font-size:12.5px;border:1px dashed var(--line);color:var(--fg-3);border-radius:999px;padding:4px 13px}
+
+  /* 组合 */
+  .combos td:nth-child(2){font-family:"Songti SC","STSong",serif;font-weight:700}
+  .tagok{font-size:10.5px;color:var(--rainyellow);border:1px solid var(--rainyellow);border-radius:2px;padding:1px 6px;letter-spacing:.1em;white-space:nowrap}
+
+  /* 两扇门 */
+  .doors{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:26px 0}
+  @media (max-width:640px){.doors{grid-template-columns:1fr}}
+  .door{border:1px solid var(--line);border-radius:3px;padding:24px;background:var(--card)}
+  .door .sig{font-size:11px;letter-spacing:.3em;margin-bottom:10px}
+  .door.warm .sig{color:var(--rainyellow)}
+  .door.cold .sig{color:var(--oldred)}
+  .door h4{margin:0 0 10px;font-size:20px;font-weight:900}
+  .door p{font-size:13.5px;color:var(--fg-2);margin:0 0 10px}
+  .door ul{margin:0;padding-left:1.2em;font-size:13px;color:var(--fg-2)}
+  .door li{margin:4px 0}
+  .rate{font-size:12px;color:var(--fg-3);margin-top:8px}
+
+  /* 考古表 */
+  .arch td:nth-child(2){color:var(--fg-3)}
+  .arch td:nth-child(3){font-weight:700}
+  .who{font-size:11px;color:var(--fg-3);letter-spacing:.1em;white-space:nowrap}
+
+  /* 卷末 */
+  .mottos{display:grid;gap:0;margin:24px 0;max-width:38em}
+  .mottos p{
+    margin:0;padding:20px 4px;border-bottom:1px dashed var(--line);
+    font-family:"Songti SC","STSong",serif;font-size:17px;font-weight:700;line-height:1.9;
+  }
+  .item .art{width:40px;height:40px;flex:none;background:#101014;border:1px solid var(--line);border-radius:3px;display:flex;align-items:center;justify-content:center}
+  .item .art svg{width:34px;height:34px}
+  .beast .art{width:64px;height:64px;flex:none;background:#101014;border:1px solid var(--line);border-radius:3px;display:flex;align-items:center;justify-content:center}
+  .beast .art svg{width:54px;height:54px}
+  .beast .art .pg{font-family:"Songti SC","STSong",serif;font-size:26px;font-weight:900;color:#4c4a52}
+  .beast .bstat{font-size:11px;color:var(--fg-3);font-variant-numeric:tabular-nums}
+  .mottos p .src{display:block;font-family:"PingFang SC",sans-serif;font-weight:400;font-size:11px;color:var(--fg-3);letter-spacing:.2em;margin-top:6px}
+  footer{margin-top:80px;padding-top:28px;border-top:1px solid var(--line);font-size:12px;color:var(--fg-3);letter-spacing:.08em;line-height:2.2}
+  /* 点道具卡查看生产合同 */
+  .items>.item[data-rpc]{cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
+  .items>.item[data-rpc]:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(0,0,0,.13)}
+  .items>.item[data-rpc]::after{content:"合同";position:absolute;top:8px;right:8px;font-size:10px;letter-spacing:.14em;color:var(--fg);opacity:.32;border:1px solid var(--line);border-radius:999px;padding:1px 8px;pointer-events:none}
+  .items>.item[data-rpc]{position:relative}
+  .items>.item[data-rpc]:hover::after{opacity:.8}
+  .items>.item[data-rpc]:focus-visible{outline:2px solid var(--rainyellow);outline-offset:2px}
+  .rpc-overlay{position:fixed;inset:0;background:rgba(18,14,10,.55);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px}
+  .rpc-overlay.open{display:flex}
+  .rpc-modal{background:var(--card);border:1px solid var(--line);border-radius:6px;max-width:640px;width:100%;max-height:86vh;overflow:auto;box-shadow:0 24px 64px rgba(0,0,0,.4);position:relative}
+  .rpc-head{padding:22px 24px 15px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card);z-index:1}
+  .rpc-room{display:inline-block;font-size:12px;font-weight:600;padding:3px 12px;border-radius:999px;margin-bottom:9px}
+  .rpc-room[data-room="回忆祭坛"]{background:rgba(120,120,132,.16);color:var(--fg)}
+  .rpc-room[data-room="留灯间"]{background:var(--rainyellow-soft,rgba(196,150,46,.18));color:var(--rainyellow)}
+  .rpc-room[data-room="里屋"]{background:var(--oldred-soft);color:var(--oldred)}
+  .rpc-title{font-family:var(--serif,"Songti SC",serif);font-size:22px;font-weight:600;line-height:1.2}
+  .rpc-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px;align-items:center}
+  .rpc-tag{font-size:12px;color:var(--fg);opacity:.85;border:1px solid var(--line);border-radius:6px;padding:2px 9px}
+  .rpc-tag.stat{color:var(--rainyellow);border-color:var(--rainyellow);opacity:1}
+  .rpc-layer{font-size:11px;font-family:ui-monospace,Menlo,monospace;opacity:.55;border:1px dashed var(--line);border-radius:5px;padding:1px 7px}
+  .rpc-body{padding:16px 24px 24px}
+  .rpc-field{padding:11px 0;border-bottom:1px solid var(--line)}
+  .rpc-field:last-child{border-bottom:0}
+  .rpc-k{font-size:12px;letter-spacing:.14em;opacity:.5;margin-bottom:4px}
+  .rpc-v{font-size:14.5px;line-height:1.62;color:var(--fg)}
+  .rpc-close{position:absolute;top:15px;right:18px;background:none;border:0;font-size:26px;line-height:1;color:var(--fg);opacity:.45;cursor:pointer;z-index:2}
+  .rpc-close:hover{opacity:1}
+  .quick-read{border:1px solid var(--line);border-left:3px solid var(--red);padding:22px 24px;background:linear-gradient(135deg,var(--card),transparent)}
+  .quick-read .one-line{font-size:20px;line-height:1.65;margin:0 0 18px}
+  .core-loop{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:18px 0}
+  .core-step{position:relative;border:1px solid var(--line);border-radius:8px;padding:16px 14px;background:var(--card)}
+  .core-step:not(:last-child)::after{content:"→";position:absolute;right:-10px;top:50%;transform:translateY(-50%);z-index:2;color:var(--red);font-weight:800}
+  .core-step .step-no{display:block;color:var(--red);font:700 11px/1.2 ui-monospace,Menlo,monospace;letter-spacing:.12em;margin-bottom:8px}
+  .core-step b{display:block;font-size:15px;margin-bottom:7px}
+  .core-step p{font-size:13px;line-height:1.55;margin:0;color:var(--dim)}
+  .control-split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+  .control-split>div{padding:15px 17px;border:1px solid var(--line);border-radius:8px}
+  .control-split h4{margin:0 0 8px;font-size:14px}
+  .control-split p{margin:0;font-size:13px;line-height:1.6}
+  .control-split .fixed h4{color:var(--dim)}
+  .control-split .choice{border-color:color-mix(in srgb,var(--red) 50%,var(--line))}
+  .control-split .choice h4{color:var(--red)}
+  .pitch-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+  .pitch-card{border:1px solid var(--line);border-radius:9px;padding:20px;background:var(--card)}
+  .pitch-card h3{font-size:19px;margin:4px 0 12px}
+  .pitch-card p{font-size:14px;line-height:1.7;margin:0 0 10px}
+  .pitch-card ul{margin:8px 0 0;padding-left:19px}
+  .pitch-card li{font-size:13px;line-height:1.65;margin:5px 0}
+  .pitch-kicker{display:block;color:var(--red);font:700 11px/1.2 ui-monospace,Menlo,monospace;letter-spacing:.13em}
+  .boundary{margin-top:12px;padding-top:11px;border-top:1px dashed var(--line);color:var(--dim);font-size:12px!important}
+  .theme-card{margin:18px 0;border:1px solid color-mix(in srgb,var(--red) 55%,var(--line));border-radius:9px;padding:24px;background:linear-gradient(145deg,color-mix(in srgb,var(--red) 9%,var(--card)),var(--card))}
+  .theme-card blockquote{margin:12px 0 20px;padding:0;border:0;font-size:25px;line-height:1.55;color:var(--fg)}
+  .theme-path{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .theme-path>div{padding:14px;border-top:1px solid var(--line)}
+  .theme-path b{display:block;color:var(--red);font-size:13px;margin-bottom:6px}
+  .theme-path p{font-size:13px;line-height:1.65;margin:0}
+  .difference-table td:first-child{width:27%;font-weight:800;color:var(--dim)}
+  .difference-table td:nth-child(2){width:31%}
+  .difference-table td:last-child{color:var(--fg);font-weight:650}
+  .reader-note{padding:12px 15px;border-radius:7px;background:color-mix(in srgb,var(--red) 8%,transparent);font-size:13px;line-height:1.65}
+  .entry-label{display:block;color:var(--dim);font-size:11px;letter-spacing:.12em;margin-bottom:3px}
+  @media(max-width:760px){
+    .core-loop{grid-template-columns:1fr}
+    .core-step:not(:last-child)::after{content:"↓";right:auto;left:50%;top:auto;bottom:-14px;transform:translateX(-50%)}
+    .control-split{grid-template-columns:1fr}
+    .pitch-grid{grid-template-columns:1fr}
+    .theme-path{grid-template-columns:1fr}
+    .quick-read{padding:18px}
+  }
+</style>
+</head>
+<body>
+<div class="topbar" id="wiki-topbar"><a class="tb-mark serif" href="index.html">这一身<i>百科</i></a><nav class="tb-links" aria-label="快捷卷目"><a href="index.html">回百科</a></nav></div>
+<main class="wrap">
+<section class="entry" id="candidates">
+<p class="vol">生产档案</p>
+<h2 class="serif">美术候选与实机校验</h2>
+<p class="lede">这一页收的是<b>尚未写入 <code>src/assets</code></b> 的候选稿与同屏比例复核图，不是现役资源；现役美术已经分散在百科各卷对应的位置。</p>
+<div class="stage-h"><h3>生产中的美术候选与实机校验</h3><span class="cnt">Image2 参考图编辑 + 固定网格切片 · 静态评审通过后才可接入</span></div>
+<p class="lede">这一批不是宣传海报，而是按真实槽位与实机叠层生产的可用资产。战场照明已撤销“整局发生在夜里”的错误前提：前五章用清晨、白昼、傍晚、饭桌灯、日光灯与苍白午后区分年龄，只有收灯人终局进入夜色；章节过场不切黑屏，地面与摆设在玩家脚下继续溶解，并在 4.2 秒内依次呈现现实处境、主角心声与生活物件接棒；六章地面 v2 使用 Image2 分章生成材质，再经 128×128 降采样、20 色限色和对边融合成为真正可平铺图块；背景物件按大中小三档缩放并组成生活场景簇，不再均匀撒点；三套小型资产语言分别测试“旧家具与生活遗物”“人生档案与机关”“末班车站与失物”；全屏背景 v2 则把留灯间、里屋和当铺分别落实为普通小屋、档案封存室和失物估价处；结算背景 v2 把失败解释为档案封卷，把真结局解释为有人刚刚照看过的一盏普通路灯；所有图均已去绿底、限色、清理透明 RGB 并在当前主角旁以真实精灵比例复核。当前建议以档案机关作为全局骨架，留灯间借用旧家具的暖意，青年章节保留末班车站变体。</p>
+<figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/stage-lighting-runtime-c-51d95cd0c9.png" alt="六章战场照明 · 非夜间版本" loading="lazy" width="1440" height="475" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">六章战场照明 · 非夜间版本<br>清晨 / 白昼 / 傍晚 / 饭桌灯 / 日光灯 / 苍白午后 · 深墨只留给轮廓与终局</figcaption></figure>
+<figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/natural-chapter-transiti-9dfc8594c8.png" alt="五段章节过场 · 连续衔接板" loading="lazy" width="1440" height="512" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">五段章节过场 · 连续衔接板<br>世界与主角不消失 · 地面持续溶解 · 现实处境与心声 · 4.2 秒人生片段</figcaption></figure>
+<figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/ground-tiles-v2-contact-dbfd03e5f4.png" alt="六章 Image2 地面 v2 · 单块候选" loading="lazy" width="1536" height="290" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">六章 Image2 地面 v2 · 单块候选<br>旧木板 / 教室水磨石 / 站台铺面 / 出租屋旧地砖 / 办公地胶 / 苍白院廊</figcaption></figure>
+<figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/ground-tiles-v2-tiled-co-d30690832c.png" alt="六章 Image2 地面 v2 · 3×3 平铺检查" loading="lazy" width="2304" height="418" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">六章 Image2 地面 v2 · 3×3 平铺检查<br>128×128 · 20 色 · 对边精确一致 · 无透视与固定大物件</figcaption></figure>
+<figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/ground-tiles-v2-scene-co-b894c6ce08.png" alt="六章 Image2 地面 v2 · 人物与多尺度摆设组合" loading="lazy" width="1440" height="467" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">六章 Image2 地面 v2 · 人物与多尺度摆设组合<br>大件 1.30–1.45 / 中件 0.96–1.18 / 小件 0.74–0.90 · 场景簇摆放</figcaption></figure>
+<figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/plinth-style-gate-contac-8ec7bb3746.png" alt="特殊房道具台 · 三套视觉语言" loading="lazy" width="1584" height="990" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">特殊房道具台 · 三套视觉语言<br>12 个 48×32 候选 · 旧家具 / 档案机关 / 末班车站</figcaption></figure>
+<figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/special-threshold-style--13ec3d5709.png" alt="特殊房门槛资产 · 三套视觉语言" loading="lazy" width="1072" height="1758" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">特殊房门槛资产 · 三套视觉语言<br>商人 / 留灯间门 / 里屋门 / 奖励光柱 · 32×64 单元</figcaption></figure>
+<figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/special-room-composite-p-9d99aff7f8.png" alt="特殊房实机比例组合预览" loading="lazy" width="1480" height="1636" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">特殊房实机比例组合预览<br>使用当前主角与地面图集组合 · 未替换运行时</figcaption></figure>
+<figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/last-line-corrections-co-cd2da0d431.png" alt="末班车站 · 定点修正版" loading="lazy" width="1584" height="584" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">末班车站 · 定点修正版<br>紧凑商人 / 窄里屋门 / 不被绿幕吞掉的奖励光柱 / 空台面</figcaption></figure>
+<figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/special-room-current-vs--de55ade1aa.png" alt="特殊房全屏背景 v2 · 现役对照" loading="lazy" width="2160" height="682" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">特殊房全屏背景 v2 · 现役对照<br>留灯间 / 人生档案封存室 / 失物估价处 · 360×640 候选，尚未替换</figcaption></figure>
+<figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/special-room-v2-safe-zon-d2ffd5ff04.png" alt="特殊房全屏背景 v2 · 移动端安全区" loading="lazy" width="1080" height="640" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">特殊房全屏背景 v2 · 移动端安全区<br>标题 / 中央道具悬浮 / 底部代价与操作区均已做构图复核</figcaption></figure>
+<figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/ending-backgrounds-curre-da4b4d685b.png" alt="结算背景 v2 · 现役对照" loading="lazy" width="1440" height="674" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">结算背景 v2 · 现役对照<br>失败是人生档案封卷；真结局只留下路灯、钥匙与雨衣，不再烘焙第二个人物</figcaption></figure>
+<figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/ending-backgrounds-v2-re-1fdb4b01fd.png" alt="结算背景 v2 · 实机叠层" loading="lazy" width="720" height="674" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">结算背景 v2 · 实机叠层<br>70% 暗幕 / 标题变字 / 页签 / 模块化最终主角 / 时间线 / 再活一次按钮</figcaption></figure>
+<figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/environment-surprises-co-46e040eeb8.png" alt="六章环境惊喜 · 静态激活帧" loading="lazy" width="1000" height="902" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">六章环境惊喜 · 静态激活帧<br>床下眼睛 / 批改红叉 / 末班车 / 未接来电 / 空转椅 / 路灯轮椅</figcaption></figure>
+<figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/environment-surprises-sc-befe96504d.png" alt="六章环境惊喜 · 实机比例预览" loading="lazy" width="1656" height="750" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">六章环境惊喜 · 实机比例预览<br>96×48 边缘覆盖层 · 与当前主角及六章地面同屏复核</figcaption></figure>
+<p class="dim">状态：候选，尚未写入 <code>src/assets</code>。末班车站初稿中过宽的商人、里屋门与过淡光柱已采用单格定点补图修正，三张全屏房间与两张结算背景也已通过移动端安全区检查；正式接入前仍需作者选择整套或混合方案。</p>
+<p class="dim" style="margin-top:18px">全部运行时栅格资源合计 4600 KB（参赛包体上限 100MB）；所有图集均保留程序绘制或基础色块兜底，贴图未加载时不会阻断游玩。</p>
+</section>
+</main>
+<script src="wiki-shell-v1.js"></script>
+</body></html>
