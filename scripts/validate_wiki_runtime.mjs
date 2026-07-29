@@ -278,7 +278,9 @@ const requiredGameProofs = [
   'const waveIndex = enemy.lanternWaveIndex ?? 0;',
   'enemy.lanternWaveIndex = waveIndex + 1;',
   "if (enemy.type !== 'revolving-lantern') coins += this.redPacketDrop(enemy);",
-  "if (enemy.type === 'revolving-lantern') return;",
+  // 走马灯不掉道具、不开奖励页的出口（分支体里还要记账精英已解决，
+  // 那条不变量由 validate:scene 守）。
+  "if (enemy.type === 'revolving-lantern') {",
   'lanternSummon: Boolean(enemy.lanternSummon),',
   'lanternWaveIndex: enemy.lanternWaveIndex ?? null,',
   'this.lanternHandoff = { startX: enemy.x, startY: enemy.y, startedAt: this.battleTime };',
