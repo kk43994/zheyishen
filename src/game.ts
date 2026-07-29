@@ -488,8 +488,26 @@ const XIAO_ZHANG_DECLINE_RECT = { x: 188, y: 394, width: 138, height: 54 } as co
 const RESULT_RESTART_RECT = { x: 70, y: 505, width: 220, height: 58 } as const;
 const RESULT_TAB_RECT = { x: 20, y: 98, width: 320, height: 28 } as const;
 const PAUSE_BUTTON_RECT = { x: 326, y: 6, width: 28, height: 39 } as const;
-/** 章节到点仍未打完时出现的跳关按钮；落在 HUD 行下方的右上角，不压住血条。 */
-const STAGE_SKIP_RECT = { x: 236, y: 52, width: 104, height: 26 } as const;
+/** 开发者面板入口：左上角，HUD 行下方，不压住血条。测试版功能，用于向评委演示。 */
+const DEV_ENTRY_RECT = { x: 6, y: 52, width: 58, height: 22 } as const;
+const DEV_CLOSE_RECT = { x: 268, y: 24, width: 74, height: 24 } as const;
+const DEV_TAB_RECT = { x: 20, y: 58, width: 320, height: 26 } as const;
+const DEV_QUALITY_RECT = { x: 20, y: 92, width: 320, height: 22 } as const;
+/** 图标格：6 列，格距 52×54，从 y=124 起。 */
+const DEV_GRID = { x: 26, y: 124, cols: 6, cellW: 52, cellH: 54 } as const;
+const DEV_DETAIL_TAKE_RECT = { x: 60, y: 470, width: 240, height: 34 } as const;
+const DEV_DETAIL_BACK_RECT = { x: 60, y: 512, width: 240, height: 26 } as const;
+/** 关卡选择：六章各一行。 */
+const DEV_STAGE_ROW = { x: 26, y: 124, width: 308, height: 44, gap: 8 } as const;
+/** 选关行上显示的 Boss 名。敌怪 spec 表在方法内部，这里单列一份供面板用。 */
+const DEV_BOSS_NAMES: Partial<Record<EnemyType, string>> = {
+  'closet-dark': '没人相信的怪物',
+  'silent-father': '沉默的父亲',
+  'praise-chair': '你很优秀',
+  'ringing-phone': '响个不停',
+  'debt-collector': '上门催收',
+  'lamp-keeper': '收灯人',
+};
 const PAUSE_BUTTON_HIT_RECT = { x: 310, y: 0, width: 50, height: 52 } as const;
 const PAUSE_CONTINUE_RECT = { x: 130, y: 530, width: 204, height: 44 } as const;
 const PAUSE_END_RECT = { x: 152, y: 584, width: 160, height: 26 } as const;
@@ -1132,6 +1150,15 @@ export class ZheYiShenGame {
   private eliteAlertTime = 0;
   private eliteAlertKind: 'elite' | 'boss' = 'elite';
   private stageWaitingForElite = false;
+  /**
+   * 开发者面板（测试版功能，用于向评委快速展示）：道具图鉴 + 关卡选择。
+   * 注意它必须在生产构建里可用——现有 audit 钩子是 import.meta.env.DEV 专属，
+   * 打包时整段被剔除，所以这里另起一套，不复用 audit。
+   */
+  private devPanelOpen = false;
+  private devPanelTab: 'items' | 'stages' = 'items';
+  private devPanelQuality: 1 | 2 | 3 | 4 | 5 = 1;
+  private devPanelDetail?: ItemId;
   private stallSpawnedAt = -1;
   private worldStall?: { x: number; y: number };
   private stallCooldown = 0;
@@ -1539,13 +1566,16 @@ export class ZheYiShenGame {
         }
         return;
       }
+      if (this.devPanelOpen) {
+        this.handleDevPanelPointer(p);
+        return;
+      }
       if (this.state === 'battle') {
         if (this.lampFinalStripTimer > 0) return;
         // 必须排在摇杆之前：摇杆会接管 battle 里任何未被认领的按下。
-        if (this.stageWaitingForElite && pointInRect(p, STAGE_SKIP_RECT)) {
-          this.stageWaitingForElite = false;
-          this.say('这一章，先跳过去');
-          this.beginStageTransition();
+        if (pointInRect(p, DEV_ENTRY_RECT)) {
+          this.devPanelOpen = true;
+          this.devPanelDetail = undefined;
           return;
         }
         if (this.lampReleaseReady) {
@@ -4268,17 +4298,11 @@ export class ZheYiShenGame {
             this.captionTime = 4.2;
             this.say('这件事不能靠跑过去');
           }
-          // 到点还没打完不再是死等：右上角亮出跳关按钮，由玩家决定要不要跳过。
-          this.say('右上角可以跳过这一章');
         }
       } else if (!stage.bossType) {
         // 没有配大 Boss 的章节（暮年走终局流程）仍然按时钟收场。
         this.beginStageTransition();
-      } else if (!this.stageWaitingForElite) {
-        // 配了 Boss 但到点时它还没登场：同样给出口，不要把玩家钉在原地。
-        this.stageWaitingForElite = true;
-        this.say('右上角可以跳过这一章');
-      }
+      } else this.stageWaitingForElite = true;
     }
   }
 
@@ -10764,6 +10788,8 @@ export class ZheYiShenGame {
     if (this.state === 'battle' && !this.paused) this.renderLowHealthWarning();
     if (!this.paused && (this.state === 'battle' || this.state === 'fateEvent')) this.renderPauseButton();
     if (this.paused) this.renderPauseOverlay();
+    // 开发面板盖在一切之上，但要在转场之下——转场是全屏擦除，压住它会闪。
+    if (this.devPanelOpen) this.renderDevPanel();
     this.renderScreenTransition();
     if (import.meta.env.DEV) {
       const now = performance.now();
@@ -13811,10 +13837,8 @@ export class ZheYiShenGame {
     const interaction = this.actionState(PAUSE_BUTTON_HIT_RECT);
     ctx.translate(0, interaction.offset);
     const accent = this.highContrastHud || interaction.hovered ? UI_PALETTE.hospitalBlueGray : '#5b565b';
-    if (this.stageWaitingForElite) {
-      // 到点还没打完不再是死等：给一个明确的出口，由玩家决定跳不跳。
-      this.drawBreathActionButton(STAGE_SKIP_RECT, '跳过这一章', UI_PALETTE.raincoatYellow);
-    }
+    // 开发者面板入口（测试版）：图鉴 + 选关，用于向评委快速展示。
+    this.drawBreathActionButton(DEV_ENTRY_RECT, '开发', UI_PALETTE.hospitalBlueGray);
     drawCutCornerPanel(ctx, PAUSE_BUTTON_RECT.x, PAUSE_BUTTON_RECT.y, PAUSE_BUTTON_RECT.width, PAUSE_BUTTON_RECT.height, '#17181d', accent, 3, 1);
     ctx.fillStyle = accent;
     ctx.fillRect(PAUSE_BUTTON_RECT.x + 5, PAUSE_BUTTON_RECT.y + 7, 7, 1);
@@ -18342,6 +18366,213 @@ export class ZheYiShenGame {
     ctx.fillStyle = '#777178';
     ctx.font = `9px ${UI_FONT_STACK}`;
     ctx.fillText(`留下 ${this.memories.length} 条记忆 · 走到 ${AGE_LABELS[Math.min(this.encounterIndex, AGE_LABELS.length - 1)]}`, 20, 478);
+  }
+
+  /** 当前品质档下的道具，按定义顺序，供图鉴网格与命中共用同一个列表。 */
+  /** 面板打开时独占输入：任何按下都先交给它，避免穿透到底下的战斗。 */
+  private handleDevPanelPointer(p: { x: number; y: number }): void {
+    if (pointInRect(p, DEV_CLOSE_RECT)) {
+      this.devPanelOpen = false;
+      this.devPanelDetail = undefined;
+      return;
+    }
+    if (this.devPanelDetail) {
+      if (pointInRect(p, DEV_DETAIL_BACK_RECT)) {
+        this.devPanelDetail = undefined;
+        return;
+      }
+      if (pointInRect(p, DEV_DETAIL_TAKE_RECT) && !this.items.includes(this.devPanelDetail)) {
+        const id = this.devPanelDetail;
+        this.acquireItem(id);
+        this.say(`已获取 · ${getItem(id).name}`);
+        this.feedback.play('wear', 1.1);
+      }
+      return;
+    }
+    if (pointInRect(p, DEV_TAB_RECT)) {
+      this.devPanelTab = p.x < DEV_TAB_RECT.x + DEV_TAB_RECT.width / 2 ? 'items' : 'stages';
+      return;
+    }
+    if (this.devPanelTab === 'items') {
+      if (pointInRect(p, DEV_QUALITY_RECT)) {
+        const index = this.clamp(Math.floor((p.x - DEV_QUALITY_RECT.x) / (DEV_QUALITY_RECT.width / 5)), 0, 4);
+        this.devPanelQuality = (index + 1) as 1 | 2 | 3 | 4 | 5;
+        return;
+      }
+      const col = Math.floor((p.x - DEV_GRID.x) / DEV_GRID.cellW);
+      const row = Math.floor((p.y - DEV_GRID.y + 4) / DEV_GRID.cellH);
+      if (col < 0 || col >= DEV_GRID.cols || row < 0) return;
+      const items = this.devPanelItems();
+      const hit = items[row * DEV_GRID.cols + col];
+      if (hit) this.devPanelDetail = hit;
+      return;
+    }
+    const rowHeight = DEV_STAGE_ROW.height + DEV_STAGE_ROW.gap;
+    const index = Math.floor((p.y - DEV_STAGE_ROW.y) / rowHeight);
+    if (index < 0 || index >= STAGES.length) return;
+    if (p.x < DEV_STAGE_ROW.x || p.x > DEV_STAGE_ROW.x + DEV_STAGE_ROW.width) return;
+    this.jumpToStageBoss(index);
+  }
+
+  /**
+   * 直接跳到某一章并立刻召出它的大 Boss。
+   * 把 battleTime 推到 bossAt 之后，让常规生成逻辑自己把 Boss 放出来——
+   * 绕过它另写一套生成会漏掉阶段初始化、掉落绑定与语音门。
+   */
+  private jumpToStageBoss(index: number): void {
+    const stage = STAGES[index];
+    if (!stage) return;
+    this.devPanelOpen = false;
+    this.devPanelDetail = undefined;
+    this.encounterIndex = index;
+    this.startStage();
+    if (stage.bossAt !== undefined) this.battleTime = stage.bossAt;
+    this.say(`已跳到 ${AGE_LABELS[index]} · ${stage.title}`);
+  }
+
+  private devPanelItems(): ItemId[] {
+    return ITEM_IDS.filter((id) => getItem(id).quality === this.devPanelQuality);
+  }
+
+  private renderDevPanel(): void {
+    const ctx = this.ctx;
+    applyPixelDiscipline(ctx);
+    // 必须完全不透明：面板可能叠在暂停页之上，半透明会让底下的「档案暂存」透上来。
+    ctx.fillStyle = '#08080b';
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 0.5;
+    drawDeterministicWear(ctx, 0, 0, W, H, 4242, 4, '#2a2730', 1);
+    ctx.globalAlpha = 1;
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = UI_PALETTE.raincoatYellow;
+    ctx.font = `bold 12px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText('开发面板 · 测试版', 20, 34);
+    this.drawBreathActionButton(DEV_CLOSE_RECT, '关闭', UI_PALETTE.hospitalBlueGray);
+
+    const tabs: Array<{ key: 'items' | 'stages'; label: string }> = [
+      { key: 'items', label: '道具图鉴' },
+      { key: 'stages', label: '关卡选择' },
+    ];
+    const tabWidth = DEV_TAB_RECT.width / tabs.length;
+    tabs.forEach((tab, index) => {
+      const x = DEV_TAB_RECT.x + index * tabWidth;
+      const active = this.devPanelTab === tab.key;
+      ctx.fillStyle = active ? 'rgba(216,208,193,.16)' : 'rgba(27,26,32,.75)';
+      ctx.fillRect(x, DEV_TAB_RECT.y, tabWidth - 2, DEV_TAB_RECT.height);
+      ctx.fillStyle = active ? UI_PALETTE.oldRed : '#514d53';
+      ctx.fillRect(x, DEV_TAB_RECT.y + DEV_TAB_RECT.height - 2, tabWidth - 2, 2);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = active ? UI_PALETTE.paperLight : UI_PALETTE.paperDim;
+      ctx.font = `bold 10px ${UI_FONT_STACK}`;
+      ctx.fillText(tab.label, x + tabWidth / 2 - 1, DEV_TAB_RECT.y + 17);
+    });
+
+    if (this.devPanelDetail) {
+      this.renderDevItemDetail(this.devPanelDetail);
+      return;
+    }
+    if (this.devPanelTab === 'items') this.renderDevItemGrid();
+    else this.renderDevStagePicker();
+  }
+
+  private renderDevItemGrid(): void {
+    const ctx = this.ctx;
+    const qualityNames = ['杂物', '旧物', '心结', '遗物', '这一身'];
+    const chipWidth = DEV_QUALITY_RECT.width / 5;
+    qualityNames.forEach((label, index) => {
+      const x = DEV_QUALITY_RECT.x + index * chipWidth;
+      const active = this.devPanelQuality === index + 1;
+      ctx.fillStyle = active ? 'rgba(198,164,74,.22)' : 'rgba(27,26,32,.7)';
+      ctx.fillRect(x, DEV_QUALITY_RECT.y, chipWidth - 2, DEV_QUALITY_RECT.height);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = active ? UI_PALETTE.raincoatYellow : UI_PALETTE.paperDim;
+      ctx.font = `bold 9px ${UI_FONT_STACK}`;
+      ctx.fillText(`${'ⅠⅡⅢⅣⅤ'[index]}${label}`, x + chipWidth / 2 - 1, DEV_QUALITY_RECT.y + 15);
+    });
+
+    const items = this.devPanelItems();
+    ctx.textAlign = 'center';
+    items.forEach((id, index) => {
+      const col = index % DEV_GRID.cols;
+      const row = Math.floor(index / DEV_GRID.cols);
+      const cx = DEV_GRID.x + col * DEV_GRID.cellW + DEV_GRID.cellW / 2;
+      const cy = DEV_GRID.y + row * DEV_GRID.cellH;
+      if (cy > H - 60) return;
+      const owned = this.items.includes(id);
+      ctx.fillStyle = owned ? 'rgba(143,192,165,.14)' : 'rgba(27,26,32,.62)';
+      ctx.fillRect(cx - 22, cy - 4, 44, 46);
+      this.drawItemSymbol(id, cx - 11, cy + 2, 22);
+      ctx.fillStyle = owned ? '#8fc0a5' : UI_PALETTE.paperDim;
+      ctx.font = `8px ${UI_FONT_STACK}`;
+      ctx.fillText(this.fitText(getItem(id).name, 44), cx, cy + 38);
+    });
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#6f6a66';
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    ctx.fillText(`本档 ${items.length} 件 · 已持有 ${items.filter((id) => this.items.includes(id)).length} 件`, 20, H - 30);
+  }
+
+  private renderDevItemDetail(id: ItemId): void {
+    const ctx = this.ctx;
+    const item = getItem(id);
+    const owned = this.items.includes(id);
+    drawCutCornerPanel(ctx, 20, 108, 320, 330, 'rgba(216,208,193,.94)', UI_PALETTE.paperShadow, 3, 1);
+    overlayPanelTexture(ctx, UI_PALETTE.paper, 20, 108, 320, 330, [UI_PALETTE.paper], []);
+
+    this.drawItemSymbol(id, 40, 128, 34);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = UI_PALETTE.ink;
+    ctx.font = `bold 13px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.fillText(this.fitText(item.name, 220), 86, 140);
+    ctx.fillStyle = '#7c705d';
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    ctx.fillText(`${'ⅠⅡⅢⅣⅤ'[item.quality - 1]} · ${item.qualityName}`, 86, 158);
+
+    ctx.fillStyle = '#4a4038';
+    ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
+    this.wrapText(item.flavor, 36, 190, 288, 14, 3);
+    ctx.fillStyle = '#3f6b52';
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    this.wrapText(`得到 · ${item.positive}`, 36, 248, 288, 13, 2);
+    ctx.fillStyle = '#8d3f4c';
+    this.wrapText(`留下 · ${item.negative}`, 36, 288, 288, 13, 2);
+    ctx.fillStyle = '#6b6355';
+    this.wrapText(item.summary, 36, 330, 288, 13, 3);
+
+    this.drawBreathActionButton(
+      DEV_DETAIL_TAKE_RECT,
+      owned ? '已经在身上' : '获取道具',
+      UI_PALETTE.raincoatYellow,
+      !owned,
+    );
+    this.drawBreathActionButton(DEV_DETAIL_BACK_RECT, '返回图鉴', UI_PALETTE.hospitalBlueGray);
+  }
+
+  private renderDevStagePicker(): void {
+    const ctx = this.ctx;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = UI_PALETTE.paperDim;
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    ctx.fillText('直接进入该章并立刻召出大 Boss', 20, 108);
+    STAGES.forEach((stage, index) => {
+      const y = DEV_STAGE_ROW.y + index * (DEV_STAGE_ROW.height + DEV_STAGE_ROW.gap);
+      const current = index === this.encounterIndex;
+      ctx.fillStyle = current ? 'rgba(198,164,74,.16)' : 'rgba(27,26,32,.7)';
+      ctx.fillRect(DEV_STAGE_ROW.x, y, DEV_STAGE_ROW.width, DEV_STAGE_ROW.height);
+      ctx.fillStyle = current ? UI_PALETTE.raincoatYellow : '#514d53';
+      ctx.fillRect(DEV_STAGE_ROW.x, y, 3, DEV_STAGE_ROW.height);
+      ctx.fillStyle = UI_PALETTE.paperLight;
+      ctx.font = `bold 10px ${UI_ARCHIVE_FONT_STACK}`;
+      ctx.fillText(`${AGE_LABELS[index]} · ${stage.title}`, DEV_STAGE_ROW.x + 12, y + 19);
+      ctx.fillStyle = UI_PALETTE.paperDim;
+      ctx.font = `8px ${UI_FONT_STACK}`;
+      const bossName = stage.bossType
+        ? (DEV_BOSS_NAMES[stage.bossType] ?? stage.bossType)
+        : '终局 · 收灯人';
+      ctx.fillText(`Boss：${bossName}`, DEV_STAGE_ROW.x + 12, y + 34);
+    });
   }
 
   private drawItemSymbol(id: ItemId, x: number, y: number, size: number): void {
