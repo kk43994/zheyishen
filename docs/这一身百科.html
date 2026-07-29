@@ -23,6 +23,7 @@
     --q1:#786F69; --q2:#71818A; --q3:#9F3548; --q4:#C6A44A; --q5:#E8E1D3;
     --positive:#779887; --warning:#B06961;
     --desk:url("assets/desk-texture.png");
+    --red:var(--oldred); --dim:var(--fg-3);  /* 存量样式引用了这两个名字但从未声明 */
   }
   :root[data-theme="light"]{
     --bg:#E9E3D4; --card:#F1ECDF; --line:#C8C0AC;
@@ -409,6 +410,77 @@
     .theme-path{grid-template-columns:1fr}
     .quick-read{padding:18px}
   }
+
+  /* ── 条目开头 · wiki 体（2026-07-29 重做，替掉「五个问题看懂」路演版）── */
+  .lead-split{display:grid;grid-template-columns:minmax(0,1fr) 296px;gap:28px;align-items:start;margin:20px 0 26px}
+  .lead-body .one-line{font-size:20px;line-height:1.7;margin:0 0 14px}
+  .lead-body p{margin:0 0 12px}
+  .lead-body p:last-child{margin-bottom:0}
+  .infobox{border:1px solid var(--line);border-radius:9px;background:linear-gradient(160deg,color-mix(in srgb,var(--oldred) 8%,var(--card)),var(--card));overflow:hidden}
+  .infobox .ib-shot{margin:0;padding:12px 12px 0}
+  .infobox .ib-shot img{width:100%;height:232px;object-fit:cover;object-position:center top;display:block;border:1px solid var(--line);border-radius:4px;image-rendering:pixelated;background:#101014}
+  .infobox figcaption{color:var(--fg-3);font-size:11px;letter-spacing:.12em;text-align:center;padding:7px 0 3px}
+  .infobox table{width:100%;min-width:0;table-layout:fixed;border-collapse:collapse;font-size:12.5px}
+  .infobox th{text-align:left;vertical-align:top;color:var(--fg-3);font-weight:400;white-space:nowrap;padding:7px 8px 7px 14px;width:4.6em}
+  .infobox td{padding:7px 14px 7px 0;line-height:1.55;overflow-wrap:anywhere;word-break:break-word;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+  .infobox tr:last-child td{border-bottom:none}
+
+  /* 完成度数字条：评委扫一眼就知道不是 demo */
+  .stat-band{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:0 0 8px}
+  .stat-band div{background:var(--card);padding:14px 8px;text-align:center}
+  .stat-band b{display:block;font-size:23px;line-height:1;color:var(--moon);font-weight:600}
+  .stat-band span{display:block;margin-top:7px;font-size:11px;color:var(--fg-3);letter-spacing:.06em}
+
+  /* 六章一生 */
+  .lifeline{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:16px 0 4px}
+  .life-ch{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card);display:flex;flex-direction:column}
+  .life-ch .ground{position:absolute;inset:0;background-size:56px 56px;background-repeat:repeat;image-rendering:pixelated;opacity:.55;filter:brightness(2.7) contrast(1.05);pointer-events:none}
+  .life-ch .body{position:relative;z-index:1;padding:13px 12px 13px;display:flex;flex-direction:column;gap:7px;flex:1}
+  .life-ch .age{color:var(--oldred);font:700 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em}
+  .life-ch h4{margin:0;font-size:14px;line-height:1.35}
+  .life-ch .fl{margin:0;font-size:12.5px;line-height:1.62;color:var(--fg-2);flex:1}
+  .life-ch .boss{display:flex;align-items:center;gap:9px;border-top:1px dashed var(--line);padding-top:10px}
+  .life-ch .boss img{width:52px;height:52px;image-rendering:pixelated;flex:none}
+  .life-ch .boss span{font-size:11.5px;color:var(--fg-3);line-height:1.4}
+
+  /* 一口气形态条：同一发攻击被经历改写成的样子 */
+  .breath-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px;margin:16px 0 6px}
+  .breath-strip figure{margin:0;border:1px solid var(--line);border-radius:8px;background:var(--card);padding:11px 8px 10px;text-align:center}
+  .breath-strip img{width:56px;height:56px;image-rendering:pixelated;background:#101014;border-radius:4px}
+  .breath-strip figcaption{margin-top:8px;font-size:11.5px;line-height:1.5;color:var(--fg-2)}
+  .breath-strip .base{border-color:color-mix(in srgb,var(--moon) 40%,var(--line));background:linear-gradient(160deg,color-mix(in srgb,var(--moon) 6%,var(--card)),var(--card))}
+  .breath-strip .base figcaption{color:var(--moon)}
+
+  /* 图文并排小节 */
+  .sec-split{display:grid;grid-template-columns:minmax(0,1fr) 268px;gap:24px;align-items:start;margin:14px 0 6px}
+  .sec-split>figure{margin:0}
+  .sec-split>figure img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:6px;image-rendering:pixelated;background:#101014}
+  .sec-split>figure figcaption{color:var(--fg-3);font-size:11.5px;text-align:center;padding-top:8px;line-height:1.55}
+  .wiki-h{font-size:19px;margin:36px 0 10px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+  .wiki-h .h-no{color:var(--oldred);font:700 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;margin-right:10px}
+  .sec-lede{color:var(--fg-2);margin:0 0 10px}
+
+  /* 分类入口 */
+  .portal-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:16px 0 4px}
+  .portal{display:flex;flex-direction:column;align-items:center;gap:9px;border:1px solid var(--line);border-radius:8px;background:var(--card);padding:14px 10px 13px;text-decoration:none;color:inherit;transition:border-color .18s,transform .18s}
+  .portal:hover{border-color:var(--oldred);transform:translateY(-2px)}
+  .portal img{width:44px;height:44px;image-rendering:pixelated}
+  .portal b{font-size:13px}
+  .portal span{font-size:11px;color:var(--fg-3);text-align:center;line-height:1.45}
+
+  @media(max-width:900px){
+    .lead-split{grid-template-columns:1fr}
+    .sec-split{grid-template-columns:1fr}
+    .lifeline{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .stat-band{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .portal-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  }
+  @media(max-width:560px){
+    .lifeline{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .stat-band{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .portal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .breath-strip{grid-template-columns:repeat(3,minmax(0,1fr))}
+  }
 </style>
 </head>
 <body>
@@ -416,7 +488,7 @@
 <div class="topbar" id="wiki-topbar">
   <a class="tb-mark serif" href="#">这一身<i>百科</i></a>
   <nav class="tb-links" aria-label="快捷卷目">
-    <a href="#theme">核心思想</a><a href="#core-mechanics">核心机制</a><a href="#ai-native">AI 在哪</a><a href="#novelty">新意</a><a href="#difference">游戏区别</a>
+    <a href="#story">故事</a><a href="#core-mechanics">玩法机制</a><a href="#ai-native">AI 在这里做什么</a><a href="#theme">设计理念</a><a href="#portal">分类图鉴</a>
   </nav>
   <button class="tb-find" id="wiki-find-open" type="button" aria-label="全站搜索"><span class="tb-find-text">搜这一生…</span><kbd>⌘K</kbd></button>
   <button class="tb-theme" id="wiki-theme-toggle" type="button" title="留灯 / 熄灯" aria-label="切换明暗主题">☾</button>
@@ -440,11 +512,13 @@
   <nav class="rail" aria-label="卷目录">
     <p class="rl">卷 目</p>
     <ol>
-      <li><a href="#overview">五个问题看懂</a></li>
-      <li><a href="#theme">核心思想</a></li>
-      <li><a href="#core-mechanics">核心机制</a></li>
-      <li><a href="#ai-native">AI 结合</a></li>
-      <li><a href="#novelty">新意与区别</a></li>
+      <li><a href="#overview">概述</a></li>
+      <li><a href="#story">故事</a></li>
+      <li><a href="#core-mechanics">玩法机制</a></li>
+      <li><a href="#ai-native">AI 在这里做什么</a></li>
+      <li><a href="#theme">设计理念</a></li>
+      <li><a href="#difference">与同类的区别</a></li>
+      <li><a href="#portal">分类图鉴</a></li>
       <li><a href="#root">根命题</a></li>
       <li><a href="#redline">三条红线</a></li>
       <li><a href="#world">世界观</a></li>
@@ -470,81 +544,128 @@
   <main>
 
     <section class="entry" id="overview">
-      <p class="vol">先看这里</p>
-      <h2 class="serif">五个问题看懂《这一身》</h2>
-      <div class="quick-read">
-        <p class="one-line serif"><b>这是一款 AI 生成出生、自由走位、自动攻击的人生构筑生存游戏。</b>你不能选择这一生会发生什么，但能选择怎样回应；每次回应都会变成穿在身上的道具，并继续改变你唯一的攻击——《一口气》。</p>
-        <article class="theme-card" id="theme">
-          <span class="pitch-kicker">00 · 游戏想表达什么</span>
-          <blockquote class="serif">事情是改不了的，怎么做是可以选择的。</blockquote>
-          <p>《这一身》不是讲一个人靠努力战胜所有困难，而是讲一个普通人如何被经历一点点塑形：有些选择救过他，也让他付出代价；有些伤疤后来变成能力，却不代表伤害本身值得感谢。玩家真正操纵的不是命运，而是面对命运时的姿态。</p>
-          <div class="theme-path">
-            <div><b>“命”怎样体现</b><p>出生与现实事件先发生，不能读档重抽成更好的人生；时间也只会向前。</p></div>
-            <div><b>“选择”怎样体现</b><p>自由走位决定先面对谁，命运牌决定咽下还是吐出，道具决定继续背什么。</p></div>
-            <div><b>“放下”怎样体现</b><p>终局不是证明伤疤让人更强，而是逐件脱下这一身，承认活过以后仍可以不再背着。</p></div>
-          </div>
-        </article>
-        <div class="pitch-grid">
-          <article class="pitch-card" id="core-mechanics">
-            <span class="pitch-kicker">01 · 核心机制是什么</span>
-            <h3 class="serif">把“一生”做成一套构筑</h3>
-            <ul>
-              <li><b>只保留一个攻击：</b>主角没有武器栏，始终只吐出《一口气》；所有道具都在改写同一发攻击的形状、轨迹、材质、节奏和命中反应。</li>
-              <li><b>事情与回应分开：</b>命运事件已经发生，玩家不能重抽，只能选择“咽下”“吐出”，或亲口说出回应。</li>
-              <li><b>构筑真的穿在身上：</b>书包让人驼背，雨衣挡雨，旧伤改变姿势；数值、外形和故事是同一件事。</li>
-              <li><b>一局走完一生：</b>地图从童年连续长到暮年，怪物是每个年龄真正遇到的困难，终局再把构筑逐件归还。</li>
-            </ul>
-          </article>
-          <article class="pitch-card" id="ai-native">
-            <span class="pitch-kicker">02 · AI 结合在哪里</span>
-            <h3 class="serif">AI 负责“这一生具体发生了什么”</h3>
-            <ul>
-              <li><b>出生档案：</b>代码先掷定家庭底色、地域、叙事基调与外号结构，AI 再生成这一局独有的童年经历、外号和外貌参数；没有预设主角兜底。</li>
-              <li><b>命运连续剧：</b>AI 根据年龄、章节、已有道具、之前的选择和人物关系，续写下一件现实事件，而不是抽一张与本局无关的随机文案。</li>
-              <li><b>亲口回应：</b>玩家可以自己输入一句话；AI 只补写这句话在当前现场造成的结果，不偷偷改变玩家已经选定的“咽下 / 吐出”方向。</li>
-              <li><b>独立审稿：</b>事件、两个回应与剧情残留分步生成，再由另一轮 AI 检查现实因果，最后才交给程序结算。</li>
-            </ul>
-            <p><b>玩家实际能看见 AI 的四个地方：</b>开局的出生登记页、章节间的命运牌、玩家亲口回应后的现场结果，以及后续事件对前文人物与旧物的继续引用。</p>
-            <p class="boundary"><b>AI 不负责：</b>伤害数值、掉落、碰撞、Boss 判定与战斗胜负。它只能在程序给出的白名单和预算内写人生，规则仍由代码裁决。</p>
-          </article>
-          <article class="pitch-card" id="novelty">
-            <span class="pitch-kicker">03 · 新意在哪里</span>
-            <h3 class="serif">生成的不是台词，而是可玩的经历</h3>
-            <ul>
-              <li>AI 生成的出生和事件会进入本局状态，影响后续命运怎样续写；它不是战斗外的一段装饰文本。</li>
-              <li>叙事结果会被编译成受控机制，再变成身体外观与《一口气》的变化——<b>故事、数值、美术和打法共用同一个结果</b>。</li>
-              <li>“事情改不了，怎么做可以选择”不只是一句主题：命运牌体现事情，走位体现做法，道具体现选择留下的身体后果。</li>
-              <li>构筑的高潮不是越来越满，而是终局被逐件剥下；最终胜利不是击杀收灯人，而是主动放下最后一口气。</li>
-            </ul>
-          </article>
-          <article class="pitch-card" id="difference">
-            <span class="pitch-kicker">04 · 和普通游戏有什么区别</span>
-            <h3 class="serif">它不是“换皮的幸存者”</h3>
-            <div class="tbl-wrap difference-table"><table><thead><tr><th>比较</th><th>常见构筑游戏</th><th>《这一身》</th></tr></thead><tbody>
-              <tr><td>攻击</td><td>不断获得新武器</td><td>一辈子只有《一口气》，所有经历共同改写它</td></tr>
-              <tr><td>随机内容</td><td>抽数值、房间或固定事件</td><td>AI 按本局人生状态续写出生与命运</td></tr>
-              <tr><td>道具</td><td>主要提供强度与流派</td><td>同时是记忆、代价、身体变化和战斗规则</td></tr>
-              <tr><td>关卡</td><td>彼此独立的地图或章节</td><td>同一张世界连续老去，一局就是一生</td></tr>
-              <tr><td>结局</td><td>击杀最终 Boss、完成构筑</td><td>最终 Boss 不可杀，玩家靠归还构筑并主动放下通关</td></tr>
-            </tbody></table></div>
-          </article>
+      <p class="vol">概 述</p>
+      <h2 class="serif">《这一身》</h2>
+      <div class="lead-split">
+        <div class="lead-body">
+          <p class="one-line serif"><b>《这一身》是一款竖屏 AI 人生构筑 roguelike。</b>一局就是一生：从还没上学的年纪一直打到病房，而你从头到尾只有一个攻击——《一口气》。</p>
+          <p>每一局的出生都由 AI 现场生成：家庭、地域、外号、童年经历，<b>没有预设主角，也没有本地兜底档案</b>——开局那一页每次都不一样。之后遇到的怪，是这个年纪真正会遇到的困难：哭蛾、红叉、未接来电、打包的纸箱；掉下来的道具，是困难留在身上的东西：同桌的修眉刀、断掉的脊梁骨、已经注销的旧工牌。</p>
+          <p>道具真的穿在身上。书包让人驼背，雨衣挡住雨，旧伤改变站姿——同一件东西同时改写外形、数值和那一口气的形状，<b>故事、美术和打法共用同一个结果</b>。</p>
+          <p>终局不是击杀。最后一关的收灯人打不死：他提着灯，一盏一盏把你身上的道具收走，收到空为止；然后画面停住，由玩家自己按下<b>「放下这一口气」</b>。</p>
         </div>
-        <h3>一局实际怎样进行</h3>
-        <div class="core-loop" aria-label="一局游戏的五步循环">
+        <aside class="infobox">
+          <figure class="ib-shot"><img src="assets/screenshot-combat.png" alt="《这一身》实机战斗画面" loading="lazy"><figcaption>实机 · 战斗</figcaption></figure>
+          <table><tbody>
+            <tr><th>类型</th><td>人生构筑 roguelike · 自由走位 · 自动攻击</td></tr>
+            <tr><th>画面</th><td>竖屏 360×640 像素</td></tr>
+            <tr><th>操作</th><td>单摇杆移动；攻击自动索敌</td></tr>
+            <tr><th>平台</th><td>抖音互动空间（H5）</td></tr>
+            <tr><th>一局</th><td>六章：童年 → 少年 → 青年 → 成年 → 中年 → 暮年</td></tr>
+            <tr><th>攻击</th><td>全程只有《一口气》一种</td></tr>
+            <tr><th>AI</th><td>出生档案与命运事件实时生成，<b>无本地兜底</b></td></tr>
+            <tr><th>终局</th><td>最终 Boss 不可击杀；归还全部道具后由玩家主动放下</td></tr>
+            <tr><th>版本</th><td>V0.4「人生构筑 · 自由走位」</td></tr>
+          </tbody></table>
+        </aside>
+      </div>
+      <div class="stat-band" aria-label="当前内容规模">
+        <div><b>6</b><span>章 · 一局一生</span></div>
+        <div><b>77</b><span>件道具</span></div>
+        <div><b>26</b><span>种普通怪</span></div>
+        <div><b>12</b><span>个大小 Boss</span></div>
+        <div><b>41</b><span>个视觉形态</span></div>
+        <div><b>164</b><span>帧专属招式</span></div>
+        <div><b>84</b><span>条预生成配音</span></div>
+      </div>
+      <p class="dim" style="font-size:12px;margin:0 0 4px">以上均为运行时真实资产，数目由 <code>validate:wiki</code> 等门禁逐项核对，与游戏包内一致。</p>
+      <h3 class="wiki-h serif" id="story"><span class="h-no">01</span>故事 · 一局就是一生</h3>
+      <p class="sec-lede">没有世界末日，也没有异世界。故事就是一个普通男人从出生到老去：<b>关卡是他慢慢长大，怪物是他一路遇到的困难，道具是困难留下来的东西。</b>地图不切场景——同一片地面跟着年龄一起变旧。</p>
+      <div class="lifeline">
+        <article class="life-ch"><div class="ground" style="background-image:url(assets/ground-0.png)"></div><div class="body"><span class="age">童年</span><h4 class="serif">还没上学的年纪</h4><p class="fl serif">“床底下有东西。大人说那里什么都没有。”</p><div class="boss"><img src="enemy-portraits-v1/closet-dark.png" alt="《没人相信的怪物》" loading="lazy"><span>本章大 Boss<br>《没人相信的怪物》</span></div></div></article>
+        <article class="life-ch"><div class="ground" style="background-image:url(assets/ground-1.png)"></div><div class="body"><span class="age">少年</span><h4 class="serif">小学到高中</h4><p class="fl serif">“全班的答案都一样。他被叫起来念自己的。”</p><div class="boss"><img src="enemy-portraits-v1/silent-father.png" alt="《沉默的父亲》" loading="lazy"><span>本章大 Boss<br>《沉默的父亲》</span></div></div></article>
+        <article class="life-ch"><div class="ground" style="background-image:url(assets/ground-2.png)"></div><div class="body"><span class="age">青年</span><h4 class="serif">刚开始打工</h4><p class="fl serif">“领导说他很优秀。工位在打印机旁边。”</p><div class="boss"><img src="enemy-portraits-v1/praise-chair.png" alt="《你很优秀》" loading="lazy"><span>本章大 Boss<br>《你很优秀》</span></div></div></article>
+        <article class="life-ch"><div class="ground" style="background-image:url(assets/ground-3.png)"></div><div class="body"><span class="age">成年</span><h4 class="serif">透支着养家</h4><p class="fl serif">“电话响了。他把它扣在桌上，三秒后它又响了。”</p><div class="boss"><img src="enemy-portraits-v1/ringing-phone.png" alt="《响个不停》" loading="lazy"><span>本章大 Boss<br>《响个不停》</span></div></div></article>
+        <article class="life-ch"><div class="ground" style="background-image:url(assets/ground-4.png)"></div><div class="body"><span class="age">中年</span><h4 class="serif">被迫做选择</h4><p class="fl serif">“工位上多了个纸箱。没人说是谁的。”</p><div class="boss"><img src="enemy-portraits-v1/debt-collector.png" alt="《上门催收》" loading="lazy"><span>本章大 Boss<br>《上门催收》</span></div></div></article>
+        <article class="life-ch"><div class="ground" style="background-image:url(assets/ground-5.png)"></div><div class="body"><span class="age">暮年</span><h4 class="serif">病房与走廊</h4><p class="fl serif">“走廊尽头有盏灯。提灯的人一件一件收。”</p><div class="boss"><img src="enemy-portraits-v1/lamp-keeper.png" alt="《收灯人》" loading="lazy"><span>本章大 Boss<br>《收灯人》</span></div></div></article>
+      </div>
+      <h3 class="wiki-h serif" id="core-mechanics"><span class="h-no">02</span>玩法 · 一辈子只有一个攻击</h3>
+      <p class="sec-lede">主角没有武器栏，从第一秒到最后一秒都只吐出《一口气》。所有道具做的是同一件事——<b>改写这同一发攻击</b>的形状、轨迹、材质、节奏和命中反应。下面每一格都是运行时真实弹体，左起第一个是没穿任何道具时的样子。</p>
+      <div class="breath-strip">
+        <figure class="base"><img src="assets/wiki/gif/projectile/breath.gif" alt="《一口气》本体 的弹体形态" loading="lazy"><figcaption>《一口气》本体</figcaption></figure>
+        <figure><img src="assets/wiki/gif/projectile/slash.gif" alt="床底下的木剑 的弹体形态" loading="lazy"><figcaption>床底下的木剑</figcaption></figure>
+        <figure><img src="assets/wiki/gif/projectile/stone.gif" alt="装满石头的书包 的弹体形态" loading="lazy"><figcaption>装满石头的书包</figcaption></figure>
+        <figure><img src="assets/wiki/gif/projectile/razor.gif" alt="同桌的修眉刀 的弹体形态" loading="lazy"><figcaption>同桌的修眉刀</figcaption></figure>
+        <figure><img src="assets/wiki/gif/projectile/lens.gif" alt="裂了一边的眼镜 的弹体形态" loading="lazy"><figcaption>裂了一边的眼镜</figcaption></figure>
+        <figure><img src="assets/wiki/gif/projectile/marble.gif" alt="当年最强的那颗弹珠 的弹体形态" loading="lazy"><figcaption>当年最强的那颗弹珠</figcaption></figure>
+        <figure><img src="assets/wiki/gif/projectile/key.gif" alt="出租屋唯一的钥匙 的弹体形态" loading="lazy"><figcaption>出租屋唯一的钥匙</figcaption></figure>
+        <figure><img src="assets/wiki/gif/projectile/rain.gif" alt="父亲的雨衣 的弹体形态" loading="lazy"><figcaption>父亲的雨衣</figcaption></figure>
+        <figure><img src="assets/wiki/gif/projectile/laugh.gif" alt="五个哈 的弹体形态" loading="lazy"><figcaption>五个哈</figcaption></figure>
+        <figure><img src="assets/wiki/gif/projectile/tear.gif" alt="我一直在哭 的弹体形态" loading="lazy"><figcaption>我一直在哭</figcaption></figure>
+        <figure><img src="assets/wiki/gif/projectile/ice.gif" alt="小卖部的冰柜 的弹体形态" loading="lazy"><figcaption>小卖部的冰柜</figcaption></figure>
+        <figure><img src="assets/wiki/gif/projectile/cone.gif" alt="冬天呵在玻璃上的字 的弹体形态" loading="lazy"><figcaption>冬天呵在玻璃上的字</figcaption></figure>
+      </div>
+      <p class="dim" style="font-size:12px;margin:0 0 6px">形态与道具的对应关系取自 <code>src/projectile-item-signatures.ts</code>；两件道具同时在身上时按优先级与协同规则合成，详见<a href="#breath">卷五 ·《一口气》</a>。</p>
+      <div class="core-loop" aria-label="一局游戏的五步循环">
           <div class="core-step"><span class="step-no">01 · 出生</span><b>AI 生成这一生</b><p>家庭、地域和性格起点每局不同，主角不是预设英雄。</p></div>
           <div class="core-step"><span class="step-no">02 · 活下去</span><b>走位躲怪</b><p>你只控制移动；《一口气》自动寻找敌人。</p></div>
           <div class="core-step"><span class="step-no">03 · 回应</span><b>咽下或吐出</b><p>事件已经发生，选择不同回应，换来不同收益与代价。</p></div>
           <div class="core-step"><span class="step-no">04 · 穿上</span><b>经历变成构筑</b><p>道具改变身体，也改变《一口气》的形状、轨迹和打法。</p></div>
           <div class="core-step"><span class="step-no">05 · 长大</span><b>走过一生</b><p>场景和敌人随年龄变化，最终学会把这一身逐件放下。</p></div>
         </div>
-        <div class="control-split">
+      <div class="control-split">
           <div class="fixed"><h4>你不能决定的</h4><p>出生、发生的事件、时间向前、这一阶段会遇到的困难。</p></div>
           <div class="choice"><h4>你始终可以决定的</h4><p>往哪里走、先面对谁、怎样回应命运、背上什么、放下什么。</p></div>
         </div>
+      <h3 class="wiki-h serif" id="ai-native"><span class="h-no">03</span>AI 在这里做什么</h3>
+      <div class="sec-split">
+        <div><ul>
+              <li><b>出生档案：</b>代码先掷定家庭底色、地域、叙事基调与外号结构，AI 再生成这一局独有的童年经历、外号和外貌参数；没有预设主角兜底。</li>
+              <li><b>命运连续剧：</b>AI 根据年龄、章节、已有道具、之前的选择和人物关系，续写下一件现实事件，而不是抽一张与本局无关的随机文案。</li>
+              <li><b>亲口回应：</b>玩家可以自己输入一句话；AI 只补写这句话在当前现场造成的结果，不偷偷改变玩家已经选定的“咽下 / 吐出”方向。</li>
+              <li><b>独立审稿：</b>事件、两个回应与剧情残留分步生成，再由另一轮 AI 检查现实因果，最后才交给程序结算。</li>
+            </ul>
+            <p><b>玩家实际能看见 AI 的四个地方：</b>开局的出生登记页、章节间的命运牌、玩家亲口回应后的现场结果，以及后续事件对前文人物与旧物的继续引用。</p>
+            <p class="boundary"><b>AI 不负责：</b>伤害数值、掉落、碰撞、Boss 判定与战斗胜负。它只能在程序给出的白名单和预算内写人生，规则仍由代码裁决。</p></div>
+        <figure><img src="assets/screenshot-origin.png" alt="开局的出生登记页 · 实机" loading="lazy"><figcaption>开局第一页 · 这一份档案由 AI 现场生成，离线时没有兜底人物可以顶上</figcaption></figure>
       </div>
-      <p class="reader-note"><b>第一次读百科：</b>先看上面的五个问题，再依次看「一口气 → 命运牌 → 道具志 → 怪物图鉴」。机制账本和实机图鉴主要用于查细节，不必从头读到尾。</p>
-    
-<!-- ART-BLOCKS:overview-START -->
+      <h3 class="wiki-h serif" id="theme"><span class="h-no">04</span>设计理念</h3>
+      <div class="sec-split">
+        <div><blockquote class="serif">事情是改不了的，怎么做是可以选择的。</blockquote>
+          <p>《这一身》不是讲一个人靠努力战胜所有困难，而是讲一个普通人如何被经历一点点塑形：有些选择救过他，也让他付出代价；有些伤疤后来变成能力，却不代表伤害本身值得感谢。玩家真正操纵的不是命运，而是面对命运时的姿态。</p>
+          <div class="theme-path">
+            <div><b>“命”怎样体现</b><p>出生与现实事件先发生，不能读档重抽成更好的人生；时间也只会向前。</p></div>
+            <div><b>“选择”怎样体现</b><p>自由走位决定先面对谁，命运牌决定咽下还是吐出，道具决定继续背什么。</p></div>
+            <div><b>“放下”怎样体现</b><p>终局不是证明伤疤让人更强，而是逐件脱下这一身，承认活过以后仍可以不再背着。</p></div>
+          </div></div>
+        <figure><img src="assets/ending-lampman.png" alt="终局 · 路灯下的收灯人" loading="lazy"><figcaption>终局定格 · 收灯人不可击杀，通关靠把这一身逐件还回去</figcaption></figure>
+      </div>
+      <h3 class="wiki-h serif" id="novelty"><span class="h-no">05</span>新意 · 生成的不是台词，是可玩的经历</h3>
+      <ul>
+              <li>AI 生成的出生和事件会进入本局状态，影响后续命运怎样续写；它不是战斗外的一段装饰文本。</li>
+              <li>叙事结果会被编译成受控机制，再变成身体外观与《一口气》的变化——<b>故事、数值、美术和打法共用同一个结果</b>。</li>
+              <li>“事情改不了，怎么做可以选择”不只是一句主题：命运牌体现事情，走位体现做法，道具体现选择留下的身体后果。</li>
+              <li>构筑的高潮不是越来越满，而是终局被逐件剥下；最终胜利不是击杀收灯人，而是主动放下最后一口气。</li>
+            </ul>
+      <h3 class="wiki-h serif" id="difference"><span class="h-no">06</span>和常见构筑游戏的区别</h3>
+      <div class="tbl-wrap difference-table"><table><thead><tr><th>比较</th><th>常见构筑游戏</th><th>《这一身》</th></tr></thead><tbody>
+              <tr><td>攻击</td><td>不断获得新武器</td><td>一辈子只有《一口气》，所有经历共同改写它</td></tr>
+              <tr><td>随机内容</td><td>抽数值、房间或固定事件</td><td>AI 按本局人生状态续写出生与命运</td></tr>
+              <tr><td>道具</td><td>主要提供强度与流派</td><td>同时是记忆、代价、身体变化和战斗规则</td></tr>
+              <tr><td>关卡</td><td>彼此独立的地图或章节</td><td>同一张世界连续老去，一局就是一生</td></tr>
+              <tr><td>结局</td><td>击杀最终 Boss、完成构筑</td><td>最终 Boss 不可杀，玩家靠归还构筑并主动放下通关</td></tr>
+            </tbody></table></div>
+      <h3 class="wiki-h serif" id="portal"><span class="h-no">07</span>分类图鉴</h3>
+      <p class="sec-lede">下面六本是逐条词条页，每个词条带实机循环动图；本页往下是设计手册正文。</p>
+      <div class="portal-grid">
+        <a class="portal" href="boss.html"><img src="enemy-portraits-v1/lamp-keeper.png" alt="" loading="lazy"><b>Boss 志</b><span>12 个大小 Boss · 41 招逐帧</span></a>
+        <a class="portal" href="bestiary.html"><img src="enemy-portraits-v1/cry-moth.png" alt="" loading="lazy"><b>敌怪志</b><span>26 种普通怪 · 分章编排</span></a>
+        <a class="portal" href="items.html"><img src="item-manifestations-v1/22-broken-spine.png" alt="" loading="lazy"><b>道具志</b><span>77 件 · 机制与体现图</span></a>
+        <a class="portal" href="voices.html"><img src="assets/wiki/gif/hero/hero-idle.gif" alt="" loading="lazy"><b>语音馆</b><span>24 个角色 · 逐条试听</span></a>
+        <a class="portal" href="world.html"><img src="assets/lamp.png" alt="" loading="lazy"><b>世界志</b><span>人偶 · 地面 · 门与灯</span></a>
+        <a class="portal" href="vfx.html"><img src="assets/wiki/gif/projectile/breath.gif" alt="" loading="lazy"><b>特效馆</b><span>弹体 · 命中 · 协同</span></a>
+      </div>
+      <p class="reader-note"><b>第一次读百科：</b>上面七节读完就能明白这是个什么游戏。再往下按「一口气 → 命运牌 → 道具志 → 怪物图鉴」的顺序看；机制账本与各卷末尾的图集用于查细节，不必从头读到尾。</p>
+    <!-- ART-BLOCKS:overview-START -->
 <div class="stage-h"><h3>一局游戏的核心循环</h3><span class="cnt">77 件道具 · 12 个组合 · 26 个现役普通敌怪 · 12 个大小 Boss</span></div>
 <div class="core-loop" aria-label="一局游戏的五步循环"><div class="core-step"><span class="step-no">01 · 出生</span><b>AI 生成主角</b><p>每局都是不同家庭、地域与起点。</p></div><div class="core-step"><span class="step-no">02 · 走位</span><b>在怪潮里活下去</b><p>你控制移动，《一口气》自动攻击。</p></div><div class="core-step"><span class="step-no">03 · 回应</span><b>咽下或吐出命运</b><p>事情已经发生，回应方式由你选择。</p></div><div class="core-step"><span class="step-no">04 · 构筑</span><b>把经历穿上身</b><p>道具同时改变身体与唯一攻击。</p></div><div class="core-step"><span class="step-no">05 · 长大</span><b>进入下一段人生</b><p>场景、怪物与问题随年龄改变。</p></div></div><p class="reader-note"><b>读卡方法：</b>先看动画认出它，再看“会做什么”，最后看“怎么应对”。精确数值保留在机制说明里，但不再抢占阅读顺序。</p>
 <h4 style="margin:18px 0 8px">普通敌人 · 它做什么，你怎么躲</h4><div class="items">

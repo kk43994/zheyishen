@@ -2740,6 +2740,8 @@ export class ZheYiShenGame {
     this.lifeSummaryAbort = undefined;
     this.lifeSummary = '';
     this.lifeSummaryState = 'idle';
+    this.devPanelOpen = false;
+    this.devPanelDetail = undefined;
     this.pendingDefeatRewards = [];
     this.scheduledVoices = this.scheduledVoices.filter((entry) => entry.encounterIndex === this.encounterIndex);
     this.eliteAlertName = '';
@@ -3363,7 +3365,8 @@ export class ZheYiShenGame {
     this.lampSeize = undefined;
     this.lampSeizeMisses = 0;
     this.lampItemsToReturnTotal = 0;
-    this.lampKeeperSlain = false;
+    // lampKeeperSlain 不在这里重置：它是整局的成就（写进名册的 keeperSlain），
+    // 不是每章的状态。在换章时清掉它，等于哪天击杀与结算之间插进一次换章就把成就抹了。
     this.lampFinalStripTimer = 0;
     this.lampReleaseReady = false;
     this.lampReleaseTimer = 0;
@@ -4556,6 +4559,9 @@ export class ZheYiShenGame {
 
   private update(dt: number): void {
     if (this.paused) return;
+    // 开发面板不是暂停菜单，但它盖住整个屏幕；不冻结的话玩家在翻图鉴时会被打死，
+    // 然后结局页被面板盖住、输入又被面板独占，观感像卡死。
+    if (this.devPanelOpen) return;
     if (this.auditBossArtActive) return;
     if (this.pendingFateOpen && this.state === 'battle') this.presentPendingFate();
     if (this.pendingDefeatRewards.length && this.state === 'battle') {
@@ -10074,6 +10080,8 @@ export class ZheYiShenGame {
     this.closeFreeInput();
     this.paused = false;
     this.resetPauseHold();
+    this.devPanelOpen = false;
+    this.devPanelDetail = undefined;
     this.resultWon = won;
     this.resultTab = 'seal';
     this.resultStartedAt = performance.now();
@@ -18589,23 +18597,29 @@ export class ZheYiShenGame {
     ctx.textAlign = 'left';
     this.drawItemSymbol(id, 130, 130, 20);
     ctx.fillStyle = UI_PALETTE.ink;
-    // 名称与 flavor 是这张卡真正要人读的两行，按 12/10px 排太小——各抬一档。
-    ctx.font = `bold 15px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText(item.name, 128, 163, 196, 17, 2);
+    // 名称与 flavor 是这张卡真正要人读的两行：加粗、放大、拉开字距，
+    // 让它们从「一堆同字号说明文字」里分出层级。letterSpacing 用后必须归零，
+    // 它是 canvas 的绘制状态，会漏给后面所有文字。
+    ctx.font = `bold 18px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.letterSpacing = '1.5px';
+    this.wrapText(item.name, 128, 162, 196, 21, 2);
+    ctx.letterSpacing = '0px';
     ctx.fillStyle = '#7c705d';
     ctx.font = `9px ${UI_FONT_STACK}`;
-    ctx.fillText(`${'ⅠⅡⅢⅣⅤ'[item.quality - 1]} · ${item.qualityName}`, 128, 188);
+    ctx.fillText(`${'ⅠⅡⅢⅣⅤ'[item.quality - 1]} · ${item.qualityName}`, 128, 195);
     ctx.fillStyle = '#3f6b52';
-    this.wrapText(`得到 · ${item.positive}`, 128, 206, 196, 12, 3);
+    this.wrapText(`得到 · ${item.positive}`, 128, 213, 196, 12, 3);
     ctx.fillStyle = '#8d3f4c';
-    this.wrapText(`留下 · ${item.negative}`, 128, 248, 196, 12, 3);
+    this.wrapText(`留下 · ${item.negative}`, 128, 253, 196, 12, 3);
 
     // 下栏：flavor 与机制说明占整幅宽度
     drawStitchDivider(ctx, 34, 296, 292, 'horizontal', '#a49882', 5, 4);
     ctx.textAlign = 'left';
     ctx.fillStyle = '#4a4038';
-    ctx.font = `12px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText(item.flavor, 34, 315, 292, 16, 3);
+    ctx.font = `bold 14px ${UI_ARCHIVE_FONT_STACK}`;
+    ctx.letterSpacing = '1px';
+    this.wrapText(item.flavor, 34, 316, 292, 19, 3);
+    ctx.letterSpacing = '0px';
     ctx.fillStyle = '#6b6355';
     ctx.font = `9px ${UI_FONT_STACK}`;
     this.wrapText(item.summary, 34, 362, 292, 13, 3);

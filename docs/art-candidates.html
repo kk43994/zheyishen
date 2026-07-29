@@ -23,6 +23,7 @@
     --q1:#786F69; --q2:#71818A; --q3:#9F3548; --q4:#C6A44A; --q5:#E8E1D3;
     --positive:#779887; --warning:#B06961;
     --desk:url("assets/desk-texture.png");
+    --red:var(--oldred); --dim:var(--fg-3);  /* 存量样式引用了这两个名字但从未声明 */
   }
   :root[data-theme="light"]{
     --bg:#E9E3D4; --card:#F1ECDF; --line:#C8C0AC;
@@ -408,6 +409,77 @@
     .pitch-grid{grid-template-columns:1fr}
     .theme-path{grid-template-columns:1fr}
     .quick-read{padding:18px}
+  }
+
+  /* ── 条目开头 · wiki 体（2026-07-29 重做，替掉「五个问题看懂」路演版）── */
+  .lead-split{display:grid;grid-template-columns:minmax(0,1fr) 296px;gap:28px;align-items:start;margin:20px 0 26px}
+  .lead-body .one-line{font-size:20px;line-height:1.7;margin:0 0 14px}
+  .lead-body p{margin:0 0 12px}
+  .lead-body p:last-child{margin-bottom:0}
+  .infobox{border:1px solid var(--line);border-radius:9px;background:linear-gradient(160deg,color-mix(in srgb,var(--oldred) 8%,var(--card)),var(--card));overflow:hidden}
+  .infobox .ib-shot{margin:0;padding:12px 12px 0}
+  .infobox .ib-shot img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:4px;image-rendering:pixelated;background:#101014}
+  .infobox figcaption{color:var(--fg-3);font-size:11px;letter-spacing:.12em;text-align:center;padding:7px 0 3px}
+  .infobox table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .infobox th{text-align:left;vertical-align:top;color:var(--fg-3);font-weight:400;white-space:nowrap;padding:7px 8px 7px 14px;width:4.6em}
+  .infobox td{padding:7px 14px 7px 0;line-height:1.55;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+  .infobox tr:last-child td{border-bottom:none}
+
+  /* 完成度数字条：评委扫一眼就知道不是 demo */
+  .stat-band{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:0 0 8px}
+  .stat-band div{background:var(--card);padding:14px 8px;text-align:center}
+  .stat-band b{display:block;font-size:23px;line-height:1;color:var(--moon);font-weight:600}
+  .stat-band span{display:block;margin-top:7px;font-size:11px;color:var(--fg-3);letter-spacing:.06em}
+
+  /* 六章一生 */
+  .lifeline{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:16px 0 4px}
+  .life-ch{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card);display:flex;flex-direction:column}
+  .life-ch .ground{height:52px;background-size:cover;background-position:center;image-rendering:pixelated;filter:brightness(.88)}
+  .life-ch .body{padding:12px 12px 13px;display:flex;flex-direction:column;gap:7px;flex:1}
+  .life-ch .age{color:var(--oldred);font:700 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em}
+  .life-ch h4{margin:0;font-size:14px;line-height:1.35}
+  .life-ch .fl{margin:0;font-size:12.5px;line-height:1.62;color:var(--fg-2);flex:1}
+  .life-ch .boss{display:flex;align-items:center;gap:8px;border-top:1px dashed var(--line);padding-top:9px}
+  .life-ch .boss img{width:34px;height:34px;image-rendering:pixelated;flex:none}
+  .life-ch .boss span{font-size:11.5px;color:var(--fg-3);line-height:1.4}
+
+  /* 一口气形态条：同一发攻击被经历改写成的样子 */
+  .breath-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px;margin:16px 0 6px}
+  .breath-strip figure{margin:0;border:1px solid var(--line);border-radius:8px;background:var(--card);padding:11px 8px 10px;text-align:center}
+  .breath-strip img{width:56px;height:56px;image-rendering:pixelated;background:#101014;border-radius:4px}
+  .breath-strip figcaption{margin-top:8px;font-size:11.5px;line-height:1.5;color:var(--fg-2)}
+  .breath-strip .base{border-color:color-mix(in srgb,var(--moon) 40%,var(--line));background:linear-gradient(160deg,color-mix(in srgb,var(--moon) 6%,var(--card)),var(--card))}
+  .breath-strip .base figcaption{color:var(--moon)}
+
+  /* 图文并排小节 */
+  .sec-split{display:grid;grid-template-columns:minmax(0,1fr) 268px;gap:24px;align-items:start;margin:14px 0 6px}
+  .sec-split>figure{margin:0}
+  .sec-split>figure img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:6px;image-rendering:pixelated;background:#101014}
+  .sec-split>figure figcaption{color:var(--fg-3);font-size:11.5px;text-align:center;padding-top:8px;line-height:1.55}
+  .wiki-h{font-size:19px;margin:36px 0 10px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+  .wiki-h .h-no{color:var(--oldred);font:700 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;margin-right:10px}
+  .sec-lede{color:var(--fg-2);margin:0 0 10px}
+
+  /* 分类入口 */
+  .portal-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:16px 0 4px}
+  .portal{display:flex;flex-direction:column;align-items:center;gap:9px;border:1px solid var(--line);border-radius:8px;background:var(--card);padding:14px 10px 13px;text-decoration:none;color:inherit;transition:border-color .18s,transform .18s}
+  .portal:hover{border-color:var(--oldred);transform:translateY(-2px)}
+  .portal img{width:44px;height:44px;image-rendering:pixelated}
+  .portal b{font-size:13px}
+  .portal span{font-size:11px;color:var(--fg-3);text-align:center;line-height:1.45}
+
+  @media(max-width:900px){
+    .lead-split{grid-template-columns:1fr}
+    .sec-split{grid-template-columns:1fr}
+    .lifeline{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .stat-band{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .portal-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  }
+  @media(max-width:560px){
+    .lifeline{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .stat-band{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .portal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .breath-strip{grid-template-columns:repeat(3,minmax(0,1fr))}
   }
 </style>
 </head>
