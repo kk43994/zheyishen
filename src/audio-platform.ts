@@ -170,7 +170,13 @@ class SfxEngine {
 
   /** 必须在用户手势里调用，否则 AudioContext 会停在 suspended。 */
   prime(): void {
-    if (this.failed || this.context) return;
+    if (this.failed) return;
+    if (this.context) {
+      // 首次 prime 可能落在非手势上下文里、context 停在 suspended；
+      // 之后每次真手势都再试一次恢复，否则音效会永久走兜底或静音。
+      if (this.context.state !== 'running') void this.context.resume?.();
+      return;
+    }
     const Ctor = typeof AudioContext !== 'undefined'
       ? AudioContext
       : (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -219,8 +225,14 @@ class SfxEngine {
     const master = this.master;
     const buffer = this.buffers.get(name);
     if (!context || !master || !buffer) return false;
+    // context 没在 running 时，createBufferSource + start() 不会抛异常，只是一声不响。
+    // 那样这里返回 true 会让元素兜底路径被跳过，结果是「不卡了，因为根本没播」——
+    // 必须先把这一声让给元素路径，同时尝试恢复 context，下一声再走 Web Audio。
+    if (context.state !== 'running') {
+      void context.resume?.();
+      return false;
+    }
     try {
-      if (context.state === 'suspended') void context.resume?.();
       const source = context.createBufferSource();
       source.buffer = buffer;
       source.playbackRate.value = rate;
