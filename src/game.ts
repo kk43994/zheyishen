@@ -487,6 +487,8 @@ const XIAO_ZHANG_HELP_RECT = { x: 34, y: 394, width: 138, height: 54 } as const;
 const XIAO_ZHANG_DECLINE_RECT = { x: 188, y: 394, width: 138, height: 54 } as const;
 const RESULT_RESTART_RECT = { x: 70, y: 505, width: 220, height: 58 } as const;
 const RESULT_TAB_RECT = { x: 20, y: 98, width: 320, height: 28 } as const;
+/** 「这一生」页的兜底按钮：封卷没写成时当场重跑。 */
+const RESULT_LIFE_RETRY_RECT = { x: 70, y: 252, width: 220, height: 34 } as const;
 const PAUSE_BUTTON_RECT = { x: 326, y: 6, width: 28, height: 39 } as const;
 /** 开发者面板入口：左上角，HUD 行下方，不压住血条。测试版功能，用于向评委演示。 */
 const DEV_ENTRY_RECT = { x: 6, y: 52, width: 58, height: 22 } as const;
@@ -1199,7 +1201,12 @@ export class ZheYiShenGame {
   private lampKeeperSlain = false;
   /** AI 人生封卷：收灯人一出现就后台开写，结局页直接取现成的。 */
   private lifeSummary = '';
-  private lifeSummaryRequested = false;
+  /**
+   * idle=还没发起；pending=正在写；ready=已就绪；failed=写不出来。
+   * 必须区分 pending 与 failed——只有 failed 才该把「现在就写这一页」的兜底按钮亮出来，
+   * 正在写的时候亮出来会让玩家重复触发。
+   */
+  private lifeSummaryState: 'idle' | 'pending' | 'ready' | 'failed' = 'idle';
   private lifeSummaryAbort?: AbortController;
   private lampFinalStripTimer = 0;
   private lampReleaseReady = false;
@@ -1524,6 +1531,12 @@ export class ZheYiShenGame {
             RESULT_TABS.length - 1,
           );
           this.resultTab = RESULT_TABS[index]!;
+        } else if (this.resultTab === 'life'
+          && (this.lifeSummaryState === 'failed' || this.lifeSummaryState === 'idle')
+          && pointInRect(p, RESULT_LIFE_RETRY_RECT)) {
+          this.beginLifeSummary(true);
+          this.say('正在写最后一页');
+          this.feedback.play('page', 1);
         } else if (pointInRect(p, RESULT_CODEX_RECT)) {
           this.openCodexOverlay();
         } else if (pointInRect(p, RESULT_RESTART_RECT)) this.startRun();
@@ -2721,6 +2734,12 @@ export class ZheYiShenGame {
     this.schoolEliteDefeatedAt = 0;
     this.stageEliteDefeated = false;
     this.stageBossDefeated = false;
+    // 封卷按局重置：不重置的话第二局的「这一生」会显示上一局的文字。
+    // 上一局若还有请求在飞，一并取消，免得它回来覆盖新局的状态。
+    this.lifeSummaryAbort?.abort();
+    this.lifeSummaryAbort = undefined;
+    this.lifeSummary = '';
+    this.lifeSummaryState = 'idle';
     this.pendingDefeatRewards = [];
     this.scheduledVoices = this.scheduledVoices.filter((entry) => entry.encounterIndex === this.encounterIndex);
     this.eliteAlertName = '';
@@ -8621,9 +8640,11 @@ export class ZheYiShenGame {
    * 后台预生成这一局的人生封卷。只发起一次；拿不到就保持空串，
    * 结局页有固定文案兜底——封卷写不出来绝不能让结局卡住。
    */
-  private beginLifeSummary(): void {
-    if (this.lifeSummaryRequested || !this.origin) return;
-    this.lifeSummaryRequested = true;
+  private beginLifeSummary(force = false): void {
+    if (!this.origin) return;
+    if (!force && this.lifeSummaryState !== 'idle') return;
+    if (this.lifeSummaryState === 'pending') return;
+    this.lifeSummaryState = 'pending';
     this.lifeSummaryAbort = new AbortController();
     // 封卷要串成一个故事，所以喂进去的必须是「经历了什么」而不是「经历了几次」：
     // 出生背景故事 + 外号由来 + 每一张命运牌的事件、方向、结果，以及玩家亲口说的原话。
@@ -8649,7 +8670,15 @@ export class ZheYiShenGame {
       keeperSlain: this.lampKeeperSlain,
     };
     void generateLifeSummary(payload, this.lifeSummaryAbort.signal).then((text) => {
-      if (text) this.lifeSummary = text;
+      if (text) {
+        this.lifeSummary = text;
+        this.lifeSummaryState = 'ready';
+        return;
+      }
+      // 写不出来不是终点：把状态落到 failed，结局页会亮出重写按钮让玩家自己触发。
+      this.lifeSummaryState = 'failed';
+    }).catch(() => {
+      this.lifeSummaryState = 'failed';
     });
   }
 
@@ -18230,7 +18259,7 @@ export class ZheYiShenGame {
     ctx.textAlign = 'left';
     ctx.fillStyle = UI_PALETTE.oldRed;
     ctx.font = `bold 10px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillText(this.lifeSummary ? '这一生 · AI生成' : '这一生', 20, 150);
+    ctx.fillText(this.lifeSummaryState === 'ready' ? '这一生 · AI生成' : '这一生', 20, 150);
 
     const identity = this.origin?.nickname ? `《${this.origin.nickname}》` : this.origin?.title || '没有留下名字的人';
     ctx.fillStyle = UI_PALETTE.paperDim;
@@ -18238,7 +18267,7 @@ export class ZheYiShenGame {
     ctx.fillText(`${identity} · ${this.fateReceipts.length} 张回执 · ${this.items.length} 件物证`, 20, 168);
     drawStitchDivider(ctx, 20, 178, 320, 'horizontal', '#4d494d', 5, 4);
 
-    if (this.lifeSummary) {
+    if (this.lifeSummaryState === 'ready' && this.lifeSummary) {
       ctx.fillStyle = UI_PALETTE.paper;
       ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
       this.wrapText(this.lifeSummary, 20, 202, 320, 16, 16);
@@ -18246,12 +18275,19 @@ export class ZheYiShenGame {
     }
     ctx.fillStyle = UI_PALETTE.paperDim;
     ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
+    if (this.lifeSummaryState === 'pending') {
+      const dots = '·'.repeat(1 + (Math.floor(this.visualTime * 2) % 3));
+      this.wrapText(`最后一页还在写${dots}\n他这一生的字，正在一句一句落下来。`, 20, 202, 320, 16, 3);
+      return;
+    }
+    // idle 与 failed 都给出口：AI 没写成不该让玩家干看着，按钮点了当场重跑。
     this.wrapText(
-      this.lifeSummaryRequested
-        ? '最后一页还在写。\n他这一生的字，正在一句一句落下来。'
-        : '这一身，没有等到最后一页。',
-      20, 202, 320, 16, 4,
+      this.lifeSummaryState === 'failed'
+        ? '最后一页没有写成。'
+        : '这一页还空着。',
+      20, 202, 320, 16, 2,
     );
+    this.drawBreathActionButton(RESULT_LIFE_RETRY_RECT, '现在就写这一页', UI_PALETTE.raincoatYellow);
   }
 
   private renderResultItems(): void {
@@ -18553,8 +18589,9 @@ export class ZheYiShenGame {
     ctx.textAlign = 'left';
     this.drawItemSymbol(id, 130, 130, 20);
     ctx.fillStyle = UI_PALETTE.ink;
-    ctx.font = `bold 12px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText(item.name, 128, 162, 196, 14, 2);
+    // 名称与 flavor 是这张卡真正要人读的两行，按 12/10px 排太小——各抬一档。
+    ctx.font = `bold 15px ${UI_ARCHIVE_FONT_STACK}`;
+    this.wrapText(item.name, 128, 163, 196, 17, 2);
     ctx.fillStyle = '#7c705d';
     ctx.font = `9px ${UI_FONT_STACK}`;
     ctx.fillText(`${'ⅠⅡⅢⅣⅤ'[item.quality - 1]} · ${item.qualityName}`, 128, 188);
@@ -18567,8 +18604,8 @@ export class ZheYiShenGame {
     drawStitchDivider(ctx, 34, 296, 292, 'horizontal', '#a49882', 5, 4);
     ctx.textAlign = 'left';
     ctx.fillStyle = '#4a4038';
-    ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText(item.flavor, 34, 314, 292, 14, 3);
+    ctx.font = `12px ${UI_ARCHIVE_FONT_STACK}`;
+    this.wrapText(item.flavor, 34, 315, 292, 16, 3);
     ctx.fillStyle = '#6b6355';
     ctx.font = `9px ${UI_FONT_STACK}`;
     this.wrapText(item.summary, 34, 362, 292, 13, 3);
