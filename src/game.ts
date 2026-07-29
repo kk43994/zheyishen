@@ -2144,6 +2144,11 @@ export class ZheYiShenGame {
    * 漏字段会在编译期报错。仅在稳定的"画面间"时刻可存档（战斗/命运/奖励/固定掉落/商店/特殊房）；
    * title/result/origin 与命运牌异步未就绪时返回 null。
    */
+  /** 终局最后一段：最终章里黑暗已经开始收拢（或收灯人已经出场）之后。 */
+  private isFinalEndgame(): boolean {
+    return STAGES[this.encounterIndex]?.end === 'final' && (this.darkActive || this.lampSpawned);
+  }
+
   private captureCheckpoint(): RunCheckpoint | null {
     if (!this.origin) return null;
     const screen = this.state;
@@ -2151,6 +2156,11 @@ export class ZheYiShenGame {
       && screen !== 'storyDrop' && screen !== 'shop' && screen !== 'specialRoom') return null;
     // 命运牌展示后正文已经冻结；选择结算完成便可以保存，避免结果动画期间退出后重新选择。
     if (screen === 'fateEvent' && !this.currentFate) return null;
+    // 终局最后一段不存档：黑暗收拢与收灯流程压着一串没有序列化的过程状态
+    // （darkR、收灯轮次、剥离到第几件），存下来续局只会把整段终局重放一遍。
+    // 与其把这些全搬进 schema，不如让最后这段路成为不可回档的一段——
+    // 「事情是改不了的」。暂停页会明说这一段夹不住。
+    if (this.isFinalEndgame()) return null;
     const preparedSlot = this.prefetchedFate?.encounterIndex === this.encounterIndex
       && this.prefetchedFate.runSerial === this.runSerial
       ? this.prefetchedFate
@@ -2606,6 +2616,12 @@ export class ZheYiShenGame {
       checkpoint = null;
     }
     if (!checkpoint) return false;
+    // 旧版本存下来的终局断点（当时还会存）一律作废：它缺的正是终局那串过程状态，
+    // 恢复出来就是从黑暗中段凭空开始。
+    if (STAGES[checkpoint.encounterIndex]?.end === 'final' && checkpoint.battleTime >= DARKNESS_START) {
+      clearRunCheckpoint();
+      return false;
+    }
     try {
       this.applyCheckpoint(checkpoint);
       this.lastCheckpointKey = '';
@@ -13967,7 +13983,10 @@ export class ZheYiShenGame {
     ctx.fillText('档案暂存', 136, 47);
     ctx.fillStyle = UI_PALETTE.paperDim;
     ctx.font = `8px ${UI_FONT_STACK}`;
-    ctx.fillText('世界夹在这一页，时间没有往前走。', 136, 67);
+    ctx.fillText(
+      this.isFinalEndgame() ? '灯已经在收了。这一页夹不住。' : '世界夹在这一页，时间没有往前走。',
+      136, 67,
+    );
     drawStitchDivider(ctx, 132, 76, 204, 'horizontal', '#4d494d', 4, 3);
 
     const tabLabels = ['这一身', '出生', '命运', '设置'];
@@ -14011,7 +14030,7 @@ export class ZheYiShenGame {
     ctx.fillRect(PAUSE_END_RECT.x + 7, PAUSE_END_RECT.y + 6, 10, 1);
     ctx.fillStyle = '#b6aca4';
     ctx.font = `8px ${UI_FONT_STACK}`;
-    ctx.fillText('按住封存为未完', 232, 601);
+    ctx.fillText(this.isFinalEndgame() ? '按住离开 · 这一段不留底' : '按住封存为未完', 232, 601);
     ctx.restore();
   }
 
@@ -14028,17 +14047,18 @@ export class ZheYiShenGame {
     ctx.fillText(`劲 ${norm(vector.damage, BASE_VECTOR.damage)}`, 138, 164);
     ctx.fillText(`速 ${norm(1 / vector.fireInterval, 1 / BASE_VECTOR.fireInterval)}`, 205, 164);
     ctx.fillText(`程 ${norm(vector.range, BASE_VECTOR.range)}`, 270, 164);
-    drawStitchDivider(ctx, 138, 178, 188, 'horizontal', '#4d494d', 4, 3);
+    this.renderPoisonStrip(138, 178, 188);
+    drawStitchDivider(ctx, 138, 202, 188, 'horizontal', '#4d494d', 4, 3);
     const visible = this.items.slice(-8).reverse();
     if (!visible.length) {
       ctx.fillStyle = '#77727a';
       ctx.font = `8px ${UI_ARCHIVE_FONT_STACK}`;
-      this.wrapText('还没有什么穿在身上。', 138, 205, 188, 12, 2);
+      this.wrapText('还没有什么穿在身上。', 138, 229, 188, 12, 2);
       return;
     }
     visible.forEach((id, index) => {
       const item = getItem(id);
-      const y = 204 + index * 37;
+      const y = 228 + index * 37;
       this.drawItemSymbol(id, 150, y + 8, 7);
       ctx.fillStyle = UI_PALETTE.paper;
       ctx.font = `bold 8px ${UI_ARCHIVE_FONT_STACK}`;
@@ -17275,25 +17295,37 @@ export class ZheYiShenGame {
     }
   }
 
-  private renderPoisonStrip(y: number): void {
+  /**
+   * 五毒条：贪嗔痴慢疑一直在改《一口气》（computeAttackVector 里逐条生效），
+   * 却从来没有上过屏——玩家只看得到结果，看不到自己攒成了什么。
+   * 现在挂在暂停页「这一身」里；结算页另有「最深的两道痕」做回望。
+   */
+  private renderPoisonStrip(x: number, y: number, width: number): void {
     const ctx = this.ctx;
+    const step = width / POISON_KEYS.length;
     for (let index = 0; index < POISON_KEYS.length; index += 1) {
       const key = POISON_KEYS[index]!;
-      const x = 18 + index * 68;
+      const cx = x + index * step;
       const value = this.poisons[key];
-      ctx.fillStyle = '#24242b'; ctx.fillRect(x, y, 52, 24);
-      ctx.fillStyle = value > 0 ? '#be6974' : '#66656b'; ctx.fillRect(x, y + 21, 52 * (value / 12), 3);
       // 五毒图腾：贪=攥紧的硬币 嗔=火柴 痴=扑灯蛾 慢=歪纸冠 疑=打结的绳
       const totem = poisonAtlas.named(key);
       if (totem) {
         ctx.save();
-        ctx.globalAlpha = value > 0 ? 0.95 : 0.4;
+        ctx.globalAlpha = value > 0 ? 0.95 : 0.34;
         ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(totem, x + 2, y + 3, 16, 16);
+        ctx.drawImage(totem, Math.round(cx), y, 12, 12);
         ctx.restore();
       }
-      ctx.textAlign = 'center'; ctx.fillStyle = value > 0 ? '#d8c8c5' : '#77757a'; ctx.font = 'bold 9px sans-serif';
-      ctx.fillText(`${POISON_LABELS[key]} ${value}`, x + (totem ? 33 : 26), y + 15);
+      ctx.textAlign = 'left';
+      ctx.fillStyle = value > 0 ? '#d8c8c5' : '#6f6d73';
+      ctx.font = `bold 8px ${UI_FONT_STACK}`;
+      ctx.fillText(`${POISON_LABELS[key]}${value}`, cx + (totem ? 14 : 0), y + 10);
+      ctx.fillStyle = '#2a2830';
+      ctx.fillRect(cx, y + 14, step - 5, 2);
+      if (value > 0) {
+        ctx.fillStyle = '#be6974';
+        ctx.fillRect(cx, y + 14, (step - 5) * Math.min(1, value / 12), 2);
+      }
     }
   }
 
@@ -18106,9 +18138,16 @@ export class ZheYiShenGame {
     }
     deepest.forEach(([key, value], index) => {
       const x = 20 + index * 160;
+      const totem = poisonAtlas.named(key);
+      if (totem) {
+        ctx.save();
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(totem, x, 456, 16, 16);
+        ctx.restore();
+      }
       ctx.fillStyle = UI_PALETTE.oldRed;
       ctx.font = `bold 14px ${UI_ARCHIVE_FONT_STACK}`;
-      ctx.fillText(`${POISON_LABELS[key]} ${value}`, x, 470);
+      ctx.fillText(`${POISON_LABELS[key]} ${value}`, x + (totem ? 20 : 0), 470);
       ctx.fillStyle = UI_PALETTE.paperDim;
       ctx.font = `9px ${UI_FONT_STACK}`;
       ctx.fillText(this.fitText(poisonMeanings[key], 148), x, 484);
