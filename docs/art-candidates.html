@@ -412,17 +412,18 @@
   }
 
   /* ── 条目开头 · wiki 体（2026-07-29 重做，替掉「五个问题看懂」路演版）── */
-  .lead-split{display:grid;grid-template-columns:minmax(0,1fr) 296px;gap:28px;align-items:start;margin:20px 0 26px}
+  .lead-split{display:block;margin:20px 0 26px}
+  .lead-split::after{content:"";display:block;clear:both}
   .lead-body .one-line{font-size:20px;line-height:1.7;margin:0 0 14px}
   .lead-body p{margin:0 0 12px}
   .lead-body p:last-child{margin-bottom:0}
-  .infobox{border:1px solid var(--line);border-radius:9px;background:linear-gradient(160deg,color-mix(in srgb,var(--oldred) 8%,var(--card)),var(--card));overflow:hidden}
+  .infobox{float:right;width:296px;margin:4px 0 18px 28px;border:1px solid var(--line);border-radius:9px;background:linear-gradient(160deg,color-mix(in srgb,var(--oldred) 8%,var(--card)),var(--card));overflow:hidden}
   .infobox .ib-shot{margin:0;padding:12px 12px 0}
-  .infobox .ib-shot img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:4px;image-rendering:pixelated;background:#101014}
+  .infobox .ib-shot img{width:100%;height:232px;object-fit:cover;object-position:center top;display:block;border:1px solid var(--line);border-radius:4px;image-rendering:pixelated;background:#101014}
   .infobox figcaption{color:var(--fg-3);font-size:11px;letter-spacing:.12em;text-align:center;padding:7px 0 3px}
-  .infobox table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .infobox table{width:100%;min-width:0;table-layout:fixed;border-collapse:collapse;font-size:12.5px}
   .infobox th{text-align:left;vertical-align:top;color:var(--fg-3);font-weight:400;white-space:nowrap;padding:7px 8px 7px 14px;width:4.6em}
-  .infobox td{padding:7px 14px 7px 0;line-height:1.55;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+  .infobox td{padding:7px 14px 7px 0;line-height:1.55;overflow-wrap:anywhere;word-break:break-word;border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
   .infobox tr:last-child td{border-bottom:none}
 
   /* 完成度数字条：评委扫一眼就知道不是 demo */
@@ -433,14 +434,14 @@
 
   /* 六章一生 */
   .lifeline{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:16px 0 4px}
-  .life-ch{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card);display:flex;flex-direction:column}
-  .life-ch .ground{height:52px;background-size:cover;background-position:center;image-rendering:pixelated;filter:brightness(.88)}
-  .life-ch .body{padding:12px 12px 13px;display:flex;flex-direction:column;gap:7px;flex:1}
+  .life-ch{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card);display:flex;flex-direction:column}
+  .life-ch .ground{position:absolute;inset:0;background-size:56px 56px;background-repeat:repeat;image-rendering:pixelated;opacity:.55;filter:brightness(2.7) contrast(1.05);pointer-events:none}
+  .life-ch .body{position:relative;z-index:1;padding:13px 12px 13px;display:flex;flex-direction:column;gap:7px;flex:1}
   .life-ch .age{color:var(--oldred);font:700 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em}
   .life-ch h4{margin:0;font-size:14px;line-height:1.35}
   .life-ch .fl{margin:0;font-size:12.5px;line-height:1.62;color:var(--fg-2);flex:1}
-  .life-ch .boss{display:flex;align-items:center;gap:8px;border-top:1px dashed var(--line);padding-top:9px}
-  .life-ch .boss img{width:34px;height:34px;image-rendering:pixelated;flex:none}
+  .life-ch .boss{display:flex;align-items:center;gap:9px;border-top:1px dashed var(--line);padding-top:10px}
+  .life-ch .boss img{width:52px;height:52px;image-rendering:pixelated;flex:none}
   .life-ch .boss span{font-size:11.5px;color:var(--fg-3);line-height:1.4}
 
   /* 一口气形态条：同一发攻击被经历改写成的样子 */
@@ -469,7 +470,7 @@
   .portal span{font-size:11px;color:var(--fg-3);text-align:center;line-height:1.45}
 
   @media(max-width:900px){
-    .lead-split{grid-template-columns:1fr}
+    .infobox{float:none;width:auto;margin:18px 0}
     .sec-split{grid-template-columns:1fr}
     .lifeline{grid-template-columns:repeat(3,minmax(0,1fr))}
     .stat-band{grid-template-columns:repeat(4,minmax(0,1fr))}

@@ -32,7 +32,7 @@ USED_INLINE: set[str] = set()
 
 # 子节标题前缀 -> 承接它的卷。SPLIT 要再拆，CANDIDATES 去独立页。
 BLOCK_ROUTE = (
-    ("一局游戏的核心循环", "overview"),
+    ("一局游戏的核心循环", "SPLIT_LOOP"),
     ("标题画", "world"),
     ("主角人偶", "world"),
     ("UI 纹理与饰件", "world"),
@@ -56,7 +56,7 @@ SECTION_ORDER = {
     "chapters": ["场景摆设", "__GROUNDS__"],
     "breath": ["《一口气》弹体"],
     "items": ["道具图标", "道具与主角体现"],
-    "beasts": ["敌怪图集", "大小 Boss"],
+    "beasts": ["__ENEMY_WALL__", "敌怪图集", "大小 Boss"],
     "combos": ["奥义插画"],
     "doors": ["世界实体", "__ROOMS__"],
     "mottos": ["结局定格"],
@@ -869,6 +869,17 @@ def split_rooms_and_grounds(block: str) -> tuple[str, str]:
     return rooms_html, grounds_html
 
 
+ENEMY_WALL_ANCHOR = '<h4 style="margin:18px 0 8px">普通敌人 · 它做什么，你怎么躲</h4>'
+
+
+def split_loop_and_enemies(block: str) -> tuple[str, str]:
+    """「一局游戏的核心循环」后面挂着 38 张怪卡，概述留不下——五步留在概述，卡墙归怪物图鉴。"""
+    if ENEMY_WALL_ANCHOR not in block:
+        raise AssertionError("核心循环块里找不到普通敌人卡墙的分界")
+    loop, wall = block.split(ENEMY_WALL_ANCHOR, 1)
+    return loop.rstrip(), ENEMY_WALL_ANCHOR + wall
+
+
 def route(blocks: dict[str, str]) -> tuple[dict[str, list[str]], str]:
     """按内容把子节分派到各卷；返回 (卷 id -> 片段列表, 候选档案片段)。"""
     resolved: dict[str, str] = {}
@@ -883,6 +894,10 @@ def route(blocks: dict[str, str]) -> tuple[dict[str, list[str]], str]:
             rooms, grounds = split_rooms_and_grounds(block)
             resolved["__ROOMS__"] = rooms
             resolved["__GROUNDS__"] = grounds
+        elif target == "SPLIT_LOOP":
+            loop, wall = split_loop_and_enemies(block)
+            resolved["一局游戏的核心循环"] = loop
+            resolved["__ENEMY_WALL__"] = wall
         else:
             resolved[title] = block
 
