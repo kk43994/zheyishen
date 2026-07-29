@@ -547,6 +547,21 @@ export function drawResponseMarker(
  * Stable point damage and rubbed patches. density is a percentage from 0..100;
  * the same geometry and seed always produce the same pixels.
  */
+/**
+ * 颗粒是「位置+种子+密度+颜色+点尺寸」的纯函数，参数不变则逐像素不变；而背景颗粒
+ * 每帧要画 1817 个 1×1 矩形（真机实测每帧 fillRect 总量 6841 次，占全部绘制调用的
+ * 99.5%），产出的却是一张从头到尾没变过的图。这里把它烘焙成离屏位图，之后每帧只贴一次。
+ *
+ * 结果逐像素相同，不是「几乎看不出」：这些矩形互不重叠（横向步长 px*2、最大宽 px*2；
+ * 纵向步长 px*2、高只有 px），不重叠意味着「逐个半透明填充」与「整张位图半透明贴一次」
+ * 的合成结果在数学上等价，外层 globalAlpha 的表现也一致。
+ */
+const wearCache = new Map<string, HTMLCanvasElement>();
+/** 背景整屏一张约 900KB 显存；按章/按局换种子最多同时存在若干张，超了就淘汰最早的。 */
+const WEAR_CACHE_LIMIT = 12;
+/** 太小的图案烘焙不划算：建离屏画布本身有开销，直接画反而更快。 */
+const WEAR_CACHE_MIN_AREA = 4096;
+
 export function drawDeterministicWear(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -564,13 +579,66 @@ export function drawDeterministicWear(
   const sh = atLeast(height, 0);
   const px = atLeast(pixelSize, 1);
   const threshold = Math.min(100, Math.max(0, snap(density)));
-  ctx.fillStyle = color;
-  for (let py = 0; py < sh; py += px * 2) {
-    for (let pxOffset = 0; pxOffset < sw; pxOffset += px * 2) {
-      const hash = hashPixel(sx + pxOffset, sy + py, seed);
-      if (hash % 100 >= threshold) continue;
-      const size = hash % 11 === 0 ? px * 2 : px;
-      ctx.fillRect(sx + pxOffset, sy + py, Math.min(size, sw - pxOffset), Math.min(px, sh - py));
-    }
+  if (sw <= 0 || sh <= 0) return;
+
+  // 哈希吃的是绝对坐标（hashPixel(sx + offset, sy + py, seed)），所以 sx/sy 必须进缓存键，
+  // 否则同尺寸不同位置的两处会错误地复用同一张图。
+  const key = `${sx},${sy},${sw},${sh},${snap(seed)},${threshold},${color},${px}`;
+  const cached = wearCache.get(key);
+  if (cached) {
+    // 重新插入以维持「最近使用在最后」的淘汰顺序。
+    wearCache.delete(key);
+    wearCache.set(key, cached);
+    ctx.drawImage(cached, sx, sy);
+    return;
   }
+
+  const paint = (target: CanvasRenderingContext2D, originX: number, originY: number): void => {
+    target.fillStyle = color;
+    for (let py = 0; py < sh; py += px * 2) {
+      for (let pxOffset = 0; pxOffset < sw; pxOffset += px * 2) {
+        const hash = hashPixel(sx + pxOffset, sy + py, seed);
+        if (hash % 100 >= threshold) continue;
+        const size = hash % 11 === 0 ? px * 2 : px;
+        target.fillRect(
+          originX + pxOffset,
+          originY + py,
+          Math.min(size, sw - pxOffset),
+          Math.min(px, sh - py),
+        );
+      }
+    }
+  };
+
+  if (sw * sh < WEAR_CACHE_MIN_AREA) {
+    paint(ctx, sx, sy);
+    return;
+  }
+
+  let baked: HTMLCanvasElement | undefined;
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = sw;
+    canvas.height = sh;
+    const bakeCtx = canvas.getContext('2d');
+    if (bakeCtx) {
+      // 烘焙时画在 (0,0)，但哈希仍按绝对坐标取，保证图案与直接绘制完全一致。
+      paint(bakeCtx, 0, 0);
+      baked = canvas;
+    }
+  } catch {
+    // 拿不到离屏画布（受限宿主）就退回直接绘制，功能不受影响。
+  }
+
+  if (!baked) {
+    paint(ctx, sx, sy);
+    return;
+  }
+
+  wearCache.set(key, baked);
+  if (wearCache.size > WEAR_CACHE_LIMIT) {
+    const oldest = wearCache.keys().next().value;
+    if (oldest !== undefined) wearCache.delete(oldest);
+  }
+  ctx.drawImage(baked, sx, sy);
 }

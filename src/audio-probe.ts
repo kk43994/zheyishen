@@ -31,8 +31,18 @@ export function probeElementCreated(): void {
   state.elements += 1;
 }
 
-export function probePlay(): void {
+export function probePlay(name?: string): void {
   state.playCalls += 1;
+  if (name) perSound.set(name, (perSound.get(name) ?? 0) + 1);
+}
+
+/** 每种音效的触发次数——用来区分「没被触发」和「触发了但听不见」。 */
+const perSound = new Map<string, number>();
+
+/** 只列关心的几种，面板一行放得下。 */
+export function readPerSound(): string {
+  const pick = ['breath', 'hit', 'hurt', 'coin'];
+  return pick.map((n) => `${n} ${perSound.get(n) ?? 0}`).join(' · ');
 }
 
 export function probeSeek(): void {

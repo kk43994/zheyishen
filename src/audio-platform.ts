@@ -59,7 +59,7 @@ const SFX_FILES: Record<LifeSound, string> = {
 
 const SFX_GAIN: Record<LifeSound, number> = {
   page: 0.52,
-  breath: 0.34,
+  breath: 0.52,
   hit: 0.48,
   hurt: 0.58,
   coin: 0.48,
@@ -544,7 +544,7 @@ export class LifeFeedback {
       ? 1
       : Math.max(0.92, Math.min(1.08, 1 + (Math.random() - 0.5) * 0.045));
     if (sfxEngine.play(sound, gain, rate)) {
-      probePlay();
+      probePlay(sound);
       return;
     }
     const pool = this.ensureSfxPool(sound);
@@ -566,7 +566,7 @@ export class LifeFeedback {
     player.playbackRate = ['boss', 'deny', 'phone', 'train', 'monitor'].includes(sound)
       ? 1
       : Math.max(0.92, Math.min(1.08, 1 + (Math.random() - 0.5) * 0.045));
-    probePlay();
+    probePlay(sound);
     void player.play().catch(() => undefined);
   }
 
@@ -708,7 +708,15 @@ export class LifeFeedback {
       if (this.activeAmbience) this.stopAmbience(false);
       return;
     }
-    if (stage === undefined || this.volume <= 0 || stage === this.activeAmbienceStage) return;
+    if (stage === undefined || this.volume <= 0) return;
+    if (stage === this.activeAmbienceStage) {
+      // 只比阶段号会漏掉「元素被宿主暂停」这一种情况——WebView 在音频焦点变化
+      // （例如新建 AudioContext、来电、切后台）时会 pause 媒体元素，而这里一旦
+      // return，环境音就永久沉默。检测到暂停就原地续播，不要 seek 回 0。
+      const current = this.activeAmbience;
+      if (current && current.paused) void current.play().catch(() => undefined);
+      return;
+    }
     const previous = this.activeAmbience;
     if (previous) {
       previous.pause();
@@ -746,7 +754,14 @@ export class LifeFeedback {
       return;
     }
     if (track === undefined || this.volume <= 0) return;
-    if (track === this.activeMusicTrack && this.activeMusic && !this.activeMusic.paused) return;
+    if (track === this.activeMusicTrack && this.activeMusic) {
+      // 同一曲目：在播就什么都不做；被宿主暂停就原地续播。绝不能走下面的重建流程，
+      // 那里第一句 currentTime = 0 会把曲子拉回开头——unlock() 每次播音效都会调到
+      // 这里，于是配乐每打一下就从头开始，听感就是「重播截断」。
+      if (!this.activeMusic.paused) return;
+      void this.activeMusic.play().catch(() => undefined);
+      return;
+    }
     const previous = this.activeMusic;
     const player = this.ensureMusic(track);
     this.cancelFade(player);
@@ -784,7 +799,11 @@ export class LifeFeedback {
       return;
     }
     if (!this.musicTension || this.volume <= 0) return;
-    if (this.activeTension && !this.activeTension.paused) return;
+    if (this.activeTension) {
+      if (!this.activeTension.paused) return;
+      void this.activeTension.play().catch(() => undefined);
+      return;
+    }
     const player = this.ensureMusicTension();
     this.cancelFade(player);
     player.pause();

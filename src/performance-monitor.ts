@@ -1,4 +1,4 @@
-import { readAudioProbe } from './audio-probe';
+import { readAudioProbe, readPerSound } from './audio-probe';
 import { sfxEngineState } from './audio-platform';
 const PERFORMANCE_STORAGE_KEY = 'zys-performance-v1';
 const PERFORMANCE_PANEL_KEY = 'zys-performance-panel-v1';
@@ -275,6 +275,7 @@ function performanceText(): string {
     `音频 元素 ${audio.elements} 个 · 在播 ${audio.playing} · 起播 ${audio.playsPerSecond.toFixed(1)}/s · seek ${audio.seeksPerSecond.toFixed(1)}/s`,
     `音频 累计起播 ${audio.playCalls} · 累计seek ${audio.seeks} · 静音跳过 ${audio.skippedMuted}`,
     `音效引擎 ${sfxEngineState()}`,
+    `音效触发 ${readPerSound()}`,
     `JS 内存 ${memory}`,
     '',
     '最近启动节点',

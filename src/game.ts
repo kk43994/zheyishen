@@ -451,7 +451,7 @@ function originComicCaptionProgress(sceneIndex: number, sceneElapsed: number): n
 
 // 标题页右下角与 AI 诊断行都会带上它：上传后扫码第一眼就能确认平台跑的是哪个包，
 // 排查「上传了但行为没变」时不再靠猜。每次要重新上传前手动 +1。
-const BUILD_TAG = '0729-14';
+const BUILD_TAG = '0729-16';
 const TITLE_START_RECT = { x: 88, y: 520, width: 184, height: 44 } as const;
 const TITLE_AUDIO_RECT = { x: 290, y: 16, width: 54, height: 30 } as const;
 const TITLE_CODEX_RECT = { x: 16, y: 16, width: 54, height: 30 } as const;
@@ -871,6 +871,8 @@ interface FatePrefetchSlot {
 }
 
 interface BackgroundFateTask {
+  /** 用于告诉玩家「亲口说」已经被挡了多久。 */
+  startedAt: number;
   requestId: number;
   runSerial: number;
   encounterIndex: number;
@@ -2388,6 +2390,9 @@ export class ZheYiShenGame {
         pending.fateItemCandidates,
       );
       const task: BackgroundFateTask = {
+        // 读档恢复的任务从此刻重新计时——存档里没有原始发起时间，
+        // 拿旧时间戳算等待秒数会得到一个荒谬的巨大值。
+        startedAt: performance.now(),
         requestId,
         runSerial: this.runSerial,
         encounterIndex: pending.encounterIndex,
@@ -3678,7 +3683,10 @@ export class ZheYiShenGame {
   private openFreeInput(): void {
     if (this.freeInputWrap || this.fateFreeWaiting || !this.currentFate) return;
     if (this.backgroundFateTask) {
-      this.say('上一句话还在后台落成回执');
+      // 只说「还在后台」玩家不知道要等多久，会以为按钮坏了。把已等秒数说出来，
+      // 并指明咽下/吐出仍然可用——那两条路现在点一下就能走。
+      const waited = Math.max(0, Math.round((performance.now() - this.backgroundFateTask.startedAt) / 1000));
+      this.say(`上一句话还在写回执 · 已等${waited}秒 · 也可直接咽下或吐出`);
       return;
     }
     if (this.hasItem('name-sold') && !this.hasItem('revoked-badge')) {
@@ -3746,6 +3754,7 @@ export class ZheYiShenGame {
     this.memories.push(`他亲口说：「${spoken}」`);
     if (this.memories.length > 14) this.memories = this.memories.slice(-14);
     const task: BackgroundFateTask = {
+      startedAt: performance.now(),
       requestId,
       runSerial: this.runSerial,
       encounterIndex: this.encounterIndex,
