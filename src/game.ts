@@ -493,10 +493,13 @@ const DEV_ENTRY_RECT = { x: 6, y: 52, width: 58, height: 22 } as const;
 const DEV_CLOSE_RECT = { x: 268, y: 24, width: 74, height: 24 } as const;
 const DEV_TAB_RECT = { x: 20, y: 58, width: 320, height: 26 } as const;
 const DEV_QUALITY_RECT = { x: 20, y: 92, width: 320, height: 22 } as const;
-/** 图标格：6 列，格距 52×54，从 y=124 起。 */
-const DEV_GRID = { x: 26, y: 124, cols: 6, cellW: 52, cellH: 54 } as const;
-const DEV_DETAIL_TAKE_RECT = { x: 60, y: 470, width: 240, height: 34 } as const;
-const DEV_DETAIL_BACK_RECT = { x: 60, y: 512, width: 240, height: 26 } as const;
+/**
+ * 图标格。原来 6 列每格 52px，而图标底框就占 44px，剩给名字的宽度不够，
+ * 屏幕上全是「校服上掉…」这种截断。改 5 列 62px，名字给两行。
+ */
+const DEV_GRID = { x: 25, y: 126, cols: 5, cellW: 62, cellH: 74 } as const;
+const DEV_DETAIL_TAKE_RECT = { x: 60, y: 420, width: 240, height: 34 } as const;
+const DEV_DETAIL_BACK_RECT = { x: 60, y: 462, width: 240, height: 26 } as const;
 /** 关卡选择：六章各一行。 */
 const DEV_STAGE_ROW = { x: 26, y: 124, width: 308, height: 44, gap: 8 } as const;
 /** 选关行上显示的 Boss 名。敌怪 spec 表在方法内部，这里单列一份供面板用。 */
@@ -18498,14 +18501,14 @@ export class ZheYiShenGame {
       const row = Math.floor(index / DEV_GRID.cols);
       const cx = DEV_GRID.x + col * DEV_GRID.cellW + DEV_GRID.cellW / 2;
       const cy = DEV_GRID.y + row * DEV_GRID.cellH;
-      if (cy > H - 60) return;
+      if (cy > H - 74) return;
       const owned = this.items.includes(id);
       ctx.fillStyle = owned ? 'rgba(143,192,165,.14)' : 'rgba(27,26,32,.62)';
-      ctx.fillRect(cx - 22, cy - 4, 44, 46);
-      this.drawItemSymbol(id, cx - 11, cy + 2, 22);
+      ctx.fillRect(cx - 25, cy - 4, 50, 44);
+      this.drawItemSymbol(id, cx - 12, cy + 2, 24);
       ctx.fillStyle = owned ? '#8fc0a5' : UI_PALETTE.paperDim;
       ctx.font = `8px ${UI_FONT_STACK}`;
-      ctx.fillText(this.fitText(getItem(id).name, 44), cx, cy + 38);
+      this.wrapText(getItem(id).name, cx, cy + 50, 58, 10, 2);
     });
 
     ctx.textAlign = 'left';
@@ -18518,28 +18521,49 @@ export class ZheYiShenGame {
     const ctx = this.ctx;
     const item = getItem(id);
     const owned = this.items.includes(id);
-    drawCutCornerPanel(ctx, 20, 108, 320, 330, 'rgba(216,208,193,.94)', UI_PALETTE.paperShadow, 3, 1);
-    overlayPanelTexture(ctx, UI_PALETTE.paper, 20, 108, 320, 330, [UI_PALETTE.paper], []);
+    drawCutCornerPanel(ctx, 20, 100, 320, 306, 'rgba(216,208,193,.94)', UI_PALETTE.paperShadow, 3, 1);
+    overlayPanelTexture(ctx, UI_PALETTE.paper, 20, 100, 320, 306, [UI_PALETTE.paper], []);
 
-    this.drawItemSymbol(id, 40, 128, 34);
+    // 左栏：试穿体现。这套穿戴美术本来就有（留灯间预览用的是同一个 drawHero），
+    // 图鉴里不показ出来等于白做——「穿上之后长什么样」才是玩家真正想看的。
+    const tryOn = this.items.includes(id) ? this.items : [...this.items, id];
+    ctx.save();
+    ctx.strokeStyle = '#7c705d';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(34.5, 116.5, 84, 150);
+    ctx.fillStyle = 'rgba(67,58,47,.12)';
+    ctx.fillRect(38, 120, 77, 143);
+    ctx.restore();
+    this.drawHero(76, 244, 0.72, tryOn);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#7c705d';
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    // 标签必须落在试穿框之外（框底 266），画在框内会被人物的脚压住。
+    ctx.fillText('穿上之后', 76, 282);
+
+    // 右栏：名称、品质、正反效果
     ctx.textAlign = 'left';
+    this.drawItemSymbol(id, 130, 130, 20);
     ctx.fillStyle = UI_PALETTE.ink;
-    ctx.font = `bold 13px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillText(this.fitText(item.name, 220), 86, 140);
+    ctx.font = `bold 12px ${UI_ARCHIVE_FONT_STACK}`;
+    this.wrapText(item.name, 128, 162, 196, 14, 2);
     ctx.fillStyle = '#7c705d';
     ctx.font = `9px ${UI_FONT_STACK}`;
-    ctx.fillText(`${'ⅠⅡⅢⅣⅤ'[item.quality - 1]} · ${item.qualityName}`, 86, 158);
+    ctx.fillText(`${'ⅠⅡⅢⅣⅤ'[item.quality - 1]} · ${item.qualityName}`, 128, 188);
+    ctx.fillStyle = '#3f6b52';
+    this.wrapText(`得到 · ${item.positive}`, 128, 206, 196, 12, 3);
+    ctx.fillStyle = '#8d3f4c';
+    this.wrapText(`留下 · ${item.negative}`, 128, 248, 196, 12, 3);
 
+    // 下栏：flavor 与机制说明占整幅宽度
+    drawStitchDivider(ctx, 34, 296, 292, 'horizontal', '#a49882', 5, 4);
+    ctx.textAlign = 'left';
     ctx.fillStyle = '#4a4038';
     ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText(item.flavor, 36, 190, 288, 14, 3);
-    ctx.fillStyle = '#3f6b52';
-    ctx.font = `9px ${UI_FONT_STACK}`;
-    this.wrapText(`得到 · ${item.positive}`, 36, 248, 288, 13, 2);
-    ctx.fillStyle = '#8d3f4c';
-    this.wrapText(`留下 · ${item.negative}`, 36, 288, 288, 13, 2);
+    this.wrapText(item.flavor, 34, 314, 292, 14, 3);
     ctx.fillStyle = '#6b6355';
-    this.wrapText(item.summary, 36, 330, 288, 13, 3);
+    ctx.font = `9px ${UI_FONT_STACK}`;
+    this.wrapText(item.summary, 34, 362, 292, 13, 3);
 
     this.drawBreathActionButton(
       DEV_DETAIL_TAKE_RECT,
