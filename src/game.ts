@@ -488,6 +488,8 @@ const XIAO_ZHANG_DECLINE_RECT = { x: 188, y: 394, width: 138, height: 54 } as co
 const RESULT_RESTART_RECT = { x: 70, y: 505, width: 220, height: 58 } as const;
 const RESULT_TAB_RECT = { x: 20, y: 98, width: 320, height: 28 } as const;
 const PAUSE_BUTTON_RECT = { x: 326, y: 6, width: 28, height: 39 } as const;
+/** 章节到点仍未打完时出现的跳关按钮；落在 HUD 行下方的右上角，不压住血条。 */
+const STAGE_SKIP_RECT = { x: 236, y: 52, width: 104, height: 26 } as const;
 const PAUSE_BUTTON_HIT_RECT = { x: 310, y: 0, width: 50, height: 52 } as const;
 const PAUSE_CONTINUE_RECT = { x: 130, y: 530, width: 204, height: 44 } as const;
 const PAUSE_END_RECT = { x: 152, y: 584, width: 160, height: 26 } as const;
@@ -1539,6 +1541,13 @@ export class ZheYiShenGame {
       }
       if (this.state === 'battle') {
         if (this.lampFinalStripTimer > 0) return;
+        // 必须排在摇杆之前：摇杆会接管 battle 里任何未被认领的按下。
+        if (this.stageWaitingForElite && pointInRect(p, STAGE_SKIP_RECT)) {
+          this.stageWaitingForElite = false;
+          this.say('这一章，先跳过去');
+          this.beginStageTransition();
+          return;
+        }
         if (this.lampReleaseReady) {
           if (this.lampReleaseTimer <= 0 && pointInRect(p, LAMP_RELEASE_RECT)) this.releaseFinalBreath();
           return;
@@ -3594,7 +3603,11 @@ export class ZheYiShenGame {
   }
 
   private livingStageElite(): EnemyUnit | undefined {
-    return this.enemies.find((enemy) => !enemy.dead && (enemy.elite || (enemy.boss && enemy.type !== 'lamp-keeper')));
+    // 湿鞋同样排除：它能被打死，但按设计是贯穿全章的追猎者，不是「这一场没打完」的对象；
+    // 算进来会让成年章永远达不到结算条件。
+    return this.enemies.find((enemy) => !enemy.dead
+      && enemy.type !== 'wet-shoes'
+      && (enemy.elite || (enemy.boss && enemy.type !== 'lamp-keeper')));
   }
 
   private advanceStage(): void {
@@ -4085,7 +4098,12 @@ export class ZheYiShenGame {
     }
 
     // 一关一 Boss：前置精英清掉后才出场；Boss 不死阶段不结算。
-    const minorEliteAlive = this.enemies.some((enemy) => !enemy.dead && enemy.elite && !enemy.boss);
+    // 大 Boss 要等小精英被解决才登场——但湿鞋是「追猎者」：它能被打死，只是有 4049 血，
+    // 按设计要跟着玩家跑一整章，实际上不可能赶在 Boss 登场时间之前被清掉。
+    // 把它算进这条门槛，成年章的电话 Boss 就永远不会生成。追猎者不参与门槛判定。
+    const minorEliteAlive = this.enemies.some(
+      (enemy) => !enemy.dead && enemy.elite && !enemy.boss && enemy.type !== 'wet-shoes',
+    );
     const chapterPreludeComplete = (
       this.encounterIndex !== 0
       || stage.bossType !== 'closet-dark'
@@ -4233,6 +4251,9 @@ export class ZheYiShenGame {
           this.playVoiceOnce('lamp-time-up');
         }
       }
+    } else if (this.stageBossDefeated && !this.livingStageElite() && !this.pendingDefeatRewards.length) {
+      // 章节由 Boss 之死结束，而不是由时钟。打完就走，不必再站着等倒计时跑完。
+      this.beginStageTransition();
     } else if (this.battleTime >= stage.duration) {
       const elite = this.livingStageElite();
       // 一关一 Boss 是硬约束：本章配了大 Boss 但前置台词还没走完时，章节时长到了也不能收场，
@@ -4247,8 +4268,17 @@ export class ZheYiShenGame {
             this.captionTime = 4.2;
             this.say('这件事不能靠跑过去');
           }
+          // 到点还没打完不再是死等：右上角亮出跳关按钮，由玩家决定要不要跳过。
+          this.say('右上角可以跳过这一章');
         }
-      } else this.beginStageTransition();
+      } else if (!stage.bossType) {
+        // 没有配大 Boss 的章节（暮年走终局流程）仍然按时钟收场。
+        this.beginStageTransition();
+      } else if (!this.stageWaitingForElite) {
+        // 配了 Boss 但到点时它还没登场：同样给出口，不要把玩家钉在原地。
+        this.stageWaitingForElite = true;
+        this.say('右上角可以跳过这一章');
+      }
     }
   }
 
@@ -13713,7 +13743,6 @@ export class ZheYiShenGame {
   private renderHud(): void {
     const ctx = this.ctx;
     const stage = STAGES[this.encounterIndex];
-    const remain = stage ? Math.max(0, stage.duration - this.battleTime) : 0;
     applyPixelDiscipline(ctx);
     const hudFill = this.highContrastHud ? 'rgba(8,8,11,.98)' : 'rgba(16,16,21,.88)';
     const hudStroke = this.highContrastHud ? '#aaa297' : '#4a4649';
@@ -13756,7 +13785,9 @@ export class ZheYiShenGame {
         ? '「到点了。」'
         : combo
           ? `《${combo}》`
-          : `${stage?.title || ''} · ${Math.ceil(remain)}`;
+          // 倒计时已取消：章节由「打死 Boss」结束，时钟只管小怪节奏与跳关按钮，
+          // 再显示一个归零后还在跑的数字只会误导玩家。
+          : `${stage?.title || ''}`;
       ctx.fillText(this.fitText(mid, 92), 190, 36);
     }
 
@@ -13780,6 +13811,10 @@ export class ZheYiShenGame {
     const interaction = this.actionState(PAUSE_BUTTON_HIT_RECT);
     ctx.translate(0, interaction.offset);
     const accent = this.highContrastHud || interaction.hovered ? UI_PALETTE.hospitalBlueGray : '#5b565b';
+    if (this.stageWaitingForElite) {
+      // 到点还没打完不再是死等：给一个明确的出口，由玩家决定跳不跳。
+      this.drawBreathActionButton(STAGE_SKIP_RECT, '跳过这一章', UI_PALETTE.raincoatYellow);
+    }
     drawCutCornerPanel(ctx, PAUSE_BUTTON_RECT.x, PAUSE_BUTTON_RECT.y, PAUSE_BUTTON_RECT.width, PAUSE_BUTTON_RECT.height, '#17181d', accent, 3, 1);
     ctx.fillStyle = accent;
     ctx.fillRect(PAUSE_BUTTON_RECT.x + 5, PAUSE_BUTTON_RECT.y + 7, 7, 1);
