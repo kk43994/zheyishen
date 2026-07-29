@@ -3,10 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
 <link rel="stylesheet" href="wiki-runtime-v1.css">
 <script>(function(){try{var t=localStorage.getItem('wiki-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <title>《这一身》百科 · 特效馆</title>
 <style>
+  @font-face{
+    font-family:"Fusion Bold Pixel";
+    src:url("assets/wiki/font/fusion-bold-pixel-12px-proportional-zh_hans.otf.woff2") format("woff2");
+    font-style:normal;font-weight:700;font-display:swap;
+  }
   :root{
     --paper:#D8D0C1; --paper-2:#AAA297;
     --ink:#17151A; --ink-2:#3E3A3D; --ink-3:#6E675B;
@@ -17,6 +23,8 @@
     --moon-face:#E8E1D3; --moon-halo:rgba(232,225,211,.10);
     --q1:#786F69; --q2:#71818A; --q3:#9F3548; --q4:#C6A44A; --q5:#E8E1D3;
     --positive:#779887; --warning:#B06961;
+    --prism-red:#E58A9B; --prism-gold:#E0BC68; --prism-green:#83B39B;
+    --prism-blue:#7FAFC0; --prism-violet:#B095C7;
     --desk:url("assets/desk-texture.png");
   }
   :root[data-theme="light"]{
@@ -27,6 +35,8 @@
     --moon-face:#E5DCC4; --moon-halo:rgba(110,103,91,.14);
     --q1:#7E7A6E; --q2:#5F7581; --q3:#9E3B33; --q4:#8A6E22; --q5:#8A2F3F;
     --positive:#5c7a63; --warning:#a1554d;
+    --prism-red:#A3334D; --prism-gold:#866719; --prism-green:#46725D;
+    --prism-blue:#3F7180; --prism-violet:#72517F;
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
@@ -52,6 +62,12 @@
   .chip.red{color:var(--oldred);border-color:var(--oldred)}
   .chip.gold{color:var(--rainyellow);border-color:var(--rainyellow)}
   .chip.blue{color:var(--wardblue);border-color:var(--wardblue)}
+  .threat-badge{display:inline-flex;align-items:center;min-height:24px;padding:2px 9px;border:1px solid currentColor;
+    border-radius:3px;font-size:11px;font-weight:800;letter-spacing:.12em;white-space:nowrap}
+  .threat-badge.ordinary{color:var(--wardblue)}
+  .threat-badge.mini{color:var(--rainyellow)}
+  .threat-badge.chapter{color:var(--oldred-soft)}
+  .threat-badge.final{color:var(--oldred);box-shadow:0 0 0 1px rgba(159,53,72,.2) inset}
   .dim{color:var(--fg-3)}
   .flavor{font-style:normal;color:var(--fg-2);border-left:3px solid var(--oldred);padding:2px 0 2px 12px;margin:10px 0;line-height:1.9}
   .lore{color:var(--fg-3);font-size:13px}
@@ -88,7 +104,111 @@
   .foot a{color:var(--fg-2)}
   .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px}
   .card-grid .bx{margin:0}
-  @media (max-width:640px){.bx{padding:16px}.item-row{flex-direction:row}.card-grid{grid-template-columns:1fr}}
+  .item-meta{display:flex;flex-wrap:wrap;align-items:center;gap:7px 8px;margin:0 0 10px}
+  .item-chip{
+    display:inline-flex;align-items:center;min-height:26px;padding:3px 9px;border:1px solid var(--line);
+    border-radius:3px;color:var(--fg-3);font-size:10px;font-weight:700;line-height:1.4;
+    letter-spacing:.12em;white-space:nowrap;
+  }
+  .item-tier{
+    --tier-color:var(--fg-2);padding-left:11px;color:var(--tier-color);
+    border-color:color-mix(in srgb,var(--tier-color) 52%,var(--line));
+    background:linear-gradient(90deg,color-mix(in srgb,var(--tier-color) 13%,transparent),transparent 86%);
+    box-shadow:inset 3px 0 0 var(--tier-color);
+    font-family:"Songti SC","STSong","Noto Serif CJK SC","SimSun",serif;font-size:11px;
+  }
+  .item-source::before{
+    content:"";width:4px;height:4px;margin-right:7px;background:currentColor;transform:rotate(45deg);opacity:.58;
+  }
+  .item-trait{
+    color:var(--wardblue);border-color:color-mix(in srgb,var(--wardblue) 58%,var(--line));
+    background:color-mix(in srgb,var(--wardblue) 8%,transparent);
+  }
+  .item-trait::before{content:"◆";margin-right:6px;font-size:7px;opacity:.75}
+  .item-combo{
+    position:relative;display:inline-flex;align-items:center;gap:9px;min-height:34px;padding:4px 14px 4px 8px;
+    color:var(--rainyellow);text-decoration:none;border:0;border-left:2px solid currentColor;border-radius:1px;
+    background:linear-gradient(90deg,color-mix(in srgb,var(--rainyellow) 13%,transparent),transparent 92%);
+    white-space:normal;line-height:1.45;transition:transform .18s ease,background-color .18s ease;
+  }
+  .item-combo::after{
+    content:"";position:absolute;right:3px;top:5px;width:4px;height:4px;
+    border-top:1px solid currentColor;border-right:1px solid currentColor;opacity:.5;
+  }
+  .item-combo:hover{
+    color:color-mix(in srgb,var(--rainyellow) 82%,white);
+    background:linear-gradient(90deg,color-mix(in srgb,var(--rainyellow) 20%,transparent),transparent 96%);
+    transform:translateY(-1px);
+  }
+  .item-combo-mark{
+    flex:none;display:grid;place-items:center;width:25px;height:25px;border:1px solid currentColor;
+    font-family:"Fusion Bold Pixel","CJK Symbols Fallback SC",sans-serif;font-size:11px;font-weight:700;
+    letter-spacing:0;line-height:1;box-shadow:2px 2px 0 color-mix(in srgb,var(--rainyellow) 20%,transparent);
+  }
+  .item-combo-title{
+    font-family:"Songti SC","STSong","Noto Serif CJK SC","SimSun",serif;
+    font-size:13px;font-weight:700;letter-spacing:.08em;
+    background:linear-gradient(180deg,
+      color-mix(in srgb,var(--rainyellow) 62%,white) 0%,var(--rainyellow) 58%,
+      color-mix(in srgb,var(--rainyellow) 74%,black) 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 1px 0 rgba(0,0,0,.5));
+  }
+  .item-combo-title::before{content:"《";margin-right:.05em;opacity:.62}
+  .item-combo-title::after{content:"》";margin-left:.05em;opacity:.62}
+  .combo-effect{
+    position:relative;margin:10px 0 0;padding:0;
+  }
+  .combo-effect::before{
+    content:"彩蛋特殊效果";display:block;margin-bottom:3px;color:var(--fg-3);
+    font:700 9px/1.4 ui-monospace,Menlo,monospace;letter-spacing:.2em;
+  }
+  .combo-effect-text{
+    display:block;color:transparent;
+    font-family:"Fusion Bold Pixel","CJK Symbols Fallback SC",sans-serif;
+    font-size:18px;font-weight:700;line-height:1.55;letter-spacing:.06em;
+    background:linear-gradient(90deg,
+      #ff365f 0%,#ffb82e 16.66%,#45e083 33.33%,#2bd8ff 50%,
+      #6170ff 66.66%,#d75cff 83.33%,#ff365f 100%);
+    background-size:420px 100%;background-repeat:repeat-x;background-position:0 50%;
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(1px 1px 0 rgba(8,8,12,.72));
+    animation:combo-rgb-full-flow 8s linear infinite;
+  }
+  @keyframes combo-rgb-full-flow{to{background-position:420px 50%}}
+  @media (prefers-reduced-motion:reduce){
+    .combo-effect-text{animation:none}
+  }
+  .chapter-toc{position:sticky;top:52px;z-index:4;padding:10px;background:color-mix(in srgb,var(--bg) 92%,transparent);
+    border:1px solid var(--line);border-radius:8px;backdrop-filter:blur(8px)}
+  .chapter{scroll-margin-top:118px;margin:46px 0 70px}
+  .chapter-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:end;
+    padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .chapter-no{margin:0;color:var(--oldred);font-size:12px;font-weight:800;letter-spacing:.24em}
+  .chapter-head h2{margin:2px 0 0;font-size:clamp(28px,5vw,42px);letter-spacing:.08em}
+  .chapter-head .route{margin:0;color:var(--fg-3);font-size:12px;letter-spacing:.12em;text-align:right}
+  .encounter-h{display:flex;align-items:center;gap:10px;margin:32px 0 12px;color:var(--fg-2);
+    font-size:14px;letter-spacing:.12em}
+  .encounter-h::after{content:"";height:1px;flex:1;background:var(--line)}
+  .environment{display:grid;grid-template-columns:minmax(120px,180px) minmax(0,1fr);gap:22px;align-items:center}
+  .environment-floor{width:100%;max-width:180px;image-rendering:pixelated;border:1px solid var(--line);border-radius:6px}
+  .environment .g{align-items:flex-start}
+  .enemy-card .item-row{align-items:flex-start}
+  .enemy-card .g{gap:8px}
+  .enemy-card figure.anim img{max-width:84px}
+  .phase-block{padding:12px 0;border-top:1px dashed var(--line)}
+  .phase-label{margin:0 0 8px;color:var(--rainyellow);font-size:12px;font-weight:800;letter-spacing:.12em}
+  .voice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px}
+  .finale{border:1px solid var(--oldred);border-radius:12px;padding:0 22px 22px;background:rgba(159,53,72,.04)}
+  @media (max-width:640px){
+    .bx{padding:16px}.item-row{flex-direction:row}.card-grid{grid-template-columns:1fr}
+    .item-meta{gap:6px}.item-combo{flex-basis:100%;width:max-content;max-width:100%}
+  }
+  @media (max-width:720px){
+    .chapter-toc{position:static}.chapter-head{grid-template-columns:1fr}.chapter-head .route{text-align:left}
+    .environment{grid-template-columns:1fr}.environment-floor{max-width:140px}.voice-grid{grid-template-columns:1fr}
+    .finale{padding:0 12px 12px}
+  }
 
   :root{--icon-sheet:url("../src/assets/items/icons.png")}
 </style>
@@ -96,8 +216,8 @@
 <body>
 
 <div class="topbar" id="wiki-topbar">
-  <a class="tb-mark serif" href="index.html">这一身<i>百科</i></a>
-  <nav class="tb-links" aria-label="图鉴分卷"><a href="index.html">正典</a><a href="boss.html">Boss志</a><a href="bestiary.html">敌怪志</a><a href="items.html">道具志</a><a href="voices.html">语音馆</a><a href="world.html">世界志</a><a href="vfx.html" class="on">特效馆</a></nav>
+  <a class="tb-mark serif" href="这一身百科.html">这一身<i>百科</i></a>
+  <nav class="tb-links" aria-label="图鉴分卷"><a href="这一身百科.html">正典</a><a href="chapters.html">章节志</a><a href="items.html">道具志</a><a href="voices.html">语音馆</a><a href="world.html">世界志</a><a href="vfx.html" class="on">特效馆</a></nav>
   <button class="tb-theme" id="wiki-theme-toggle" type="button" title="留灯 / 熄灯" aria-label="切换明暗主题">☾</button>
 </div>
 
@@ -113,7 +233,7 @@
 <div class="sect-h"><h2 class="serif">《一口气》弹体 · 飞行形态</h2><span class="cnt">21 种形态 · 4 帧 @10fps · 帧动画正典 v5</span></div><section class="bx"><p class="sub-h">凝实度四态 · 从无形雾到实心珠光</p><div class="g"><figure class="anim"><img src="assets/wiki/gif/projectile/breath0.gif" alt="凝实度 · 无形" loading="lazy"><figcaption>凝实度 · 无形</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/breath.gif" alt="一口气 · 月白雾团" loading="lazy"><figcaption>一口气 · 月白雾团</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/breath2.gif" alt="凝实度 · 凝实" loading="lazy"><figcaption>凝实度 · 凝实</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/breath3.gif" alt="凝实度 · 珠光" loading="lazy"><figcaption>凝实度 · 珠光</figcaption></figure></div><p class="sub-h">道具改写的弹体形态</p><div class="g"><figure class="anim"><img src="assets/wiki/gif/projectile/marble.gif" alt="弹珠" loading="lazy"><figcaption>弹珠</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/key.gif" alt="钥匙" loading="lazy"><figcaption>钥匙</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/slash.gif" alt="劈砍" loading="lazy"><figcaption>劈砍</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/rain.gif" alt="雨点" loading="lazy"><figcaption>雨点</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/tear.gif" alt="泪滴" loading="lazy"><figcaption>泪滴</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/ice.gif" alt="冰晶" loading="lazy"><figcaption>冰晶</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/laugh.gif" alt="哈字" loading="lazy"><figcaption>哈字</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/serial.gif" alt="制式弹" loading="lazy"><figcaption>制式弹</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/paper.gif" alt="纸页" loading="lazy"><figcaption>纸页</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/razor.gif" alt="修眉刀" loading="lazy"><figcaption>修眉刀</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/lens.gif" alt="镜片" loading="lazy"><figcaption>镜片</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/sound.gif" alt="声波" loading="lazy"><figcaption>声波</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/link.gif" alt="链接" loading="lazy"><figcaption>链接</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/button.gif" alt="纽扣" loading="lazy"><figcaption>纽扣</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/stone.gif" alt="石子" loading="lazy"><figcaption>石子</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/cone.gif" alt="呵气雾锥" loading="lazy"><figcaption>呵气雾锥</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/projectile/stamp.gif" alt="印章" loading="lazy"><figcaption>印章</figcaption></figure></div><p class="dim" style="font-size:12.5px;margin:12px 0 0">在线逐帧审阅页：<a href="review-projectiles.html" style="color:var(--rainyellow)">弹体审阅 · 21 卡循环</a></p></section><div class="sect-h"><h2 class="serif">命中与消散 · 十一种材质</h2><span class="cnt">敌怪材质决定命中反馈 · v2 全生图化</span></div><section class="bx"><div class="g"><figure class="anim"><img src="assets/wiki/gif/hit/mist.gif" alt="雾" loading="lazy"><figcaption>雾</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/water.gif" alt="水" loading="lazy"><figcaption>水</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/crit.gif" alt="暴击" loading="lazy"><figcaption>暴击</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/paper.gif" alt="纸" loading="lazy"><figcaption>纸</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/wood.gif" alt="木" loading="lazy"><figcaption>木</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/stone.gif" alt="石" loading="lazy"><figcaption>石</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/metal.gif" alt="金属" loading="lazy"><figcaption>金属</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/ice.gif" alt="冰" loading="lazy"><figcaption>冰</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/signal.gif" alt="信号" loading="lazy"><figcaption>信号</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/key.gif" alt="钥匙" loading="lazy"><figcaption>钥匙</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hit/glass.gif" alt="玻璃" loading="lazy"><figcaption>玻璃</figcaption></figure></div></section><div class="sect-h"><h2 class="serif">成双协同 · 状态标记</h2><span class="cnt">协同首触发 say「成双·…」一局一次 · 状态图标挂在敌怪头顶</span></div><section class="bx"><div class="g"><figure class="anim"><img src="assets/wiki/img/synergy-ice.png" alt="成双 · 湿×冰 冻结增强" loading="lazy"><figcaption>成双 · 湿×冰 冻结增强</figcaption></figure><figure class="anim"><img src="assets/wiki/img/synergy-crack.png" alt="成双 · 锋利×骨节 旧伤" loading="lazy"><figcaption>成双 · 锋利×骨节 旧伤</figcaption></figure><figure class="anim"><img src="assets/wiki/img/synergy-collapse.png" alt="成双 · 重×爆炸 塌陷" loading="lazy"><figcaption>成双 · 重×爆炸 塌陷</figcaption></figure><figure class="anim"><img src="assets/wiki/img/synergy-arc.png" alt="成双 · 水×信号 麻痹" loading="lazy"><figcaption>成双 · 水×信号 麻痹</figcaption></figure></div><div class="g" style="margin-top:16px"><figure class="anim"><img src="assets/wiki/img/status-freeze.png" alt="冻结" loading="lazy"><figcaption>冻结</figcaption></figure><figure class="anim"><img src="assets/wiki/img/status-paralyze.png" alt="麻痹" loading="lazy"><figcaption>麻痹</figcaption></figure><figure class="anim"><img src="assets/wiki/img/status-read.png" alt="已读挂账" loading="lazy"><figcaption>已读挂账</figcaption></figure><figure class="anim"><img src="assets/wiki/img/status-loop.png" alt="单曲循环" loading="lazy"><figcaption>单曲循环</figcaption></figure><figure class="anim"><img src="assets/wiki/img/status-wet.png" alt="潮湿" loading="lazy"><figcaption>潮湿</figcaption></figure><figure class="anim"><img src="assets/wiki/img/status-raw.png" alt="旧伤" loading="lazy"><figcaption>旧伤</figcaption></figure><figure class="anim"><img src="assets/wiki/img/status-heavy.png" alt="沉重" loading="lazy"><figcaption>沉重</figcaption></figure><figure class="anim"><img src="assets/wiki/img/status-control-fatigue.png" alt="操控疲劳" loading="lazy"><figcaption>操控疲劳</figcaption></figure></div></section>
 </main>
 
-<div class="foot">这一身 · 百科图鉴 · 全部素材直接取自游戏运行时资源 · <a href="index.html">返回故事线正典</a></div>
+<div class="foot">这一身 · 百科图鉴 · 全部素材直接取自游戏运行时资源 · <a href="这一身百科.html">返回故事线正典</a></div>
 <script>
 (function(){
   'use strict';

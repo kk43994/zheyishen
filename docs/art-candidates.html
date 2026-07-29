@@ -52,7 +52,7 @@
   @media (max-width:900px){.cols{grid-template-columns:minmax(0,1fr)}}
 
   /* ── 卷首 ── */
-  header.hero{position:relative;overflow:hidden;padding:96px 0 72px;text-align:center}
+  header.hero{position:relative;overflow:hidden;padding:64px 0 34px;text-align:center}
   .moonwrap{position:absolute;inset:0;display:flex;justify-content:center;pointer-events:none}
   .moon{
     width:420px;height:420px;border-radius:50%;margin-top:-60px;
@@ -75,10 +75,56 @@
     .flip .g{animation:none;opacity:0}
     .flip .s{animation:none;opacity:1}
   }
-  .tagline{margin:30px auto 8px;font-size:clamp(18px,3vw,24px);color:var(--fg-2);letter-spacing:.12em}
+  .tagline{margin:22px auto 8px;font-size:clamp(18px,3vw,24px);color:var(--fg-2);letter-spacing:.12em}
   .tagline2{font-size:14px;color:var(--fg-3);letter-spacing:.2em}
-  .meta-line{margin-top:44px;font-size:12px;color:var(--fg-3);letter-spacing:.15em}
+  .meta-line{margin-top:26px;font-size:12px;color:var(--fg-3);letter-spacing:.15em}
   .meta-line b{color:var(--fg-2);font-weight:600}
+  .judge-glance{
+    max-width:1040px;margin:30px auto 0;padding:18px 20px 16px;text-align:left;
+    border:1px solid var(--line);border-top:2px solid var(--oldred);border-radius:8px;
+    background:linear-gradient(135deg,color-mix(in srgb,var(--oldred) 8%,var(--card)),var(--card));
+    box-shadow:0 18px 54px rgba(0,0,0,.18);
+  }
+  .judge-head{display:flex;align-items:baseline;gap:14px;margin-bottom:14px}
+  .judge-kicker{
+    flex:none;color:var(--oldred);font:800 10px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.18em;text-transform:uppercase;
+  }
+  .judge-thesis{margin:0;max-width:none;font-size:15px;line-height:1.65;color:var(--fg-2)}
+  .judge-thesis b{color:var(--fg)}
+  .judge-ideas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .judge-idea{padding:12px 13px;border:1px solid var(--line);border-radius:5px;background:color-mix(in srgb,var(--bg) 55%,transparent)}
+  .judge-idea span{display:block;margin-bottom:5px;color:var(--oldred);font:700 10px/1.2 ui-monospace,Menlo,monospace;letter-spacing:.12em}
+  .judge-idea b{display:block;margin-bottom:4px;font-size:14px}
+  .judge-idea p{margin:0;max-width:none;color:var(--fg-3);font-size:11.5px;line-height:1.55}
+  .judge-proof{
+    display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;margin-top:10px;
+    overflow:hidden;border:1px solid var(--line);border-radius:5px;background:var(--line);
+  }
+  .judge-proof a{
+    display:block;padding:9px 5px 8px;text-align:center;text-decoration:none;color:inherit;background:var(--card);
+  }
+  .judge-proof a:hover{background:color-mix(in srgb,var(--oldred) 10%,var(--card))}
+  .judge-proof b{display:block;color:var(--moon);font-size:17px;line-height:1.05;font-variant-numeric:tabular-nums}
+  .judge-proof span{display:block;margin-top:4px;color:var(--fg-3);font-size:9.5px;line-height:1.3;letter-spacing:.03em}
+  header.hero .cover-card{top:18%;width:112px}
+  @media(max-width:900px){
+    header.hero{padding:54px 0 28px}
+    .judge-ideas{grid-template-columns:1fr}
+    .judge-proof{grid-template-columns:repeat(4,minmax(0,1fr))}
+  }
+  @media(max-width:560px){
+    header.hero{padding:40px 0 22px}
+    .eyebrow{letter-spacing:.24em;text-indent:.24em;margin-bottom:18px}
+    .tagline{margin-top:16px}
+    .tagline2{letter-spacing:.1em}
+    .meta-line{margin-top:20px;line-height:2}
+    .judge-glance{margin-top:22px;padding:15px 13px 13px}
+    .judge-head{display:block}
+    .judge-kicker{margin-bottom:7px}
+    .judge-thesis{font-size:14px}
+    .judge-proof{grid-template-columns:repeat(3,minmax(0,1fr))}
+  }
 
   /* ── 目录轨 ── */
   nav.rail{position:sticky;top:24px;align-self:start;font-size:13px}
@@ -348,26 +394,48 @@
   .items>.item[data-rpc]{position:relative}
   .items>.item[data-rpc]:hover::after{opacity:.8}
   .items>.item[data-rpc]:focus-visible{outline:2px solid var(--rainyellow);outline-offset:2px}
-  .rpc-overlay{position:fixed;inset:0;background:rgba(18,14,10,.55);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px}
+  .rpc-overlay{position:fixed;inset:0;background:rgba(9,8,8,.72);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px;backdrop-filter:blur(8px)}
   .rpc-overlay.open{display:flex}
-  .rpc-modal{background:var(--card);border:1px solid var(--line);border-radius:6px;max-width:640px;width:100%;max-height:86vh;overflow:auto;box-shadow:0 24px 64px rgba(0,0,0,.4);position:relative}
-  .rpc-head{padding:22px 24px 15px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card);z-index:1}
+  .rpc-modal{
+    background:
+      linear-gradient(90deg,transparent 0 18px,color-mix(in srgb,var(--oldred) 22%,transparent) 18px 19px,transparent 19px),
+      linear-gradient(145deg,color-mix(in srgb,var(--card) 94%,#fff),var(--card));
+    border:1px solid color-mix(in srgb,var(--rainyellow) 34%,var(--line));border-radius:3px;max-width:700px;width:100%;max-height:88vh;
+    overflow:auto;box-shadow:0 30px 100px rgba(0,0,0,.58),0 0 0 5px rgba(0,0,0,.16);position:relative;
+  }
+  .rpc-modal::before{content:"物 证 档 案";position:absolute;right:20px;bottom:12px;color:var(--oldred);font:800 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.35em;opacity:.22;pointer-events:none}
+  .rpc-head{padding:24px 28px 17px 34px;border-bottom:1px solid var(--line);position:sticky;top:0;background:color-mix(in srgb,var(--card) 96%,transparent);backdrop-filter:blur(14px);z-index:1}
+  .rpc-head-main{display:grid;grid-template-columns:72px minmax(0,1fr);gap:16px;align-items:center}
+  .rpc-icon-wrap{display:grid;place-items:center;width:70px;height:70px;border:1px solid color-mix(in srgb,var(--rainyellow) 42%,var(--line));background:#111014;box-shadow:inset 0 0 0 4px rgba(255,255,255,.018),0 8px 22px rgba(0,0,0,.24)}
+  .wiki-item-icon{display:block;width:54px;height:54px;background-image:url("assets/icons.png");background-repeat:no-repeat;background-position:calc(var(--icon-col) * -54px) calc(var(--icon-row) * -54px);background-size:432px 540px;image-rendering:pixelated}
   .rpc-room{display:inline-block;font-size:12px;font-weight:600;padding:3px 12px;border-radius:999px;margin-bottom:9px}
   .rpc-room[data-room="回忆祭坛"]{background:rgba(120,120,132,.16);color:var(--fg)}
   .rpc-room[data-room="留灯间"]{background:var(--rainyellow-soft,rgba(196,150,46,.18));color:var(--rainyellow)}
   .rpc-room[data-room="里屋"]{background:var(--oldred-soft);color:var(--oldred)}
-  .rpc-title{font-family:var(--serif,"Songti SC",serif);font-size:22px;font-weight:600;line-height:1.2}
+  .rpc-title{font-family:var(--serif,"Songti SC",serif);font-size:24px;font-weight:800;line-height:1.24;letter-spacing:.03em}
+  .rpc-summary{margin-top:7px;color:var(--fg-3);font-family:"Songti SC","STSong",serif;font-size:13px;line-height:1.55}
   .rpc-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px;align-items:center}
   .rpc-tag{font-size:12px;color:var(--fg);opacity:.85;border:1px solid var(--line);border-radius:6px;padding:2px 9px}
   .rpc-tag.stat{color:var(--rainyellow);border-color:var(--rainyellow);opacity:1}
   .rpc-layer{font-size:11px;font-family:ui-monospace,Menlo,monospace;opacity:.55;border:1px dashed var(--line);border-radius:5px;padding:1px 7px}
-  .rpc-body{padding:16px 24px 24px}
+  .rpc-body{padding:18px 28px 30px 34px}
+  .rpc-manifestation{margin:0 0 10px;padding:9px;border:1px solid var(--line);background:#101014;overflow:hidden}
+  .rpc-manifestation-image{display:block;width:100%;height:auto;image-rendering:pixelated}
+  .rpc-manifestation figcaption{padding:7px 3px 1px;color:var(--fg-3);font:700 9px/1.4 ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase}
   .rpc-field{padding:11px 0;border-bottom:1px solid var(--line)}
   .rpc-field:last-child{border-bottom:0}
   .rpc-k{font-size:12px;letter-spacing:.14em;opacity:.5;margin-bottom:4px}
   .rpc-v{font-size:14.5px;line-height:1.62;color:var(--fg)}
   .rpc-close{position:absolute;top:15px;right:18px;background:none;border:0;font-size:26px;line-height:1;color:var(--fg);opacity:.45;cursor:pointer;z-index:2}
   .rpc-close:hover{opacity:1}
+  body.wiki-dialog-open{overflow:hidden}
+  @media(max-width:600px){
+    .rpc-overlay{padding:8px}.rpc-modal{max-height:94vh}
+    .rpc-head{padding:20px 22px 14px}.rpc-body{padding:14px 22px 24px}
+    .rpc-head-main{grid-template-columns:58px minmax(0,1fr);gap:12px}
+    .rpc-icon-wrap{width:56px;height:56px}.wiki-item-icon{width:44px;height:44px;background-position:calc(var(--icon-col) * -44px) calc(var(--icon-row) * -44px);background-size:352px 440px}
+    .rpc-title{font-size:19px}.rpc-summary{font-size:12px}
+  }
   .quick-read{border:1px solid var(--line);border-left:3px solid var(--red);padding:22px 24px;background:linear-gradient(135deg,var(--card),transparent)}
   .quick-read .one-line{font-size:20px;line-height:1.65;margin:0 0 18px}
   .core-loop{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:18px 0}
@@ -391,6 +459,90 @@
   .pitch-card li{font-size:13px;line-height:1.65;margin:5px 0}
   .pitch-kicker{display:block;color:var(--red);font:700 11px/1.2 ui-monospace,Menlo,monospace;letter-spacing:.13em}
   .boundary{margin-top:12px;padding-top:11px;border-top:1px dashed var(--line);color:var(--dim);font-size:12px!important}
+  .ai-native-overview{
+    margin:18px 0 22px;padding:10px;border:1px solid var(--line);border-radius:10px;
+    background:#0d0d11;box-shadow:0 18px 50px rgba(0,0,0,.18);
+  }
+  .ai-native-overview img{display:block;width:100%;height:auto;border-radius:5px}
+  .ai-native-overview figcaption{padding:9px 6px 2px;color:var(--fg-3);font-size:11.5px;line-height:1.55;text-align:center}
+  .ai-cabinet{margin:0 0 28px}
+  .ai-cabinet-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:12px}
+  .ai-cabinet-head h4{margin:0;font-size:19px;letter-spacing:.05em}
+  .ai-cabinet-head p{margin:0;max-width:620px;color:var(--fg-3);font-size:12px;line-height:1.6;text-align:right}
+  .ai-drawers{display:grid;gap:7px;padding:10px;border:1px solid var(--line);border-radius:9px;background:color-mix(in srgb,var(--bg) 82%,black)}
+  .ai-drawer{
+    --drawer-accent:var(--wardblue);position:relative;border:1px solid var(--line);border-left:3px solid var(--drawer-accent);
+    border-radius:4px;background:var(--card);overflow:hidden;transition:transform .28s cubic-bezier(.2,.8,.2,1),border-color .2s,box-shadow .2s;
+  }
+  .ai-drawer.featured{--drawer-accent:var(--rainyellow)}
+  .ai-drawer.spoken{--drawer-accent:var(--oldred-soft)}
+  .ai-drawer.is-open{transform:translateX(7px);border-color:color-mix(in srgb,var(--drawer-accent) 56%,var(--line));box-shadow:-7px 7px 24px rgba(0,0,0,.2)}
+  .ai-drawer-toggle{
+    position:relative;display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:12px;
+    width:100%;min-height:62px;padding:10px 17px 10px 12px;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer;
+  }
+  .ai-drawer-toggle::after{
+    content:"";width:28px;height:7px;border:1px solid color-mix(in srgb,var(--drawer-accent) 60%,var(--line));
+    border-radius:99px;background:color-mix(in srgb,var(--drawer-accent) 14%,var(--card));box-shadow:inset 0 1px 2px rgba(0,0,0,.5);
+    transition:transform .28s cubic-bezier(.2,.8,.2,1),background-color .2s;
+  }
+  .ai-drawer.is-open .ai-drawer-toggle::after{transform:translateX(5px);background:color-mix(in srgb,var(--drawer-accent) 30%,var(--card))}
+  .ai-drawer-no{
+    display:grid;place-items:center;width:38px;height:38px;border:1px solid color-mix(in srgb,var(--drawer-accent) 58%,var(--line));
+    color:var(--drawer-accent);font:800 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;
+  }
+  .ai-drawer-title b{display:block;font-family:"Songti SC","STSong",serif;font-size:16px;letter-spacing:.06em}
+  .ai-drawer-title small{display:block;margin-top:3px;color:var(--fg-3);font-size:11px;line-height:1.45}
+  .ai-drawer-kicker{
+    color:var(--drawer-accent);font:800 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.15em;white-space:nowrap;
+  }
+  .ai-drawer-panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .34s cubic-bezier(.2,.8,.2,1)}
+  .ai-drawer.is-open .ai-drawer-panel{grid-template-rows:1fr}
+  .ai-drawer-inner{min-height:0;overflow:hidden}
+  .ai-drawer-content{padding:4px 16px 18px 66px}
+  .ai-drawer-content>p{margin:0 0 12px;max-width:none;color:var(--fg-2);font-size:13px;line-height:1.7}
+  .ai-inputs,.ai-decisions,.ai-spoken-flow,.ai-memory-flow{display:flex;flex-wrap:wrap;gap:7px}
+  .ai-inputs span,.ai-memory-flow span{
+    padding:4px 9px;border:1px solid var(--line);border-radius:3px;color:var(--fg-3);font-size:10.5px;letter-spacing:.05em;
+  }
+  .ai-origin-chain{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:10px 0}
+  .ai-origin-step{position:relative;padding:11px 10px;border:1px solid color-mix(in srgb,var(--wardblue) 46%,var(--line));background:linear-gradient(145deg,color-mix(in srgb,var(--wardblue) 8%,var(--card)),var(--card))}
+  .ai-origin-step:not(:last-child)::after{content:"→";position:absolute;right:-8px;top:50%;z-index:2;transform:translateY(-50%);color:var(--wardblue);font-weight:900}
+  .ai-origin-step b{display:block;color:var(--wardblue);font-size:11.5px;margin-bottom:4px}
+  .ai-origin-step span{display:block;color:var(--fg-3);font-size:10.5px;line-height:1.5}
+  .ai-origin-examples{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+  .ai-origin-example{padding:10px 11px;border:1px dashed var(--line);color:var(--fg-2);font-size:11px;line-height:1.55}
+  .ai-origin-example b{color:var(--fg);font-family:"Songti SC","STSong",serif;font-size:12.5px}
+  .ai-origin-example em{color:var(--rainyellow);font-style:normal;font-weight:800}
+  .ai-decisions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+  .ai-decision{
+    position:relative;padding:13px 11px;border:1px solid color-mix(in srgb,var(--rainyellow) 48%,var(--line));
+    border-radius:5px;background:linear-gradient(145deg,color-mix(in srgb,var(--rainyellow) 10%,var(--card)),var(--card));
+    opacity:0;transform:translateY(7px);transition:opacity .25s ease,transform .25s ease;
+  }
+  .ai-drawer.is-open .ai-decision{opacity:1;transform:none;transition-delay:calc(var(--i) * 65ms)}
+  .ai-decision b{display:block;color:var(--rainyellow);font-size:12px;margin-bottom:4px}
+  .ai-decision span{display:block;color:var(--fg-3);font-size:10.5px;line-height:1.5}
+  .ai-judge-line{
+    margin-top:10px;padding:8px 11px;border-left:2px solid var(--oldred);background:color-mix(in srgb,var(--oldred) 6%,transparent);
+    color:var(--fg-2);font-size:11.5px;line-height:1.55;
+  }
+  .ai-spoken-flow{align-items:stretch}
+  .ai-spoken-step{
+    flex:1 1 150px;position:relative;padding:11px;border:1px solid var(--line);border-radius:5px;background:var(--bg);
+  }
+  .ai-spoken-step:not(:last-child)::after{
+    content:"→";position:absolute;right:-8px;top:50%;z-index:2;transform:translateY(-50%);color:var(--oldred-soft);font-weight:900;
+  }
+  .ai-spoken-step b{display:block;color:var(--oldred-soft);font-size:11.5px;margin-bottom:4px}
+  .ai-spoken-step span{display:block;color:var(--fg-3);font-size:10.5px;line-height:1.5}
+  .ai-spoken-quote{
+    margin-top:10px;padding:11px 13px;border:1px dashed color-mix(in srgb,var(--oldred-soft) 60%,var(--line));
+    color:var(--fg-2);font-family:"Songti SC","STSong",serif;font-size:13px;line-height:1.7;
+  }
+  .ai-tech-proof{margin-top:9px;border:1px solid var(--line);border-radius:6px;background:var(--card)}
+  .ai-tech-proof summary{padding:11px 14px;cursor:pointer;color:var(--fg-2);font-size:11.5px;font-weight:700;letter-spacing:.08em}
+  .ai-tech-proof div{padding:0 14px 13px;color:var(--fg-3);font-size:11.5px;line-height:1.65}
   .theme-card{margin:18px 0;border:1px solid color-mix(in srgb,var(--red) 55%,var(--line));border-radius:9px;padding:24px;background:linear-gradient(145deg,color-mix(in srgb,var(--red) 9%,var(--card)),var(--card))}
   .theme-card blockquote{margin:12px 0 20px;padding:0;border:0;font-size:25px;line-height:1.55;color:var(--fg)}
   .theme-path{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -409,6 +561,18 @@
     .pitch-grid{grid-template-columns:1fr}
     .theme-path{grid-template-columns:1fr}
     .quick-read{padding:18px}
+  }
+  @media(max-width:760px){
+    .ai-cabinet-head{display:block}.ai-cabinet-head p{margin-top:5px;text-align:left}
+    .ai-drawer-toggle{grid-template-columns:38px minmax(0,1fr) auto;padding-right:12px}
+    .ai-drawer-kicker{display:none}.ai-drawer-content{padding:4px 12px 16px}
+    .ai-decisions{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .ai-origin-chain{grid-template-columns:1fr 1fr}.ai-origin-step:nth-child(2)::after{display:none}
+    .ai-origin-examples{grid-template-columns:1fr}
+    .ai-drawer.is-open{transform:translateX(3px)}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .ai-drawer,.ai-drawer-toggle::after,.ai-drawer-panel,.ai-decision{transition:none!important}
   }
 
   /* ── 条目开头 · wiki 体（2026-07-29 重做，替掉「五个问题看懂」路演版）── */
@@ -434,7 +598,7 @@
 
   /* 六章一生 */
   .lifeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px;margin:16px 0 4px}
-  .life-ch{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card);display:flex;flex-direction:column}
+  .life-ch{display:flex;flex-direction:column;color:inherit;text-decoration:none;position:relative;border:1px solid var(--line);transition:border-color .16s,transform .16s;border-radius:8px;overflow:hidden;background:var(--card);display:flex;flex-direction:column}
   .life-ch .ground{position:absolute;inset:0;background-size:56px 56px;background-repeat:repeat;image-rendering:pixelated;opacity:.55;filter:brightness(2.7) contrast(1.05);pointer-events:none}
   .life-ch .body{position:relative;z-index:1;padding:13px 12px 13px;display:flex;flex-direction:column;gap:7px;flex:1}
   .life-ch .age{color:var(--oldred);font:700 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em}
@@ -443,6 +607,7 @@
   .life-ch .boss{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;border-top:1px dashed var(--line);padding-top:11px}
   .life-ch .boss img{width:56px;height:56px;image-rendering:pixelated;flex:none}
   .life-ch .boss span{font-size:11.5px;color:var(--fg-3);line-height:1.45}
+  .life-ch:hover{border-color:var(--oldred);transform:translateY(-2px)}
   .life-ch .boss i{display:block;font-style:normal;font-size:10px;letter-spacing:.1em;opacity:.72;margin-bottom:2px}
 
   /* 一口气形态条：同一发攻击被经历改写成的样子 */
@@ -488,19 +653,24 @@
   .wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:5px;margin:8px 0 4px}
   .wall.wall-lg{grid-template-columns:repeat(auto-fill,minmax(54px,1fr))}
   .wall img{width:100%;height:auto;aspect-ratio:1;object-fit:contain;image-rendering:pixelated;background:color-mix(in srgb,var(--card) 80%,#000);border:1px solid var(--line);border-radius:4px;transition:transform .14s,border-color .14s}
-  .wall img:hover{transform:scale(1.55);border-color:var(--oldred);position:relative;z-index:3}
+  .wall img:hover{transform:scale(2.6);border-color:var(--oldred);position:relative;z-index:5;box-shadow:0 6px 24px rgba(0,0,0,.55)}
   .strip-h a{color:inherit;text-decoration:none;border-bottom:1px solid var(--oldred)}
   .strip-h a:hover{color:var(--oldred)}
 
   .wall.wall-icon{grid-template-columns:repeat(auto-fill,minmax(42px,1fr))}
   .wall .ic{display:block;width:100%;aspect-ratio:1;background-image:url("assets/icons.png");background-repeat:no-repeat;background-position:var(--x) var(--y);background-size:288px 360px;image-rendering:pixelated;border:1px solid var(--line);border-radius:4px;transition:transform .14s,border-color .14s}
-  .wall .ic:hover{transform:scale(1.7);border-color:var(--oldred);z-index:3;position:relative}
+  .wall .ic:hover{transform:scale(2.8);border-color:var(--oldred);z-index:5;position:relative;box-shadow:0 6px 24px rgba(0,0,0,.55)}
+  .wall .ic[data-rpc]{cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.018)}
+  .wall .ic[data-rpc]:focus-visible{outline:2px solid var(--rainyellow);outline-offset:3px;transform:scale(1.35);position:relative;z-index:3}
+  .wall-icon-hint{display:flex;align-items:center;gap:8px;margin:7px 0 10px;color:var(--rainyellow);font:800 10px/1.4 ui-monospace,Menlo,monospace;letter-spacing:.12em}
+  .wall-icon-hint::before{content:"↗";display:grid;place-items:center;width:21px;height:21px;border:1px solid currentColor;border-radius:50%}
   .wall .ic.q2{border-color:color-mix(in srgb,var(--q2) 55%,var(--line))}
   .wall .ic.q3{border-color:color-mix(in srgb,var(--q3) 55%,var(--line))}
   .wall .ic.q4{border-color:color-mix(in srgb,var(--q4) 55%,var(--line))}
   .wall .ic.q5{border-color:color-mix(in srgb,var(--q5) 60%,var(--line))}
-  .wall.wall-man{grid-template-columns:repeat(auto-fill,minmax(108px,1fr))}
-  .wall.wall-man img{aspect-ratio:480/250;object-fit:cover}
+  .wall.wall-man{grid-template-columns:repeat(auto-fill,minmax(58px,1fr))}
+  .wall.wall-man img{aspect-ratio:120/250;object-fit:cover;object-position:left center}
+  .wall.wall-man img:hover{transform:scale(2.2)}
 
   /* 实机屏幕：竖屏 360×640，密排不占大屏 */
   .screens{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;margin:10px 0 6px}
@@ -515,15 +685,38 @@
     .side-shot{float:none;width:auto;max-width:320px;margin:14px auto}
     .screens{grid-template-columns:repeat(auto-fill,minmax(108px,1fr))}
   }
+
+  .wall.wall-anim{grid-template-columns:repeat(auto-fill,minmax(52px,1fr))}
+  .wall.wall-anim.wall-lg{grid-template-columns:repeat(auto-fill,minmax(64px,1fr))}
+  .wall.wall-anim img{background:#0d0d11}
+
+  .wall.wall-gen{grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:3px}
+  .wall.wall-gen img{border-radius:2px;opacity:.86}
+  .wall.wall-gen img:hover{opacity:1;transform:scale(4);image-rendering:auto}
 </style>
 </head>
 <body>
-<div class="topbar" id="wiki-topbar"><a class="tb-mark serif" href="index.html">这一身<i>百科</i></a><nav class="tb-links" aria-label="快捷卷目"><a href="index.html">回百科</a></nav></div>
+<div class="topbar" id="wiki-topbar"><a class="tb-mark serif" href="这一身百科.html">这一身<i>百科</i></a><nav class="tb-links" aria-label="快捷卷目"><a href="这一身百科.html">回百科</a></nav></div>
 <main class="wrap">
 <section class="entry" id="candidates">
 <p class="vol">生产档案</p>
 <h2 class="serif">美术候选与实机校验</h2>
 <p class="lede">这一页收的是<b>尚未写入 <code>src/assets</code></b> 的候选稿与同屏比例复核图，不是现役资源；现役美术已经分散在百科各卷对应的位置。</p>
+<div class="stage-h"><h3>道具与主角体现 · 七十七件</h3><span class="cnt">77/77 有运行态消费者 · 四方向 × 常态/动作/触发态审查</span></div>
+<p class="lede">下列图片来自同一份运行时审查页。每张卡左侧的小图只作为道具身份参考；右侧四方向与动作格才是主角实际显示。只在触发瞬间出现的道具会明确标成触发态，常态不强行悬挂无关物件。</p>
+<figure style="margin:16px 0;text-align:center"><img src="assets/wiki/inline/items-01-12-a9c4e99867.png" alt="道具 01-12" loading="lazy" width="1392" height="1720" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">道具 01-12 · 实机审查页</figcaption></figure>
+<figure style="margin:16px 0;text-align:center"><img src="assets/wiki/inline/items-13-24-c2c44815e9.png" alt="道具 13-24" loading="lazy" width="1392" height="1720" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">道具 13-24 · 实机审查页</figcaption></figure>
+<figure style="margin:16px 0;text-align:center"><img src="assets/wiki/inline/items-25-36-3e295e53d1.png" alt="道具 25-36" loading="lazy" width="1392" height="1720" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">道具 25-36 · 实机审查页</figcaption></figure>
+<figure style="margin:16px 0;text-align:center"><img src="assets/wiki/inline/items-37-48-da9183ef38.png" alt="道具 37-48" loading="lazy" width="1392" height="1720" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">道具 37-48 · 实机审查页</figcaption></figure>
+<figure style="margin:16px 0;text-align:center"><img src="assets/wiki/inline/items-49-60-26c6e77295.png" alt="道具 49-60" loading="lazy" width="1392" height="1720" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">道具 49-60 · 实机审查页</figcaption></figure>
+<figure style="margin:16px 0;text-align:center"><img src="assets/wiki/inline/items-61-72-a67d4c5f6b.png" alt="道具 61-72" loading="lazy" width="1392" height="1720" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">道具 61-72 · 实机审查页</figcaption></figure>
+<figure style="margin:16px 0;text-align:center"><img src="assets/wiki/inline/items-73-77-9f7cc2065d.png" alt="道具 73-77" loading="lazy" width="1440" height="920" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">道具 73-77 · 实机审查页</figcaption></figure>
+<h4 style="margin:24px 0 8px">本轮高优先级修正</h4>
+<figure style="margin:16px 0;text-align:center"><img src="assets/wiki/inline/broken-spine-card-warp-s-d77beceabd.png" alt="22 断掉的脊梁骨 · 已锁定" loading="lazy" width="456" height="422" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px"><b>22 断掉的脊梁骨 · 已锁定</b><br>整个人驼背前倾，旧伤贴着后背；没有外挂骨头、额外横杠或第三肢体。</figcaption></figure>
+<figure style="margin:16px 0;text-align:center"><img src="assets/wiki/inline/momo-avatar-card-v2.1-3ab601fd9d.png" alt="60 momo的头像 · 小恐龙头套" loading="lazy" width="456" height="422" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px"><b>60 momo的头像 · 小恐龙头套</b><br>主角直接戴圆头粉色小恐龙头套；身体、衣服和四肢保持原样。</figcaption></figure>
+<figure style="margin:16px 0;text-align:center"><img src="assets/wiki/inline/eye-exercise-card-v1-d846ccf3a2.png" alt="67 眼保健操 · 轮刮眼眶触发态" loading="lazy" width="456" height="421" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px"><b>67 眼保健操 · 轮刮眼眶触发态</b><br>触发半秒时替换原双臂，拇指与食指贴着眼眶形成受压弧环；不是悬空眼睛或望远镜。</figcaption></figure>
+<figure style="margin:16px 0;text-align:center"><img src="assets/wiki/inline/shutdown-standby-review--e08c6a1aaf.png" alt="71 关服那天 · 常驻小伙伴" loading="lazy" width="1920" height="672" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px"><b>71 关服那天 · 常驻小伙伴</b><br>一个有头身的小伙伴贴着影子慢半拍跟随，不画成屏幕或设备。</figcaption></figure>
+<figure style="margin:16px 0;text-align:center"><img src="assets/wiki/inline/shutdown-trigger-review--4376ee5165.png" alt="71 关服那天 · 替挡与断线" loading="lazy" width="1920" height="2688" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px"><b>71 关服那天 · 替挡与断线</b><br>致命伤时依次出现、跃出、替挡、断线；结束后本局永久清空，不留残骸。</figcaption></figure>
 <div class="stage-h"><h3>生产中的美术候选与实机校验</h3><span class="cnt">Image2 参考图编辑 + 固定网格切片 · 静态评审通过后才可接入</span></div>
 <p class="lede">这一批不是宣传海报，而是按真实槽位与实机叠层生产的可用资产。战场照明已撤销“整局发生在夜里”的错误前提：前五章用清晨、白昼、傍晚、饭桌灯、日光灯与苍白午后区分年龄，只有收灯人终局进入夜色；章节过场不切黑屏，地面与摆设在玩家脚下继续溶解，并在 4.2 秒内依次呈现现实处境、主角心声与生活物件接棒；六章地面 v2 使用 Image2 分章生成材质，再经 128×128 降采样、20 色限色和对边融合成为真正可平铺图块；背景物件按大中小三档缩放并组成生活场景簇，不再均匀撒点；三套小型资产语言分别测试“旧家具与生活遗物”“人生档案与机关”“末班车站与失物”；全屏背景 v2 则把留灯间、里屋和当铺分别落实为普通小屋、档案封存室和失物估价处；结算背景 v2 把失败解释为档案封卷，把真结局解释为有人刚刚照看过的一盏普通路灯；所有图均已去绿底、限色、清理透明 RGB 并在当前主角旁以真实精灵比例复核。当前建议以档案机关作为全局骨架，留灯间借用旧家具的暖意，青年章节保留末班车站变体。</p>
 <figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/stage-lighting-runtime-c-51d95cd0c9.png" alt="六章战场照明 · 非夜间版本" loading="lazy" width="1440" height="475" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">六章战场照明 · 非夜间版本<br>清晨 / 白昼 / 傍晚 / 饭桌灯 / 日光灯 / 苍白午后 · 深墨只留给轮廓与终局</figcaption></figure>
@@ -542,7 +735,7 @@
 <figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/environment-surprises-co-46e040eeb8.png" alt="六章环境惊喜 · 静态激活帧" loading="lazy" width="1000" height="902" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">六章环境惊喜 · 静态激活帧<br>床下眼睛 / 批改红叉 / 末班车 / 未接来电 / 空转椅 / 路灯轮椅</figcaption></figure>
 <figure style="margin:18px 0;text-align:center"><img src="assets/wiki/inline/environment-surprises-sc-befe96504d.png" alt="六章环境惊喜 · 实机比例预览" loading="lazy" width="1656" height="750" style="width:100%;max-width:980px;height:auto;image-rendering:pixelated;background:#101014;border:1px solid var(--line);border-radius:3px"><figcaption class="dim" style="font-size:12px;margin-top:6px">六章环境惊喜 · 实机比例预览<br>96×48 边缘覆盖层 · 与当前主角及六章地面同屏复核</figcaption></figure>
 <p class="dim">状态：候选，尚未写入 <code>src/assets</code>。末班车站初稿中过宽的商人、里屋门与过淡光柱已采用单格定点补图修正，三张全屏房间与两张结算背景也已通过移动端安全区检查；正式接入前仍需作者选择整套或混合方案。</p>
-<p class="dim" style="margin-top:18px">全部运行时栅格资源合计 4600 KB（参赛包体上限 100MB）；所有图集均保留程序绘制或基础色块兜底，贴图未加载时不会阻断游玩。</p>
+<p class="dim" style="margin-top:18px">全部运行时栅格资源合计 4571 KB（参赛包体上限 100MB）；所有图集均保留程序绘制或基础色块兜底，贴图未加载时不会阻断游玩。</p>
 </section>
 </main>
 <script src="wiki-shell-v1.js"></script>

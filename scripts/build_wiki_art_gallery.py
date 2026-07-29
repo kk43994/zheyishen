@@ -38,8 +38,8 @@ BLOCK_ROUTE = (
     ("UI 纹理与饰件", "world"),
     ("场景摆设", "chapters"),
     ("《一口气》弹体", "breath"),
-    ("道具图标", "items"),
-    ("道具与主角体现", "items"),
+    ("道具图标", "DROP"),          # 与资源总览图标墙、道具志物证墙三重重复
+    ("道具与主角体现", "CANDIDATES"),  # 审查拼图是生产档案，正装版看 §07 体现图墙与 items.html
     ("敌怪图集", "beasts"),
     ("大小 Boss", "beasts"),
     ("奥义插画", "combos"),
@@ -55,8 +55,8 @@ SECTION_ORDER = {
     "world": ["标题画", "主角人偶", "UI 纹理与饰件"],
     "chapters": ["场景摆设", "__GROUNDS__"],
     "breath": ["《一口气》弹体"],
-    "items": ["道具图标", "道具与主角体现"],
-    "beasts": ["__ENEMY_WALL__", "敌怪图集", "大小 Boss"],
+    "items": [],
+    "beasts": ["敌怪图集", "大小 Boss"],
     "combos": ["奥义插画"],
     "doors": ["世界实体", "__ROOMS__"],
     "mottos": ["结局定格"],
@@ -451,7 +451,7 @@ def build_section() -> str:
         '<div class="core-loop" aria-label="一局游戏的五步循环">'
         '<div class="core-step"><span class="step-no">01 · 出生</span><b>AI 生成主角</b><p>每局都是不同家庭、地域与起点。</p></div>'
         '<div class="core-step"><span class="step-no">02 · 走位</span><b>在怪潮里活下去</b><p>你控制移动，《一口气》自动攻击。</p></div>'
-        '<div class="core-step"><span class="step-no">03 · 回应</span><b>咽下或吐出命运</b><p>事情已经发生，回应方式由你选择。</p></div>'
+        '<div class="core-step"><span class="step-no">03 · 回应</span><b>咽下、吐出或亲口说</b><p>事情已经发生，回应方式由你选择。</p></div>'
         '<div class="core-step"><span class="step-no">04 · 构筑</span><b>把经历穿上身</b><p>道具同时改变身体与唯一攻击。</p></div>'
         '<div class="core-step"><span class="step-no">05 · 长大</span><b>进入下一段人生</b><p>场景、怪物与问题随年龄改变。</p></div>'
         '</div>'
@@ -883,21 +883,24 @@ def split_loop_and_enemies(block: str) -> tuple[str, str]:
 def route(blocks: dict[str, str]) -> tuple[dict[str, list[str]], str]:
     """按内容把子节分派到各卷；返回 (卷 id -> 片段列表, 候选档案片段)。"""
     resolved: dict[str, str] = {}
-    candidates = ""
+    candidates_blocks: list[str] = []
     for title, block in blocks.items():
         target = next((sec for prefix, sec in BLOCK_ROUTE if title.startswith(prefix)), None)
         if target is None:
             raise AssertionError(f"子节未归类：{title}")
+        if target == "DROP":
+            continue
         if target == "CANDIDATES":
-            candidates = block
+            candidates_blocks.append(block)
         elif target == "SPLIT":
             rooms, grounds = split_rooms_and_grounds(block)
             resolved["__ROOMS__"] = rooms
             resolved["__GROUNDS__"] = grounds
         elif target == "SPLIT_LOOP":
-            loop, wall = split_loop_and_enemies(block)
+            # 卡墙那半（普通敌人/大小 Boss 应对卡）不再上首页：章节志按章承载同一批
+            # 词条（含 tips.json 的「怎么应对」），首页只留核心循环那半。
+            loop, _wall = split_loop_and_enemies(block)
             resolved["一局游戏的核心循环"] = loop
-            resolved["__ENEMY_WALL__"] = wall
         else:
             resolved[title] = block
 
@@ -912,7 +915,7 @@ def route(blocks: dict[str, str]) -> tuple[dict[str, list[str]], str]:
         placed[section_id] = chunks
     if resolved:
         raise AssertionError(f"有子节没有落位：{sorted(resolved)}")
-    return placed, candidates
+    return placed, "\n".join(candidates_blocks)
 
 
 def graft(html: str, section_id: str, chunks: list[str]) -> str:
@@ -939,8 +942,8 @@ def write_candidates_page(wiki_html: str, block: str) -> None:
     CANDIDATES_PAGE.write_text(
         head + "\n<body>\n"
         '<div class="topbar" id="wiki-topbar">'
-        '<a class="tb-mark serif" href="index.html">这一身<i>百科</i></a>'
-        '<nav class="tb-links" aria-label="快捷卷目"><a href="index.html">回百科</a></nav>'
+        '<a class="tb-mark serif" href="这一身百科.html">这一身<i>百科</i></a>'
+        '<nav class="tb-links" aria-label="快捷卷目"><a href="这一身百科.html">回百科</a></nav>'
         "</div>\n"
         '<main class="wrap">\n<section class="entry" id="candidates">\n'
         '<p class="vol">生产档案</p>\n'

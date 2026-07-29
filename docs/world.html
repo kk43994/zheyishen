@@ -3,10 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
 <link rel="stylesheet" href="wiki-runtime-v1.css">
 <script>(function(){try{var t=localStorage.getItem('wiki-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <title>《这一身》百科 · 世界志</title>
 <style>
+  @font-face{
+    font-family:"Fusion Bold Pixel";
+    src:url("assets/wiki/font/fusion-bold-pixel-12px-proportional-zh_hans.otf.woff2") format("woff2");
+    font-style:normal;font-weight:700;font-display:swap;
+  }
   :root{
     --paper:#D8D0C1; --paper-2:#AAA297;
     --ink:#17151A; --ink-2:#3E3A3D; --ink-3:#6E675B;
@@ -17,6 +23,8 @@
     --moon-face:#E8E1D3; --moon-halo:rgba(232,225,211,.10);
     --q1:#786F69; --q2:#71818A; --q3:#9F3548; --q4:#C6A44A; --q5:#E8E1D3;
     --positive:#779887; --warning:#B06961;
+    --prism-red:#E58A9B; --prism-gold:#E0BC68; --prism-green:#83B39B;
+    --prism-blue:#7FAFC0; --prism-violet:#B095C7;
     --desk:url("assets/desk-texture.png");
   }
   :root[data-theme="light"]{
@@ -27,6 +35,8 @@
     --moon-face:#E5DCC4; --moon-halo:rgba(110,103,91,.14);
     --q1:#7E7A6E; --q2:#5F7581; --q3:#9E3B33; --q4:#8A6E22; --q5:#8A2F3F;
     --positive:#5c7a63; --warning:#a1554d;
+    --prism-red:#A3334D; --prism-gold:#866719; --prism-green:#46725D;
+    --prism-blue:#3F7180; --prism-violet:#72517F;
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
@@ -52,6 +62,12 @@
   .chip.red{color:var(--oldred);border-color:var(--oldred)}
   .chip.gold{color:var(--rainyellow);border-color:var(--rainyellow)}
   .chip.blue{color:var(--wardblue);border-color:var(--wardblue)}
+  .threat-badge{display:inline-flex;align-items:center;min-height:24px;padding:2px 9px;border:1px solid currentColor;
+    border-radius:3px;font-size:11px;font-weight:800;letter-spacing:.12em;white-space:nowrap}
+  .threat-badge.ordinary{color:var(--wardblue)}
+  .threat-badge.mini{color:var(--rainyellow)}
+  .threat-badge.chapter{color:var(--oldred-soft)}
+  .threat-badge.final{color:var(--oldred);box-shadow:0 0 0 1px rgba(159,53,72,.2) inset}
   .dim{color:var(--fg-3)}
   .flavor{font-style:normal;color:var(--fg-2);border-left:3px solid var(--oldred);padding:2px 0 2px 12px;margin:10px 0;line-height:1.9}
   .lore{color:var(--fg-3);font-size:13px}
@@ -88,7 +104,111 @@
   .foot a{color:var(--fg-2)}
   .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px}
   .card-grid .bx{margin:0}
-  @media (max-width:640px){.bx{padding:16px}.item-row{flex-direction:row}.card-grid{grid-template-columns:1fr}}
+  .item-meta{display:flex;flex-wrap:wrap;align-items:center;gap:7px 8px;margin:0 0 10px}
+  .item-chip{
+    display:inline-flex;align-items:center;min-height:26px;padding:3px 9px;border:1px solid var(--line);
+    border-radius:3px;color:var(--fg-3);font-size:10px;font-weight:700;line-height:1.4;
+    letter-spacing:.12em;white-space:nowrap;
+  }
+  .item-tier{
+    --tier-color:var(--fg-2);padding-left:11px;color:var(--tier-color);
+    border-color:color-mix(in srgb,var(--tier-color) 52%,var(--line));
+    background:linear-gradient(90deg,color-mix(in srgb,var(--tier-color) 13%,transparent),transparent 86%);
+    box-shadow:inset 3px 0 0 var(--tier-color);
+    font-family:"Songti SC","STSong","Noto Serif CJK SC","SimSun",serif;font-size:11px;
+  }
+  .item-source::before{
+    content:"";width:4px;height:4px;margin-right:7px;background:currentColor;transform:rotate(45deg);opacity:.58;
+  }
+  .item-trait{
+    color:var(--wardblue);border-color:color-mix(in srgb,var(--wardblue) 58%,var(--line));
+    background:color-mix(in srgb,var(--wardblue) 8%,transparent);
+  }
+  .item-trait::before{content:"◆";margin-right:6px;font-size:7px;opacity:.75}
+  .item-combo{
+    position:relative;display:inline-flex;align-items:center;gap:9px;min-height:34px;padding:4px 14px 4px 8px;
+    color:var(--rainyellow);text-decoration:none;border:0;border-left:2px solid currentColor;border-radius:1px;
+    background:linear-gradient(90deg,color-mix(in srgb,var(--rainyellow) 13%,transparent),transparent 92%);
+    white-space:normal;line-height:1.45;transition:transform .18s ease,background-color .18s ease;
+  }
+  .item-combo::after{
+    content:"";position:absolute;right:3px;top:5px;width:4px;height:4px;
+    border-top:1px solid currentColor;border-right:1px solid currentColor;opacity:.5;
+  }
+  .item-combo:hover{
+    color:color-mix(in srgb,var(--rainyellow) 82%,white);
+    background:linear-gradient(90deg,color-mix(in srgb,var(--rainyellow) 20%,transparent),transparent 96%);
+    transform:translateY(-1px);
+  }
+  .item-combo-mark{
+    flex:none;display:grid;place-items:center;width:25px;height:25px;border:1px solid currentColor;
+    font-family:"Fusion Bold Pixel","CJK Symbols Fallback SC",sans-serif;font-size:11px;font-weight:700;
+    letter-spacing:0;line-height:1;box-shadow:2px 2px 0 color-mix(in srgb,var(--rainyellow) 20%,transparent);
+  }
+  .item-combo-title{
+    font-family:"Songti SC","STSong","Noto Serif CJK SC","SimSun",serif;
+    font-size:13px;font-weight:700;letter-spacing:.08em;
+    background:linear-gradient(180deg,
+      color-mix(in srgb,var(--rainyellow) 62%,white) 0%,var(--rainyellow) 58%,
+      color-mix(in srgb,var(--rainyellow) 74%,black) 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 1px 0 rgba(0,0,0,.5));
+  }
+  .item-combo-title::before{content:"《";margin-right:.05em;opacity:.62}
+  .item-combo-title::after{content:"》";margin-left:.05em;opacity:.62}
+  .combo-effect{
+    position:relative;margin:10px 0 0;padding:0;
+  }
+  .combo-effect::before{
+    content:"彩蛋特殊效果";display:block;margin-bottom:3px;color:var(--fg-3);
+    font:700 9px/1.4 ui-monospace,Menlo,monospace;letter-spacing:.2em;
+  }
+  .combo-effect-text{
+    display:block;color:transparent;
+    font-family:"Fusion Bold Pixel","CJK Symbols Fallback SC",sans-serif;
+    font-size:18px;font-weight:700;line-height:1.55;letter-spacing:.06em;
+    background:linear-gradient(90deg,
+      #ff365f 0%,#ffb82e 16.66%,#45e083 33.33%,#2bd8ff 50%,
+      #6170ff 66.66%,#d75cff 83.33%,#ff365f 100%);
+    background-size:420px 100%;background-repeat:repeat-x;background-position:0 50%;
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(1px 1px 0 rgba(8,8,12,.72));
+    animation:combo-rgb-full-flow 8s linear infinite;
+  }
+  @keyframes combo-rgb-full-flow{to{background-position:420px 50%}}
+  @media (prefers-reduced-motion:reduce){
+    .combo-effect-text{animation:none}
+  }
+  .chapter-toc{position:sticky;top:52px;z-index:4;padding:10px;background:color-mix(in srgb,var(--bg) 92%,transparent);
+    border:1px solid var(--line);border-radius:8px;backdrop-filter:blur(8px)}
+  .chapter{scroll-margin-top:118px;margin:46px 0 70px}
+  .chapter-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:end;
+    padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .chapter-no{margin:0;color:var(--oldred);font-size:12px;font-weight:800;letter-spacing:.24em}
+  .chapter-head h2{margin:2px 0 0;font-size:clamp(28px,5vw,42px);letter-spacing:.08em}
+  .chapter-head .route{margin:0;color:var(--fg-3);font-size:12px;letter-spacing:.12em;text-align:right}
+  .encounter-h{display:flex;align-items:center;gap:10px;margin:32px 0 12px;color:var(--fg-2);
+    font-size:14px;letter-spacing:.12em}
+  .encounter-h::after{content:"";height:1px;flex:1;background:var(--line)}
+  .environment{display:grid;grid-template-columns:minmax(120px,180px) minmax(0,1fr);gap:22px;align-items:center}
+  .environment-floor{width:100%;max-width:180px;image-rendering:pixelated;border:1px solid var(--line);border-radius:6px}
+  .environment .g{align-items:flex-start}
+  .enemy-card .item-row{align-items:flex-start}
+  .enemy-card .g{gap:8px}
+  .enemy-card figure.anim img{max-width:84px}
+  .phase-block{padding:12px 0;border-top:1px dashed var(--line)}
+  .phase-label{margin:0 0 8px;color:var(--rainyellow);font-size:12px;font-weight:800;letter-spacing:.12em}
+  .voice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px}
+  .finale{border:1px solid var(--oldred);border-radius:12px;padding:0 22px 22px;background:rgba(159,53,72,.04)}
+  @media (max-width:640px){
+    .bx{padding:16px}.item-row{flex-direction:row}.card-grid{grid-template-columns:1fr}
+    .item-meta{gap:6px}.item-combo{flex-basis:100%;width:max-content;max-width:100%}
+  }
+  @media (max-width:720px){
+    .chapter-toc{position:static}.chapter-head{grid-template-columns:1fr}.chapter-head .route{text-align:left}
+    .environment{grid-template-columns:1fr}.environment-floor{max-width:140px}.voice-grid{grid-template-columns:1fr}
+    .finale{padding:0 12px 12px}
+  }
 
   :root{--icon-sheet:url("../src/assets/items/icons.png")}
 </style>
@@ -96,8 +216,8 @@
 <body>
 
 <div class="topbar" id="wiki-topbar">
-  <a class="tb-mark serif" href="index.html">这一身<i>百科</i></a>
-  <nav class="tb-links" aria-label="图鉴分卷"><a href="index.html">正典</a><a href="boss.html">Boss志</a><a href="bestiary.html">敌怪志</a><a href="items.html">道具志</a><a href="voices.html">语音馆</a><a href="world.html" class="on">世界志</a><a href="vfx.html">特效馆</a></nav>
+  <a class="tb-mark serif" href="这一身百科.html">这一身<i>百科</i></a>
+  <nav class="tb-links" aria-label="图鉴分卷"><a href="这一身百科.html">正典</a><a href="chapters.html">章节志</a><a href="items.html">道具志</a><a href="voices.html">语音馆</a><a href="world.html" class="on">世界志</a><a href="vfx.html">特效馆</a></nav>
   <button class="tb-theme" id="wiki-theme-toggle" type="button" title="留灯 / 熄灯" aria-label="切换明暗主题">☾</button>
 </div>
 
@@ -113,7 +233,7 @@
 <div class="sect-h"><h2 class="serif">主角人偶</h2><span class="cnt">标准身形 · 40×56 帧 · 发色/衣着/伤痕由代码实时改写</span></div><section class="bx"><div class="g"><figure class="anim"><img src="assets/wiki/gif/hero/hero-idle.gif" alt="站立" loading="lazy"><figcaption>站立</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hero/hero-walk.gif" alt="行走" loading="lazy"><figcaption>行走</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hero/hero-attack.gif" alt="吐气" loading="lazy"><figcaption>吐气</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hero/hero-hurt.gif" alt="受击" loading="lazy"><figcaption>受击</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/hero/hero-walk-raincoat.gif" alt="《父亲的雨衣》穿戴态" loading="lazy"><figcaption>《父亲的雨衣》穿戴态</figcaption></figure></div></section><div class="sect-h"><h2 class="serif">开屏与六章地面</h2><span class="cnt">非夜间正典 · 清晨到苍白午后，只有终局入夜</span></div><section class="bx"><div class="g"><figure class="anim"><img src="assets/wiki/img/title.png" alt="开屏标题画" loading="lazy" style="width:220px"><figcaption>开屏 · 一生在同一片地面上经过</figcaption></figure><figure class="anim"><img src="assets/wiki/img/floor-0.png" alt="童年木地板" loading="lazy" style="width:96px"><figcaption>童年木地板</figcaption></figure><figure class="anim"><img src="assets/wiki/img/floor-1.png" alt="少年水磨石" loading="lazy" style="width:96px"><figcaption>少年水磨石</figcaption></figure><figure class="anim"><img src="assets/wiki/img/floor-2.png" alt="青年机械地" loading="lazy" style="width:96px"><figcaption>青年机械地</figcaption></figure><figure class="anim"><img src="assets/wiki/img/floor-3.png" alt="成年旧地毯" loading="lazy" style="width:96px"><figcaption>成年旧地毯</figcaption></figure><figure class="anim"><img src="assets/wiki/img/floor-4.png" alt="中年医院地胶" loading="lazy" style="width:96px"><figcaption>中年医院地胶</figcaption></figure><figure class="anim"><img src="assets/wiki/img/floor-5.png" alt="暮年苍白院廊" loading="lazy" style="width:96px"><figcaption>暮年苍白院廊</figcaption></figure></div><img class="shot" src="assets/wiki/img/lighting.png" alt="六章战场照明" loading="lazy" style="margin-top:16px;width:100%"><p class="dim" style="font-size:12px;margin:6px 0 0">六章战场照明 · 清晨 / 白昼 / 傍晚 / 饭桌灯 / 日光灯 / 苍白午后</p></section><div class="sect-h"><h2 class="serif">场景摆设 · 六章二十四件</h2><span class="cnt">随奔跑在脚下渐变换代</span></div><p class="sub-h">童年 · 床底王国</p><div class="g"><figure class="anim"><img src="assets/wiki/img/prop-0-0.png" alt="床柱" loading="lazy" style="width:80px"><figcaption>床柱</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-0-1.png" alt="积木" loading="lazy" style="width:80px"><figcaption>积木</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-0-2.png" alt="发条老鼠" loading="lazy" style="width:80px"><figcaption>发条老鼠</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-0-3.png" alt="纸船" loading="lazy" style="width:80px"><figcaption>纸船</figcaption></figure></div><p class="sub-h">少年 · 千眼教室</p><div class="g"><figure class="anim"><img src="assets/wiki/img/prop-1-0.png" alt="连体课桌" loading="lazy" style="width:80px"><figcaption>连体课桌</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-1-1.png" alt="打红叉的试卷" loading="lazy" style="width:80px"><figcaption>打红叉的试卷</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-1-2.png" alt="黑板擦与粉笔" loading="lazy" style="width:80px"><figcaption>黑板擦与粉笔</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-1-3.png" alt="裂座的奖杯" loading="lazy" style="width:80px"><figcaption>裂座的奖杯</figcaption></figure></div><p class="sub-h">青年 · 齿轮车站</p><div class="g"><figure class="anim"><img src="assets/wiki/img/prop-2-0.png" alt="车站长椅" loading="lazy" style="width:80px"><figcaption>车站长椅</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-2-1.png" alt="黄铜齿轮" loading="lazy" style="width:80px"><figcaption>黄铜齿轮</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-2-2.png" alt="站牌" loading="lazy" style="width:80px"><figcaption>站牌</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-2-3.png" alt="被丢下的行李箱" loading="lazy" style="width:80px"><figcaption>被丢下的行李箱</figcaption></figure></div><p class="sub-h">成年 · 屋檐下的家</p><div class="g"><figure class="anim"><img src="assets/wiki/img/prop-3-0.png" alt="折叠饭桌与暖瓶" loading="lazy" style="width:80px"><figcaption>折叠饭桌与暖瓶</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-3-1.png" alt="晾衣架" loading="lazy" style="width:80px"><figcaption>晾衣架</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-3-2.png" alt="电饭煲" loading="lazy" style="width:80px"><figcaption>电饭煲</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-3-3.png" alt="捆好的纸箱" loading="lazy" style="width:80px"><figcaption>捆好的纸箱</figcaption></figure></div><p class="sub-h">中年 · 没有关灯的办公室</p><div class="g"><figure class="anim"><img src="assets/wiki/img/prop-4-0.png" alt="熄屏的工位" loading="lazy" style="width:80px"><figcaption>熄屏的工位</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-4-1.png" alt="档案柜" loading="lazy" style="width:80px"><figcaption>档案柜</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-4-2.png" alt="饮水机" loading="lazy" style="width:80px"><figcaption>饮水机</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-4-3.png" alt="搭着外套的转椅" loading="lazy" style="width:80px"><figcaption>搭着外套的转椅</figcaption></figure></div><p class="sub-h">暮年 · 白发荒原</p><div class="g"><figure class="anim"><img src="assets/wiki/img/prop-5-0.png" alt="病床栏" loading="lazy" style="width:80px"><figcaption>病床栏</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-5-1.png" alt="输液架" loading="lazy" style="width:80px"><figcaption>输液架</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-5-2.png" alt="搭毯子的扶手椅" loading="lazy" style="width:80px"><figcaption>搭毯子的扶手椅</figcaption></figure><figure class="anim"><img src="assets/wiki/img/prop-5-3.png" alt="床头柜与水杯" loading="lazy" style="width:80px"><figcaption>床头柜与水杯</figcaption></figure></div><div class="sect-h"><h2 class="serif">门、灯与房间</h2><span class="cnt">战场可交互实体与三间内景</span></div><section class="bx"><div class="g"><figure class="anim"><img src="assets/wiki/img/entity-0.png" alt="留灯间的门" loading="lazy" style="width:128px"><figcaption>留灯间的门<br><span style='font-size:11px'>地图上限时刷新 · 走进去触发</span></figcaption></figure><figure class="anim"><img src="assets/wiki/img/entity-1.png" alt="里屋的门" loading="lazy" style="width:128px"><figcaption>里屋的门<br><span style='font-size:11px'>地图上限时刷新 · 走进去触发</span></figcaption></figure><figure class="anim"><img src="assets/wiki/img/entity-2.png" alt="没有招牌的当铺" loading="lazy" style="width:128px"><figcaption>没有招牌的当铺<br><span style='font-size:11px'>怪潮间隙路边出现</span></figcaption></figure><figure class="anim"><img src="assets/wiki/img/entity-3.png" alt="终局路灯" loading="lazy" style="width:128px"><figcaption>终局路灯<br><span style='font-size:11px'>黑暗收拢的圆心 · 收灯人在它底下现身</span></figcaption></figure></div><div class="g" style="margin-top:16px"><figure class="anim"><img src="assets/wiki/img/room-lamp.png" alt="留灯间 · 加成" loading="lazy" style="width:170px"><figcaption>留灯间 · 加成</figcaption></figure><figure class="anim"><img src="assets/wiki/img/room-inner.png" alt="里屋 · 代价" loading="lazy" style="width:170px"><figcaption>里屋 · 代价</figcaption></figure><figure class="anim"><img src="assets/wiki/img/room-pawn.png" alt="没有招牌的当铺" loading="lazy" style="width:170px"><figcaption>没有招牌的当铺</figcaption></figure></div></section><div class="sect-h"><h2 class="serif">章节题图与命运纹样</h2><span class="cnt">转场与命运牌共用纹样</span></div><section class="bx"><div class="g"><figure class="anim"><img src="assets/wiki/img/chapter-strips.png" alt="六章转场题图" loading="lazy" style="width:130px"><figcaption>六章转场题图</figcaption></figure><figure class="anim"><img src="assets/wiki/img/fate-profiles.png" alt="六类命运纹样" loading="lazy" style="width:300px"><figcaption>六类命运纹样</figcaption></figure></div></section><div class="sect-h"><h2 class="serif">结局定格</h2><span class="cnt">人活一口气 · 收灯人一盏灯剥一件道具</span></div><section class="bx"><div class="g"><figure class="anim"><img src="assets/wiki/img/ending-table.png" alt="物证陈列桌" loading="lazy" style="width:230px"><figcaption>物证陈列桌</figcaption></figure><figure class="anim"><img src="assets/wiki/img/ending-lampman.png" alt="路灯下的收灯人" loading="lazy" style="width:230px"><figcaption>路灯下的收灯人</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/save/tooth.gif" alt="免死 · 乳牙" loading="lazy"><figcaption>免死 · 乳牙</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/save/photo.gif" alt="免死 · 遗照" loading="lazy"><figcaption>免死 · 遗照</figcaption></figure><figure class="anim"><img src="assets/wiki/gif/save/shutdown.gif" alt="免死 · 关服那天" loading="lazy"><figcaption>免死 · 关服那天</figcaption></figure></div></section>
 </main>
 
-<div class="foot">这一身 · 百科图鉴 · 全部素材直接取自游戏运行时资源 · <a href="index.html">返回故事线正典</a></div>
+<div class="foot">这一身 · 百科图鉴 · 全部素材直接取自游戏运行时资源 · <a href="这一身百科.html">返回故事线正典</a></div>
 <script>
 (function(){
   'use strict';

@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-"""生成《这一身》百科分类图鉴站（Boss志/敌怪志/道具志/语音馆/世界志/特效馆）。
+"""生成《这一身》百科分类图鉴站（章节志/道具志/语音馆/世界志/特效馆）。
 
 - 词条数据来自 docs/wiki-data/*.json（由正典提取任务维护）与 docs/voice-canon-v1.js；
 - 动图来自 scripts/build_wiki_gifs.py 的产物 docs/assets/wiki/gif/**；
 - 静态切片（摆设/实体/组合插画/状态图标等）由本脚本裁切到 docs/assets/wiki/img/**；
-- 输出 docs/{boss,bestiary,items,voices,world,vfx}.html，与首页正典同一套夜桌视觉；
+- 输出 docs/{chapters,items,voices,world,vfx}.html、弹体审阅页与旧地址跳转页；
 - 幂等：重跑整体覆盖。deploy_wiki.sh 负责上线。
 """
 
 from __future__ import annotations
 
+import hashlib
 import html as html_mod
 import json
 import re
@@ -25,9 +26,8 @@ IMG = DOCS / "assets/wiki/img"
 VOICE_DIR = DOCS / "assets/voice"
 
 PAGES = [
-    ("index.html", "正典"),
-    ("boss.html", "Boss志"),
-    ("bestiary.html", "敌怪志"),
+    ("这一身百科.html", "正典"),
+    ("chapters.html", "章节志"),
     ("items.html", "道具志"),
     ("voices.html", "语音馆"),
     ("world.html", "世界志"),
@@ -35,6 +35,10 @@ PAGES = [
 ]
 
 STAGE_ORDER = ["童年", "少年", "青年", "成年", "中年", "暮年"]
+STAGE_SLUG = {
+    "童年": "childhood", "少年": "school", "青年": "youth",
+    "成年": "adulthood", "中年": "middle-age", "暮年": "old-age",
+}
 
 QUALITY = {
     1: ("Ⅰ", "杂物", "q1"), 2: ("Ⅱ", "旧物", "q2"), 3: ("Ⅲ", "心结", "q3"),
@@ -58,6 +62,7 @@ BOSS_BASE_ATLAS = {
 }
 MOTION_LABEL = {"idle": "站立", "move": "移动", "attack": "攻击", "hurt": "受击", "death": "消散"}
 TIER_LABEL = {"mini": "小 Boss", "chapter": "章节 Boss", "final": "终 Boss"}
+TIER_BADGE = {"mini": ("mini", "小 Boss"), "chapter": ("chapter", "大 Boss"), "final": ("final", "终 Boss")}
 
 PROJ_NAMES = {
     "breath": "一口气 · 月白雾团", "breath0": "凝实度 · 无形", "breath2": "凝实度 · 凝实",
@@ -114,9 +119,19 @@ def esc(text: object) -> str:
     return html_mod.escape(str(text)) if text is not None else ""
 
 
+def stable_id(text: str) -> str:
+    """生成跨 Python 进程稳定的短 ID，避免内置 hash() 的随机种子污染产物。"""
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]
+
+
 # ─────────────────────────── 页面骨架 ───────────────────────────
 
 BASE_CSS = """
+  @font-face{
+    font-family:"Fusion Bold Pixel";
+    src:url("assets/wiki/font/fusion-bold-pixel-12px-proportional-zh_hans.otf.woff2") format("woff2");
+    font-style:normal;font-weight:700;font-display:swap;
+  }
   :root{
     --paper:#D8D0C1; --paper-2:#AAA297;
     --ink:#17151A; --ink-2:#3E3A3D; --ink-3:#6E675B;
@@ -127,6 +142,8 @@ BASE_CSS = """
     --moon-face:#E8E1D3; --moon-halo:rgba(232,225,211,.10);
     --q1:#786F69; --q2:#71818A; --q3:#9F3548; --q4:#C6A44A; --q5:#E8E1D3;
     --positive:#779887; --warning:#B06961;
+    --prism-red:#E58A9B; --prism-gold:#E0BC68; --prism-green:#83B39B;
+    --prism-blue:#7FAFC0; --prism-violet:#B095C7;
     --desk:url("assets/desk-texture.png");
   }
   :root[data-theme="light"]{
@@ -137,6 +154,8 @@ BASE_CSS = """
     --moon-face:#E5DCC4; --moon-halo:rgba(110,103,91,.14);
     --q1:#7E7A6E; --q2:#5F7581; --q3:#9E3B33; --q4:#8A6E22; --q5:#8A2F3F;
     --positive:#5c7a63; --warning:#a1554d;
+    --prism-red:#A3334D; --prism-gold:#866719; --prism-green:#46725D;
+    --prism-blue:#3F7180; --prism-violet:#72517F;
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
@@ -162,6 +181,12 @@ BASE_CSS = """
   .chip.red{color:var(--oldred);border-color:var(--oldred)}
   .chip.gold{color:var(--rainyellow);border-color:var(--rainyellow)}
   .chip.blue{color:var(--wardblue);border-color:var(--wardblue)}
+  .threat-badge{display:inline-flex;align-items:center;min-height:24px;padding:2px 9px;border:1px solid currentColor;
+    border-radius:3px;font-size:11px;font-weight:800;letter-spacing:.12em;white-space:nowrap}
+  .threat-badge.ordinary{color:var(--wardblue)}
+  .threat-badge.mini{color:var(--rainyellow)}
+  .threat-badge.chapter{color:var(--oldred-soft)}
+  .threat-badge.final{color:var(--oldred);box-shadow:0 0 0 1px rgba(159,53,72,.2) inset}
   .dim{color:var(--fg-3)}
   .flavor{font-style:normal;color:var(--fg-2);border-left:3px solid var(--oldred);padding:2px 0 2px 12px;margin:10px 0;line-height:1.9}
   .lore{color:var(--fg-3);font-size:13px}
@@ -198,7 +223,111 @@ BASE_CSS = """
   .foot a{color:var(--fg-2)}
   .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px}
   .card-grid .bx{margin:0}
-  @media (max-width:640px){.bx{padding:16px}.item-row{flex-direction:row}.card-grid{grid-template-columns:1fr}}
+  .item-meta{display:flex;flex-wrap:wrap;align-items:center;gap:7px 8px;margin:0 0 10px}
+  .item-chip{
+    display:inline-flex;align-items:center;min-height:26px;padding:3px 9px;border:1px solid var(--line);
+    border-radius:3px;color:var(--fg-3);font-size:10px;font-weight:700;line-height:1.4;
+    letter-spacing:.12em;white-space:nowrap;
+  }
+  .item-tier{
+    --tier-color:var(--fg-2);padding-left:11px;color:var(--tier-color);
+    border-color:color-mix(in srgb,var(--tier-color) 52%,var(--line));
+    background:linear-gradient(90deg,color-mix(in srgb,var(--tier-color) 13%,transparent),transparent 86%);
+    box-shadow:inset 3px 0 0 var(--tier-color);
+    font-family:"Songti SC","STSong","Noto Serif CJK SC","SimSun",serif;font-size:11px;
+  }
+  .item-source::before{
+    content:"";width:4px;height:4px;margin-right:7px;background:currentColor;transform:rotate(45deg);opacity:.58;
+  }
+  .item-trait{
+    color:var(--wardblue);border-color:color-mix(in srgb,var(--wardblue) 58%,var(--line));
+    background:color-mix(in srgb,var(--wardblue) 8%,transparent);
+  }
+  .item-trait::before{content:"◆";margin-right:6px;font-size:7px;opacity:.75}
+  .item-combo{
+    position:relative;display:inline-flex;align-items:center;gap:9px;min-height:34px;padding:4px 14px 4px 8px;
+    color:var(--rainyellow);text-decoration:none;border:0;border-left:2px solid currentColor;border-radius:1px;
+    background:linear-gradient(90deg,color-mix(in srgb,var(--rainyellow) 13%,transparent),transparent 92%);
+    white-space:normal;line-height:1.45;transition:transform .18s ease,background-color .18s ease;
+  }
+  .item-combo::after{
+    content:"";position:absolute;right:3px;top:5px;width:4px;height:4px;
+    border-top:1px solid currentColor;border-right:1px solid currentColor;opacity:.5;
+  }
+  .item-combo:hover{
+    color:color-mix(in srgb,var(--rainyellow) 82%,white);
+    background:linear-gradient(90deg,color-mix(in srgb,var(--rainyellow) 20%,transparent),transparent 96%);
+    transform:translateY(-1px);
+  }
+  .item-combo-mark{
+    flex:none;display:grid;place-items:center;width:25px;height:25px;border:1px solid currentColor;
+    font-family:"Fusion Bold Pixel","CJK Symbols Fallback SC",sans-serif;font-size:11px;font-weight:700;
+    letter-spacing:0;line-height:1;box-shadow:2px 2px 0 color-mix(in srgb,var(--rainyellow) 20%,transparent);
+  }
+  .item-combo-title{
+    font-family:"Songti SC","STSong","Noto Serif CJK SC","SimSun",serif;
+    font-size:13px;font-weight:700;letter-spacing:.08em;
+    background:linear-gradient(180deg,
+      color-mix(in srgb,var(--rainyellow) 62%,white) 0%,var(--rainyellow) 58%,
+      color-mix(in srgb,var(--rainyellow) 74%,black) 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 1px 0 rgba(0,0,0,.5));
+  }
+  .item-combo-title::before{content:"《";margin-right:.05em;opacity:.62}
+  .item-combo-title::after{content:"》";margin-left:.05em;opacity:.62}
+  .combo-effect{
+    position:relative;margin:10px 0 0;padding:0;
+  }
+  .combo-effect::before{
+    content:"彩蛋特殊效果";display:block;margin-bottom:3px;color:var(--fg-3);
+    font:700 9px/1.4 ui-monospace,Menlo,monospace;letter-spacing:.2em;
+  }
+  .combo-effect-text{
+    display:block;color:transparent;
+    font-family:"Fusion Bold Pixel","CJK Symbols Fallback SC",sans-serif;
+    font-size:18px;font-weight:700;line-height:1.55;letter-spacing:.06em;
+    background:linear-gradient(90deg,
+      #ff365f 0%,#ffb82e 16.66%,#45e083 33.33%,#2bd8ff 50%,
+      #6170ff 66.66%,#d75cff 83.33%,#ff365f 100%);
+    background-size:420px 100%;background-repeat:repeat-x;background-position:0 50%;
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(1px 1px 0 rgba(8,8,12,.72));
+    animation:combo-rgb-full-flow 8s linear infinite;
+  }
+  @keyframes combo-rgb-full-flow{to{background-position:420px 50%}}
+  @media (prefers-reduced-motion:reduce){
+    .combo-effect-text{animation:none}
+  }
+  .chapter-toc{position:sticky;top:52px;z-index:4;padding:10px;background:color-mix(in srgb,var(--bg) 92%,transparent);
+    border:1px solid var(--line);border-radius:8px;backdrop-filter:blur(8px)}
+  .chapter{scroll-margin-top:118px;margin:46px 0 70px}
+  .chapter-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:end;
+    padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .chapter-no{margin:0;color:var(--oldred);font-size:12px;font-weight:800;letter-spacing:.24em}
+  .chapter-head h2{margin:2px 0 0;font-size:clamp(28px,5vw,42px);letter-spacing:.08em}
+  .chapter-head .route{margin:0;color:var(--fg-3);font-size:12px;letter-spacing:.12em;text-align:right}
+  .encounter-h{display:flex;align-items:center;gap:10px;margin:32px 0 12px;color:var(--fg-2);
+    font-size:14px;letter-spacing:.12em}
+  .encounter-h::after{content:"";height:1px;flex:1;background:var(--line)}
+  .environment{display:grid;grid-template-columns:minmax(120px,180px) minmax(0,1fr);gap:22px;align-items:center}
+  .environment-floor{width:100%;max-width:180px;image-rendering:pixelated;border:1px solid var(--line);border-radius:6px}
+  .environment .g{align-items:flex-start}
+  .enemy-card .item-row{align-items:flex-start}
+  .enemy-card .g{gap:8px}
+  .enemy-card figure.anim img{max-width:84px}
+  .phase-block{padding:12px 0;border-top:1px dashed var(--line)}
+  .phase-label{margin:0 0 8px;color:var(--rainyellow);font-size:12px;font-weight:800;letter-spacing:.12em}
+  .voice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px}
+  .finale{border:1px solid var(--oldred);border-radius:12px;padding:0 22px 22px;background:rgba(159,53,72,.04)}
+  @media (max-width:640px){
+    .bx{padding:16px}.item-row{flex-direction:row}.card-grid{grid-template-columns:1fr}
+    .item-meta{gap:6px}.item-combo{flex-basis:100%;width:max-content;max-width:100%}
+  }
+  @media (max-width:720px){
+    .chapter-toc{position:static}.chapter-head{grid-template-columns:1fr}.chapter-head .route{text-align:left}
+    .environment{grid-template-columns:1fr}.environment-floor{max-width:140px}.voice-grid{grid-template-columns:1fr}
+    .finale{padding:0 12px 12px}
+  }
 """
 
 AUDIO_JS = """
@@ -235,6 +364,7 @@ def shell(slug: str, title: str, eyebrow: str, sub: str, body: str) -> str:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
 <link rel="stylesheet" href="wiki-runtime-v1.css">
 <script>(function(){{try{{var t=localStorage.getItem('wiki-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}}catch(e){{}}}})();</script>
 <title>《这一身》百科 · {title}</title>
@@ -245,7 +375,7 @@ def shell(slug: str, title: str, eyebrow: str, sub: str, body: str) -> str:
 <body>
 
 <div class="topbar" id="wiki-topbar">
-  <a class="tb-mark serif" href="index.html">这一身<i>百科</i></a>
+  <a class="tb-mark serif" href="这一身百科.html">这一身<i>百科</i></a>
   <nav class="tb-links" aria-label="图鉴分卷">{nav}</nav>
   <button class="tb-theme" id="wiki-theme-toggle" type="button" title="留灯 / 熄灯" aria-label="切换明暗主题">☾</button>
 </div>
@@ -262,7 +392,7 @@ def shell(slug: str, title: str, eyebrow: str, sub: str, body: str) -> str:
 {body}
 </main>
 
-<div class="foot">这一身 · 百科图鉴 · 全部素材直接取自游戏运行时资源 · <a href="index.html">返回故事线正典</a></div>
+<div class="foot">这一身 · 百科图鉴 · 全部素材直接取自游戏运行时资源 · <a href="这一身百科.html">返回故事线正典</a></div>
 <script>{AUDIO_JS}</script>
 </body>
 </html>
@@ -284,6 +414,21 @@ def load_voice_canon() -> list[dict]:
 def load_voice_manifest() -> dict[str, dict]:
     data = load_json(ROOT / "public/assets/audio/voice/manifest.json") or []
     return {clip["id"]: clip for clip in data}
+
+
+def sync_voice_assets() -> None:
+    """百科直接镜像正式语音目录，防止 docs 静态副本落后于游戏运行时。"""
+    source = ROOT / "public/assets/audio/voice"
+    VOICE_DIR.mkdir(parents=True, exist_ok=True)
+    expected = {path.name for path in source.glob("*.mp3")}
+    for stale in VOICE_DIR.glob("*.mp3"):
+        if stale.name not in expected:
+            stale.unlink()
+    for path in source.glob("*.mp3"):
+        target = VOICE_DIR / path.name
+        payload = path.read_bytes()
+        if not target.exists() or target.read_bytes() != payload:
+            target.write_bytes(payload)
 
 
 def voice_row(clip: dict, manifest: dict[str, dict], show_speaker: bool = True) -> str:
@@ -390,146 +535,287 @@ def slice_static_assets() -> None:
     if lighting.exists():
         (IMG / "lighting.png").write_bytes(lighting.read_bytes())
 
+    # 弹体逐帧审阅页使用现役运行时图集，不再依赖 review/ 里已经丢失的旧副本。
+    for source, target in (
+        (ROOT / "src/assets/vfx/projectile-anim.png", IMG / "review-projectile-anim.png"),
+        (ROOT / "src/assets/vfx/hits.png", IMG / "review-hits.png"),
+    ):
+        target.write_bytes(source.read_bytes())
 
-# ─────────────────────────── Boss 志 ───────────────────────────
 
-def build_boss_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> str | None:
-    bosses = load_json(DATA / "bosses.json")
-    if not bosses:
-        return None
-    skill_manifest = load_json(ROOT / "src/assets/enemies/boss-skills-v1/manifest.json")
-    v2 = load_json(ROOT / "src/assets/enemies/boss-skills-v2/manifest.json") or {"skills": {}}
-    clips_by_id = {c["id"]: c for c in voice_canon}
+# ─────────────────────────── 章节志 ───────────────────────────
 
-    toc = []
-    entries = []
-    for boss in bosses:
-        bid = boss["id"]
-        tier = TIER_LABEL.get(boss.get("tier", ""), boss.get("tier", ""))
-        toc.append(f'<a class="chip" href="#boss-{esc(bid)}">{esc(boss["name"])}</a>')
+def render_environment(stage: str, stage_index: int) -> str:
+    stage_name, prop_names = PROP_STAGES[stage_index]
+    props = "".join(
+        f'<figure class="anim"><img src="assets/wiki/img/prop-{stage_index}-{prop_index}.png" '
+        f'alt="{esc(prop_name)}" loading="lazy" style="width:80px">'
+        f"<figcaption>{esc(prop_name)}</figcaption></figure>"
+        for prop_index, prop_name in enumerate(prop_names)
+    )
+    return (
+        '<h3 class="encounter-h serif">01 · 先走进现实</h3>'
+        '<section class="bx environment">'
+        f'<figure class="anim"><img class="environment-floor" src="assets/wiki/img/floor-{stage_index}.png" '
+        f'alt="{esc(FLOOR_NAMES[stage_index])}" loading="lazy"><figcaption>{esc(FLOOR_NAMES[stage_index])}</figcaption></figure>'
+        '<div>'
+        f'<div class="chips"><span class="chip blue">{esc(stage)}</span><span class="chip">{esc(stage_name)}</span></div>'
+        f'<p class="flavor serif">他先踩上这一章的地面，再遇见会从日常里长出来的东西。</p>'
+        f'<div class="g">{props}</div>'
+        '</div></section>'
+    )
 
-        portrait = ""
-        if boss.get("portrait") and (DOCS / boss["portrait"]).exists():
-            portrait = (
-                f'<img class="portrait" src="{esc(boss["portrait"])}" alt="{esc(boss["name"])} 立绘" '
-                'loading="lazy" style="width:150px;height:auto">'
-            )
 
-        info = [f'<div class="chips"><span class="chip red">{esc(boss["stage"])} · {esc(tier)}</span>']
-        if boss.get("legacyDrop"):
-            info.append(f'<span class="chip gold">传承掉落 · {esc(boss["legacyDrop"])}</span>')
-        info.append("</div>")
-        info.append(f'<h3 class="serif" style="margin-top:8px">《{esc(boss["name"])}》</h3>')
-        if boss.get("battlefield"):
-            info.append(f'<p class="dim" style="margin:4px 0 0;font-size:13.5px">战场 · {esc(boss["battlefield"])}</p>')
-        if boss.get("mechanics"):
-            info.append(f'<p style="margin:10px 0 0;font-size:14.5px">{esc(boss["mechanics"])}</p>')
+TIPS = load_json(DATA / "tips.json") or {"enemies": {}, "bosses": {}}
 
-        base_gifs = []
-        for stem in BOSS_BASE_ATLAS.get(bid, []):
-            base_gifs.append(motion_strip(stem, width=None))
-        design = ""
-        if boss.get("designStory"):
-            design = f'<p class="sub-h">设计背景</p><div class="flavor serif">{esc(boss["designStory"])}</div>'
 
-        skills_html = []
-        for skill in boss.get("skills", []):
-            sid = skill["skillId"]
-            rel = f"gif/boss-skill-8f/{sid}.gif" if sid in v2.get("skills", {}) else f"gif/boss-skill/{sid}.gif"
-            if not (DOCS / "assets/wiki" / rel).exists():
-                continue
-            lore = f'<span class="lr serif">“{esc(skill["lore"])}”</span>' if skill.get("lore") else ""
-            frames = "8 帧" if "8f" in rel else "4 帧"
-            skills_html.append(
-                '<div class="skill-card">'
-                f'<img src="assets/wiki/{rel}" alt="{esc(skill.get("name", sid))} 动画" loading="lazy">'
-                f'<span class="nm serif">《{esc(skill.get("name", sid))}》<span class="dim" style="font-weight:400;font-size:11px"> · {frames}</span></span>'
-                f'<span class="desc">{esc(skill.get("desc", ""))}</span>{lore}'
-                "</div>"
-            )
+def tip_line(kind: str, eid: str) -> str:
+    tip = TIPS.get(kind, {}).get(eid, "")
+    if not tip:
+        return ""
+    return (f'<p class="tip-line" style="font-size:13px;margin:6px 0 0;color:var(--positive)">'
+            f'<b style="letter-spacing:.08em">怎么应对</b> · {esc(tip)}</p>')
 
-        voices = []
-        for cid in boss.get("voiceClips", []):
-            clip = clips_by_id.get(cid)
-            if clip:
-                voices.append(voice_row(clip, vmanifest))
-        voice_html = ""
-        if voices:
-            voice_html = '<p class="sub-h">语音</p>' + "".join(voices)
 
-        lore_lines = ""
-        if boss.get("loreLines"):
-            rows = "".join(f'<p class="lore serif" style="margin:4px 0">“{esc(line)}”</p>' for line in boss["loreLines"])
-            lore_lines = f'<p class="sub-h">隐喻字幕</p>{rows}'
+def render_enemy_entry(enemy: dict) -> str:
+    portrait = ""
+    if enemy.get("portrait") and (DOCS / enemy["portrait"]).exists():
+        portrait = (
+            f'<img class="portrait" src="{esc(enemy["portrait"])}" alt="{esc(enemy["name"])} 立绘" '
+            'loading="lazy" style="width:96px;height:auto">'
+        )
+    chips = [
+        '<span class="threat-badge ordinary">普通怪</span>',
+        f'<span class="chip blue">{esc(enemy["stage"])}</span>',
+    ]
+    if enemy.get("alsoStages"):
+        chips.append(f'<span class="chip">复用于 {esc("、".join(enemy["alsoStages"]))}</span>')
+    if enemy.get("displaySize"):
+        chips.append(f'<span class="chip">战场 {enemy["displaySize"]}px</span>')
+    note = f'<div class="flavor serif">{esc(enemy["note"])}</div>' if enemy.get("note") else ""
+    return (
+        f'<section class="bx enemy-card" id="enemy-{esc(enemy["id"])}" data-threat="ordinary">'
+        f'<div class="item-row"><div>{portrait}</div><div class="item-main">'
+        f'<div class="chips">{"".join(chips)}</div>'
+        f'<h3 class="serif" style="margin-top:6px">{esc(enemy["name"])}</h3>'
+        f'{note}<p style="font-size:14px;margin:8px 0 4px">{esc(enemy.get("mechanic", ""))}</p>'
+        f'{tip_line("enemies", enemy["id"])}'
+        f'{motion_strip(enemy["atlas"])}'
+        "</div></div></section>"
+    )
 
-        entries.append(
-            f'<section class="bx" id="boss-{esc(bid)}">'
-            f'<div class="boss-head"><div>{portrait}</div><div class="boss-info">{"".join(info)}</div></div>'
-            f'{design}'
-            f'<p class="sub-h">基础形态</p>{"".join(base_gifs)}'
-            + (f'<p class="sub-h">招式 · {len(skills_html)} 式</p><div class="skill-grid">{"".join(skills_html)}</div>' if skills_html else "")
-            + lore_lines
-            + voice_html
-            + "</section>"
+
+def render_boss_entry(
+    boss: dict,
+    clips_by_id: dict[str, dict],
+    vmanifest: dict[str, dict],
+    skill_manifest: dict,
+    skill_v2: dict,
+) -> str:
+    bid = boss["id"]
+    tier_class, tier_label = TIER_BADGE.get(boss.get("tier", ""), ("chapter", TIER_LABEL.get(boss.get("tier", ""), "Boss")))
+    portrait = ""
+    if boss.get("portrait") and (DOCS / boss["portrait"]).exists():
+        portrait = (
+            f'<img class="portrait" src="{esc(boss["portrait"])}" alt="{esc(boss["name"])} 立绘" '
+            'loading="lazy" style="width:150px;height:auto">'
         )
 
-    body = (
-        '<div class="chips" style="margin:6px 0 18px">' + "".join(toc) + "</div>" + "".join(entries)
+    info = [
+        '<div class="chips">',
+        f'<span class="threat-badge {tier_class}">{esc(tier_label)}</span>',
+        f'<span class="chip">{esc(boss["stage"])}</span>',
+    ]
+    if boss.get("legacyDrop"):
+        info.append(f'<span class="chip gold">传承掉落 · {esc(boss["legacyDrop"])}</span>')
+    info.append("</div>")
+    info.append(f'<h3 class="serif" style="margin-top:8px">《{esc(boss["name"])}》</h3>')
+    if boss.get("battlefield"):
+        info.append(f'<p class="dim" style="margin:4px 0 0;font-size:13.5px">战场 · {esc(boss["battlefield"])}</p>')
+    if boss.get("mechanics"):
+        info.append(f'<p style="margin:10px 0 0;font-size:14.5px">{esc(boss["mechanics"])}</p>')
+    info.append(tip_line("bosses", bid))
+
+    phase_names = {
+        "silent-father": ["一阶段 · 站在雨里的父亲", "二阶段 · 雨衣落下"],
+        "praise-chair": ["一阶段 · 坐在椅背后", "二阶段 · 起身"],
+        "ringing-phone": ["一阶段 · 一部电话", "二阶段 · 电话分裂"],
+    }
+    stems = BOSS_BASE_ATLAS.get(bid, [])
+    base_gifs = []
+    for index, stem in enumerate(stems):
+        label = phase_names.get(bid, [f"唯一阶段 · {boss['name']}"] * len(stems))[index]
+        base_gifs.append(
+            f'<div class="phase-block"><p class="phase-label">{esc(label)}</p>{motion_strip(stem)}</div>'
+        )
+
+    design = ""
+    if boss.get("designStory"):
+        design = f'<p class="sub-h">设计背景</p><div class="flavor serif">{esc(boss["designStory"])}</div>'
+
+    skills_html = []
+    for skill in boss.get("skills", []):
+        sid = skill["skillId"]
+        if sid not in skill_manifest.get("skills", {}):
+            continue
+        rel = f"gif/boss-skill-8f/{sid}.gif" if sid in skill_v2.get("skills", {}) else f"gif/boss-skill/{sid}.gif"
+        if not (DOCS / "assets/wiki" / rel).exists():
+            continue
+        lore = f'<span class="lr serif">“{esc(skill["lore"])}”</span>' if skill.get("lore") else ""
+        frames = "8 帧" if "8f" in rel else "4 帧"
+        skills_html.append(
+            '<div class="skill-card">'
+            f'<img src="assets/wiki/{rel}" alt="{esc(skill.get("name", sid))} 动画" loading="lazy">'
+            f'<span class="nm serif">《{esc(skill.get("name", sid))}》'
+            f'<span class="dim" style="font-weight:400;font-size:11px"> · {frames}</span></span>'
+            f'<span class="desc">{esc(skill.get("desc", ""))}</span>{lore}'
+            "</div>"
+        )
+
+    lore_lines = ""
+    if boss.get("loreLines"):
+        rows = "".join(
+            f'<p class="lore serif" style="margin:4px 0">“{esc(line)}”</p>'
+            for line in boss["loreLines"]
+        )
+        lore_lines = f'<p class="sub-h">隐喻字幕</p>{rows}'
+
+    voices = [
+        voice_row(clips_by_id[cid], vmanifest)
+        for cid in boss.get("voiceClips", [])
+        if cid in clips_by_id
+    ]
+    voice_html = f'<p class="sub-h">遭遇语音</p>{"".join(voices)}' if voices else ""
+
+    return (
+        f'<section class="bx boss-entry" id="boss-{esc(bid)}" data-threat="{tier_class}">'
+        f'<div class="boss-head"><div>{portrait}</div><div class="boss-info">{"".join(info)}</div></div>'
+        f'{design}<p class="sub-h">阶段与基础形态</p>{"".join(base_gifs)}'
+        + (f'<p class="sub-h">招式 · {len(skills_html)} 式</p><div class="skill-grid">{"".join(skills_html)}</div>' if skills_html else "")
+        + lore_lines + voice_html + "</section>"
     )
-    return shell(
-        "boss.html", "Boss志", "他从降生到老死遇到的最大的困难",
-        "十二个大小 Boss · 立绘原图 / 基础形态动图 / 逐招动画 / 设计背景 / 隐喻字幕 / 情境语音，围绕每一个词条聚合。",
-        body,
-    )
 
 
-# ─────────────────────────── 敌怪志 ───────────────────────────
-
-def build_bestiary_page() -> str | None:
+def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> str | None:
+    bosses = load_json(DATA / "bosses.json")
     enemies = load_json(DATA / "enemies.json")
-    if not enemies:
+    if not bosses or not enemies:
         return None
-    by_stage: dict[str, list[dict]] = {}
-    for enemy in enemies:
-        by_stage.setdefault(enemy["stage"], []).append(enemy)
+    skill_manifest = load_json(ROOT / "src/assets/enemies/boss-skills-v1/manifest.json") or {"skills": {}}
+    skill_v2 = load_json(ROOT / "src/assets/enemies/boss-skills-v2/manifest.json") or {"skills": {}}
+    clips_by_id = {clip["id"]: clip for clip in voice_canon}
+    boss_voice_ids = {
+        clip_id
+        for boss in bosses
+        for clip_id in boss.get("voiceClips", [])
+    }
+
+    toc = [
+        f'<a class="chip" href="#chapter-{STAGE_SLUG[stage]}">{index + 1:02d} · {esc(stage)}</a>'
+        for index, stage in enumerate(STAGE_ORDER)
+    ]
+    toc.append('<a class="chip red" href="#chapter-finale">07 · 终局</a>')
 
     sections = []
-    for stage in STAGE_ORDER:
-        group = by_stage.get(stage)
-        if not group:
-            continue
-        cards = []
-        for enemy in group:
-            portrait = ""
-            if enemy.get("portrait") and (DOCS / enemy["portrait"]).exists():
-                portrait = (
-                    f'<img class="portrait" src="{esc(enemy["portrait"])}" alt="{esc(enemy["name"])} 立绘" '
-                    'loading="lazy" style="width:96px;height:auto">'
-                )
-            chips = [f'<span class="chip blue">{esc(enemy["stage"])}</span>']
-            if enemy.get("alsoStages"):
-                chips.append(f'<span class="chip">复用于 {esc("、".join(enemy["alsoStages"]))}</span>')
-            if enemy.get("displaySize"):
-                chips.append(f'<span class="chip">战场 {enemy["displaySize"]}px</span>')
-            note = f'<div class="flavor serif">{esc(enemy["note"])}</div>' if enemy.get("note") else ""
-            cards.append(
-                f'<section class="bx" id="enemy-{esc(enemy["id"])}">'
-                f'<div class="item-row"><div>{portrait}</div><div class="item-main">'
-                f'<div class="chips">{"".join(chips)}</div>'
-                f'<h3 class="serif" style="margin-top:6px">{esc(enemy["name"])}</h3>'
-                f'{note}'
-                f'<p style="font-size:14px;margin:8px 0 12px">{esc(enemy.get("mechanic", ""))}</p>'
-                f'{motion_strip(enemy["atlas"])}'
-                "</div></div></section>"
-            )
-        sections.append(
-            f'<div class="sect-h"><h2 class="serif">{esc(stage)}</h2><span class="cnt">{len(group)} 种</span></div>'
-            + "".join(cards)
+    for stage_index, stage in enumerate(STAGE_ORDER):
+        stage_enemies = [enemy for enemy in enemies if enemy["stage"] == stage]
+        stage_bosses = [
+            boss for boss in bosses
+            if boss["stage"] == stage and boss.get("tier") != "final"
+        ]
+        mini = [boss for boss in stage_bosses if boss.get("tier") == "mini"]
+        chapter_boss = [boss for boss in stage_bosses if boss.get("tier") == "chapter"]
+        stage_title = PROP_STAGES[stage_index][0].split(" · ", 1)[1]
+        route_tail = "大 Boss → 沿途语音" if chapter_boss else "沿途语音 → 最后一盏路灯"
+        route = f"场景 → {len(stage_enemies)} 种普通怪 → 小 Boss → {route_tail}"
+
+        pieces = [
+            f'<section class="chapter" id="chapter-{STAGE_SLUG[stage]}">',
+            '<header class="chapter-head">',
+            f'<div><p class="chapter-no">第 {stage_index + 1:02d} 章 · {esc(stage)}</p>'
+            f'<h2 class="serif">{esc(stage_title)}</h2></div>',
+            f'<p class="route">{esc(route)}</p></header>',
+            render_environment(stage, stage_index),
+            f'<h3 class="encounter-h serif">02 · 怪潮 · {len(stage_enemies)} 种普通怪</h3>',
+            '<div class="card-grid">',
+            "".join(render_enemy_entry(enemy) for enemy in stage_enemies),
+            "</div>",
+            '<h3 class="encounter-h serif">03 · 小 Boss · 机制预习</h3>',
+            "".join(
+                render_boss_entry(boss, clips_by_id, vmanifest, skill_manifest, skill_v2)
+                for boss in mini
+            ),
+        ]
+        if chapter_boss:
+            pieces.extend([
+                '<h3 class="encounter-h serif">04 · 大 Boss · 本章结算</h3>',
+                "".join(
+                    render_boss_entry(boss, clips_by_id, vmanifest, skill_manifest, skill_v2)
+                    for boss in chapter_boss
+                ),
+            ])
+        else:
+            pieces.extend([
+                '<h3 class="encounter-h serif">04 · 本章收束 · 通往终局</h3>',
+                '<p class="flavor serif">暮年没有另一只血条 Boss。走马灯之后，路会直接通向最后一盏灯。</p>',
+            ])
+
+        ambient_voices = [
+            voice_row(clip, vmanifest)
+            for clip in voice_canon
+            if clip.get("stage") == stage and clip["id"] not in boss_voice_ids
+        ]
+        ambient_voices = [row for row in ambient_voices if row]
+        pieces.extend([
+            f'<h3 class="encounter-h serif">05 · 沿途语音 · {len(ambient_voices)} 条</h3>',
+            f'<section class="bx"><div class="voice-grid">{"".join(ambient_voices)}</div></section>',
+            "</section>",
+        ])
+        sections.append("".join(pieces))
+
+    final_bosses = [boss for boss in bosses if boss.get("tier") == "final"]
+    ending_voices = [
+        voice_row(clip, vmanifest)
+        for clip in voice_canon
+        if clip.get("stage") == "结局" and clip["id"] not in boss_voice_ids
+    ]
+    ending_voices = [row for row in ending_voices if row]
+    ending_voice_html = (
+        f'<h3 class="encounter-h serif">03 · 封卷语音 · {len(ending_voices)} 条</h3>'
+        f'<section class="bx"><div class="voice-grid">{"".join(ending_voices)}</div></section>'
+        if ending_voices else ""
+    )
+    finale = (
+        '<section class="chapter finale" id="chapter-finale">'
+        '<header class="chapter-head"><div><p class="chapter-no">第 07 章 · 终局</p>'
+        '<h2 class="serif">最后一盏路灯</h2></div>'
+        '<p class="route">黑暗收拢 → 终 Boss → 逐件归还 → 最后一口气</p></header>'
+        '<h3 class="encounter-h serif">01 · 黑暗里只剩一盏灯</h3>'
+        '<section class="bx environment">'
+        '<figure class="anim"><img class="environment-floor" src="assets/wiki/img/ending-lampman.png" '
+        'alt="最后一盏路灯" loading="lazy"><figcaption>路灯下的收灯人</figcaption></figure>'
+        '<div><span class="threat-badge final">终局</span>'
+        '<p class="flavor serif">这一关不再证明他能打赢什么。收灯人把经历一件件照出来，直到他愿意把这一身放下。</p>'
+        '</div></section>'
+        '<h3 class="encounter-h serif">02 · 终 Boss · 收灯人</h3>'
+        + "".join(
+            render_boss_entry(boss, clips_by_id, vmanifest, skill_manifest, skill_v2)
+            for boss in final_bosses
         )
-    body = "".join(sections)
+        + ending_voice_html
+        + "</section>"
+    )
+
+    body = (
+        '<nav class="chapter-toc chips" aria-label="章节索引">'
+        + "".join(toc)
+        + "</nav>"
+        + "".join(sections)
+        + finale
+    )
     return shell(
-        "bestiary.html", "敌怪志", "从降生到老死遇到的各种困难",
-        "六章现役普通怪全图鉴 · 立绘 / 五态循环动图 / 专属机制 / 生活注脚。大小 Boss 见 Boss志。",
+        "chapters.html", "章节志", "这一生不是怪物名单，而是一条走过的路",
+        "六章＋终局 · 按玩家真实遭遇顺序归档环境、普通怪、小 Boss、大 Boss、阶段、招式、隐喻字幕与情境语音。",
         body,
     )
 
@@ -552,15 +838,22 @@ def build_items_page() -> str | None:
         roman, label, qvar = QUALITY[quality]
         cards = []
         for item in group:
-            chips = [f'<span class="chip" style="color:var(--{qvar});border-color:var(--{qvar})">{roman} · {label}</span>']
+            chips = [
+                f'<span class="item-chip item-tier" style="--tier-color:var(--{qvar})">'
+                f'{roman} · {label}</span>'
+            ]
             pool = POOL_LABEL.get(item.get("pool", ""), item.get("pool", ""))
             if pool:
-                chips.append(f'<span class="chip">{esc(pool)}</span>')
+                chips.append(f'<span class="item-chip item-source">{esc(pool)}</span>')
             for tag in item.get("tags", []):
-                chips.append(f'<span class="chip blue">{esc(tag)}</span>')
+                chips.append(f'<span class="item-chip item-trait">{esc(tag)}</span>')
             for key in item.get("combos", []):
                 cname = combos.get(key, {}).get("name") or COMBO_NAMES.get(key, key)
-                chips.append(f'<a class="chip gold" href="#combo-{esc(key)}">组合 · {esc(cname)}</a>')
+                chips.append(
+                    f'<a class="item-combo" href="#combo-{esc(key)}" aria-label="组合 · {esc(cname)}">'
+                    '<span class="item-combo-mark" aria-hidden="true">合</span>'
+                    f'<span class="item-combo-title">{esc(cname)}</span></a>'
+                )
             manifestation = ""
             if item.get("manifestation") and (DOCS / item["manifestation"]).exists():
                 manifestation = (
@@ -571,7 +864,7 @@ def build_items_page() -> str | None:
             cards.append(
                 f'<section class="bx" id="item-{esc(item["id"])}">'
                 f'<div class="item-row">{icon_span(item["iconIndex"], item["name"])}'
-                f'<div class="item-main"><div class="chips">{"".join(chips)}</div>'
+                f'<div class="item-main"><div class="item-meta">{"".join(chips)}</div>'
                 f'<h3 class="serif" style="font-size:19px;margin-top:6px">{esc(item["name"])}</h3>'
                 f'<div class="flavor serif">{esc(item.get("flavor", ""))}</div>'
                 f'<p class="dim" style="font-size:13.5px;margin:8px 0 0">{esc(item.get("mechanic", ""))}</p>'
@@ -592,7 +885,7 @@ def build_items_page() -> str | None:
             f'<section class="bx" id="combo-{esc(key)}">{art}'
             f'<h3 class="serif" style="font-size:18px;margin-top:10px">《{esc(combo["name"])}》</h3>'
             f'<p class="dim" style="font-size:13px;margin:6px 0 2px">集齐 · {esc(members)}</p>'
-            f'<p style="font-size:14px;margin:4px 0 0">{esc(combo.get("effect", ""))}</p></section>'
+            f'<p class="combo-effect"><span class="combo-effect-text">{esc(combo.get("effect", ""))}</span></p></section>'
         )
     combo_section = (
         '<div class="sect-h"><h2 class="serif">组合名鉴 · 奥义插画</h2>'
@@ -635,7 +928,7 @@ def build_voices_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> st
         perf = f'<p class="dim" style="font-size:13px;margin:6px 0 10px">{esc(first["performance"])}</p>' if first.get("performance") else ""
         rows = "".join(voice_row(c, vmanifest, show_speaker=False) for c in clips)
         sections.append(
-            f'<section class="bx" id="speaker-{abs(hash(speaker)) % 99999}">'
+            f'<section class="bx" id="speaker-{stable_id(speaker)}">'
             f'<div class="chips">{"".join(chips)}</div>'
             f'<h3 class="serif" style="margin-top:6px">{esc(speaker)}</h3>'
             f"{perf}{rows}</section>"
@@ -775,20 +1068,63 @@ def build_vfx_page() -> str:
     )
 
 
+def build_projectile_review_page() -> str:
+    """把历史审阅模板接到现役运行时图集，并作为百科正式页面输出。"""
+    source = (ROOT / "review/review-projectiles.html").read_text(encoding="utf-8")
+    form_count = len(load_json(ROOT / "src/assets/vfx/projectile-anim.json")["forms"])
+    source = source.replace("18 形态 × 4 帧", f"{form_count} 形态 × 4 帧")
+    source = source.replace(
+        "review-projectile-anim.png?v=5",
+        "assets/wiki/img/review-projectile-anim.png?v=5",
+    )
+    source = source.replace(
+        "review-hits.png?v=2",
+        "assets/wiki/img/review-hits.png?v=2",
+    )
+    source = source.replace(
+        "<body>",
+        '<body><p style="margin:0 0 12px"><a href="vfx.html" '
+        'style="color:#ece6d9">← 返回特效馆</a></p>',
+        1,
+    )
+    return source
+
+
+def legacy_redirect_page(title: str) -> str:
+    """保留旧公开地址和 hash 深链，平滑迁移到章节志。"""
+    return f"""<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>《这一身》百科 · {esc(title)}已并入章节志</title>
+<script>location.replace("chapters.html" + location.hash);</script>
+</head>
+<body>
+<p>{esc(title)}已并入<a href="chapters.html">章节志</a>。</p>
+</body>
+</html>
+"""
+
+
 # ─────────────────────────── 主流程 ───────────────────────────
 
 def main() -> None:
     slice_static_assets()
+    sync_voice_assets()
     voice_canon = load_voice_canon()
     vmanifest = load_voice_manifest()
 
     outputs: dict[str, str | None] = {
-        "boss.html": build_boss_page(voice_canon, vmanifest),
-        "bestiary.html": build_bestiary_page(),
+        "chapters.html": build_chapters_page(voice_canon, vmanifest),
         "items.html": build_items_page(),
         "voices.html": build_voices_page(voice_canon, vmanifest),
         "world.html": build_world_page(),
         "vfx.html": build_vfx_page(),
+        "review-projectiles.html": build_projectile_review_page(),
+        "boss.html": legacy_redirect_page("Boss 志"),
+        "bestiary.html": legacy_redirect_page("敌怪志"),
     }
     for name, content in outputs.items():
         if content is None:
