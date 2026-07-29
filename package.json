@@ -9,7 +9,7 @@
     "build:demo": "node scripts/generate_art_loading_manifest.mjs && tsc --noEmit && vite build --mode demo --outDir dist-demo",
     "preview": "vite preview --host 127.0.0.1",
     "package": "bash scripts/package.sh",
-    "validate:core": "bash scripts/validate_core.sh",
+    "validate:core": "bash scripts/validate_core.sh && npm run validate:run-state",
     "validate:art": "python3 scripts/validate_runtime_art.py",
     "validate:boss-skills": "python3 scripts/image2/boss-skills-v1/validate.py",
     "validate:projectiles": "node scripts/validate_projectile_runtime_coverage.mjs",
@@ -85,7 +85,8 @@
     "sync:release-metadata": "node scripts/sync_release_metadata.mjs",
     "validate:release-metadata": "node scripts/sync_release_metadata.mjs --check",
     "validate": "bash scripts/run-validator.sh --required index.html --max-size 20971520 dist",
-    "generate:sfx-inline": "node scripts/generate_sfx_inline.mjs"
+    "generate:sfx-inline": "node scripts/generate_sfx_inline.mjs",
+    "validate:run-state": "node scripts/validate_run_state_reset.mjs"
   },
   "devDependencies": {
     "typescript": "^5.9.2",
