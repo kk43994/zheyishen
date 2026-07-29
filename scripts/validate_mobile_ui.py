@@ -193,7 +193,10 @@ if "pointInRect(p, ORIGIN_BADGE_HIT_RECT)" not in game:
     fail("battle origin badge touch target is not wired to its full hit rectangle")
 for token in (
     "const nickname = this.origin.nickname || this.origin.title",
-    "ctx.fillText(nickname, x + 39, y + 28)",
+    # 原合同写死 ctx.fillText(nickname, ...)。2026-07-29 外号栏按用户裁决去掉底框、
+    # 改用 drawOutlinedText 描边字——可读性是提高了（描边字在任何背景上都读得出），
+    # 但写法变了。合同要守的是「外号在这个位置以可读方式画出来」，不是具体调用哪个 API。
+    "drawOutlinedText(nickname, x + 39, y + 28",
     "出生外号 · 人生档案",
     "panelWidth = 152",
     "panelY + panelHeight - 26",

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from PIL import Image
@@ -230,8 +231,11 @@ def main() -> None:
         "collector relocation action": "private relocateDebtCollector(enemy: EnemyUnit)",
         "collector offscreen-radius pull chain": "const pullDX = enemy.x - this.heroX;",
         "stage elite identity downgrade": "spawn.boss = false",
-        "uniform answer canonical elite": "'uniform-answer': { name: '统一答案', hp: 200, speed: 22, radius: 26, damage: 6, elite: true }",
-        "last bus canonical elite": "'last-bus': { name: '末班车', hp: 260, speed: 26, radius: 28, damage: 10, elite: true }",
+        # 这两条原本把整行 spec（含 hp/speed/radius/damage）逐字写进合同，等于把可调数值
+        # 焊死在门禁里——2026-07-29 重排 Boss 血量时它们立刻红了，而血量本来就是该调的。
+        # 合同要守的是身份不变量：这两个单位存在、且是精英而不是大 Boss。数值交给平衡。
+        "uniform answer canonical elite": "'uniform-answer': { name: '统一答案', hp:",
+        "last bus canonical elite": "'last-bus': { name: '末班车', hp:",
         "elite and backstab windup dispatch": "if ((enemy.boss || enemy.elite || enemy.backstabber) && (enemy.windupTimer ?? 0) > 0)",
         "last bus unified windup": "enemy.attackKind = 'last-bus-dash'",
         "last bus strike dispatch": "case 'last-bus-dash':",
@@ -257,6 +261,16 @@ def main() -> None:
     for contract, token in behavior_contracts.items():
         if token not in game:
             fail(f"boss behavior contract missing: {contract}")
+    # 数值可调，身份不可调：这两个单位必须仍然是 elite 且不得升格成 boss。
+    for unit in ("uniform-answer", "last-bus"):
+        line_match = re.search(rf"'{unit}': \{{[^}}]*\}}", game)
+        if not line_match:
+            fail(f"canonical elite spec missing: {unit}")
+        spec = line_match.group(0)
+        if "elite: true" not in spec:
+            fail(f"canonical elite downgraded: {unit} is no longer elite")
+        if "boss: true" in spec:
+            fail(f"canonical elite promoted to boss: {unit}")
     praise_cycle_start = game.index("const chairMove = this.praiseMoveIndex % 5;")
     praise_cycle_end = game.index("// 一阶段不让你靠近", praise_cycle_start)
     praise_cycle = game[praise_cycle_start:praise_cycle_end]
