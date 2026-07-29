@@ -14074,7 +14074,12 @@ export class ZheYiShenGame {
     // 保守保留至少 96px 外延，只有整个视觉范围都在屏幕外时才跳过；
     // 游戏模拟、敌人数量、粒子数量与最终可见画面均不改变。
     const screenMargin = Math.max(96, margin);
-    if (x + screenMargin < 0 || x - screenMargin > W || y + screenMargin < 0 || y - screenMargin > H) return false;
+    // x/y 是世界坐标，必须先经过和 renderWorld 相同的相机换算。
+    // 直接拿世界坐标和画布边界比较，会在主角离开出生点后把镜头内怪物误裁掉。
+    const screenX = HERO_SCREEN_X + (x - this.heroX);
+    const screenY = HERO_SCREEN_Y + (y - this.heroY);
+    if (screenX + screenMargin < 0 || screenX - screenMargin > W
+      || screenY + screenMargin < 0 || screenY - screenMargin > H) return false;
     if (!this.darkActive || this.darkR >= 320) return true;
     return Math.hypot(x - this.darkCX, y - this.darkCY) <= Math.max(70, this.darkR) + margin;
   }

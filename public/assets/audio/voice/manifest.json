@@ -712,14 +712,14 @@
     "id": "hero-became-him",
     "file": "assets/audio/voice/hero-became-him.mp3",
     "role": "hero",
-    "voiceId": "Chinese (Mandarin)_Sincere_Adult",
+    "voiceId": "Chinese (Mandarin)_Lyrical_Voice",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 4392,
-    "bytes": 36564,
+    "durationMs": 4788,
+    "bytes": 39732,
     "draft": false,
     "assetRevision": 1,
-    "generatedAt": "2026-07-28T13:03:55.314Z",
+    "generatedAt": "2026-07-29T06:50:16.841Z",
     "delivery": {
       "voice": "成年主角男声＋父亲记忆叠层",
       "tone": "主角先脱口而出，父亲旧声从后面贴上来",
@@ -731,19 +731,7 @@
         "exhale",
         "pause"
       ]
-    },
-    "reviewFile": "assets/audio/voice-review/hero-became-him.mp3",
-    "reviewDurationMs": 4349,
-    "reviewBytes": 36564,
-    "layers": [
-      {
-        "file": "assets/audio/voice-layers/hero-became-him-father.mp3",
-        "voiceId": "ttv-voice-2026072409135526-TsjoP4Ow",
-        "purpose": "父亲旧句作为成年主角语言来源的远处回声"
-      }
-    ],
-    "postprocess": "成年主声 + 低频远置父亲记忆叠声（复用 father-for-your-good 原声）",
-    "skipped": true
+    }
   },
   {
     "id": "self-stand-straight",
@@ -1400,11 +1388,11 @@
     "voiceId": "ttv-voice-2026072819561426-prAlwK1P",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1224,
-    "bytes": 11220,
+    "durationMs": 1116,
+    "bytes": 10356,
     "draft": false,
     "assetRevision": 0,
-    "generatedAt": "2026-07-28T22:26:21.576Z",
+    "generatedAt": "2026-07-29T06:50:17.716Z",
     "delivery": {
       "voice": "设计音色·领导男声，多口齐声",
       "tone": "所有的嘴同时说这两个字",
@@ -1534,11 +1522,11 @@
     "voiceId": "female-chengshu",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 1620,
-    "bytes": 14388,
+    "durationMs": 1440,
+    "bytes": 12948,
     "draft": false,
     "assetRevision": 0,
-    "generatedAt": "2026-07-28T22:26:25.344Z",
+    "generatedAt": "2026-07-29T06:53:56.850Z",
     "delivery": {
       "voice": "成熟女教师声",
       "tone": "顺口点名，不停下讲课",

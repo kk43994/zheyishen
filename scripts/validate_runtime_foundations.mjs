@@ -50,6 +50,8 @@ requireToken(game, '明确失败后才会出现重试入口', '重试入口没�
 requireToken(game, 'separateCircularBodies(this.enemies)', '敌群分离仍未使用空间桶');
 requireToken(game, 'Math.min(3, Math.max(1, Math.floor(window.devicePixelRatio || 1)))', 'Canvas 没有保留高密度手机的 3x 原生清晰度');
 requireToken(game, 'const screenMargin = Math.max(96, margin)', '没有跳过完全位于屏幕外的无效 Canvas 绘制');
+requireToken(game, 'const screenX = HERO_SCREEN_X + (x - this.heroX)', '屏幕裁剪没有把世界 X 坐标转换到相机坐标');
+requireToken(game, 'const screenY = HERO_SCREEN_Y + (y - this.heroY)', '屏幕裁剪没有把世界 Y 坐标转换到相机坐标');
 requireToken(workflow, 'npm run validate:core', 'CI 没有执行核心门禁');
 
 const result = {

@@ -92,6 +92,11 @@ const systemVoiceByCue = {
   'clinic-fifty-six': 'female-yujie-jingpin',
 };
 
+// 超短句容易吞字或读糊，对已证实读错的字强制注音
+const pronunciationByCue = {
+  'teacher-daydream': ['呆/(dai1)'],
+};
+
 function voiceFor(cue) {
   if (systemVoiceByCue[cue.id]) return systemVoiceByCue[cue.id];
   if (cue.role === 'narrator' || cue.role === 'lamp-keeper') return narratorVoice || 'Chinese (Mandarin)_Southern_Young_Man';
@@ -124,6 +129,7 @@ async function callTts(cue) {
       output_format: 'hex',
       voice_setting: voiceSetting(cue),
       audio_setting: { sample_rate: 32000, bitrate: 64000, format: 'mp3', channel: 1 },
+      ...(pronunciationByCue[cue.id] ? { pronunciation_dict: { tone: pronunciationByCue[cue.id] } } : {}),
     }),
   });
   const raw = await response.text();

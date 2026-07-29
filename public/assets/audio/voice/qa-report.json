@@ -343,13 +343,13 @@
   {
     "id": "hero-became-him",
     "expected": "我也是为你好",
-    "transcript": "我也是为您好",
-    "normalizedTranscript": "我也是为您好",
-    "characterErrorRate": 0.1667,
-    "pronunciationErrorRate": 0.1667,
-    "durationSeconds": 4.349,
-    "charactersPerSecond": 1.73,
-    "status": "manual-review"
+    "transcript": "我也是为你好",
+    "normalizedTranscript": "我也是为你好",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 4.734,
+    "charactersPerSecond": 1.56,
+    "status": "pass"
   },
   {
     "id": "self-stand-straight",
@@ -629,13 +629,13 @@
   {
     "id": "boss-meeting-over",
     "expected": "散会",
-    "transcript": "上会",
-    "normalizedTranscript": "上会",
-    "characterErrorRate": 0.5,
-    "pronunciationErrorRate": 0.5,
-    "durationSeconds": 1.184,
-    "charactersPerSecond": 2.03,
-    "status": "manual-review"
+    "transcript": "散会",
+    "normalizedTranscript": "散会",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 1.08,
+    "charactersPerSecond": 2.27,
+    "status": "pass"
   },
   {
     "id": "xiaozhang-busy-later",
@@ -695,13 +695,13 @@
   {
     "id": "teacher-daydream",
     "expected": "发什么呆",
-    "transcript": "发什么胆",
-    "normalizedTranscript": "发什么胆",
-    "characterErrorRate": 0.25,
-    "pronunciationErrorRate": 0.25,
-    "durationSeconds": 1.567,
-    "charactersPerSecond": 2.93,
-    "status": "manual-review"
+    "transcript": "发什么呆",
+    "normalizedTranscript": "发什么呆",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 1.4,
+    "charactersPerSecond": 3.33,
+    "status": "pass"
   },
   {
     "id": "shopkeeper-fifty-cents",
