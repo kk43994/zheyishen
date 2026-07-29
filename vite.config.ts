@@ -5,7 +5,13 @@ import { parseFirstAIJson } from './src/ai-json';
 import { AI_SYSTEM_PROMPTS } from './src/ai-prompts';
 
 interface AiProfile { baseUrl: string; apiKey: string; model: string }
-const ORIGIN_AI_MODEL = 'doubao-seed-2-0-pro-260215';
+// 2026-07-29：本地/demo 与平台包对齐到 lite（平台 src/ai.ts 已全线 lite）。
+// 此前这里是 `const ORIGIN_AI_MODEL = 'doubao-seed-2-0-pro-260215'`，且覆盖判断没有按
+// kind 收窄——只要 active profile 的 model 含 doubao，**全部**六条链路（出生/命运/选项/
+// 亲口回应/审稿/回响）都被换成 pro，profile 里写的 model 根本不作数。本地验收与平台
+// 表现对不上就是这么来的。现在模型完全由 active profile 决定。
+// 要退回强制 pro：把下面这行改回 'doubao-seed-2-0-pro-260215'。
+const FORCED_DOUBAO_MODEL: string | null = null;
 
 // ai-profiles.local.json 热切换：scripts/ai-switch.sh 改 active 后立即生效，无需重启。
 let profileCache: { mtimeMs: number; profile: AiProfile } | null = null;
@@ -37,17 +43,16 @@ function aiProxyPlugin(mode: string): Plugin {
   };
 
   const middleware = (req: any, res: any, next: () => void) => {
-    const kind = req.url === '/api/ai/origin' ? 'origin'
-      : req.url === '/api/ai/fate' ? 'fate'
-        : req.url === '/api/ai/fate-options' ? 'fate-options'
-          : req.url === '/api/ai/fate-free' ? 'fate-free'
-            : req.url === '/api/ai/fate-review' ? 'fate-review'
-              : req.url === '/api/ai/fate-result' ? 'fate-result' : null;
+    // 路由从 AI_SYSTEM_PROMPTS 推导，不再手写清单——「人生封卷」上线时这里漏加了
+    // life-summary，本地/demo 的封卷 404 了整整一版都没人发现。提示词表就是唯一事实源。
+    const kindFromUrl = req.url?.startsWith('/api/ai/') ? req.url.slice('/api/ai/'.length) : '';
+    const kind = (Object.keys(AI_SYSTEM_PROMPTS) as Array<keyof typeof AI_SYSTEM_PROMPTS>)
+      .find((name) => name === kindFromUrl) ?? null;
     if (!kind) return next();
     if (req.method !== 'POST') return sendJson(res, 405, { ok: false, error: 'method_not_allowed' });
     const { baseUrl, apiKey, model: profileModel } = loadActiveProfile(fallback);
-    const model = profileModel.includes('doubao')
-      ? ORIGIN_AI_MODEL
+    const model = FORCED_DOUBAO_MODEL && profileModel.includes('doubao')
+      ? FORCED_DOUBAO_MODEL
       : profileModel;
     if (!baseUrl || !apiKey) {
       console.info(`[AI] ${kind} skipped · backend not configured`);
@@ -78,6 +83,9 @@ function aiProxyPlugin(mode: string): Plugin {
           : kind === 'fate-options' ? 1000
             : kind === 'fate-free' ? 760
               : kind === 'fate-review' ? 220 : 900,
+          // 与 src/ai.ts 的客户端等待窗对齐：origin 100s / 封卷 90s / 其余 60s。
+          // 旧的 55s 硬超时盖住了外面的 100s/90s，慢响应在代理里先被掐断。
+          kind === 'origin' ? 100_000 : kind === 'life-summary' ? 90_000 : 60_000,
         );
         console.info(`[AI] ${requestId} ${kind} <- ${model} ${Date.now() - started}ms`);
         return sendJson(res, 200, { ok: true, data: upstream, model });
@@ -104,9 +112,10 @@ async function callChatCompletion(
   payload: unknown,
   temperature = 0.9,
   maxTokens = 900,
+  timeoutMs = 60_000,
 ): Promise<unknown> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 55000);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
