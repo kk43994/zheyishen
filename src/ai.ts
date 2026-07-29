@@ -296,12 +296,9 @@ function callPlatformAI(
       }
       // 思考探针在成功路径落账：0字=disabled 真的透传了；>0=平台丢参数、模型裸跑思考。
       thinkingProbe = { kind, chars: reasonedChars };
-      publishAIDiagnostic(
-        kind,
-        'platform',
-        'returned',
-        `平台已回调 · ${text.length}字 · 思考${reasonedChars}字${reasonedChars > 0 ? '（平台未关思考）' : '（思考已关）'}`,
-      );
+      updateThinkingProbeBadge(kind, reasonedChars);
+      const thinkingNote = reasonedChars > 0 ? `思考${reasonedChars}字（平台未关思考）` : '思考0字（已关）';
+      publishAIDiagnostic(kind, 'platform', 'returned', `平台已回调 · ${text.length}字 · ${thinkingNote}`);
       try {
         resolve(parseFirstAIJson(text));
       } catch {
