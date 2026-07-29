@@ -5,7 +5,7 @@ import { parseFirstAIJson } from './src/ai-json';
 import { AI_SYSTEM_PROMPTS } from './src/ai-prompts';
 
 interface AiProfile { baseUrl: string; apiKey: string; model: string }
-const ORIGIN_AI_MODEL = 'doubao-seed-2-1-pro-260628';
+const ORIGIN_AI_MODEL = 'doubao-seed-2-0-pro-260215';
 
 // ai-profiles.local.json 热切换：scripts/ai-switch.sh 改 active 后立即生效，无需重启。
 let profileCache: { mtimeMs: number; profile: AiProfile } | null = null;

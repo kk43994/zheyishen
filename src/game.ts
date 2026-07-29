@@ -451,7 +451,7 @@ function originComicCaptionProgress(sceneIndex: number, sceneElapsed: number): n
 
 // 标题页右下角与 AI 诊断行都会带上它：上传后扫码第一眼就能确认平台跑的是哪个包，
 // 排查「上传了但行为没变」时不再靠猜。每次要重新上传前手动 +1。
-const BUILD_TAG = '0729-5';
+const BUILD_TAG = '0729-9';
 const TITLE_START_RECT = { x: 88, y: 520, width: 184, height: 44 } as const;
 const TITLE_AUDIO_RECT = { x: 290, y: 16, width: 54, height: 30 } as const;
 const TITLE_CODEX_RECT = { x: 16, y: 16, width: 54, height: 30 } as const;
@@ -2980,13 +2980,15 @@ export class ZheYiShenGame {
     const isError = ['rejected', 'unavailable', 'timeout', 'failed', 'invalid_json', 'empty_response'].includes(diagnostic.status);
     const tone = isError ? UI_PALETTE.oldRed : '#4f6470';
     ctx.save();
-    ctx.font = `12px ${UI_FONT_STACK}`;
+    ctx.font = `11px ${UI_FONT_STACK}`;
     // 平台原始 errMsg + errorCode + errorType + 模型 ID 是排查上传后 AI 调不通的唯一线索，
     // 必须一个字不丢、看得清地全部显示：12px 左对齐、最多七行；
     // 万一更长，最后一行以 … 收尾提示截断，不静默吃字。
     const inner = width - 16;
-    const maxLines = 7;
-    const lineHeight = 16;
+    // 纸面留给报错的净空是 262→404（上是标题、下是「重新等他出生」按钮 410）：
+    // 9 行 × 14 + 10 = 136，正好落在里面。
+    const maxLines = 9;
+    const lineHeight = 14;
     const lines: string[] = [];
     let current = '';
     let truncated = false;
@@ -12561,11 +12563,11 @@ export class ZheYiShenGame {
     ctx.textAlign = 'center';
     ctx.fillStyle = '#625b51'; ctx.font = `9px ${UI_FONT_STACK}`; ctx.fillText('出生 · 第一件无法选择的事', 180, 46);
     drawRedStamp(ctx, 133, 132, 94, 70, '未落档', 79, UI_PALETTE.oldRed, UI_PALETTE.paper, UI_PALETTE.ink);
-    ctx.fillStyle = UI_PALETTE.ink; ctx.font = `bold 19px ${UI_ARCHIVE_FONT_STACK}`; ctx.fillText('这一生还没有写下来', 180, 240);
+    ctx.fillStyle = UI_PALETTE.ink; ctx.font = `bold 19px ${UI_ARCHIVE_FONT_STACK}`; ctx.fillText('这一生还没有写下来', 180, 228);
     ctx.fillStyle = '#625b51'; ctx.font = `10px ${UI_ARCHIVE_FONT_STACK}`;
-    this.wrapText('没有使用兜底人物，也不会带着假故事开局。', 180, 268, 260, 16, 1);
+    this.wrapText('没有使用兜底人物，也不会带着假故事开局。', 180, 252, 260, 16, 1);
     // 报错框顶到 278，七行满写时到 400；重试按钮同步下移到 410 给它让位。
-    this.drawAIDiagnosticBadge(24, 278, 312);
+    this.drawAIDiagnosticBadge(24, 266, 312);
     this.drawBreathActionButton(ORIGIN_RETRY_RECT, '重新等他出生', UI_PALETTE.hospitalBlueGray);
     this.drawBreathActionButton(ORIGIN_ERROR_HOME_RECT, '回到封面', '#57585d');
     this.drawBreathActionButton(ORIGIN_ERROR_CODEX_RECT, '打开物证册', UI_PALETTE.oldRed);

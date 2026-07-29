@@ -30,10 +30,33 @@ for (const token of [
   'fail:',
   'complete:',
 ]) assert(platformCall.includes(token), `平台 AI 调用缺少 ${token}`);
-assert(ai.includes("origin: 'doubao-seed-2-1-pro-260628'"), '出生档案没有使用 Seed 2.1 Pro');
-assert(ai.includes("default: 'doubao-seed-2-1-pro-260628'"), '后台命运链路没有统一使用 Seed 2.1 Pro');
-assert(ai.includes('const useStream = false'), '出生档案必须使用平台完整响应，避免半截 JSON 被判成生成失败');
-assert(ai.includes('const ORIGIN_AI_TIMEOUT_MS = 55_000'), '出生档案没有为扫码环境保留 55 秒回调时间');
+assert(ai.includes("origin: 'doubao-seed-2-0-pro-260215'"), '出生档案没有使用 Seed 2.0 Pro');
+assert(ai.includes("default: 'doubao-seed-2-0-pro-260215'"), '后台命运链路没有统一使用 Seed 2.0 Pro');
+// 原合同写死 stream:false 来保证「不出现半截 JSON」。但 doubao 默认深度思考，origin 实测
+// 要跑 52.6 秒，非流式等于让平台网关憋 50 秒不吐字节，网关先断，回来的是 errorType F 的
+// `platform server error`——为了防半截 JSON 反而让出生 100% 失败。这里改为守住真正的不变量：
+// 可以流式，但只允许在 done/[DONE]/complete 之后交付，且交付前必须过 JSON 解析。
+assert(ai.includes('const useStream = true'), '推理模型必须走流式；非流式会在思考期被平台网关掐断');
+assert(platformCall.includes('streamedText += chunk'), '流式分片必须累积，不能边收边交付');
+assert(
+  /if \(event\.eventName === 'done' \|\| event\.data\.trim\(\) === '\[DONE\]'\) resolveText\(streamedText\)/
+    .test(platformCall),
+  '流式只能在 done/[DONE] 之后交付，避免半截 JSON 被判成生成失败',
+);
+assert(platformCall.includes('resolve(parseFirstAIJson(text))'), '交付前必须由 JSON 解析拦住半截内容');
+assert(platformCall.includes("thinking: { type: 'disabled' }"), '必须尝试关闭深度思考（平台不透传也无害）');
+
+const readTimeout = (name) => {
+  const hit = ai.match(new RegExp(`const ${name} = ([\\d_]+)`));
+  assert(hit, `找不到超时常量 ${name}`);
+  return Number(hit[1].replace(/_/g, ''));
+};
+// 实测（思考开）：origin 52.6s；fate 17.8s / fate-options 23.4s / fate-free 24.7s / fate-review 19.6s。
+// 用阈值而不是等值，后续按实测微调不会再撞门禁。
+const originTimeout = readTimeout('ORIGIN_AI_TIMEOUT_MS');
+assert(originTimeout >= 90_000, `出生等待窗必须 ≥90 秒，当前 ${originTimeout}ms`);
+const fateTimeout = readTimeout('FATE_AI_TIMEOUT_MS');
+assert(fateTimeout >= 45_000, `命运链路等待窗必须 ≥45 秒，当前 ${fateTimeout}ms`);
 assert(ai.includes("requestAI('origin', { runSeed, kind, requestNonce, wheels }, ORIGIN_AI_TIMEOUT_MS"), '出生档案没有使用统一等待窗');
 assert(game.includes('ORIGIN_COMIC_SKIP_RECT'), 'AI 出生完成后没有可见的提前翻页入口');
 assert(game.includes('private finishOriginComicEarly()'), 'AI 出生完成后不能提前结束漫画');
@@ -76,9 +99,12 @@ console.log(JSON.stringify({
   valid: true,
   platformAPI: 'tt.callAIChatCompletion',
   models: {
-    origin: 'doubao-seed-2-1-pro-260628',
-    background: 'doubao-seed-2-1-pro-260628',
+    origin: 'doubao-seed-2-0-pro-260215',
+    background: 'doubao-seed-2-0-pro-260215',
   },
+  transport: 'SSE stream; delivered only after done/[DONE]/complete, gated by JSON parse',
+  thinking: 'requested disabled; platform may drop the param, timeouts sized for the slow path',
+  timeouts: { origin: originTimeout, fate: fateTimeout },
   keyBoundary: 'platform account configuration; never bundled',
   textInput: 'kept by product decision; player chooses swallow or exhale',
   disclosure: 'loading screen + title screen + generation status',

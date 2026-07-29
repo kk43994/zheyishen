@@ -1,3 +1,5 @@
+import { readAudioProbe } from './audio-probe';
+import { sfxEngineState } from './audio-platform';
 const PERFORMANCE_STORAGE_KEY = 'zys-performance-v1';
 const PERFORMANCE_PANEL_KEY = 'zys-performance-panel-v1';
 const REPORT_LIMIT = 4;
@@ -255,6 +257,7 @@ function performanceText(): string {
   const slowest = report.assets.slowest.slice(0, 5)
     .map((asset) => `${asset.totalMs.toFixed(0).padStart(4)}ms  ${asset.name}`)
     .join('\n');
+  const audio = readAudioProbe(performance.now());
   const memory = report.memory
     ? `${report.memory.usedMB}/${report.memory.totalMB} MB（上限 ${report.memory.limitMB} MB）`
     : '当前宿主不开放 JS 堆内存';
@@ -267,6 +270,11 @@ function performanceText(): string {
     `主线程长任务 ${report.longTasks.count} 次 / ${rounded(report.longTasks.totalMs)}ms · 最慢 ${rounded(report.longTasks.worstMs)}ms`,
     `图片 ${report.assets.loaded} 成功 / ${report.assets.failed} 失败 · 解码像素 ${rounded(report.assets.pixels / 1e6)}MP`,
     `图片队列累计 ${rounded(report.assets.totalMs)}ms · 其中 decode ${rounded(report.assets.decodeMs)}ms`,
+    // 媒体解码/起播/seek 不计入主线程长任务，真机上出现过「长任务 0 次」却只有 25.6 FPS，
+    // 光看上面那一行永远发现不了音频问题，所以单独列一行。
+    `音频 元素 ${audio.elements} 个 · 在播 ${audio.playing} · 起播 ${audio.playsPerSecond.toFixed(1)}/s · seek ${audio.seeksPerSecond.toFixed(1)}/s`,
+    `音频 累计起播 ${audio.playCalls} · 累计seek ${audio.seeks} · 静音跳过 ${audio.skippedMuted}`,
+    `音效引擎 ${sfxEngineState()}`,
     `JS 内存 ${memory}`,
     '',
     '最近启动节点',

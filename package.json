@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "node scripts/generate_art_loading_manifest.mjs && tsc --noEmit && vite build",
+    "build": "node scripts/generate_sfx_inline.mjs && node scripts/generate_art_loading_manifest.mjs && tsc --noEmit && vite build",
     "build:demo": "node scripts/generate_art_loading_manifest.mjs && tsc --noEmit && vite build --mode demo --outDir dist-demo",
     "preview": "vite preview --host 127.0.0.1",
     "package": "bash scripts/package.sh",
@@ -84,7 +84,8 @@
     "validate:release-budget": "node scripts/validate_release_budget.mjs dist",
     "sync:release-metadata": "node scripts/sync_release_metadata.mjs",
     "validate:release-metadata": "node scripts/sync_release_metadata.mjs --check",
-    "validate": "bash scripts/run-validator.sh --required index.html --max-size 20971520 dist"
+    "validate": "bash scripts/run-validator.sh --required index.html --max-size 20971520 dist",
+    "generate:sfx-inline": "node scripts/generate_sfx_inline.mjs"
   },
   "devDependencies": {
     "typescript": "^5.9.2",

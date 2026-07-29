@@ -1,3 +1,11 @@
+import {
+  probeElementCreated,
+  probePlay,
+  probeSeek,
+  probeSkippedMuted,
+  probeRegisterPlayingCounter,
+} from './audio-probe';
+import { SFX_INLINE_BASE64 } from './audio-sfx-inline';
 import { VOICE_CUES, voicePlaybackRate, type VoiceCueId, type VoiceTreatment } from './voice-script';
 
 export type LifeSound =
@@ -129,11 +137,117 @@ function readInitialVolume(): number {
   return stored;
 }
 
+/** 所有创建过的媒体元素，仅供性能面板统计在播数量（元素本身生命周期不受影响）。 */
+const allMediaElements: HTMLAudioElement[] = [];
+probeRegisterPlayingCounter(() => allMediaElements.reduce((n, el) => n + (el.paused ? 0 : 1), 0));
+
 function media(file: string): HTMLAudioElement {
   const element = document.createElement('audio');
   element.preload = 'auto';
   element.src = new URL(file, document.baseURI).href;
+  allMediaElements.push(element);
+  probeElementCreated();
   return element;
+}
+
+/**
+ * 音效走 Web Audio 而不是 HTMLAudioElement。
+ *
+ * 元素路径每播一次都要 pause() + currentTime=0（真 seek）+ play()，等于让 WebView 的
+ * 媒体管线冲刷缓冲、重定位、重新申请解码器。普攻音效节流仅 55ms，战斗中一秒最多 18 次，
+ * 真机实测把帧率打到 25.6 FPS，而且这些开销在媒体栈里、不计入主线程长任务，所以性能面板
+ * 会如实报「长任务 0 次」——查了很久才定位到。
+ *
+ * BufferSource 播放没有 seek、没有解码、没有管线重启，代价是微秒级。
+ * 音频数据来自内联 base64（见 audio-sfx-inline.ts），不产生任何网络请求。
+ */
+class SfxEngine {
+  private context?: AudioContext;
+  private master?: GainNode;
+  private readonly buffers = new Map<string, AudioBuffer>();
+  private decoding = false;
+  private failed = false;
+
+  /** 必须在用户手势里调用，否则 AudioContext 会停在 suspended。 */
+  prime(): void {
+    if (this.failed || this.context) return;
+    const Ctor = typeof AudioContext !== 'undefined'
+      ? AudioContext
+      : (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctor) { this.failed = true; return; }
+    try {
+      this.context = new Ctor();
+      this.master = this.context.createGain();
+      this.master.gain.value = 1;
+      this.master.connect(this.context.destination);
+      void this.context.resume?.();
+      this.decodeAll();
+    } catch {
+      // 宿主不给 Web Audio 就整条退回元素路径。
+      this.failed = true;
+      this.context = undefined;
+    }
+  }
+
+  private decodeAll(): void {
+    const context = this.context;
+    if (!context || this.decoding) return;
+    this.decoding = true;
+    for (const [name, base64] of Object.entries(SFX_INLINE_BASE64)) {
+      try {
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+        // decodeAudioData 的 Promise 形式在旧 WebView 上可能缺失，回调形式两边都吃。
+        const onDone = (buffer: AudioBuffer): void => { this.buffers.set(name, buffer); };
+        const result = context.decodeAudioData(bytes.buffer, onDone, () => undefined);
+        if (result && typeof (result as Promise<AudioBuffer>).then === 'function') {
+          void (result as Promise<AudioBuffer>).then(onDone).catch(() => undefined);
+        }
+      } catch {
+        // 单个音效解不出来就让它自己退回元素路径，不影响其它音效。
+      }
+    }
+  }
+
+  ready(name: string): boolean {
+    return !this.failed && !!this.context && this.buffers.has(name);
+  }
+
+  play(name: string, volume: number, rate: number): boolean {
+    const context = this.context;
+    const master = this.master;
+    const buffer = this.buffers.get(name);
+    if (!context || !master || !buffer) return false;
+    try {
+      if (context.state === 'suspended') void context.resume?.();
+      const source = context.createBufferSource();
+      source.buffer = buffer;
+      source.playbackRate.value = rate;
+      const gain = context.createGain();
+      gain.gain.value = volume;
+      source.connect(gain);
+      gain.connect(master);
+      source.onended = () => { try { source.disconnect(); gain.disconnect(); } catch { /* 已断开 */ } };
+      source.start();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  state(): string {
+    if (this.failed) return 'unavailable';
+    if (!this.context) return 'idle';
+    return `${this.context.state} · ${this.buffers.size}/${Object.keys(SFX_INLINE_BASE64).length}`;
+  }
+}
+
+const sfxEngine = new SfxEngine();
+
+/** 供性能面板显示音效引擎走的是哪条路。 */
+export function sfxEngineState(): string {
+  return sfxEngine.state();
 }
 
 export class LifeFeedback {
@@ -169,7 +283,12 @@ export class LifeFeedback {
   unlock(): void {
     if (!this.unlocked) {
       this.unlocked = true;
-      for (const sound of Object.keys(SFX_FILES) as LifeSound[]) this.ensureSfxPool(sound);
+      // 必须在用户手势里建 AudioContext。成功的话音效池根本不用建——那 30 个
+      // preload='auto' 的元素本身也在占 WebView 的解码器名额。
+      sfxEngine.prime();
+      if (!sfxEngine.ready('hit')) {
+        for (const sound of Object.keys(SFX_FILES) as LifeSound[]) this.ensureSfxPool(sound);
+      }
     }
     this.syncAmbience();
     this.syncMusic();
@@ -204,6 +323,13 @@ export class LifeFeedback {
       // Persistence is optional in restricted webviews.
     }
     this.refreshActiveVolumes();
+    // 环境音/配乐在静音时会被整条停掉（见 syncAmbience/syncMusic），拉回来必须重新起流，
+    // 否则玩家把滑块推回去只会得到永久的安静。
+    if (channel === 'ambience' && next > 0) this.syncAmbience();
+    if (channel === 'music' && next > 0) {
+      this.syncMusic();
+      this.syncMusicTension();
+    }
   }
 
   debugState(): {
@@ -310,14 +436,36 @@ export class LifeFeedback {
   play(sound: LifeSound, intensity = 1): void {
     const now = performance.now();
     const throttle = sound === 'hit' ? 55 : sound === 'breath' ? 95 : 18;
-    if (now - (this.lastPlayed.get(sound) ?? -Infinity) < throttle || this.volume <= 0) return;
+    // 音量 0 时也要真的不播：HTMLAudioElement 即使 volume=0 仍然走完整解码/起播，
+    // 在互动空间 WebView 上这份开销照收不误（玩家把「音效」拉到 0 却依然顿帧）。
+    if (now - (this.lastPlayed.get(sound) ?? -Infinity) < throttle
+      || this.volume <= 0
+      || this.effectsVolume <= 0) {
+      if (this.volume <= 0 || this.effectsVolume <= 0) probeSkippedMuted();
+      return;
+    }
     this.lastPlayed.set(sound, now);
     this.unlock();
+    const gain = Math.max(0, Math.min(
+      1,
+      SFX_GAIN[sound] * intensity * this.volume * this.effectsVolume
+        * (this.activeVoice ? VOICE_SFX_DUCK : 1),
+    ));
+    const rate = ['boss', 'deny', 'phone', 'train', 'monitor'].includes(sound)
+      ? 1
+      : Math.max(0.92, Math.min(1.08, 1 + (Math.random() - 0.5) * 0.045));
+    if (sfxEngine.play(sound, gain, rate)) {
+      probePlay();
+      return;
+    }
     const pool = this.ensureSfxPool(sound);
     const player = pool.find((entry) => entry.paused || entry.ended) ?? pool[0];
     if (!player) return;
-    player.pause();
-    player.currentTime = 0;
+    // 给 HTMLAudioElement 赋 currentTime 是一次真 seek，移动端 WebView 会冲刷并重建媒体管线；
+    // 普攻音效节流仅 55ms，战斗中一秒最多 18 次，足够把帧啃出肉眼可见的顿。已经停在 0 的元素
+    // 不需要再 seek，也不需要先 pause 一个本来就暂停的元素。
+    if (!player.paused) player.pause();
+    if (player.currentTime !== 0) { player.currentTime = 0; probeSeek(); }
     player.volume = Math.max(0, Math.min(
       1,
       SFX_GAIN[sound]
@@ -329,6 +477,7 @@ export class LifeFeedback {
     player.playbackRate = ['boss', 'deny', 'phone', 'train', 'monitor'].includes(sound)
       ? 1
       : Math.max(0.92, Math.min(1.08, 1 + (Math.random() - 0.5) * 0.045));
+    probePlay();
     void player.play().catch(() => undefined);
   }
 
@@ -374,7 +523,12 @@ export class LifeFeedback {
   playVoice(id: VoiceCueId, treatment?: VoiceTreatment): void {
     const cue = VOICE_CUES[id];
     const now = performance.now();
-    if (now - (this.lastVoicePlayed.get(id) ?? -Infinity) < cue.cooldownMs || this.volume <= 0) return;
+    if (now - (this.lastVoicePlayed.get(id) ?? -Infinity) < cue.cooldownMs
+      || this.volume <= 0
+      || this.voiceVolume <= 0) {
+      if (this.volume <= 0 || this.voiceVolume <= 0) probeSkippedMuted();
+      return;
+    }
     this.unlock();
     if (this.activeVoicePriority > 0 && !cue.trigger.interrupt) {
       const queuedPriority = this.queuedVoice ? VOICE_CUES[this.queuedVoice.id].trigger.priority : 0;
@@ -460,6 +614,11 @@ export class LifeFeedback {
 
   private syncAmbience(): void {
     const stage = this.requestedAmbience;
+    // 拉到 0 就把流停掉，而不是留着一条 volume=0 的循环流继续解码。
+    if (this.ambienceVolume <= 0) {
+      if (this.activeAmbience) this.stopAmbience(false);
+      return;
+    }
     if (stage === undefined || this.volume <= 0 || stage === this.activeAmbienceStage) return;
     const previous = this.activeAmbience;
     if (previous) {
@@ -492,6 +651,11 @@ export class LifeFeedback {
 
   private syncMusic(): void {
     const track = this.requestedMusic;
+    // 同 syncAmbience：拉到 0 就停流，不留 volume=0 的循环流继续解码。
+    if (this.musicVolume <= 0) {
+      if (this.activeMusic) this.stopMusic(false);
+      return;
+    }
     if (track === undefined || this.volume <= 0) return;
     if (track === this.activeMusicTrack && this.activeMusic && !this.activeMusic.paused) return;
     const previous = this.activeMusic;
@@ -525,6 +689,11 @@ export class LifeFeedback {
   }
 
   private syncMusicTension(): void {
+    // 紧张层挂在配乐总线上，配乐静音时它也不该继续解码。
+    if (this.musicVolume <= 0) {
+      if (this.activeTension) this.stopMusicTension();
+      return;
+    }
     if (!this.musicTension || this.volume <= 0) return;
     if (this.activeTension && !this.activeTension.paused) return;
     const player = this.ensureMusicTension();

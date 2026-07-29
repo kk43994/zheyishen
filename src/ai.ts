@@ -59,7 +59,9 @@ function publishAIDiagnostic(
     kind,
     transport,
     status,
-    detail: detail.replace(/\s+/g, ' ').slice(0, 96),
+    // 平台报错里最关键的信息（上游 URL 之后的真实原因、错误码）常常排在很后面，
+    // 96 字会正好砍在 URL 中间把原因吃掉。诊断只在失败页显示，放宽到 400 字。
+    detail: detail.replace(/\s+/g, ' ').slice(0, 400),
     updatedAt: Date.now(),
   };
 }
@@ -75,14 +77,19 @@ interface AIEnvelope {
   error?: string;
 }
 
-/** 互动空间全链路统一使用 Seed 2.1 Pro，命运请求在战斗后台预生成。 */
+/** 互动空间全链路统一使用 Seed 2.0 Pro，命运请求在战斗后台预生成。 */
 const PLATFORM_AI_MODELS = {
-  origin: 'doubao-seed-2-1-pro-260628',
-  default: 'doubao-seed-2-1-pro-260628',
+  origin: 'doubao-seed-2-0-pro-260215',
+  default: 'doubao-seed-2-0-pro-260215',
 } as const;
 
-// 40 秒出生漫画完整播放后，仍给扫码宿主与 Seed 2.1 Pro 留出回调余量。
-const ORIGIN_AI_TIMEOUT_MS = 55_000;
+// doubao Seed 2.0 Pro 默认开深度思考，实测同一段 origin 提示词：思考开 52.6s、关掉 13.0s。
+// 我们已经在请求里带上 thinking:{type:'disabled'}，但平台是否透传未知，上限按最慢路径留。
+const ORIGIN_AI_TIMEOUT_MS = 100_000;
+
+// 同一把抖音令牌实测（思考开、非流式）：fate 17.8s、fate-options 23.4s、fate-free 24.7s、
+// fate-review 19.6s、fate-result 10.1s。原来的 10~20s 上限全部卡在采样值上下，必然抖动失败。
+const FATE_AI_TIMEOUT_MS = 60_000;
 
 function platformModelFor(kind: keyof typeof AI_SYSTEM_PROMPTS): string {
   return kind === 'origin' ? PLATFORM_AI_MODELS.origin : PLATFORM_AI_MODELS.default;
@@ -103,6 +110,10 @@ interface TicAIChatOptions {
   messages: Array<{ role: 'system' | 'user'; content: string }>;
   temperature?: number;
   maxTokens?: number;
+  // 方舟层面 thinking:{type:'disabled'} 实测把 origin 从 52.6s 压到 13.0s。平台文档没把它
+  // 写进 tt.callAIChatCompletion 的入参表（只说 temperature 按白名单透传），所以它很可能
+  // 在平台侧被丢弃——那样也只是无效，不会更糟；真透传下去就直接绕开了超时。
+  thinking?: { type: 'disabled' | 'enabled' | 'auto' };
   onSSE?: (event: { eventName: string; data: string }) => void;
   success?: (res: { errMsg: string; data: string }) => void;
   fail: (err: { errMsg: string; errorCode?: number; errorType?: string }) => void;
@@ -134,6 +145,22 @@ function extractPlatformSSEText(data: string): string {
   }
 }
 
+/** 思考阶段 choices[].delta.content 为空，思考内容在 reasoning_content；只用于进度显示。 */
+function extractPlatformSSEReasoning(data: string): string {
+  const normalized = data.trim().replace(/^data:\s*/i, '');
+  if (!normalized || normalized === '[DONE]') return '';
+  try {
+    const chunk = JSON.parse(normalized) as Record<string, any>;
+    if (!chunk || typeof chunk !== 'object') return '';
+    const thought = chunk.choices?.[0]?.delta?.reasoning_content
+      ?? chunk.choices?.[0]?.message?.reasoning_content
+      ?? chunk.delta?.reasoning_content;
+    return typeof thought === 'string' ? thought : '';
+  } catch {
+    return '';
+  }
+}
+
 function callPlatformAI(
   kind: keyof typeof AI_SYSTEM_PROMPTS,
   payload: unknown,
@@ -142,9 +169,13 @@ function callPlatformAI(
 ): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const model = platformModelFor(kind);
-    // 出生档案必须拿到一个完整 JSON 才能进入游戏。SSE 的半截内容对玩家不可用，
-    // 还会把回调收尾时序或末尾截断误判成“这一生没有写下来”；这里使用平台的一次性完整响应。
-    const useStream = false;
+    // 出生档案必须拿到一个完整 JSON 才能进入游戏，但这不代表要用非流式：
+    // doubao 默认深度思考，origin 提示词实测要跑 50 秒以上，stream:false 等于让平台网关
+    // 憋 50 秒不吐一个字节，网关先断，回来的是笼统的 `platform server error`（errorType F，
+    // 平台自己承认是框架内部错误）。平台文档专门写了「推理模型流式输出时思考内容在
+    // reasoning_content」，说明推理模型就该走流式。完整性由收尾时机保证：只在 done/[DONE]
+    // 或 complete 之后才交给 parseFirstAIJson，半截内容会被 JSON 解析挡下并走可见的报错页。
+    const useStream = true;
     if (signal?.aborted) {
       publishAIDiagnostic(kind, 'platform', 'aborted', '请求在发出前已取消');
       reject(new DOMException('ai_aborted', 'AbortError'));
@@ -159,6 +190,7 @@ function callPlatformAI(
     publishAIDiagnostic(kind, 'platform', 'calling', `已发出 · ${model}`);
     let settled = false;
     let streamedText = '';
+    let reasonedChars = 0;
     const finish = (): void => {
       window.clearTimeout(timer);
       signal?.removeEventListener('abort', onAbort);
@@ -179,7 +211,7 @@ function callPlatformAI(
       }
     }, timeoutMs);
     signal?.addEventListener('abort', onAbort, { once: true });
-    // text 来自平台回调，必须当作不可信输入：settled 与 finish() 已经把 55 秒安全超时拆掉了，
+    // text 来自平台回调，必须当作不可信输入：settled 与 finish() 已经把安全超时拆掉了，
     // 这之后任何同步抛错都会让 Promise 永远不结算——出生没有兜底，玩家会永久停在
     // 「AI 正在生成本局人生剧本」上，既没有报错也没有重试入口。所以先验类型再动它。
     const resolveText = (text: unknown): void => {
@@ -206,6 +238,7 @@ function callPlatformAI(
       type: 'text',
       model,
       stream: useStream,
+      thinking: { type: 'disabled' },
       messages: [
         { role: 'system', content: AI_SYSTEM_PROMPTS[kind] },
         { role: 'user', content: `输入JSON：${JSON.stringify(payload)}` },
@@ -226,8 +259,21 @@ function callPlatformAI(
           if (chunk) {
             streamedText += chunk;
             publishAIDiagnostic(kind, 'platform', 'streaming', `正在接收 · ${streamedText.length}字`);
+          } else {
+            // 思考阶段 content 恒为空、只有 reasoning_content，这段能长达 40 秒。
+            // 不把它显示出来，玩家看到的就是一个几十秒不动的屏幕，会误判成卡死。
+            const thought = extractPlatformSSEReasoning(event.data);
+            if (thought) {
+              reasonedChars += thought.length;
+              publishAIDiagnostic(kind, 'platform', 'streaming', `正在构思 · ${reasonedChars}字`);
+            }
           }
           if (event.eventName === 'done' || event.data.trim() === '[DONE]') resolveText(streamedText);
+        },
+        // 流式下平台若同时回调 success 并带完整文本，以它为准；拿不到再退回累积的分片。
+        success: (res?: { errMsg?: string; data?: unknown }) => {
+          const whole = res?.data;
+          resolveText(typeof whole === 'string' && whole.trim() ? whole : streamedText);
         },
         complete: () => {
           if (!settled) resolveText(streamedText);
@@ -535,7 +581,7 @@ async function reviewFateReality(
   signal?: AbortSignal,
 ): Promise<FateRealityReview | null> {
 	try {
-		const raw = await requestAI('fate-review', { snapshot, event, ...(sourceEvent ? { sourceEvent } : {}) }, 10000, signal);
+		const raw = await requestAI('fate-review', { snapshot, event, ...(sourceEvent ? { sourceEvent } : {}) }, FATE_AI_TIMEOUT_MS, signal);
 		if (!isRecord(raw) || typeof raw.valid !== 'boolean') return null;
 		const reason = typeof raw.reason === 'string' ? raw.reason.trim().slice(0, 120) : '未说明原因';
 		if (!raw.valid) console.info('[AI] 命运事件未通过现实审稿', reason);
@@ -563,7 +609,7 @@ export async function generateAIFate(snapshot: LifeSnapshot, signal?: AbortSigna
 				snapshot,
 				candidateItems: buildFateCandidateItemCatalog(snapshot),
 				previousRejections,
-			}, 14000, signal);
+			}, FATE_AI_TIMEOUT_MS, signal);
 			const core = validateAIFateCore(normalizeAIFateCore(rawCore, snapshot), snapshot);
 			if (!core || !isGroundedFateFact(core.fact, core.scene)) {
 				previousRejections.push('事件核心没有写清现实中的时间、地点、人物、动作与直接结果');
@@ -573,7 +619,7 @@ export async function generateAIFate(snapshot: LifeSnapshot, signal?: AbortSigna
 			const rawOptions = await requestAI('fate-options', {
 				snapshot,
 				event: core,
-			}, 14000, signal);
+			}, FATE_AI_TIMEOUT_MS, signal);
 			const candidate = validateFateEvent(
 				normalizeAIFateOptions(rawOptions, core),
 				snapshot,
@@ -674,7 +720,7 @@ export async function generateAIFateResult(payload: {
   snapshot: LifeSnapshot;
 }): Promise<string | null> {
   try {
-    const raw = await requestAI('fate-result', payload, 20000);
+    const raw = await requestAI('fate-result', payload, FATE_AI_TIMEOUT_MS);
     if (!isRecord(raw) || typeof raw.text !== 'string') return null;
     const text = raw.text.trim().replace(/\s+/g, ' ');
     if (text.length < 8 || text.length > 90) return null;
