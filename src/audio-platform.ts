@@ -24,16 +24,16 @@ const VOICE_VOLUME_KEY = 'zhe-yi-shen:voice-volume';
 export type AudioMixChannel = 'effects' | 'ambience' | 'voice';
 
 const SFX_FILES: Record<LifeSound, string> = {
-  page: 'assets/audio/sfx/page.wav',
-  breath: 'assets/audio/sfx/breath.wav',
-  hit: 'assets/audio/sfx/hit.wav',
-  hurt: 'assets/audio/sfx/hurt.wav',
-  coin: 'assets/audio/sfx/coin.wav',
-  wear: 'assets/audio/sfx/wear.wav',
-  swallow: 'assets/audio/sfx/swallow.wav',
-  exhale: 'assets/audio/sfx/exhale.wav',
-  boss: 'assets/audio/sfx/boss.wav',
-  deny: 'assets/audio/sfx/deny.wav',
+  page: 'assets/audio/sfx/page.mp3',
+  breath: 'assets/audio/sfx/breath.mp3',
+  hit: 'assets/audio/sfx/hit.mp3',
+  hurt: 'assets/audio/sfx/hurt.mp3',
+  coin: 'assets/audio/sfx/coin.mp3',
+  wear: 'assets/audio/sfx/wear.mp3',
+  swallow: 'assets/audio/sfx/swallow.mp3',
+  exhale: 'assets/audio/sfx/exhale.mp3',
+  boss: 'assets/audio/sfx/boss.mp3',
+  deny: 'assets/audio/sfx/deny.mp3',
 };
 
 const SFX_GAIN: Record<LifeSound, number> = {
