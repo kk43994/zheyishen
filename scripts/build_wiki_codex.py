@@ -379,6 +379,25 @@ def shell(slug: str, title: str, eyebrow: str, sub: str, body: str) -> str:
   .design-point{{padding:12px 14px;border:1px solid var(--line);border-radius:7px;background:color-mix(in srgb,var(--bg) 55%,transparent)}}
   .design-point b{{display:block;font-size:14.5px;margin-bottom:5px;color:var(--moon)}}
   .design-point p{{margin:0;font-size:13.5px;line-height:1.78;color:var(--fg-2)}}
+  .enc-timeline{{display:flex;flex-wrap:wrap;gap:0;align-items:stretch;margin:0 0 12px;
+    border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card)}}
+  .tl-mark{{flex:1 1 84px;padding:9px 10px;border-right:1px solid var(--line);
+    font-size:11.5px;color:var(--fg-3);text-align:center;line-height:1.5}}
+  .tl-mark:last-child{{border-right:none}}
+  .tl-mark b{{display:block;font:700 13px/1.2 ui-monospace,Menlo,monospace;color:var(--rainyellow);margin-bottom:3px}}
+  .tl-mark.tl-end b{{color:var(--oldred)}}
+  .encs{{display:grid;gap:10px}}
+  .enc-card{{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:start;
+    padding:14px 16px;border:1px solid var(--line);border-left:3px solid var(--rainyellow);
+    border-radius:8px;background:var(--card)}}
+  .enc-arts{{display:flex;gap:8px}}
+  .enc-arts figure{{margin:0;text-align:center;max-width:82px}}
+  .enc-arts img{{width:100%;height:auto;image-rendering:pixelated;border:1px solid var(--line);
+    border-radius:5px;background:#0d0d11}}
+  .enc-arts figcaption{{margin-top:5px;font-size:10.5px;line-height:1.4;color:var(--fg-3)}}
+  .enc-card > div > b:first-of-type{{display:block;font-size:15px;margin:6px 0 5px;color:var(--moon)}}
+  .enc-card p{{margin:0;font-size:13.5px;line-height:1.78;color:var(--fg-2)}}
+  .enc-note{{margin-top:7px !important;font-size:12.5px !important;color:var(--fg-3) !important}}
   .drops{{display:grid;gap:10px}}
   .drop-row{{display:grid;grid-template-columns:104px minmax(0,1fr);gap:16px;align-items:start;
     padding:14px 16px;border:1px solid var(--line);border-left:3px solid var(--moon);
@@ -387,7 +406,7 @@ def shell(slug: str, title: str, eyebrow: str, sub: str, body: str) -> str:
   .drop-shot{{position:relative;display:block;width:100%;aspect-ratio:1;overflow:hidden;
     border:1px solid var(--line);border-radius:5px;background:#0d0d11}}
   .drop-shot img{{position:absolute;width:400%;max-width:none;left:-100%;top:-9%;image-rendering:pixelated}}
-  .drop-row b{{display:block;font-size:15.5px;margin:6px 0 0;color:var(--moon)}}
+  .drop-row > div > b:first-of-type{{display:block;font-size:15.5px;margin:6px 0 0;color:var(--moon)}}
   .drop-flavor{{margin:5px 0 0;font-size:13px;color:var(--fg-3)}}
   .drop-mech{{margin:7px 0 0;font-size:13.5px;line-height:1.75}}
   .drop-note{{margin:6px 0 0;font-size:12.5px;line-height:1.7;color:var(--fg-3)}}
@@ -421,8 +440,14 @@ def shell(slug: str, title: str, eyebrow: str, sub: str, body: str) -> str:
   @media(max-width:640px){{
     .thread{{grid-template-columns:1fr;gap:9px}}
     .link-row{{grid-template-columns:56px minmax(0,1fr);gap:10px}}
-    .drop-row{{grid-template-columns:68px minmax(0,1fr);gap:11px}}
-    .drop-row b{{font-size:14px}}
+    .drop-row{{grid-template-columns:58px minmax(0,1fr);gap:10px;padding:12px 12px}}
+    .chip{{white-space:normal;word-break:break-word}}
+    .drop-art .ric{{transform:scale(.78);transform-origin:top center}}
+    .enc-card{{grid-template-columns:1fr;gap:10px}}
+    .enc-arts figure{{max-width:66px}}
+    .enc-card p{{font-size:12.5px}}
+    .tl-mark{{flex:1 1 62px;padding:7px 6px;font-size:10.5px}}
+    .drop-row > div > b:first-of-type{{font-size:14px}}
     .drop-mech,.drop-flavor{{font-size:12.5px}}
     .link-row p,.npc-line,.npc-why,.npc-later{{font-size:12.5px}}
     .npc-mech{{grid-template-columns:1fr;gap:4px}}
@@ -640,6 +665,63 @@ def render_chapter_design(stage: str) -> str:
     )
 
 
+ENC_ORDER = ["stall", "door", "altar", "fate"]
+
+
+def render_encounters(stage: str) -> str:
+    """本章会遇到的房间与命运牌。此前章节志完全没写这一层——
+    回忆祭坛／当铺／命运牌 0 提及，两扇门只在别处被顺带提到。
+    时间点取自 src/game.ts 的 STAGES，不是估的。"""
+    enc = CHAPTER_DESIGN.get("encounters") or {}
+    per = (enc.get("perStage") or {}).get(stage)
+    kinds = enc.get("kinds") or {}
+    if not per:
+        return ""
+    # 时间轴：按秒排一条本章节奏
+    marks = [
+        (per.get("stall"), "当铺"), (per.get("door"), "两扇门"), (per.get("altar"), "回忆祭坛"),
+        (per.get("elite"), "小 Boss"), (per.get("boss"), "大 Boss"),
+    ]
+    marks = sorted([(t, label) for t, label in marks if t is not None], key=lambda x: x[0])
+    tl = "".join(
+        f'<span class="tl-mark"><b>{t}s</b>{esc(label)}</span>' for t, label in marks
+    )
+    tail = "命运牌" if per.get("end") == "fate" else ("终局" if per.get("end") == "final" else "直接进下一段人生")
+    timeline = (f'<div class="enc-timeline"><span class="tl-mark"><b>0s</b>开场</span>{tl}'
+                f'<span class="tl-mark tl-end"><b>{per.get("duration")}s</b>{esc(tail)}</span></div>')
+
+    cards = []
+    for key in ENC_ORDER:
+        if key == "fate":
+            if per.get("end") != "fate":
+                continue
+            when = "本章末尾"
+        else:
+            if per.get(key) is None:
+                continue
+            when = f'第 {per[key]} 秒刷新'
+        spec = kinds.get(key) or {}
+        arts = "".join(
+            f'<figure class="anim"><img src="{esc(src)}" alt="{esc(alt)}" loading="lazy">'
+            f'<figcaption>{esc(alt)}</figcaption></figure>'
+            for src, alt in zip(spec.get("art", []), spec.get("artAlt", []))
+            if (DOCS / src).exists()
+        )
+        cards.append(
+            '<article class="enc-card">'
+            f'<div class="enc-arts">{arts}</div>'
+            f'<div><div class="chips"><span class="chip gold">{esc(when)}</span></div>'
+            f'<b class="serif">{esc(spec.get("name", key))}</b>'
+            f'<p>{spec.get("desc", "")}</p>'
+            + (f'<p class="enc-note">{spec.get("note", "")}</p>' if spec.get("note") else "")
+            + "</div></article>"
+        )
+    if not cards:
+        return f'<h3 class="encounter-h serif">03 · 本章节奏</h3>{timeline}'
+    return ('<h3 class="encounter-h serif">03 · 本章节奏 · 路上会遇到什么</h3>'
+            f'{timeline}<div class="encs">{"".join(cards)}</div>')
+
+
 def render_drops(stage: str, bosses: list[dict], items_by_name: dict[str, dict]) -> str:
     """本章打完 Boss 掉什么。直接从 bosses.json 的 legacyDrop 生成——
     此前是手写映射，把 iPhone 记成成年掉、病历本记成暮年掉，两章都错。"""
@@ -675,9 +757,9 @@ def render_drops(stage: str, bosses: list[dict], items_by_name: dict[str, dict])
             + "</div></article>"
         )
     if not rows:
-        return ('<h3 class="encounter-h serif">08 · 本章掉落</h3>'
+        return ('<h3 class="encounter-h serif">09 · 本章掉落</h3>'
                 '<p class="flavor serif">暮年不再给你东西。这一章开始往回收。</p>')
-    return ('<h3 class="encounter-h serif">08 · 本章掉落 · 第五档「这一身」</h3>'
+    return ('<h3 class="encounter-h serif">09 · 本章掉落 · 第五档「这一身」</h3>'
             '<p class="sec-note">五件固定掉落<b>不进三选一、不可拒绝、拾取即穿戴</b>，'
             '而且每一件都在告诉你下一章去哪。终局收灯人逐件剥离时，父亲的雨衣保底最后被剥。</p>'
             f'<div class="drops">{"".join(rows)}</div>')
@@ -708,7 +790,7 @@ def render_links(stage: str) -> str:
         )
     if not rows:
         return ""
-    return ('<h3 class="encounter-h serif">09 · 这一章之外</h3>'
+    return ('<h3 class="encounter-h serif">10 · 这一章之外</h3>'
             f'<div class="links">{"".join(rows)}</div>')
 
 
@@ -749,7 +831,7 @@ def render_npcs(stage: str, clips_by_id: dict, vmanifest: dict) -> str:
             + (f'<p class="sub-h">语音</p>{voices}' if voices else "")
             + "</section>"
         )
-    return '<h3 class="encounter-h serif">04 · 人 · 一起入职的那个</h3>' + "".join(cards)
+    return '<h3 class="encounter-h serif">05 · 人 · 一起入职的那个</h3>' + "".join(cards)
 
 
 def render_environment(stage: str, stage_index: int) -> str:
@@ -946,12 +1028,13 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
             f'<p class="route">{esc(route)}</p></header>',
             render_chapter_design(stage),
             render_environment(stage, stage_index),
-            f'<h3 class="encounter-h serif">03 · 怪潮 · {len(stage_enemies)} 种普通怪</h3>',
+            render_encounters(stage),
+            f'<h3 class="encounter-h serif">04 · 怪潮 · {len(stage_enemies)} 种普通怪</h3>',
             '<div class="card-grid">',
             "".join(render_enemy_entry(enemy) for enemy in stage_enemies),
             "</div>",
             render_npcs(stage, clips_by_id, vmanifest),
-            '<h3 class="encounter-h serif">05 · 小 Boss · 机制预习</h3>',
+            '<h3 class="encounter-h serif">06 · 小 Boss · 机制预习</h3>',
             "".join(
                 render_boss_entry(boss, clips_by_id, vmanifest, skill_manifest, skill_v2)
                 for boss in mini
@@ -959,7 +1042,7 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
         ]
         if chapter_boss:
             pieces.extend([
-                '<h3 class="encounter-h serif">06 · 大 Boss · 本章结算</h3>',
+                '<h3 class="encounter-h serif">07 · 大 Boss · 本章结算</h3>',
                 "".join(
                     render_boss_entry(boss, clips_by_id, vmanifest, skill_manifest, skill_v2)
                     for boss in chapter_boss
@@ -967,7 +1050,7 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
             ])
         else:
             pieces.extend([
-                '<h3 class="encounter-h serif">06 · 本章收束 · 通往终局</h3>',
+                '<h3 class="encounter-h serif">07 · 本章收束 · 通往终局</h3>',
                 '<p class="flavor serif">暮年没有另一只血条 Boss。走马灯之后，路会直接通向最后一盏灯。</p>',
             ])
 
@@ -978,7 +1061,7 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
         ]
         ambient_voices = [row for row in ambient_voices if row]
         pieces.extend([
-            f'<h3 class="encounter-h serif">07 · 沿途语音 · {len(ambient_voices)} 条</h3>',
+            f'<h3 class="encounter-h serif">08 · 沿途语音 · {len(ambient_voices)} 条</h3>',
             f'<section class="bx"><div class="voice-grid">{"".join(ambient_voices)}</div></section>',
             render_drops(stage, bosses, items_by_name),
             render_links(stage),

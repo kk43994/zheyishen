@@ -228,5 +228,108 @@
     "voices": []
    }
   ]
+ },
+ "encounters": {
+  "_source": "时间点取自 src/game.ts 的 STAGES（rewardAt/doorAt/stallAt/end），改数值先改那里再回填。",
+  "kinds": {
+   "altar": {
+    "name": "回忆祭坛",
+    "art": [
+     "assets/screens/light-room.png"
+    ],
+    "desc": "路边亮起一座<b>人生物证台</b>，三选一。好坏都有——每件都写着「得到」和「留下」，留下的是代价。<b>存在 46 秒</b>，走进 36px 触发；不选它就慢慢沉回地面。",
+    "note": "拿过《入学通知书》之后，物证台<b>不再熄灭</b>——必须选走一件，不能再跳过奖励。",
+    "artAlt": [
+     "三选一 · 实机"
+    ]
+   },
+   "door": {
+    "name": "两扇门 · 留灯间 / 里屋",
+    "art": [
+     "assets/wiki/img/entity-0.png",
+     "assets/wiki/img/entity-1.png",
+     "assets/screens/back-room.png"
+    ],
+    "desc": "地图上限时刷新一道门，<b>存在 36 秒</b>，走进去触发，<b>一局只开一次</b>。暖黄窗灯是<b>留灯间</b>（被爱过的证据，纯加成）；帘子后冷白灯是<b>里屋</b>（强力遗物都带代价）。",
+    "note": "开哪扇不由你挑——进门前只看见灯的颜色。留灯间还会把上一世名册里那个人留下的东西摆出来。",
+    "artAlt": [
+     "留灯间的门 · 暖黄",
+     "里屋的门 · 冷白",
+     "里屋 · 实机"
+    ]
+   },
+   "stall": {
+    "name": "没有招牌的当铺",
+    "art": [
+     "assets/wiki/img/entity-2.png",
+     "assets/screens/shop.png"
+    ],
+    "desc": "怪潮间隙路边出现一个<b>亮着灯的摊位</b>：不收零钱，<b>要拿身上的东西去换</b>。也可以花 2 枚零钱换一批货。",
+    "note": "它只在有「摊位时间」的章出现——不是每一章都有人愿意收你的东西。",
+    "artAlt": [
+     "没有招牌的当铺",
+     "当铺 · 实机"
+    ]
+   },
+   "fate": {
+    "name": "命运牌",
+    "art": [
+     "assets/screens/fate.png"
+    ],
+    "desc": "章节末尾弹出的纸窗：<b>事情已经发生，不能重抽</b>，只能选<b>咽下</b>或<b>吐出</b>，或者亲口说一句让 AI 补写现场结果。两条回应都明码写着收益与代价。",
+    "note": "不是每章末尾都有——有的章直接进下一段人生（end='advance'），有的章必须先回应（end='fate'）。",
+    "artAlt": [
+     "命运牌 · 实机"
+    ]
+   }
+  },
+  "perStage": {
+   "童年": {
+    "duration": 60,
+    "altar": 15,
+    "elite": 19,
+    "boss": 34,
+    "end": "advance"
+   },
+   "少年": {
+    "duration": 70,
+    "altar": 18,
+    "elite": 25,
+    "boss": 44,
+    "end": "fate"
+   },
+   "青年": {
+    "duration": 75,
+    "stall": 14,
+    "altar": 30,
+    "elite": 23,
+    "boss": 49,
+    "end": "advance"
+   },
+   "成年": {
+    "duration": 80,
+    "door": 24,
+    "altar": 36,
+    "elite": 0,
+    "boss": 54,
+    "end": "fate"
+   },
+   "中年": {
+    "duration": 75,
+    "stall": 13,
+    "door": 26,
+    "altar": 38,
+    "elite": 29,
+    "boss": 49,
+    "end": "fate"
+   },
+   "暮年": {
+    "duration": 95,
+    "stall": 18,
+    "altar": 42,
+    "elite": 32,
+    "end": "final"
+   }
+  }
  }
 }

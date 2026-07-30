@@ -220,6 +220,25 @@
   .design-point{padding:12px 14px;border:1px solid var(--line);border-radius:7px;background:color-mix(in srgb,var(--bg) 55%,transparent)}
   .design-point b{display:block;font-size:14.5px;margin-bottom:5px;color:var(--moon)}
   .design-point p{margin:0;font-size:13.5px;line-height:1.78;color:var(--fg-2)}
+  .enc-timeline{display:flex;flex-wrap:wrap;gap:0;align-items:stretch;margin:0 0 12px;
+    border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card)}
+  .tl-mark{flex:1 1 84px;padding:9px 10px;border-right:1px solid var(--line);
+    font-size:11.5px;color:var(--fg-3);text-align:center;line-height:1.5}
+  .tl-mark:last-child{border-right:none}
+  .tl-mark b{display:block;font:700 13px/1.2 ui-monospace,Menlo,monospace;color:var(--rainyellow);margin-bottom:3px}
+  .tl-mark.tl-end b{color:var(--oldred)}
+  .encs{display:grid;gap:10px}
+  .enc-card{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:start;
+    padding:14px 16px;border:1px solid var(--line);border-left:3px solid var(--rainyellow);
+    border-radius:8px;background:var(--card)}
+  .enc-arts{display:flex;gap:8px}
+  .enc-arts figure{margin:0;text-align:center;max-width:82px}
+  .enc-arts img{width:100%;height:auto;image-rendering:pixelated;border:1px solid var(--line);
+    border-radius:5px;background:#0d0d11}
+  .enc-arts figcaption{margin-top:5px;font-size:10.5px;line-height:1.4;color:var(--fg-3)}
+  .enc-card > div > b:first-of-type{display:block;font-size:15px;margin:6px 0 5px;color:var(--moon)}
+  .enc-card p{margin:0;font-size:13.5px;line-height:1.78;color:var(--fg-2)}
+  .enc-note{margin-top:7px !important;font-size:12.5px !important;color:var(--fg-3) !important}
   .drops{display:grid;gap:10px}
   .drop-row{display:grid;grid-template-columns:104px minmax(0,1fr);gap:16px;align-items:start;
     padding:14px 16px;border:1px solid var(--line);border-left:3px solid var(--moon);
@@ -228,7 +247,7 @@
   .drop-shot{position:relative;display:block;width:100%;aspect-ratio:1;overflow:hidden;
     border:1px solid var(--line);border-radius:5px;background:#0d0d11}
   .drop-shot img{position:absolute;width:400%;max-width:none;left:-100%;top:-9%;image-rendering:pixelated}
-  .drop-row b{display:block;font-size:15.5px;margin:6px 0 0;color:var(--moon)}
+  .drop-row > div > b:first-of-type{display:block;font-size:15.5px;margin:6px 0 0;color:var(--moon)}
   .drop-flavor{margin:5px 0 0;font-size:13px;color:var(--fg-3)}
   .drop-mech{margin:7px 0 0;font-size:13.5px;line-height:1.75}
   .drop-note{margin:6px 0 0;font-size:12.5px;line-height:1.7;color:var(--fg-3)}
@@ -262,8 +281,14 @@
   @media(max-width:640px){
     .thread{grid-template-columns:1fr;gap:9px}
     .link-row{grid-template-columns:56px minmax(0,1fr);gap:10px}
-    .drop-row{grid-template-columns:68px minmax(0,1fr);gap:11px}
-    .drop-row b{font-size:14px}
+    .drop-row{grid-template-columns:58px minmax(0,1fr);gap:10px;padding:12px 12px}
+    .chip{white-space:normal;word-break:break-word}
+    .drop-art .ric{transform:scale(.78);transform-origin:top center}
+    .enc-card{grid-template-columns:1fr;gap:10px}
+    .enc-arts figure{max-width:66px}
+    .enc-card p{font-size:12.5px}
+    .tl-mark{flex:1 1 62px;padding:7px 6px;font-size:10.5px}
+    .drop-row > div > b:first-of-type{font-size:14px}
     .drop-mech,.drop-flavor{font-size:12.5px}
     .link-row p,.npc-line,.npc-why,.npc-later{font-size:12.5px}
     .npc-mech{grid-template-columns:1fr;gap:4px}
