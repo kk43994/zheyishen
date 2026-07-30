@@ -379,6 +379,21 @@ def shell(slug: str, title: str, eyebrow: str, sub: str, body: str) -> str:
   .design-point{{padding:12px 14px;border:1px solid var(--line);border-radius:7px;background:color-mix(in srgb,var(--bg) 55%,transparent)}}
   .design-point b{{display:block;font-size:14.5px;margin-bottom:5px;color:var(--moon)}}
   .design-point p{{margin:0;font-size:13.5px;line-height:1.78;color:var(--fg-2)}}
+  .links{{display:grid;gap:9px}}
+  .link-row{{display:grid;grid-template-columns:74px minmax(0,1fr);gap:14px;align-items:start;
+    padding:13px 15px;border:1px solid var(--line);border-left:3px solid var(--rainyellow);
+    border-radius:8px;background:color-mix(in srgb,var(--rainyellow) 4%,var(--card))}}
+  .link-art{{position:relative;aspect-ratio:1;overflow:hidden;border:1px solid var(--line);border-radius:5px;background:#0d0d11}}
+  .link-art img{{width:100%;height:auto;image-rendering:pixelated;display:block}}
+  .link-art img[src*="item-manifestations"]{{position:absolute;width:400%;max-width:none;left:-100%;top:-2%}}
+  .link-row > div > b:first-child{{display:block;font-size:14.5px;margin-bottom:5px;color:var(--moon)}}
+  .link-row p{{margin:0;font-size:13.5px;line-height:1.78;color:var(--fg-2)}}
+  .link-jump{{margin-top:8px;font-size:11.5px;color:var(--fg-3);display:flex;flex-wrap:wrap;gap:5px;align-items:center}}
+  .npc-card{{border-left:3px solid var(--positive)}}
+  .threat-badge.ally{{color:var(--positive)}}
+  .npc-line,.npc-why,.npc-later{{margin:8px 0 0;font-size:13.5px;line-height:1.78}}
+  .npc-why{{color:var(--fg-3)}}
+  .npc-strip{{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 2px}}
   .threads{{display:grid;gap:10px}}
   .thread{{display:grid;grid-template-columns:104px minmax(0,1fr);gap:16px;align-items:start;
     padding:15px 16px;border:1px solid var(--line);border-left:3px solid var(--rainyellow);border-radius:8px;background:var(--card)}}
@@ -387,6 +402,8 @@ def shell(slug: str, title: str, eyebrow: str, sub: str, body: str) -> str:
   .thread p{{margin:0;font-size:13.5px;line-height:1.78;color:var(--fg-2)}}
   @media(max-width:640px){{
     .thread{{grid-template-columns:1fr;gap:9px}}
+    .link-row{{grid-template-columns:56px minmax(0,1fr);gap:10px}}
+    .link-row p,.npc-line,.npc-why,.npc-later{{font-size:12.5px}}
     .design-theme{{font-size:14px}}
     .design-point b{{font-size:13.5px}}
     .design-point p,.thread p{{font-size:12.5px}}
@@ -569,7 +586,12 @@ def slice_static_assets() -> None:
 
 # ─────────────────────────── 章节志 ───────────────────────────
 
-CHAPTER_DESIGN = load_json(DATA / "chapters.json") or {"chapters": {}, "threads": []}
+CHAPTER_DESIGN = load_json(DATA / "chapters.json") or {
+    "chapters": {},
+    "threads": [],
+    "links": [],
+    "npcs": {},
+}
 
 
 def render_chapter_design(stage: str) -> str:
@@ -595,25 +617,68 @@ def render_chapter_design(stage: str) -> str:
     )
 
 
-def render_threads() -> str:
-    """跨章线索：小张线、「那句话」三部曲这类横穿多章的设计，
-    散在各 Boss 词条里读不出来，单独立一节。"""
-    rows = "".join(
-        '<article class="thread">'
-        f'<div class="thread-stages">{"".join(f"<span class=chip>{esc(x)}</span>" for x in t.get("stages", []))}</div>'
-        f'<div><b class="serif">{esc(t["title"])}</b><p>{esc(t["note"])}</p></div>'
-        "</article>"
-        for t in CHAPTER_DESIGN.get("threads", [])
-    )
+def render_links(stage: str) -> str:
+    """跨章线索做进各章：每条只写「站在这一章往前/往后看」的那一版，
+    不是同一段复制六遍。用户裁决：不单独立「跨章线索」一节。"""
+    rows = []
+    for link in CHAPTER_DESIGN.get("links", []):
+        text = link.get("per", {}).get(stage)
+        if not text:
+            continue
+        stages = list(link.get("per", {}))
+        others = "".join(
+            f'<a class="chip" href="#chapter-{STAGE_SLUG[x]}">{esc(x)}</a>'
+            for x in STAGE_ORDER if x in stages and x != stage
+        )
+        art = ""
+        if link.get("art") and (DOCS / link["art"]).exists():
+            art = f'<img src="{esc(link["art"])}" alt="{esc(link.get("artAlt", ""))}" loading="lazy">'
+        rows.append(
+            '<article class="link-row">'
+            f'<div class="link-art">{art}</div>'
+            f'<div><b class="serif">{esc(link["title"])}</b><p>{text}</p>'
+            + (f'<div class="link-jump">也在这几章：{others}</div>' if others else "")
+            + "</div></article>"
+        )
     if not rows:
         return ""
-    return (
-        '<section class="chapter" id="chapter-threads">'
-        '<header class="chapter-head"><div><p class="chapter-no">贯穿全局</p>'
-        '<h2 class="serif">跨章线索</h2></div>'
-        '<p class="route">这些东西横穿好几章，只看单章看不出来</p></header>'
-        f'<div class="threads">{rows}</div></section>'
-    )
+    return ('<h3 class="encounter-h serif">08 · 这一章之外</h3>'
+            f'<div class="links">{"".join(rows)}</div>')
+
+
+def render_npcs(stage: str, clips_by_id: dict, vmanifest: dict) -> str:
+    """友军与跨章人物。他们不在 enemies.json 里（不是敌人），
+    此前百科完全没有他们的图与词条——小张就是被漏掉的那个。"""
+    people = CHAPTER_DESIGN.get("npcs", {}).get(stage, [])
+    if not people:
+        return ""
+    cards = []
+    for who in people:
+        strip = "".join(
+            f'<figure class="anim"><img src="assets/wiki/gif/npc/xiao-zhang-{a}.gif" '
+            f'alt="{esc(who["name"])} {esc(label)}" loading="lazy" style="width:78px">'
+            f"<figcaption>{esc(label)}</figcaption></figure>"
+            for a, label in who.get("actions", [])
+            if (DOCS / f"assets/wiki/gif/npc/xiao-zhang-{a}.gif").exists()
+        )
+        voices = "".join(
+            voice_row(clips_by_id[c], vmanifest)
+            for c in who.get("voices", []) if c in clips_by_id
+        )
+        cards.append(
+            f'<section class="bx npc-card" id="npc-{esc(who["id"])}">'
+            f'<div class="chips"><span class="threat-badge ally">{esc(who["badge"])}</span>'
+            f'<span class="chip blue">{esc(stage)}</span></div>'
+            f'<h3 class="serif" style="margin-top:6px">{esc(who["name"])}</h3>'
+            f'<div class="flavor serif">{esc(who["flavor"])}</div>'
+            f'<p class="npc-line">{who["mechanic"]}</p>'
+            f'<p class="npc-why">{who["why"]}</p>'
+            f'<div class="npc-strip">{strip}</div>'
+            f'<p class="sub-h">后面会怎样</p><p class="npc-later">{who["later"]}</p>'
+            + (f'<p class="sub-h">语音</p>{voices}' if voices else "")
+            + "</section>"
+        )
+    return '<h3 class="encounter-h serif">04 · 人 · 不是敌人的那个</h3>' + "".join(cards)
 
 
 def render_environment(stage: str, stage_index: int) -> str:
@@ -785,7 +850,6 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
         f'<a class="chip" href="#chapter-{STAGE_SLUG[stage]}">{index + 1:02d} · {esc(stage)}</a>'
         for index, stage in enumerate(STAGE_ORDER)
     ]
-    toc.append('<a class="chip gold" href="#chapter-threads">跨章线索</a>')
     toc.append('<a class="chip red" href="#chapter-finale">07 · 终局</a>')
 
     sections = []
@@ -813,7 +877,8 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
             '<div class="card-grid">',
             "".join(render_enemy_entry(enemy) for enemy in stage_enemies),
             "</div>",
-            '<h3 class="encounter-h serif">04 · 小 Boss · 机制预习</h3>',
+            render_npcs(stage, clips_by_id, vmanifest),
+            '<h3 class="encounter-h serif">05 · 小 Boss · 机制预习</h3>',
             "".join(
                 render_boss_entry(boss, clips_by_id, vmanifest, skill_manifest, skill_v2)
                 for boss in mini
@@ -821,7 +886,7 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
         ]
         if chapter_boss:
             pieces.extend([
-                '<h3 class="encounter-h serif">05 · 大 Boss · 本章结算</h3>',
+                '<h3 class="encounter-h serif">06 · 大 Boss · 本章结算</h3>',
                 "".join(
                     render_boss_entry(boss, clips_by_id, vmanifest, skill_manifest, skill_v2)
                     for boss in chapter_boss
@@ -829,7 +894,7 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
             ])
         else:
             pieces.extend([
-                '<h3 class="encounter-h serif">05 · 本章收束 · 通往终局</h3>',
+                '<h3 class="encounter-h serif">06 · 本章收束 · 通往终局</h3>',
                 '<p class="flavor serif">暮年没有另一只血条 Boss。走马灯之后，路会直接通向最后一盏灯。</p>',
             ])
 
@@ -840,8 +905,9 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
         ]
         ambient_voices = [row for row in ambient_voices if row]
         pieces.extend([
-            f'<h3 class="encounter-h serif">06 · 沿途语音 · {len(ambient_voices)} 条</h3>',
+            f'<h3 class="encounter-h serif">07 · 沿途语音 · {len(ambient_voices)} 条</h3>',
             f'<section class="bx"><div class="voice-grid">{"".join(ambient_voices)}</div></section>',
+            render_links(stage),
             "</section>",
         ])
         sections.append("".join(pieces))
@@ -884,8 +950,6 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
         + "".join(toc)
         + "</nav>"
         + "".join(sections)
-        # 跨章线索＝六章主线后的贯穿全局附录，位置在终局之前（validate_wiki_chapters 锁定此序）
-        + render_threads()
         + finale
     )
     return shell(

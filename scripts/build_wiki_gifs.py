@@ -141,6 +141,27 @@ def build_boss_skills() -> int:
     return count
 
 
+def build_npc() -> int:
+    """友军 NPC 的动作循环。小张是设计上横穿青年到中年的人物，
+    但他不在 enemies.json 里（不是敌人），此前百科完全没有他的图。"""
+    made = 0
+    manifest_path = ROOT / "src/assets/characters/xiao-zhang.json"
+    if not manifest_path.exists():
+        return 0
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    atlas = Image.open(ROOT / manifest["atlas"]).convert("RGBA")
+    fw, fh = manifest["frame"]["width"], manifest["frame"]["height"]
+    for action, spec in manifest["actions"].items():
+        row = spec["row"]
+        cells = [
+            atlas.crop((i * fw, row * fh, (i + 1) * fw, (row + 1) * fh))
+            for i in range(spec["frames"])
+        ]
+        if save_gif(cells, OUT / "npc" / f"xiao-zhang-{action}.gif", duration=200, scale=3):
+            made += 1
+    return made
+
+
 def build_hero() -> int:
     count = 0
     top = HERO_PROFILE_ROW * HERO_H
@@ -213,6 +234,7 @@ def main() -> None:
         "enemy": build_enemies(),
         "boss-skill": build_boss_skills(),
         "hero": build_hero(),
+        "npc": build_npc(),
         "vfx": build_vfx(),
     }
     total_bytes = sum(p.stat().st_size for p in OUT.rglob("*.gif"))
