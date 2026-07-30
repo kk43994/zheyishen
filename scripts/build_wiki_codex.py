@@ -389,11 +389,16 @@ def shell(slug: str, title: str, eyebrow: str, sub: str, body: str) -> str:
   .link-row > div > b:first-child{{display:block;font-size:14.5px;margin-bottom:5px;color:var(--moon)}}
   .link-row p{{margin:0;font-size:13.5px;line-height:1.78;color:var(--fg-2)}}
   .link-jump{{margin-top:8px;font-size:11.5px;color:var(--fg-3);display:flex;flex-wrap:wrap;gap:5px;align-items:center}}
-  .npc-card{{border-left:3px solid var(--positive)}}
-  .threat-badge.ally{{color:var(--positive)}}
+  .npc-card{{border-left:3px solid var(--paper-2)}}
+  .threat-badge.ally{{color:var(--paper-2);border-style:dashed}}
   .npc-line,.npc-why,.npc-later{{margin:8px 0 0;font-size:13.5px;line-height:1.78}}
   .npc-why{{color:var(--fg-3)}}
   .npc-strip{{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 2px}}
+  .npc-mechs{{display:grid;gap:7px}}
+  .npc-mech{{display:grid;grid-template-columns:158px minmax(0,1fr);gap:14px;padding:10px 13px;
+    border:1px solid var(--line);border-radius:6px;background:color-mix(in srgb,var(--bg) 55%,transparent)}}
+  .npc-mech b{{font-size:13px;color:var(--moon)}}
+  .npc-mech p{{margin:0;font-size:13px;line-height:1.75;color:var(--fg-2)}}
   .threads{{display:grid;gap:10px}}
   .thread{{display:grid;grid-template-columns:104px minmax(0,1fr);gap:16px;align-items:start;
     padding:15px 16px;border:1px solid var(--line);border-left:3px solid var(--rainyellow);border-radius:8px;background:var(--card)}}
@@ -404,6 +409,8 @@ def shell(slug: str, title: str, eyebrow: str, sub: str, body: str) -> str:
     .thread{{grid-template-columns:1fr;gap:9px}}
     .link-row{{grid-template-columns:56px minmax(0,1fr);gap:10px}}
     .link-row p,.npc-line,.npc-why,.npc-later{{font-size:12.5px}}
+    .npc-mech{{grid-template-columns:1fr;gap:4px}}
+    .npc-mech p{{font-size:12.5px}}
     .design-theme{{font-size:14px}}
     .design-point b{{font-size:13.5px}}
     .design-point p,.thread p{{font-size:12.5px}}
@@ -647,7 +654,8 @@ def render_links(stage: str) -> str:
 
 
 def render_npcs(stage: str, clips_by_id: dict, vmanifest: dict) -> str:
-    """友军与跨章人物。他们不在 enemies.json 里（不是敌人），
+    """跨章人物。他们不在 enemies.json 里，也不该被标成友军——
+    小张帮你开枪，也是他捅你，最后还被装进箱子；立场由玩家那次选择决定。
     此前百科完全没有他们的图与词条——小张就是被漏掉的那个。"""
     people = CHAPTER_DESIGN.get("npcs", {}).get(stage, [])
     if not people:
@@ -674,11 +682,15 @@ def render_npcs(stage: str, clips_by_id: dict, vmanifest: dict) -> str:
             f'<p class="npc-line">{who["mechanic"]}</p>'
             f'<p class="npc-why">{who["why"]}</p>'
             f'<div class="npc-strip">{strip}</div>'
-            f'<p class="sub-h">后面会怎样</p><p class="npc-later">{who["later"]}</p>'
+            + (('<p class="sub-h">独有机制</p><div class="npc-mechs">' + "".join(
+                f'<div class="npc-mech"><b>{esc(m["k"])}</b><p>{m["v"]}</p></div>'
+                for m in who.get("mechanics_detail", [])) + "</div>")
+               if who.get("mechanics_detail") else "")
+            + f'<p class="sub-h">后面会怎样</p><p class="npc-later">{who["later"]}</p>'
             + (f'<p class="sub-h">语音</p>{voices}' if voices else "")
             + "</section>"
         )
-    return '<h3 class="encounter-h serif">04 · 人 · 不是敌人的那个</h3>' + "".join(cards)
+    return '<h3 class="encounter-h serif">04 · 人 · 一起入职的那个</h3>' + "".join(cards)
 
 
 def render_environment(stage: str, stage_index: int) -> str:
