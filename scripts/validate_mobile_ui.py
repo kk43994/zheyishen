@@ -226,6 +226,29 @@ for token in (
     if token not in game:
         fail(f"title menu runtime contract missing: {token}")
 
+# 开发面板必须有一个「不在宿主胶囊按钮地盘里」的出口。右上角（x≥250 且 y≤56）
+# 由互动空间的胶囊按钮覆盖，落在那里的按钮真机点不到；而面板打开期间战斗是冻结的，
+# 唯一出口点不到就等于整局卡死（桌面复现不了：没有胶囊，还有 Esc）。
+CAPSULE_MIN_X, CAPSULE_MAX_Y = 250, 56
+bar = re.search(
+    r"DEV_CLOSE_BAR_RECT\s*=\s*\{\s*x:\s*(\d+),\s*y:\s*(\d+),\s*width:\s*(\d+),\s*height:\s*(\d+)",
+    game,
+)
+if not bar:
+    fail("dev panel is missing DEV_CLOSE_BAR_RECT: the only exit would sit under the host capsule button")
+else:
+    bx, by, bw, bh = (int(bar.group(i)) for i in (1, 2, 3, 4))
+    if bx + bw > CAPSULE_MIN_X and by < CAPSULE_MAX_Y:
+        fail("dev panel exit overlaps the host capsule zone (top-right); it is untappable on device")
+    if bw < 200 or bh < 32:
+        fail("dev panel exit is too small for a thumb")
+for token in (
+    "if (pointInRect(p, DEV_CLOSE_BAR_RECT)) {",
+    "this.drawBreathActionButton(DEV_CLOSE_BAR_RECT,",
+):
+    if token not in game:
+        fail(f"dev panel exit is not wired: {token}")
+
 joystick_values: dict[str, int] = {}
 for name in (
     "JOYSTICK_INPUT_RADIUS",

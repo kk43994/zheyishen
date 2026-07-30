@@ -513,7 +513,15 @@ const RESULT_LIFE_RETRY_RECT = { x: 70, y: 252, width: 220, height: 34 } as cons
 const PAUSE_BUTTON_RECT = { x: 326, y: 6, width: 28, height: 39 } as const;
 /** 开发者面板入口：左上角，HUD 行下方，不压住血条。测试版功能，用于向评委演示。 */
 const DEV_ENTRY_RECT = { x: 8, y: 66, width: 96, height: 30 } as const;
+/**
+ * 右上角（x≥250 且 y≤56）是互动空间胶囊按钮的地盘——它由宿主 WebView 画在我们
+ * 画布之上，落在那里的按钮在真机上根本点不到。开发面板打开期间 update() 是
+ * 故意冻结的（防止玩家翻图鉴时被打死），所以「唯一的出口点不到」＝「整局卡死」。
+ * 桌面复现不了：桌面没有胶囊，还能按 Esc。
+ * DEV_CLOSE_RECT 保留给桌面，真正的出口是下面这条底部长条。
+ */
 const DEV_CLOSE_RECT = { x: 268, y: 24, width: 74, height: 24 } as const;
+const DEV_CLOSE_BAR_RECT = { x: 40, y: 590, width: 280, height: 36 } as const;
 const DEV_TAB_RECT = { x: 20, y: 58, width: 320, height: 26 } as const;
 const DEV_QUALITY_RECT = { x: 20, y: 92, width: 320, height: 22 } as const;
 /**
@@ -20659,6 +20667,10 @@ export class ZheYiShenGame {
   /** 当前品质档下的道具，按定义顺序，供图鉴网格与命中共用同一个列表。 */
   /** 面板打开时独占输入：任何按下都先交给它，避免穿透到底下的战斗。 */
   private handleDevPanelPointer(p: { x: number; y: number }): void {
+    if (pointInRect(p, DEV_CLOSE_BAR_RECT)) {
+      this.closeDevPanel();
+      return;
+    }
     if (pointInRect(p, DEV_CLOSE_RECT)) {
       this.closeDevPanel();
       return;
@@ -20745,6 +20757,8 @@ export class ZheYiShenGame {
     ctx.font = `bold 12px ${UI_ARCHIVE_FONT_STACK}`;
     ctx.fillText('开发面板 · 测试版', 20, 34);
     this.drawBreathActionButton(DEV_CLOSE_RECT, '关闭', UI_PALETTE.hospitalBlueGray);
+    // 底部出口：胶囊区之外，任何页签下都在。缺了它面板在真机上是有进无出。
+    this.drawBreathActionButton(DEV_CLOSE_BAR_RECT, '关闭面板 · 回到对局', UI_PALETTE.raincoatYellow);
 
     const tabs: Array<{ key: 'items' | 'stages'; label: string }> = [
       { key: 'items', label: '道具图鉴' },
@@ -20807,7 +20821,7 @@ export class ZheYiShenGame {
     ctx.textAlign = 'left';
     ctx.fillStyle = '#6f6a66';
     ctx.font = `8px ${UI_FONT_STACK}`;
-    ctx.fillText(`本档 ${items.length} 件 · 已持有 ${items.filter((id) => this.items.includes(id)).length} 件`, 20, H - 30);
+    ctx.fillText(`本档 ${items.length} 件 · 已持有 ${items.filter((id) => this.items.includes(id)).length} 件`, 20, 580);
   }
 
   private renderDevItemDetail(id: ItemId): void {
