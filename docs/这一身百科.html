@@ -793,6 +793,9 @@
     .difference-table table{min-width:0;font-size:12px}
     .difference-table th,.difference-table td{padding:7px 8px}
   }
+
+  .poison dd.pnum{color:var(--fg-3);font-size:11.5px;line-height:1.7}
+  @media(max-width:560px){.poison .totem{width:28px;height:28px}.poison dd.pnum{font-size:11px}}
 </style>
 </head>
 <body>
@@ -1390,24 +1393,28 @@
     <section class="entry" id="poison">
       <p class="vol">卷 六</p>
       <h2 class="serif">五毒 · 隐藏的人格构筑</h2>
-      <p class="lede">贪、嗔、痴、慢、疑——不是善恶分，也不是人格诊断，而是记录玩家习惯用什么方式面对这一生躲不开的诱惑。界面不显示"贪+1"；玩家先承担具体选择，系统只通过后续事件、外貌、弹道和结算让倾向逐渐显形。</p>
+      <p class="lede">贪、嗔、痴、慢、疑——不是善恶分，也不是人格诊断，而是记录玩家习惯用什么方式面对这一生躲不开的诱惑。<b>它只从命运牌的回应里涨</b>：每次咽下或吐出都会往某一毒上加，每毒<b>上限 12</b>。战斗中不弹「贪+1」——玩家先承担具体选择；<b>暂停页「这一身」有五毒条，结算页最后揭示「最深的两道痕」</b>，让倾向在回头看的时候才显形。</p>
       <div class="poisons">
         <div class="poison"><div class="ch">贪</div><div class="mean">总想再多拿一点，用占有抵抗失去</div>
-          <dl><dt>力 量</dt><dd>囤积、吸附、回收弹体、额外奖励</dd><dt>代 价</dt><dd>负重、债务、舍不得放下</dd></dl></div>
+          <dl><dt>力 量</dt><dd>囤积、吸附、回收弹体、额外奖励</dd><dt>代 价</dt><dd>负重、债务、舍不得放下</dd><dt>实 测</dt><dd class="pnum">伤害 ×(1+min(0.28, 贪×零钱×0.004))——<b>攒的钱越多它越狠</b>；弹宽 ×(1+贪×1.8%)；弹速 ×(1−贪×1%)，最低 0.78；金币吸取半径 62+贪×6</dd></dl></div>
         <div class="poison"><div class="ch">嗔</div><div class="mean">把受过的伤还回去，用愤怒证明疼痛</div>
-          <dl><dt>力 量</dt><dd>反伤、折返、残血增伤、爆裂</dd><dt>代 价</dt><dd>自伤、射程收缩、无法停手</dd></dl></div>
+          <dl><dt>力 量</dt><dd>反伤、折返、残血增伤、爆裂</dd><dt>代 价</dt><dd>自伤、射程收缩、无法停手</dd><dt>实 测</dt><dd class="pnum">伤害 ×(1+嗔×2.5%)；射程 ×(1−嗔×1.5%)，最低 0.72——<b>越怒越近</b></dd></dl></div>
         <div class="poison"><div class="ch">痴</div><div class="mean">明知看不清仍然执着，用幻想维持关系</div>
-          <dl><dt>力 量</dt><dd>幻影、复制、异变、追踪</dd><dt>代 价</dt><dd>假目标、效果错位、真假难分</dd></dl></div>
+          <dl><dt>力 量</dt><dd>幻影、复制、异变、追踪</dd><dt>代 价</dt><dd>假目标、效果错位、真假难分</dd><dt>实 测</dt><dd class="pnum">追踪 +痴×0.012；分裂概率 +痴×1.2%</dd></dl></div>
         <div class="poison"><div class="ch">慢</div><div class="mean">通过傲慢、体面和比较确认自身价值</div>
-          <dl><dt>力 量</dt><dd>暴击、变宽、处决、拒绝退让</dd><dt>代 价</dt><dd>治疗受限、失误惩罚、构筑变脆</dd></dl></div>
+          <dl><dt>力 量</dt><dd>暴击、变宽、处决、拒绝退让</dd><dt>代 价</dt><dd>治疗受限、失误惩罚、构筑变脆</dd><dt>实 测</dt><dd class="pnum">暴击率 +慢×1.8%；弹宽 ×(1+慢×1.2%)</dd></dl></div>
         <div class="poison"><div class="ch">疑</div><div class="mean">不相信别人也不相信自己，用犹豫推迟结论</div>
-          <dl><dt>力 量</dt><dd>重掷、分裂选项、延迟结算、预见</dd><dt>代 价</dt><dd>奖励迟到、效果反复、机会消失</dd></dl></div>
+          <dl><dt>力 量</dt><dd>重掷、分裂选项、延迟结算、预见</dd><dt>代 价</dt><dd>奖励迟到、效果反复、机会消失</dd><dt>实 测</dt><dd class="pnum">分裂概率 +疑×1.6%；散射 +疑×0.9%；射击间隔 ×(1+疑×1.2%)——<b>犹豫会拖慢出手</b></dd></dl></div>
       </div>
       <blockquote class="fate serif">
         <p>人躲得过一次选择，<br>躲不过反复选择之后穿成的这一身。</p>
         <cite>—— 五毒系统核心句</cite>
       </blockquote>
       <p class="dim">五毒越高不代表结局越坏，而代表相关构筑越极端。最终 Boss 读取最高的两项生成对应阶段；结算页最后才揭示这一身最深的毒。已实装的第一处身体化外显：<b>贪越深，捡钱的手伸得越远</b>——每点贪增加金币吸取半径。</p>
+      <div class="sec-split" style="margin-top:14px">
+        <div><p class="sec-lede" style="margin:0"><b>现在在哪看得到：</b>暂停页「这一身」里有一条五毒条——五个图腾＋当前点数＋进度条（满格 12）；结算页最后一屏揭示<b>「最深的两道痕」</b>，并列出这一身最重的两毒。五毒全为 0 时结算页会说「没有哪一道执念，压过了其余几道。」</p></div>
+        <figure><img src="assets/screens/result-won.png" alt="结算页 · 最深的两道痕" loading="lazy"><figcaption>结算页最后一屏 · 这一身最深的两道痕</figcaption></figure>
+      </div>
     </section>
 
     <!-- 命运牌 -->
