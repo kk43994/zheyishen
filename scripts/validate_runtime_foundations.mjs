@@ -65,10 +65,19 @@ requireToken(game, 'for (let attempt = 1; attempt <= 1; attempt += 1)', '出生�
 requireToken(game, "if (this.state !== 'origin' || this.aiOriginState !== 'error') return;", '重试入口没有限制在明确失败后');
 
 requireToken(game, 'separateCircularBodies(this.enemies)', '敌群分离仍未使用空间桶');
-requireToken(game, 'Math.min(3, Math.max(1, Math.floor(window.devicePixelRatio || 1)))', 'Canvas 没有保留高密度手机的 3x 原生清晰度');
+// 背板必须对齐“CSS 显示宽度 × 设备 DPR”，否则 360px 背板被拉到 430px 等
+// 非整数尺寸时，连 Canvas 文字也会被浏览器二次插值发糊。画质档仍负责像素预算上限。
+requireToken(game, 'const physicalWidth = cssWidth * Math.max(1, window.devicePixelRatio || 1)', 'Canvas 背板没有对齐实际显示像素');
+requireToken(game, 'const scale = width / W', 'Canvas 逻辑坐标没有映射到自适应清晰度背板');
+requireToken(game, 'new ResizeObserver(() => this.applyRenderQuality())', '窗口尺寸改变后 Canvas 背板不会重新对齐');
+requireToken(game, 'readStoredSettingNumber(SETTINGS_STORAGE.renderQuality, 3, [1, 2, 3])', '画质档位默认没有停在 3x 原生清晰度');
 requireToken(game, 'const screenMargin = Math.max(96, margin)', '没有跳过完全位于屏幕外的无效 Canvas 绘制');
 requireToken(game, 'const screenX = HERO_SCREEN_X + (x - this.heroX)', '屏幕裁剪没有把世界 X 坐标转换到相机坐标');
 requireToken(game, 'const screenY = HERO_SCREEN_Y + (y - this.heroY)', '屏幕裁剪没有把世界 Y 坐标转换到相机坐标');
+requireToken(game, "if (this.devPanelOpen) {\n        if (event.key === 'Escape')", '开发图鉴没有在暂停快捷键之前独占键盘输入');
+requireToken(game, 'if (this.devPanelDetail) this.devPanelDetail = undefined;\n          else this.closeDevPanel();', '开发图鉴的 Esc 没有按「详情→图鉴→游戏」逐层退出');
+requireToken(game, "if (this.state === 'battle' && this.paused) this.setPaused(false);", '关闭开发图鉴没有清理历史 Esc 穿透留下的暂停脏状态');
+requireToken(game, 'this.resetMovementInput();\n    this.resetFateInput();\n    this.resetPauseHold();\n    this.devPanelDetail = undefined;\n    this.devPanelOpen = true;', '打开开发图鉴前没有释放持续输入');
 requireToken(workflow, 'npm run validate:core', 'CI 没有执行核心门禁');
 
 const result = {
@@ -79,8 +88,9 @@ const result = {
   telemetry: 'device-local; bounded; no network sender',
   performanceMonitor: 'hidden six-tap panel; startup, image decode, frames, long tasks and optional JS heap; no network sender',
   aiRequests: 'abortable; no overlapping long-wait retry',
-  renderScale: '1x-3x integer backing; native art quality retained',
+  renderScale: 'CSS size × device DPR backing, capped by 1x-3x quality setting',
   renderCulling: 'offscreen-only; visible art and simulation unchanged',
+  devPanelInput: 'keyboard-exclusive; nested Escape unwind; stale pause and movement locks cleared',
   errors,
 };
 

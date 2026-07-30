@@ -91,9 +91,53 @@ for token in (
     "this.feedback.getMixVolume('voice')",
     "this.feedback.getMixVolume('effects')",
     "this.feedback.setMixVolume(channel, next)",
+    "this.feedback.setAudioEnabled(!this.feedback.audioEnabled())",
+    "this.feedback.setVolume(DEFAULT_MASTER_VOLUME)",
+    "this.lastAudibleMixVolume[channel] = current",
 ):
     if token not in game:
         fail(f"pause audio mixer missing runtime wiring: {token}")
+if "this.feedback.setVolume(0.42)" in game:
+    fail("pause settings restored the retired 42% master volume")
+
+for token in (
+    "const SETTINGS_PAGES = ['audio', 'display', 'control']",
+    "PAUSE_SETTINGS_PAGE_RECT",
+    "PAUSE_SETTING_QUALITY_RECT",
+    "PAUSE_SETTING_SHAKE_RECT",
+    "PAUSE_SETTING_FLASH_RECT",
+    "PAUSE_SETTING_CAPTION_RECT",
+    "PAUSE_SETTING_JOYSTICK_RECT",
+    "PAUSE_SETTING_AUTO_PAUSE_RECT",
+    "PAUSE_SETTING_FULLSCREEN_RECT",
+    "PAUSE_SETTING_RESET_RECT",
+    "private targetRenderSurface(): { scale: number; width: number; height: number }",
+    "private applyRenderQuality(): void",
+    "private cycleRenderQuality(): void",
+    "this.canvas.width = surface.width",
+    "this.transitionFrame.width = surface.width",
+    "const qualityFactor = this.renderQuality === 3",
+    "qualityStride = this.renderQuality === 3",
+    "storeSetting(SETTINGS_STORAGE.reducedMotion",
+    "storeSetting(SETTINGS_STORAGE.highContrastHud",
+    "storeSetting(SETTINGS_STORAGE.screenShake",
+    "storeSetting(SETTINGS_STORAGE.damageFlash",
+    "storeSetting(SETTINGS_STORAGE.renderQuality",
+    "storeSetting(SETTINGS_STORAGE.captionScale",
+    "storeSetting(SETTINGS_STORAGE.joystickSensitivity",
+    "storeSetting(SETTINGS_STORAGE.autoPause",
+):
+    if token not in game:
+        fail(f"full settings runtime contract missing: {token}")
+
+for token in (
+    "private lastBasicAttackHapticAt = -Infinity",
+    "this.pulseBasicAttackHaptic(vector)",
+    "private pulseBasicAttackHaptic(vector: AttackVector): void",
+    "this.feedback.vibrate(Math.round(5 + (attackWeight - 0.75) * 4))",
+):
+    if token not in game:
+        fail(f"basic attack haptic contract missing: {token}")
 
 required_style_rules = (
     "430px,",
@@ -116,15 +160,40 @@ for token in (
     if token not in index:
         fail(f"mobile fullscreen document contract missing: {token}")
 for token in (
-    "function installMobileFullscreenIntent(): void",
-    "'(max-width: 768px) and (pointer: coarse)'",
-    "root.requestFullscreen({ navigationUI: 'hide' })",
-    "document.addEventListener('pointerdown', enterFullscreen, true)",
-    ".lock?.('portrait')",
+    "installMobileViewportAdaptation();",
     "installMobileFullscreenIntent();",
 ):
     if token not in main:
         fail(f"mobile first-touch fullscreen contract missing: {token}")
+
+mobile_platform = (PROJECT_DIR / "src/mobile-platform.ts").read_text(encoding="utf-8")
+for token in (
+    "window.visualViewport",
+    "--app-viewport-height",
+    "root.requestFullscreen({ navigationUI: 'hide' })",
+    "root.webkitRequestFullscreen",
+    "isStandaloneDisplay()",
+    "showIOSFullscreenGuide()",
+    "添加到主屏幕",
+    "document.addEventListener('pointerdown', enterFullscreen, true)",
+    ".lock?.('portrait')",
+):
+    if token not in mobile_platform:
+        fail(f"iOS/mobile fullscreen adaptation missing: {token}")
+
+haptics = (PROJECT_DIR / "src/haptics.ts").read_text(encoding="utf-8")
+for token in (
+    "navigator.vibrate(pattern)",
+    "input.setAttribute('switch', '')",
+    "appleOSMajorVersion() >= 18",
+    "scheduleIOSPattern(pattern)",
+):
+    if token not in haptics:
+        fail(f"iOS haptic adaptation missing: {token}")
+for audio_source in ("src/audio.ts", "src/audio-platform.ts"):
+    source = (PROJECT_DIR / audio_source).read_text(encoding="utf-8")
+    if "triggerHaptic(pattern)" not in source:
+        fail(f"{audio_source} bypasses the shared iOS haptic adapter")
 
 pause_hit = re.search(
     r"PAUSE_BUTTON_HIT_RECT\s*=\s*\{[^}]*width:\s*(\d+)[^}]*height:\s*(\d+)",
@@ -132,6 +201,30 @@ pause_hit = re.search(
 )
 if not pause_hit or min(int(pause_hit.group(1)), int(pause_hit.group(2))) < 44:
     fail("pause button touch target must remain at least 44x44 logical pixels")
+
+# 标题底栏四颗按钮在开发/发布包必须完全一致；百科是画布内页面，不能再被生产构建删掉。
+utility_width = re.search(r"const TITLE_UTILITY_WIDTH = (\d+);", game)
+if not utility_width or int(utility_width.group(1)) < 72:
+    fail("title menu button width must stay at least 72 logical pixels")
+utility_row = re.search(r"const titleUtilityRect = \(index: number\) => \(\{[^}]*height:\s*(\d+)", game)
+if not utility_row or int(utility_row.group(1)) < 36:
+    fail("title menu button height must stay at least 36 logical pixels")
+for menu_name in ("TITLE_GUIDE_RECT", "TITLE_WIKI_RECT", "TITLE_CODEX_RECT", "TITLE_SETTINGS_RECT"):
+    if f"const {menu_name} = titleUtilityRect(" not in game:
+        fail(f"title menu button is too small or missing: {menu_name}")
+for token in (
+    "this.drawTitleUtilityButton(TITLE_GUIDE_RECT, '玩法'",
+    "this.drawTitleUtilityButton(TITLE_WIKI_RECT, '百科'",
+    "this.drawTitleUtilityButton(TITLE_CODEX_RECT, '物证册'",
+    "this.drawTitleUtilityButton(TITLE_SETTINGS_RECT, '设置'",
+    "private renderTitleWiki(): void",
+    "this.titleWikiOpen = true;",
+    "else if (this.titleWikiOpen) this.renderTitleWiki();",
+    "private openTitleSettings(): void",
+    "titleSettings ? '保存并返回封面' : '继续往前走'",
+):
+    if token not in game:
+        fail(f"title menu runtime contract missing: {token}")
 
 joystick_values: dict[str, int] = {}
 for name in (
@@ -180,7 +273,7 @@ for token in (
     "const nickname = readText(value.nickname, 2, 7)",
     "const BARE_ACTION_NICKNAME",
     "return !BARE_ACTION_NICKNAME.test(nickname) || PERSON_NICKNAME_ENDING.test(nickname)",
-    "nickname && isPersonLikeNickname(nickname)",
+    "|| !nicknameReason",
 ):
     if token not in origins:
         fail(f"birth nickname runtime contract missing: {token}")
