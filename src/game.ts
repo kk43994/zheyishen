@@ -474,7 +474,7 @@ function originComicCaptionProgress(sceneIndex: number, sceneElapsed: number): n
 
 // 标题页右下角与 AI 诊断行都会带上它：上传后扫码第一眼就能确认平台跑的是哪个包，
 // 排查「上传了但行为没变」时不再靠猜。每次要重新上传前手动 +1。
-const BUILD_TAG = '0729-26';
+const BUILD_TAG = '0729-28';
 const TITLE_START_RECT = { x: 88, y: 502, width: 184, height: 46 } as const;
 // 底栏一共 336px（12 → 348）：四颗按钮 75+12 间距刚好铺满。
 // 百科直接在画布内展开，发布包不再依赖会被互动平台拦截的 window.open。
@@ -14971,7 +14971,7 @@ export class ZheYiShenGame {
     ctx.textAlign = 'left';
     ctx.fillStyle = UI_PALETTE.paperLight;
     ctx.font = `bold 17px ${UI_ARCHIVE_FONT_STACK}`;
-    ctx.fillText(titleSettings ? '游戏设置' : '档案暂存', 136, 47);
+    ctx.fillText(titleSettings ? '玩法设置' : '档案暂存', 136, 47);
     ctx.fillStyle = UI_PALETTE.paperDim;
     ctx.font = `8px ${UI_FONT_STACK}`;
     ctx.fillText(

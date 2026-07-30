@@ -2,15 +2,19 @@ export type VoiceCueId =
   | 'origin-comic-01' | 'origin-comic-02' | 'origin-comic-03' | 'origin-comic-04'
   | 'origin-comic-05' | 'origin-comic-06' | 'origin-comic-07' | 'origin-comic-08'
   | 'narrator-opening' | 'narrator-start-breath'
-  | 'child-under-bed' | 'caregiver-lights-out' | 'caregiver-no-monster' | 'father-childhood-walk' | 'classmate-family-late' | 'school-gate-closing'
-  | 'school-bell-start' | 'teacher-last-row' | 'teacher-answer-format' | 'classmate-score-whisper' | 'teacher-paper-back' | 'father-for-your-good' | 'school-bell-end'
+  | 'child-under-bed' | 'caregiver-lights-out' | 'caregiver-no-monster' | 'boss-closet-defeat'
+  | 'father-childhood-walk' | 'boss-father-phase-two' | 'classmate-family-late' | 'school-gate-closing'
+  | 'school-bell-start' | 'teacher-last-row' | 'teacher-answer-format' | 'classmate-score-whisper' | 'teacher-paper-back' | 'father-for-your-good' | 'boss-father-stand' | 'school-bell-end'
   | 'recruiter-arrival-time' | 'landlord-rent-deposit' | 'last-bus-arrival' | 'station-yellow-line' | 'station-doors-closing' | 'last-bus-departed' | 'interview-thank-you'
   | 'phone-wife-fridge' | 'phone-hospital-not-call' | 'phone-mother-didnt-ask' | 'phone-cannot-connect' | 'father-adult-phone' | 'phone-coworker-group' | 'hero-not-busy'
   | 'family-dinner-cold' | 'hospital-family-needed' | 'hero-became-him' | 'self-stand-straight' | 'self-for-your-good'
-  | 'office-badge-denied' | 'office-meeting-continues' | 'manager-tonight-hard' | 'bank-payment-due' | 'clinic-blood-pressure' | 'coworker-cardboard-box' | 'security-return-card'
+  | 'office-badge-denied' | 'office-meeting-continues' | 'manager-tonight-hard' | 'bank-payment-due' | 'boss-collector-defeat'
+  | 'clinic-blood-pressure' | 'coworker-cardboard-box' | 'security-return-card'
   | 'clinic-next-number' | 'pharmacist-after-meals' | 'neighbor-corridor-light' | 'hospital-family-late' | 'light-room-keeper' | 'light-room-left-this' | 'back-room-keeper'
   | 'lamp-time-up' | 'lamp-return-due' | 'lamp-one-returned' | 'lamp-pockets-empty' | 'narrator-final-breath'
-  | 'boss-praise-only-you' | 'boss-praise-watch-you' | 'boss-praise-hard-work' | 'boss-praise-as-you-said' | 'boss-meeting-over'
+  | 'boss-praise-only-you' | 'boss-praise-watch-you' | 'boss-praise-hard-work' | 'boss-praise-as-you-said'
+  | 'boss-praise-one-seat' | 'boss-praise-paper' | 'boss-praise-optimize' | 'boss-praise-dismiss'
+  | 'boss-praise-xiaozhang' | 'boss-meeting-over'
   | 'xiaozhang-busy-later' | 'xiaozhang-overtime' | 'caregiver-school-send' | 'caregiver-fell-again'
   | 'classmate-slept-late' | 'teacher-daydream' | 'shopkeeper-fifty-cents' | 'station-feel-unwell' | 'passerby-excuse-me'
   | 'cashier-bag-fee' | 'meeting-quarter-hard' | 'coworker-flower-water' | 'courier-timeout'
@@ -102,7 +106,9 @@ export const VOICE_CUE_CONTEXT: Record<VoiceCueId, VoiceCueContext> = {
   'child-under-bed': { scene: '熄灯后的卧室', speaker: '小时候的他' },
   'caregiver-lights-out': { scene: '卧室门外', speaker: '照料者' },
   'caregiver-no-monster': { scene: '卧室门外', speaker: '照料者' },
+  'boss-closet-defeat': { scene: '熄灯后的卧室门外', speaker: '照料者' },
   'father-childhood-walk': { scene: '少年放学时的雨里', speaker: '父亲' },
+  'boss-father-phase-two': { scene: '雨衣落下后的雨里', speaker: '年幼的父亲' },
   'classmate-family-late': { scene: '雨停后的校门', speaker: '同学' },
   'school-gate-closing': { scene: '校门口', speaker: '广播' },
   'school-bell-start': { scene: '教室', speaker: '广播' },
@@ -111,6 +117,7 @@ export const VOICE_CUE_CONTEXT: Record<VoiceCueId, VoiceCueContext> = {
   'classmate-score-whisper': { scene: '教室后排', speaker: '同学' },
   'teacher-paper-back': { scene: '教室', speaker: '老师' },
   'father-for-your-good': { scene: '放学后的校门口', speaker: '父亲' },
+  'boss-father-stand': { scene: '少年雨里的父亲', speaker: '父亲' },
   'school-bell-end': { scene: '放学广播', speaker: '广播' },
   'recruiter-arrival-time': { scene: '招聘电话', speaker: '招聘方' },
   'landlord-rent-deposit': { scene: '租房电话', speaker: '房东' },
@@ -135,6 +142,7 @@ export const VOICE_CUE_CONTEXT: Record<VoiceCueId, VoiceCueContext> = {
   'office-meeting-continues': { scene: '会议室门后', speaker: '同事' },
   'manager-tonight-hard': { scene: '工作群语音', speaker: '经理' },
   'bank-payment-due': { scene: '催款电话', speaker: '银行客服' },
+  'boss-collector-defeat': { scene: '门外的催款电话', speaker: '催收系统' },
   'clinic-blood-pressure': { scene: '体检室', speaker: '医生' },
   'coworker-cardboard-box': { scene: '工位旁', speaker: '同事' },
   'security-return-card': { scene: '公司前台', speaker: '保安' },
@@ -154,6 +162,11 @@ export const VOICE_CUE_CONTEXT: Record<VoiceCueId, VoiceCueContext> = {
   'boss-praise-watch-you': { scene: '办公区那头的椅背', speaker: '领导' },
   'boss-praise-hard-work': { scene: '办公区那头的椅背', speaker: '领导' },
   'boss-praise-as-you-said': { scene: '《你怎么看》的标记旁', speaker: '领导' },
+  'boss-praise-one-seat': { scene: '站起来的老板椅前', speaker: '领导' },
+  'boss-praise-paper': { scene: '飞来的文件前', speaker: '领导' },
+  'boss-praise-optimize': { scene: '被点名的岗位前', speaker: '领导' },
+  'boss-praise-dismiss': { scene: '同时亮起的工位前', speaker: '领导' },
+  'boss-praise-xiaozhang': { scene: '岗位只剩一个时', speaker: '领导' },
   'boss-meeting-over': { scene: '椅背上所有的嘴', speaker: '椅子' },
   'xiaozhang-busy-later': { scene: '工位边', speaker: '一起入职的小张' },
   'xiaozhang-overtime': { scene: '跟在身后', speaker: '一起入职的小张' },
@@ -201,7 +214,9 @@ const VOICE_DELIVERY: Record<VoiceCueId, DeliverySpec> = {
   'child-under-bed': { voice: '自然男童声', tone: '贴近耳语，疑问上扬很轻', emotion: 'fearful', speed: 0.84, pitch: 1, intensity: 'low' },
   'caregiver-lights-out': { voice: '成年女声', tone: '门外日常叮嘱', emotion: 'calm', speed: 1.02, pitch: 0, intensity: 'low' },
   'caregiver-no-monster': { voice: '成年女声', tone: '困倦但不嘲笑', emotion: 'calm', speed: 0.98, pitch: 0, intensity: 'low' },
+  'boss-closet-defeat': { voice: '成年女声', tone: '像确认一件家常小事，仍然没有看见孩子刚经历过什么', emotion: 'calm', speed: 0.90, pitch: 0, intensity: 'low' },
   'father-childhood-walk': { voice: '克制中年男声', tone: '短句落下后转身', emotion: 'calm', speed: 0.82, pitch: -2, intensity: 'low' },
+  'boss-father-phase-two': { voice: '八至十岁男童声', tone: '哭得喘不上气仍本能否认，短促、防御，不可爱化', emotion: 'fearful', speed: 0.78, pitch: 1, intensity: 'low' },
   'classmate-family-late': { voice: '自然男童声', tone: '随口询问，轻微上扬', emotion: 'surprised', speed: 1.06, pitch: 1, intensity: 'low' },
   'school-gate-closing': { voice: '校园广播女声', tone: '旧广播标准口径', emotion: 'calm', speed: 0.98, pitch: 0, intensity: 'medium' },
   'school-bell-start': { voice: '校园广播女声', tone: '平直清楚', emotion: 'calm', speed: 1.00, pitch: 0, intensity: 'medium' },
@@ -210,6 +225,7 @@ const VOICE_DELIVERY: Record<VoiceCueId, DeliverySpec> = {
   'classmate-score-whisper': { voice: '少年男声', tone: '近处压低声音，不笑', emotion: 'surprised', speed: 0.90, pitch: 1, intensity: 'low' },
   'teacher-paper-back': { voice: '成熟女教师声', tone: '课堂顺手交代', emotion: 'calm', speed: 1.06, pitch: 0, intensity: 'medium' },
   'father-for-your-good': { voice: '克制中年男声', tone: '不容讨论的家常话', emotion: 'calm', speed: 0.80, pitch: -2, intensity: 'medium' },
+  'boss-father-stand': { voice: '克制中年男声', tone: '雨里短促命令，不怒吼', emotion: 'calm', speed: 0.80, pitch: -2, intensity: 'medium' },
   'school-bell-end': { voice: '校园广播女声', tone: '标准播报，无重音', emotion: 'calm', speed: 1.00, pitch: 0, intensity: 'medium' },
   'recruiter-arrival-time': { voice: '职业女性声', tone: '礼貌快速的流程问题', emotion: 'calm', speed: 1.15, pitch: 0, intensity: 'medium' },
   'landlord-rent-deposit': { voice: '中年女声', tone: '生活化地直接报条件，咬字清楚', emotion: 'calm', speed: 1.04, pitch: -1, intensity: 'medium' },
@@ -234,6 +250,7 @@ const VOICE_DELIVERY: Record<VoiceCueId, DeliverySpec> = {
   'office-meeting-continues': { voice: '自然成年同事女声', tone: '隔门正常开会，不使用播报腔', emotion: 'calm', speed: 1.10, pitch: 0, intensity: 'medium' },
   'manager-tonight-hard': { voice: '成年经理男声', tone: '随口安排任务', emotion: 'calm', speed: 1.08, pitch: -1, intensity: 'medium' },
   'bank-payment-due': { voice: '客服女声', tone: '标准提醒，不威胁', emotion: 'calm', speed: 1.05, pitch: 0, intensity: 'medium' },
+  'boss-collector-defeat': { voice: '客服女声', tone: '系统确认口径，平直清楚，不庆祝也不安慰', emotion: 'calm', speed: 0.96, pitch: 0, intensity: 'medium' },
   'clinic-blood-pressure': { voice: '低沉中年男医生声', tone: '平常复测交代，不制造重病感', emotion: 'calm', speed: 1.00, pitch: -2, intensity: 'medium' },
   'coworker-cardboard-box': { voice: '自然成年同事男声', tone: '正常、直接，真的不知道，不发软', emotion: 'surprised', speed: 1.02, pitch: -1, intensity: 'medium' },
   'security-return-card': { voice: '中年保安男声', tone: '快速、无所谓，像每天重复很多次', emotion: 'calm', speed: 1.06, pitch: -1, intensity: 'low' },
@@ -253,6 +270,11 @@ const VOICE_DELIVERY: Record<VoiceCueId, DeliverySpec> = {
   'boss-praise-watch-you': { voice: '设计音色·热络空心领导男声', tone: '顺口的器重', emotion: 'calm', speed: 1.06, pitch: -1, intensity: 'medium' },
   'boss-praise-hard-work': { voice: '设计音色·热络空心领导男声', tone: '把加班说成小事', emotion: 'calm', speed: 1.08, pitch: -1, intensity: 'medium' },
   'boss-praise-as-you-said': { voice: '设计音色·热络空心领导男声', tone: '采纳你的意见，也把活递给你', emotion: 'calm', speed: 1.02, pitch: -1, intensity: 'medium' },
+  'boss-praise-one-seat': { voice: '设计音色·热络空心领导男声', tone: '先夸一句，再把唯一岗位说成理所当然', emotion: 'calm', speed: 0.92, pitch: -1, intensity: 'medium' },
+  'boss-praise-paper': { voice: '设计音色·热络空心领导男声', tone: '像顺手递来一页文件，不给讨论余地', emotion: 'calm', speed: 1.08, pitch: -1, intensity: 'medium' },
+  'boss-praise-optimize': { voice: '设计音色·热络空心领导男声', tone: '把清除一个人说成普通流程动作', emotion: 'calm', speed: 1.00, pitch: -1, intensity: 'medium' },
+  'boss-praise-dismiss': { voice: '设计音色·热络空心领导男声', tone: '礼貌宣布，不怒吼，不解释', emotion: 'calm', speed: 0.96, pitch: -1, intensity: 'medium' },
+  'boss-praise-xiaozhang': { voice: '设计音色·热络空心领导男声', tone: '点名以后把处罚和责任一并推回小张', emotion: 'calm', speed: 0.94, pitch: -1, intensity: 'medium' },
   'boss-meeting-over': { voice: '设计音色·领导男声，多口齐声', tone: '所有的嘴同时说这两个字', emotion: 'calm', speed: 0.90, pitch: -2, intensity: 'low' },
   'xiaozhang-busy-later': { voice: '清澈邻家青年男声', tone: '客气地把忙留给自己', emotion: 'calm', speed: 1.02, pitch: 0, intensity: 'low' },
   'xiaozhang-overtime': { voice: '清澈邻家青年男声', tone: '随口一句，不算抱怨', emotion: 'calm', speed: 0.98, pitch: 0, intensity: 'low' },
@@ -300,6 +322,9 @@ const cue = (
   playbackFile: role === 'lamp-keeper' ? `assets/audio/voice-review/${id}.ethereal-v2.mp3` : undefined,
 });
 
+/** 门外妈妈要比普通远景对白更实一点，否则在童年配乐和小扬声器上会显得轻。 */
+const CAREGIVER_VOICE_VOLUME = 0.96;
+
 /** Fixed production script. No line is generated at runtime. */
 export const VOICE_CUES: Record<VoiceCueId, VoiceCue> = {
   'origin-comic-01': cue('origin-comic-01', 0, 'narrator', '人出生的时候，先哭一声。<#0.65#>那是他来到世上，领到的第一口气。', '像老人坐下来后自然开口；前句只是说事实，完整停一拍，再把“第一口气”轻轻放低，不拖尾、不表演换气。', 'clear', trigger('origin_comic_scene', '开场漫画第一幕显现', true, 3), '让开场第一声来自暮年的主角，而不是全知旁白。'),
@@ -308,16 +333,18 @@ export const VOICE_CUES: Record<VoiceCueId, VoiceCue> = {
   'origin-comic-04': cue('origin-comic-04', 0, 'narrator', '后来他们各自长大，<#0.28#>也各自遇见，<#0.18#>各自躲不过的事。', '像翻旧档案一样自然推进；三个“各自”不做朗诵式重音。', 'clear', trigger('origin_comic_scene', '开场漫画第四幕显现', true, 3), '从共同出生推到各自不同的劫。'),
   'origin-comic-05': cue('origin-comic-05', 0, 'narrator', '受了委屈，咽下去叫懂事；<#0.22#>吐出来，又有人说他不懂事。<#0.32#>每种选择，都有所得，也有所失。', '前两段平静并列，不控诉；最后一句放慢一点，得失两个词等重。', 'clear', trigger('origin_comic_scene', '开场漫画第五幕显现', true, 3), '把玩家之后的咽下与吐出变成选择，而不是标准答案。'),
   'origin-comic-06': cue('origin-comic-06', 0, 'narrator', '有些气成了脾气，<#0.18#>有些气撑成了骨气，<#0.28#>还有一些，一直留在身体里。', '“脾气、骨气”咬字清楚但不喊；最后一段声音收窄，像说到自己。', 'clear', trigger('origin_comic_scene', '开场漫画第六幕显现', true, 3), '把经历如何留在身体里说成具体变化。'),
-  'origin-comic-07': cue('origin-comic-07', 0, 'narrator', '得到的，穿在身上；<#0.2#>失去的，也穿在身上。<#0.34#>芸芸众生，各有各的这一身。', '得与失保持同样分量；末句沧桑但克制，不拔高。', 'clear', trigger('origin_comic_scene', '开场漫画第七幕显现', true, 3), '把游戏名与一生携带的得失合在一起。'),
+  'origin-comic-07': cue('origin-comic-07', 0, 'narrator', '得到的，穿在身上；<#0.2#>失去的，也穿在身上。<#0.34#>芸芸众生，各有各的这一身。', '得与失保持同样分量；末句沧桑但克制，不拔高。', 'clear', trigger('origin_comic_scene', '开场漫画第七幕显现', true, 3), '把玩法名与一生携带的得失合在一起。'),
   'origin-comic-08': cue('origin-comic-08', 0, 'narrator', '这一身并非生来如此，<#0.34#>而是被这一生，一件件穿成的。<#0.52#>(breath)现在，<#0.22#>轮到你了。(exhale)', '前两句缓慢落定；长停顿后靠近话筒，最后四字轻而清楚，呼气自然消失。', 'clear', trigger('origin_comic_scene', '开场漫画第八幕显现', true, 3), '把解释权交还给玩家，进入他的这一生。'),
   'narrator-opening': cue('narrator-opening', 0, 'narrator', '(inhale)他还没有名字。<#0.48#>第一口气进来以前，谁也不知道，<#0.3#>这一身会穿上什么。(exhale)', '普通中老年男性，自然说出，不拖长、不使用纪录片旁白腔。', 'clear', trigger('origin_ready', '出生档案文字完全显现', true, 3, true), '确定旁白是暮年的主角本人。'),
   'narrator-start-breath': cue('narrator-start-breath', 0, 'narrator', '后来，他开始呼吸。', '像随手补记一条事实，不抒情、不压低每个字。', 'clear', trigger('stage_enter', '童年章首次开始', true, 2), '把开场按钮变成叙事动作。'),
 
   'child-under-bed': cue('child-under-bed', 0, 'hero', '(breath)那里……<#0.32#>是不是有东西？', '儿童压低声音，是真的不确定。', 'clear', trigger('stage_time', '童年第22秒、照料者关灯台词结束后', true, 2, false, 22), '让童年怪物必然先从孩子真实的提问里出现，再让衣架走出来。'),
-  'caregiver-lights-out': cue('caregiver-lights-out', 0, 'caregiver', '灯关了。<#0.3#>明天还要上学。', '门外正常说话，不凶。', 'behind-door', trigger('stage_time', '童年章第18秒', true, 1, false, 18), '交代时间和家庭现场。'),
-  'caregiver-no-monster': cue('caregiver-no-monster', 0, 'caregiver', '哪有什么怪物。<#0.22#>快睡吧。', '带一点困倦，不嘲笑孩子。', 'behind-door', trigger('boss_spawn', '没人相信的怪物登场', true, 2), '怪物名字由一次真实的否认成立。'),
+  'caregiver-lights-out': cue('caregiver-lights-out', 0, 'caregiver', '灯关了。<#0.3#>明天还要上学。', '门外正常说话，不凶。', 'behind-door', trigger('stage_time', '童年章第18秒', true, 1, false, 18), '交代时间和家庭现场。', CAREGIVER_VOICE_VOLUME),
+  'caregiver-no-monster': cue('caregiver-no-monster', 0, 'caregiver', '哪有什么怪物。<#0.22#>快睡吧。', '带一点困倦，不嘲笑孩子。', 'behind-door', trigger('boss_spawn', '没人相信的怪物登场', true, 2), '怪物名字由一次真实的否认成立。', CAREGIVER_VOICE_VOLUME),
+  'boss-closet-defeat': cue('boss-closet-defeat', 0, 'caregiver', '好了。<#0.34#>里面什么也没有。', '门外像确认一件家常小事，不知道孩子刚才真的看见过。', 'behind-door', trigger('boss_defeat', '没人相信的怪物被击败', true, 3, true), '击败怪物没有换来被相信；日常否认成为童年章最后一个声音。', CAREGIVER_VOICE_VOLUME),
   // 资源 ID 沿用旧名以保持存档和成品音频兼容；正典归属是少年放学雨夜。
-  'father-childhood-walk': cue('father-childhood-walk', 1, 'father', '走吧。', '雨里说完就转身，不表演温柔。', 'memory', trigger('item_trigger', '少年章击败父亲、第一次得到父亲的雨衣', false, 2), '父亲线在少年章落地：他会做，但不会说。'),
+  'father-childhood-walk': cue('father-childhood-walk', 1, 'father', '走吧。', '雨里说完就转身，不表演温柔。', 'memory', trigger('boss_defeat', '沉默的父亲被击败、雨衣落在地上', true, 3, true), '父亲线在击败的一刻落地：他会做，但不会多说。'),
+  'boss-father-phase-two': cue('boss-father-phase-two', 1, 'father', '(sniffs)我没有哭。', '八至十岁的男孩哭得喘不上气，仍本能地否认；短促、防御，不可爱化。', 'clear', trigger('boss_phase', '沉默的父亲雨衣倒下、二阶段短句落下', true, 3, true), '让二阶段揭示不只依靠画面和字幕：雨衣里的父亲仍是那个不敢承认疼的孩子。'),
   // 正典：学校整条线属于少年章——童年还没上学，这两条从童年章移来。
   'classmate-family-late': cue('classmate-family-late', 1, 'classmate', '你家里人，<#0.24#>还没来吗？', '孩子随口问，不带怜悯。', 'behind-door', trigger('stage_time', '少年章第52秒', true, 1, false, 52), '不解释家庭，只让玩家发现别人已经走了。'),
   'school-gate-closing': cue('school-gate-closing', 1, 'announcer', '请还未离校的同学，尽快到校门口等候。', '旧学校广播，清楚但略失真。', 'pa', trigger('stage_time', '少年章第58秒', true, 2, false, 58), '放学没人来接，接在统一答案之后。'),
@@ -328,6 +355,7 @@ export const VOICE_CUES: Record<VoiceCueId, VoiceCue> = {
   'classmate-score-whisper': cue('classmate-score-whisper', 1, 'classmate', '他才三十八分。', '近处小声说，不笑。', 'memory', trigger('hp_below', '少年章生命首次低于70%', false, 1), '轻声议论比集体嘲笑更真实。'),
   'teacher-paper-back': cue('teacher-paper-back', 1, 'teacher', '卷子往后传。<#0.2#>别折。', '日常课堂口径。', 'clear', trigger('boss_phase', '统一答案第一次召出红叉', false, 1), '在激烈战斗中插回一件普通小事。'),
   'father-for-your-good': cue('father-for-your-good', 1, 'father', '站好。<#0.82#>都是为你好。', '不怒吼，像一句不容讨论的家常话。', 'memory', trigger('boss_defeat', '统一答案被击败', true, 3, true), '父亲线第二次埋点，成年由主角复述。'),
+  'boss-father-stand': cue('boss-father-stand', 1, 'father', '站好。', '雨里短促地说，不怒吼。', 'clear', trigger('boss_phase', '沉默的父亲一阶段第一次使用《站好》', true, 2), '招式文字与父亲原声同时落下，避免父亲战只剩无声字幕。', 0.9),
   'school-bell-end': cue('school-bell-end', 1, 'announcer', '放学后请直接回家，不要在校门口逗留。', '校园广播，无额外感情。', 'pa', trigger('stage_transition', '少年向青年过渡开始', true, 2), '“直接回家”接到青年无家可回的通勤。'),
 
   'recruiter-arrival-time': cue('recruiter-arrival-time', 2, 'recruiter', '最快什么时候可以到岗？', '礼貌、快速，像面试最后一个问题。', 'phone', trigger('stage_enter', '青年章第4秒', true, 1, false, 4), '用一句话完成毕业到工作的切换。'),
@@ -355,6 +383,7 @@ export const VOICE_CUES: Record<VoiceCueId, VoiceCue> = {
   'office-meeting-continues': cue('office-meeting-continues', 4, 'office', '下一页。<#0.2#>这个数字再往下拆一下。', '门后真实同事继续开会，不使用系统播报声。', 'behind-door', trigger('stage_time', '门禁失败后1.2秒', false, 2, false, 1.2), '世界没有为他的离开暂停。'),
   'manager-tonight-hard': cue('manager-tonight-hard', 4, 'manager', '今晚辛苦一下。<#0.2#>明早要。', '随口安排，不需要恶人语气。', 'phone', trigger('stage_time', '中年章第14秒', false, 1, false, 14), '职业压力落到具体截止时间。'),
   'bank-payment-due': cue('bank-payment-due', 4, 'bank', '您本期账单尚未结清，请留意还款日期。', '标准客服女声。', 'phone', trigger('boss_spawn', '上门催收登场', true, 2), 'Boss 有真实账单前因。'),
+  'boss-collector-defeat': cue('boss-collector-defeat', 4, 'bank', '本次欠款，<#0.28#>已经结清。', '系统确认口径，平直清楚，不庆祝也不安慰。', 'phone', trigger('boss_defeat', '上门催收被击败', true, 3, true), '战斗结束只结清这一笔；日光灯和下一张账单仍然留着。'),
   'clinic-blood-pressure': cue('clinic-blood-pressure', 4, 'doctor', '血压有点高。<#0.18#>坐十分钟再量一次。', '低沉男医生的日常口径，不制造重病。', 'clear', trigger('hp_below', '中年章生命首次低于50%', false, 1), '身体衰老从普通复测开始。'),
   'coworker-cardboard-box': cue('coworker-cardboard-box', 4, 'coworker', '这个箱子，<#0.18#>是给谁的？', '同事真的不知道，正常、直接，不发软。', 'behind-door', trigger('enemy_count', '累计击败4个打包纸箱', false, 1), '不点明裁员，让玩家自己拼起来。'),
   'security-return-card': cue('security-return-card', 4, 'security', '工牌放这儿就行。', '保安快速说完，不看主角，像每天重复很多次。', 'clear', trigger('stage_transition', '中年向暮年过渡开始', true, 2), '工牌离身是暮年的入口。'),
@@ -375,11 +404,16 @@ export const VOICE_CUES: Record<VoiceCueId, VoiceCue> = {
   'boss-praise-watch-you': cue('boss-praise-watch-you', 2, 'boss', '我看好你。', '顺口的器重，说完人已经在看下一份文件。', 'clear', trigger('boss_phase', '你很优秀一阶段给出攻速好话', false, 1), '被看好的代价是被继续使用。', 0.8, 9_000),
   'boss-praise-hard-work': cue('boss-praise-hard-work', 2, 'boss', '辛苦一下。', '把加班说成小事的口吻。', 'clear', trigger('boss_phase', '你很优秀一阶段给出移速好话', false, 1), '「一下」是这句话里唯一的谎。', 0.8, 9_000),
   'boss-praise-as-you-said': cue('boss-praise-as-you-said', 2, 'boss', '很好，就按你说的办。', '采纳你的意见，也把活递给你。', 'clear', trigger('boss_phase', '玩家踩下《你怎么看》标记', false, 2), '主动走过去的那一步是玩家自己选的。', 0.82, 20_000),
+  'boss-praise-one-seat': cue('boss-praise-one-seat', 2, 'boss', '你很优秀。<#0.32#>可岗位，只有一个。', '先夸一句，再把唯一岗位说成理所当然。', 'clear', trigger('boss_phase', '你很优秀站起、进入二阶段', true, 3, true), '二阶段第一次开口就拆掉一阶段夸奖的伪装。', 0.84, 20_000),
+  'boss-praise-paper': cue('boss-praise-paper', 2, 'boss', '这份，<#0.16#>下班前给我。', '像顺手递来一页文件，不给讨论余地。', 'clear', trigger('boss_phase', '二阶段《这个下班前给我》前摇', false, 2), '让文件攻击先由一句熟悉的工作口径成立。', 0.82, 12_000),
+  'boss-praise-optimize': cue('boss-praise-optimize', 2, 'boss', '这个，<#0.18#>优化掉。', '把清除一个人说成普通流程动作。', 'clear', trigger('boss_phase', '二阶段《优化》点名岗位', false, 2), '“优化”不再只是屏幕上的技能名，而是老板亲口下的决定。', 0.82, 12_000),
+  'boss-praise-dismiss': cue('boss-praise-dismiss', 2, 'boss', '你可以离职了。', '礼貌宣布，不怒吼，不解释。', 'clear', trigger('boss_phase', '二阶段《离职》点亮所有积压任务', false, 2), '最重的处罚保持最日常的语气。', 0.82, 12_000),
+  'boss-praise-xiaozhang': cue('boss-praise-xiaozhang', 2, 'boss', '小张，<#0.28#>你自己看着办。', '点名以后把处罚和责任一并推回小张。', 'clear', trigger('boss_phase', '岗位只剩一个且小张被迫背刺', false, 3, true), '只在帮助过小张却仍被岗位机制反噬的剧情分支响起。', 0.84, 20_000),
   'boss-meeting-over': cue('boss-meeting-over', 2, 'boss', '散会。', '椅背上所有的嘴同时说，只说这两个字。', 'clear', trigger('boss_defeat', '你很优秀被击败', true, 3, true), '椅子空出来了，马上会有人坐进去——这句留给玩家自己想。', 0.78),
   'xiaozhang-busy-later': cue('xiaozhang-busy-later', 2, 'xiaozhang', '你先忙，我这边还有点没弄完。', '客气地把忙留给自己。', 'clear', trigger('npc_encounter', '碰到一起入职的小张弹出选择框', false, 2), '他后来在岗位混战里活下来的方式，也是这句。'),
   'xiaozhang-overtime': cue('xiaozhang-overtime', 2, 'xiaozhang', '今晚又得加班了。', '随口一句，不算抱怨。', 'clear', trigger('stage_time', '帮助小张20秒后他跟随时随口说', false, 1, false, 20), '友军也在撑。'),
-  'caregiver-school-send': cue('caregiver-school-send', 0, 'caregiver', '书包背好了吗？<#0.3#>路上慢点。', '出门前的日常叮嘱，不看着他说。', 'behind-door', trigger('stage_transition', '童年结束、进入少年学校前', true, 2), '童年结束时的日常送别，接到少年章校园广播。'),
-  'caregiver-fell-again': cue('caregiver-fell-again', 0, 'caregiver', '男孩子，摔摔没事的。', '门外随口安慰。', 'behind-door', trigger('hp_below', '童年章生命首次低于60%', false, 1), '疼不被承认，是从很小开始的。'),
+  'caregiver-school-send': cue('caregiver-school-send', 0, 'caregiver', '书包背好了吗？<#0.3#>路上慢点。', '出门前的日常叮嘱，不看着他说。', 'behind-door', trigger('stage_transition', '童年结束、进入少年学校前', true, 2), '童年结束时的日常送别，接到少年章校园广播。', CAREGIVER_VOICE_VOLUME),
+  'caregiver-fell-again': cue('caregiver-fell-again', 0, 'caregiver', '男孩子，摔摔没事的。', '门外随口安慰。', 'behind-door', trigger('hp_below', '童年章生命首次低于60%', false, 1), '疼不被承认，是从很小开始的。', CAREGIVER_VOICE_VOLUME),
   'classmate-slept-late': cue('classmate-slept-late', 1, 'classmate', '我昨晚一点才睡。', '考前压低声音的炫耀式诉苦。', 'clear', trigger('stage_time', '少年章第30秒', false, 1, false, 30), '考试前的谎言日常。'),
   'teacher-daydream': cue('teacher-daydream', 1, 'teacher', '发什么呆？', '顺口点名，不停下讲课。', 'clear', trigger('stand_still', '少年章静止3秒且附近没有敌人', false, 1, false, 3), '静止惩罚的少年版。'),
   'shopkeeper-fifty-cents': cue('shopkeeper-fifty-cents', 1, 'shopkeeper', '同学，五毛。', '说惯了的两个词，眼睛没离开电视。', 'clear', trigger('shop_open', '少年章第一次打开小卖部', false, 1), '让商店有地点、有人。'),
@@ -453,11 +487,11 @@ export function voicePlaybackRate(id: VoiceCueId, treatment?: VoiceTreatment): n
 }
 
 export const STAGE_VOICE_PRELOADS: ReadonlyArray<ReadonlyArray<VoiceCueId>> = [
-  ['origin-comic-01', 'origin-comic-02', 'origin-comic-03', 'origin-comic-04', 'origin-comic-05', 'origin-comic-06', 'origin-comic-07', 'origin-comic-08', 'narrator-opening', 'narrator-start-breath', 'child-under-bed', 'caregiver-lights-out', 'caregiver-no-monster', 'caregiver-school-send', 'caregiver-fell-again', 'narrator-he-fell-asleep'],
-  ['school-bell-start', 'classmate-family-late', 'school-gate-closing', 'teacher-last-row', 'teacher-answer-format', 'classmate-score-whisper', 'teacher-paper-back', 'father-for-your-good', 'father-childhood-walk', 'school-bell-end', 'classmate-slept-late', 'teacher-daydream', 'shopkeeper-fifty-cents'],
-  ['recruiter-arrival-time', 'landlord-rent-deposit', 'last-bus-arrival', 'station-yellow-line', 'station-doors-closing', 'last-bus-departed', 'interview-thank-you', 'boss-praise-only-you', 'boss-praise-watch-you', 'boss-praise-hard-work', 'boss-praise-as-you-said', 'boss-meeting-over', 'xiaozhang-busy-later', 'xiaozhang-overtime', 'station-feel-unwell', 'passerby-excuse-me'],
+  ['origin-comic-01', 'origin-comic-02', 'origin-comic-03', 'origin-comic-04', 'origin-comic-05', 'origin-comic-06', 'origin-comic-07', 'origin-comic-08', 'narrator-opening', 'narrator-start-breath', 'child-under-bed', 'caregiver-lights-out', 'caregiver-no-monster', 'boss-closet-defeat', 'caregiver-school-send', 'caregiver-fell-again', 'narrator-he-fell-asleep'],
+  ['school-bell-start', 'classmate-family-late', 'school-gate-closing', 'teacher-last-row', 'teacher-answer-format', 'classmate-score-whisper', 'teacher-paper-back', 'father-for-your-good', 'boss-father-stand', 'father-childhood-walk', 'boss-father-phase-two', 'school-bell-end', 'classmate-slept-late', 'teacher-daydream', 'shopkeeper-fifty-cents'],
+  ['recruiter-arrival-time', 'landlord-rent-deposit', 'last-bus-arrival', 'station-yellow-line', 'station-doors-closing', 'last-bus-departed', 'interview-thank-you', 'boss-praise-only-you', 'boss-praise-watch-you', 'boss-praise-hard-work', 'boss-praise-as-you-said', 'boss-praise-one-seat', 'boss-praise-paper', 'boss-praise-optimize', 'boss-praise-dismiss', 'boss-praise-xiaozhang', 'boss-meeting-over', 'xiaozhang-busy-later', 'xiaozhang-overtime', 'station-feel-unwell', 'passerby-excuse-me'],
   ['phone-wife-fridge', 'phone-hospital-not-call', 'phone-mother-didnt-ask', 'phone-cannot-connect', 'father-adult-phone', 'phone-coworker-group', 'hero-not-busy', 'family-dinner-cold', 'hospital-family-needed', 'hero-became-him', 'self-stand-straight', 'self-for-your-good', 'light-room-keeper', 'light-room-left-this', 'back-room-keeper', 'cashier-bag-fee'],
-  ['office-badge-denied', 'office-meeting-continues', 'manager-tonight-hard', 'bank-payment-due', 'clinic-blood-pressure', 'coworker-cardboard-box', 'security-return-card', 'light-room-keeper', 'light-room-left-this', 'back-room-keeper', 'meeting-quarter-hard', 'coworker-flower-water', 'courier-timeout'],
+  ['office-badge-denied', 'office-meeting-continues', 'manager-tonight-hard', 'bank-payment-due', 'boss-collector-defeat', 'clinic-blood-pressure', 'coworker-cardboard-box', 'security-return-card', 'light-room-keeper', 'light-room-left-this', 'back-room-keeper', 'meeting-quarter-hard', 'coworker-flower-water', 'courier-timeout'],
   ['clinic-next-number', 'pharmacist-after-meals', 'neighbor-corridor-light', 'hospital-family-late', 'light-room-keeper', 'light-room-left-this', 'back-room-keeper', 'lamp-time-up', 'lamp-return-due', 'lamp-one-returned', 'lamp-pockets-empty', 'narrator-final-breath', 'clinic-fifty-six', 'pharmacist-self-pay', 'bedside-son-money', 'collector-not-yet'],
 ];
 

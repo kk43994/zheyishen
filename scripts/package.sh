@@ -53,11 +53,16 @@ rm -f dist/assets/audio/ambience/*.wav
 rm -f dist/assets/audio/music/*.wav
 rm -f dist/assets/audio/sfx/*.wav
 
-# 语音发布档降码率：public 里保留 64k 母版，进包统一转 56k 单声道（听感差异
-# 可忽略，同时减少首次音频读取量。
+# 图片无损瘦身：PNG → 无损 WebP，只接受像素级完全一致的结果，并改写产物引用。
+# 放在这里而不是改源码——src 里 226 处 .png 引用与美术门禁 72 处路径断言都不必动。
+python3 scripts/optimize_release_assets.py dist
+
+# 平台包硬上限 8 MiB：public 里保留声音母版，只压缩 dist 副本。对白使用
+# 44 kbps 单声道（32 kHz），仍优先保证咬字；配乐本来位于人声后方，使用
+# 24 kbps 单声道（22.05 kHz）。不改变时长、响度、混音增益或任何触发内容。
 ffmpeg_bin="${FFMPEG_BIN:-ffmpeg}"
 if ! command -v "$ffmpeg_bin" >/dev/null 2>&1; then
-  printf '%s\n' "package.sh: ffmpeg unavailable (set FFMPEG_BIN); voice bitrate downscale is required for the release budget" >&2
+  printf '%s\n' "package.sh: ffmpeg unavailable (set FFMPEG_BIN); release audio downscale is required for the platform budget" >&2
   exit 1
 fi
 shopt -s nullglob
@@ -68,8 +73,24 @@ if [ "${#voice_files[@]}" -eq 0 ]; then
   exit 1
 fi
 for voice_file in "${voice_files[@]}"; do
-  "$ffmpeg_bin" -hide_banner -loglevel error -y -i "$voice_file" -ac 1 -b:a 56k "${voice_file%.mp3}.tmp.mp3"
+  "$ffmpeg_bin" -nostdin -hide_banner -loglevel error -y -i "$voice_file" \
+    -map_metadata -1 -ac 1 -ar 32000 -codec:a libmp3lame -b:a 44k \
+    "${voice_file%.mp3}.tmp.mp3"
   mv "${voice_file%.mp3}.tmp.mp3" "$voice_file"
+done
+
+shopt -s nullglob
+music_files=(dist/assets/audio/music/*.mp3)
+shopt -u nullglob
+if [ "${#music_files[@]}" -eq 0 ]; then
+  printf '%s\n' 'package.sh: no music mp3 files found in dist; build output is incomplete' >&2
+  exit 1
+fi
+for music_file in "${music_files[@]}"; do
+  "$ffmpeg_bin" -nostdin -hide_banner -loglevel error -y -i "$music_file" \
+    -map_metadata -1 -ac 1 -ar 22050 -codec:a libmp3lame -b:a 24k \
+    "${music_file%.mp3}.tmp.mp3"
+  mv "${music_file%.mp3}.tmp.mp3" "$music_file"
 done
 
 npm run validate:release-budget
