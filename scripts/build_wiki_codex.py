@@ -379,6 +379,19 @@ def shell(slug: str, title: str, eyebrow: str, sub: str, body: str) -> str:
   .design-point{{padding:12px 14px;border:1px solid var(--line);border-radius:7px;background:color-mix(in srgb,var(--bg) 55%,transparent)}}
   .design-point b{{display:block;font-size:14.5px;margin-bottom:5px;color:var(--moon)}}
   .design-point p{{margin:0;font-size:13.5px;line-height:1.78;color:var(--fg-2)}}
+  .drops{{display:grid;gap:10px}}
+  .drop-row{{display:grid;grid-template-columns:104px minmax(0,1fr);gap:16px;align-items:start;
+    padding:14px 16px;border:1px solid var(--line);border-left:3px solid var(--moon);
+    border-radius:8px;background:color-mix(in srgb,var(--moon) 4%,var(--card))}}
+  .drop-art{{display:grid;gap:7px;justify-items:center}}
+  .drop-shot{{position:relative;display:block;width:100%;aspect-ratio:1;overflow:hidden;
+    border:1px solid var(--line);border-radius:5px;background:#0d0d11}}
+  .drop-shot img{{position:absolute;width:400%;max-width:none;left:-100%;top:-9%;image-rendering:pixelated}}
+  .drop-row b{{display:block;font-size:15.5px;margin:6px 0 0;color:var(--moon)}}
+  .drop-flavor{{margin:5px 0 0;font-size:13px;color:var(--fg-3)}}
+  .drop-mech{{margin:7px 0 0;font-size:13.5px;line-height:1.75}}
+  .drop-note{{margin:6px 0 0;font-size:12.5px;line-height:1.7;color:var(--fg-3)}}
+  .sec-note{{margin:0 0 10px;font-size:13px;line-height:1.75;color:var(--fg-2)}}
   .links{{display:grid;gap:9px}}
   .link-row{{display:grid;grid-template-columns:74px minmax(0,1fr);gap:14px;align-items:start;
     padding:13px 15px;border:1px solid var(--line);border-left:3px solid var(--rainyellow);
@@ -408,6 +421,9 @@ def shell(slug: str, title: str, eyebrow: str, sub: str, body: str) -> str:
   @media(max-width:640px){{
     .thread{{grid-template-columns:1fr;gap:9px}}
     .link-row{{grid-template-columns:56px minmax(0,1fr);gap:10px}}
+    .drop-row{{grid-template-columns:68px minmax(0,1fr);gap:11px}}
+    .drop-row b{{font-size:14px}}
+    .drop-mech,.drop-flavor{{font-size:12.5px}}
     .link-row p,.npc-line,.npc-why,.npc-later{{font-size:12.5px}}
     .npc-mech{{grid-template-columns:1fr;gap:4px}}
     .npc-mech p{{font-size:12.5px}}
@@ -624,6 +640,49 @@ def render_chapter_design(stage: str) -> str:
     )
 
 
+def render_drops(stage: str, bosses: list[dict], items_by_name: dict[str, dict]) -> str:
+    """本章打完 Boss 掉什么。直接从 bosses.json 的 legacyDrop 生成——
+    此前是手写映射，把 iPhone 记成成年掉、病历本记成暮年掉，两章都错。"""
+    rows = []
+    for boss in bosses:
+        drop = boss.get("legacyDrop")
+        if not drop or boss.get("stage") != stage:
+            continue
+        name = next((n for n in items_by_name if drop.startswith(n)), None)
+        item = items_by_name.get(name) if name else None
+        note = drop[len(name):].strip(" （）()") if name else drop
+        flavor = (item or {}).get("flavor", "")
+        if note and flavor and note[:8] and note[:8] in flavor:
+            note = ""   # 尾注只是 flavor 的复述
+        icon = icon_span(item["iconIndex"], name) if item else ""
+        shot = ""
+        if item and item.get("manifestation") and (DOCS / item["manifestation"]).exists():
+            shot = (f'<span class="drop-shot"><img src="{esc(item["manifestation"])}" '
+                    f'alt="{esc(name)} 主角体现" loading="lazy"></span>')
+        quality = ""
+        if item:
+            numeral, label, cls = QUALITY[item["quality"]]
+            quality = f'<span class="chip {cls}">{numeral} · {esc(label)}</span>'
+        tier = TIER_LABEL.get(boss.get("tier", ""), "Boss")
+        rows.append(
+            '<article class="drop-row">'
+            f'<div class="drop-art">{icon}{shot}</div>'
+            f'<div><div class="chips"><span class="chip">{esc(tier)}《{esc(boss["name"])}》掉落</span>{quality}</div>'
+            f'<b class="serif">{esc(name or drop)}</b>'
+            + (f'<p class="drop-flavor serif">“{esc(item["flavor"])}”</p>' if item and item.get("flavor") else "")
+            + (f'<p class="drop-mech">{esc(item["mechanic"])}</p>' if item and item.get("mechanic") else "")
+            + (f'<p class="drop-note">{esc(note)}</p>' if note else "")
+            + "</div></article>"
+        )
+    if not rows:
+        return ('<h3 class="encounter-h serif">08 · 本章掉落</h3>'
+                '<p class="flavor serif">暮年不再给你东西。这一章开始往回收。</p>')
+    return ('<h3 class="encounter-h serif">08 · 本章掉落 · 第五档「这一身」</h3>'
+            '<p class="sec-note">五件固定掉落<b>不进三选一、不可拒绝、拾取即穿戴</b>，'
+            '而且每一件都在告诉你下一章去哪。终局收灯人逐件剥离时，父亲的雨衣保底最后被剥。</p>'
+            f'<div class="drops">{"".join(rows)}</div>')
+
+
 def render_links(stage: str) -> str:
     """跨章线索做进各章：每条只写「站在这一章往前/往后看」的那一版，
     不是同一段复制六遍。用户裁决：不单独立「跨章线索」一节。"""
@@ -649,7 +708,7 @@ def render_links(stage: str) -> str:
         )
     if not rows:
         return ""
-    return ('<h3 class="encounter-h serif">08 · 这一章之外</h3>'
+    return ('<h3 class="encounter-h serif">09 · 这一章之外</h3>'
             f'<div class="links">{"".join(rows)}</div>')
 
 
@@ -852,6 +911,8 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
     skill_manifest = load_json(ROOT / "src/assets/enemies/boss-skills-v1/manifest.json") or {"skills": {}}
     skill_v2 = load_json(ROOT / "src/assets/enemies/boss-skills-v2/manifest.json") or {"skills": {}}
     clips_by_id = {clip["id"]: clip for clip in voice_canon}
+    item_data = load_json(DATA / "items.json") or {"items": []}
+    items_by_name = {i["name"]: i for i in item_data["items"]}
     boss_voice_ids = {
         clip_id
         for boss in bosses
@@ -919,6 +980,7 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
         pieces.extend([
             f'<h3 class="encounter-h serif">07 · 沿途语音 · {len(ambient_voices)} 条</h3>',
             f'<section class="bx"><div class="voice-grid">{"".join(ambient_voices)}</div></section>',
+            render_drops(stage, bosses, items_by_name),
             render_links(stage),
             "</section>",
         ])
