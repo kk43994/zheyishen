@@ -369,6 +369,30 @@ def shell(slug: str, title: str, eyebrow: str, sub: str, body: str) -> str:
 <script>(function(){{try{{var t=localStorage.getItem('wiki-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}}catch(e){{}}}})();</script>
 <title>《这一身》百科 · {title}</title>
 <style>{BASE_CSS}
+  /* ── 本章设计 / 跨章线索（2026-07-29） ── */
+  .chapter-design{{border-left:3px solid var(--oldred)}}
+  .design-head{{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}}
+  .design-theme{{margin:0;flex:1 1 320px;font-size:15px;line-height:1.72;color:var(--fg)}}
+  .design-chain{{margin:0 0 14px;padding:9px 13px;border:1px dashed var(--line);border-radius:6px;
+    font-size:12.5px;line-height:1.7;color:var(--rainyellow);background:color-mix(in srgb,var(--rainyellow) 5%,transparent)}}
+  .design-points{{display:grid;gap:9px}}
+  .design-point{{padding:12px 14px;border:1px solid var(--line);border-radius:7px;background:color-mix(in srgb,var(--bg) 55%,transparent)}}
+  .design-point b{{display:block;font-size:14.5px;margin-bottom:5px;color:var(--moon)}}
+  .design-point p{{margin:0;font-size:13.5px;line-height:1.78;color:var(--fg-2)}}
+  .threads{{display:grid;gap:10px}}
+  .thread{{display:grid;grid-template-columns:104px minmax(0,1fr);gap:16px;align-items:start;
+    padding:15px 16px;border:1px solid var(--line);border-left:3px solid var(--rainyellow);border-radius:8px;background:var(--card)}}
+  .thread-stages{{display:flex;flex-wrap:wrap;gap:4px}}
+  .thread b{{display:block;font-size:15px;margin-bottom:6px;color:var(--moon)}}
+  .thread p{{margin:0;font-size:13.5px;line-height:1.78;color:var(--fg-2)}}
+  @media(max-width:640px){{
+    .thread{{grid-template-columns:1fr;gap:9px}}
+    .design-theme{{font-size:14px}}
+    .design-point b{{font-size:13.5px}}
+    .design-point p,.thread p{{font-size:12.5px}}
+    .design-chain{{font-size:11.5px}}
+  }}
+
   :root{{--icon-sheet:url("assets/icons.png")}}  /* docs 内副本，本地线上同路径 */
 </style>
 </head>
@@ -545,6 +569,53 @@ def slice_static_assets() -> None:
 
 # ─────────────────────────── 章节志 ───────────────────────────
 
+CHAPTER_DESIGN = load_json(DATA / "chapters.json") or {"chapters": {}, "threads": []}
+
+
+def render_chapter_design(stage: str) -> str:
+    """本章设计：定位／主题／招牌机制。数据在 docs/wiki-data/chapters.json，
+    源头是 升级计划最新.md §4-9，改设计先改正典再回填。"""
+    d = CHAPTER_DESIGN.get("chapters", {}).get(stage)
+    if not d:
+        return ""
+    sig = "".join(
+        f'<div class="design-point"><b class="serif">{esc(p["name"])}</b>'
+        f'<p>{esc(p["detail"])}</p></div>'
+        for p in d.get("signature", [])
+    )
+    chain = (f'<p class="design-chain">{esc(d["chain"])}</p>' if d.get("chain") else "")
+    return (
+        '<h3 class="encounter-h serif">01 · 本章设计</h3>'
+        '<section class="bx chapter-design">'
+        f'<div class="design-head"><span class="chip red">{esc(d.get("position", ""))}</span>'
+        f'<p class="design-theme">{esc(d.get("theme", ""))}</p></div>'
+        f'{chain}'
+        f'<div class="design-points">{sig}</div>'
+        "</section>"
+    )
+
+
+def render_threads() -> str:
+    """跨章线索：小张线、「那句话」三部曲这类横穿多章的设计，
+    散在各 Boss 词条里读不出来，单独立一节。"""
+    rows = "".join(
+        '<article class="thread">'
+        f'<div class="thread-stages">{"".join(f"<span class=chip>{esc(x)}</span>" for x in t.get("stages", []))}</div>'
+        f'<div><b class="serif">{esc(t["title"])}</b><p>{esc(t["note"])}</p></div>'
+        "</article>"
+        for t in CHAPTER_DESIGN.get("threads", [])
+    )
+    if not rows:
+        return ""
+    return (
+        '<section class="chapter" id="chapter-threads">'
+        '<header class="chapter-head"><div><p class="chapter-no">贯穿全局</p>'
+        '<h2 class="serif">跨章线索</h2></div>'
+        '<p class="route">这些东西横穿好几章，只看单章看不出来</p></header>'
+        f'<div class="threads">{rows}</div></section>'
+    )
+
+
 def render_environment(stage: str, stage_index: int) -> str:
     stage_name, prop_names = PROP_STAGES[stage_index]
     props = "".join(
@@ -554,7 +625,7 @@ def render_environment(stage: str, stage_index: int) -> str:
         for prop_index, prop_name in enumerate(prop_names)
     )
     return (
-        '<h3 class="encounter-h serif">01 · 先走进现实</h3>'
+        '<h3 class="encounter-h serif">02 · 场景 · 先走进现实</h3>'
         '<section class="bx environment">'
         f'<figure class="anim"><img class="environment-floor" src="assets/wiki/img/floor-{stage_index}.png" '
         f'alt="{esc(FLOOR_NAMES[stage_index])}" loading="lazy"><figcaption>{esc(FLOOR_NAMES[stage_index])}</figcaption></figure>'
@@ -714,6 +785,7 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
         f'<a class="chip" href="#chapter-{STAGE_SLUG[stage]}">{index + 1:02d} · {esc(stage)}</a>'
         for index, stage in enumerate(STAGE_ORDER)
     ]
+    toc.append('<a class="chip gold" href="#chapter-threads">跨章线索</a>')
     toc.append('<a class="chip red" href="#chapter-finale">07 · 终局</a>')
 
     sections = []
@@ -735,12 +807,13 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
             f'<div><p class="chapter-no">第 {stage_index + 1:02d} 章 · {esc(stage)}</p>'
             f'<h2 class="serif">{esc(stage_title)}</h2></div>',
             f'<p class="route">{esc(route)}</p></header>',
+            render_chapter_design(stage),
             render_environment(stage, stage_index),
-            f'<h3 class="encounter-h serif">02 · 怪潮 · {len(stage_enemies)} 种普通怪</h3>',
+            f'<h3 class="encounter-h serif">03 · 怪潮 · {len(stage_enemies)} 种普通怪</h3>',
             '<div class="card-grid">',
             "".join(render_enemy_entry(enemy) for enemy in stage_enemies),
             "</div>",
-            '<h3 class="encounter-h serif">03 · 小 Boss · 机制预习</h3>',
+            '<h3 class="encounter-h serif">04 · 小 Boss · 机制预习</h3>',
             "".join(
                 render_boss_entry(boss, clips_by_id, vmanifest, skill_manifest, skill_v2)
                 for boss in mini
@@ -748,7 +821,7 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
         ]
         if chapter_boss:
             pieces.extend([
-                '<h3 class="encounter-h serif">04 · 大 Boss · 本章结算</h3>',
+                '<h3 class="encounter-h serif">05 · 大 Boss · 本章结算</h3>',
                 "".join(
                     render_boss_entry(boss, clips_by_id, vmanifest, skill_manifest, skill_v2)
                     for boss in chapter_boss
@@ -756,7 +829,7 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
             ])
         else:
             pieces.extend([
-                '<h3 class="encounter-h serif">04 · 本章收束 · 通往终局</h3>',
+                '<h3 class="encounter-h serif">05 · 本章收束 · 通往终局</h3>',
                 '<p class="flavor serif">暮年没有另一只血条 Boss。走马灯之后，路会直接通向最后一盏灯。</p>',
             ])
 
@@ -767,7 +840,7 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
         ]
         ambient_voices = [row for row in ambient_voices if row]
         pieces.extend([
-            f'<h3 class="encounter-h serif">05 · 沿途语音 · {len(ambient_voices)} 条</h3>',
+            f'<h3 class="encounter-h serif">06 · 沿途语音 · {len(ambient_voices)} 条</h3>',
             f'<section class="bx"><div class="voice-grid">{"".join(ambient_voices)}</div></section>',
             "</section>",
         ])
@@ -811,6 +884,8 @@ def build_chapters_page(voice_canon: list[dict], vmanifest: dict[str, dict]) -> 
         + "".join(toc)
         + "</nav>"
         + "".join(sections)
+        # 跨章线索＝六章主线后的贯穿全局附录，位置在终局之前（validate_wiki_chapters 锁定此序）
+        + render_threads()
         + finale
     )
     return shell(

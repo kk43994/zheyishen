@@ -210,6 +210,30 @@
     .finale{padding:0 12px 12px}
   }
 
+  /* ── 本章设计 / 跨章线索（2026-07-29） ── */
+  .chapter-design{border-left:3px solid var(--oldred)}
+  .design-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+  .design-theme{margin:0;flex:1 1 320px;font-size:15px;line-height:1.72;color:var(--fg)}
+  .design-chain{margin:0 0 14px;padding:9px 13px;border:1px dashed var(--line);border-radius:6px;
+    font-size:12.5px;line-height:1.7;color:var(--rainyellow);background:color-mix(in srgb,var(--rainyellow) 5%,transparent)}
+  .design-points{display:grid;gap:9px}
+  .design-point{padding:12px 14px;border:1px solid var(--line);border-radius:7px;background:color-mix(in srgb,var(--bg) 55%,transparent)}
+  .design-point b{display:block;font-size:14.5px;margin-bottom:5px;color:var(--moon)}
+  .design-point p{margin:0;font-size:13.5px;line-height:1.78;color:var(--fg-2)}
+  .threads{display:grid;gap:10px}
+  .thread{display:grid;grid-template-columns:104px minmax(0,1fr);gap:16px;align-items:start;
+    padding:15px 16px;border:1px solid var(--line);border-left:3px solid var(--rainyellow);border-radius:8px;background:var(--card)}
+  .thread-stages{display:flex;flex-wrap:wrap;gap:4px}
+  .thread b{display:block;font-size:15px;margin-bottom:6px;color:var(--moon)}
+  .thread p{margin:0;font-size:13.5px;line-height:1.78;color:var(--fg-2)}
+  @media(max-width:640px){
+    .thread{grid-template-columns:1fr;gap:9px}
+    .design-theme{font-size:14px}
+    .design-point b{font-size:13.5px}
+    .design-point p,.thread p{font-size:12.5px}
+    .design-chain{font-size:11.5px}
+  }
+
   :root{--icon-sheet:url("assets/icons.png")}  /* docs 内副本，本地线上同路径 */
 </style>
 </head>
