@@ -1,5 +1,26 @@
 import { MATERIAL_TONES, type ItemMaterial } from './item-material';
+import { ambienceProfile, configureAmbienceFilter } from './audio-ambience';
+import {
+  AMBIENCE_BUS_GAIN,
+  DEFAULT_MASTER_VOLUME,
+  DEFAULT_MUSIC_VOLUME,
+  MUSIC_BUS_GAIN,
+  SFX_BUS_GAIN,
+  TENSION_ASSET_GAIN,
+  TENSION_BUS_GAIN,
+  VOICE_AMBIENCE_DUCK,
+  VOICE_BEHIND_DOOR_FILTER_Q,
+  VOICE_BEHIND_DOOR_LOW_PASS_HZ,
+  VOICE_MUSIC_DUCK,
+  VOICE_PLAYBACK_GAIN,
+  VOICE_SFX_DUCK,
+  ambienceAssetGain,
+  musicAssetGain,
+  sfxMixGain,
+  upgradeLegacyMasterVolume,
+} from './audio-mix';
 import { VOICE_CUES, voicePlaybackRate, type VoiceCueId, type VoiceTreatment } from './voice-script';
+import { triggerHaptic } from './haptics';
 
 export type LifeSound =
   | 'page'
@@ -11,6 +32,9 @@ export type LifeSound =
   | 'swallow'
   | 'exhale'
   | 'boss'
+  | 'boss-warn'
+  | 'boss-release'
+  | 'boss-hit'
   | 'deny'
   | 'phone'
   | 'train'
@@ -18,27 +42,24 @@ export type LifeSound =
   | 'pickup-paper'
   | 'pickup-cloth'
   | 'pickup-metal'
-  | 'pickup-coin';
+  | 'pickup-coin'
+  | 'shield'
+  | 'heal'
+  | 'dash'
+  | 'door'
+  | 'lamp';
 
 const VOLUME_KEY = 'zhe-yi-shen:volume';
 const LAST_VOLUME_KEY = 'zhe-yi-shen:last-audible-volume';
 const AUDIO_CHOICE_KEY = 'zhe-yi-shen:audio-choice';
 const DEFAULT_AUDIO_MIGRATION_KEY = 'zhe-yi-shen:default-audio-v2';
+const BALANCED_AUDIO_MIGRATION_KEY = 'zhe-yi-shen:balanced-audio-v3';
+const AUDIBLE_MIX_MIGRATION_KEY = 'zhe-yi-shen:restored-mix-v6';
 const HAPTICS_KEY = 'zhe-yi-shen:haptics';
 const EFFECTS_VOLUME_KEY = 'zhe-yi-shen:effects-volume';
 const AMBIENCE_VOLUME_KEY = 'zhe-yi-shen:ambience-volume';
 const MUSIC_VOLUME_KEY = 'zhe-yi-shen:music-volume';
 const VOICE_VOLUME_KEY = 'zhe-yi-shen:voice-volume';
-// Dialogue assets are deliberately performed with restrained dynamics. Give
-// them enough runtime headroom to stay intelligible on phone speakers, then
-// make the rest of the mix step back while a line is playing.
-const VOICE_PLAYBACK_GAIN = 1.6;
-const VOICE_SFX_DUCK = 0.42;
-const VOICE_AMBIENCE_DUCK = 0.42;
-const VOICE_MUSIC_DUCK = 0.26;
-const MUSIC_BUS_GAIN = 0.34;
-const TENSION_BUS_GAIN = 0.24;
-
 export type AudioMixChannel = 'effects' | 'ambience' | 'music' | 'voice';
 
 const SFX_FILES: Record<LifeSound, string> = {
@@ -51,6 +72,9 @@ const SFX_FILES: Record<LifeSound, string> = {
   swallow: 'assets/audio/sfx/swallow.mp3',
   exhale: 'assets/audio/sfx/exhale.mp3',
   boss: 'assets/audio/sfx/boss.mp3',
+  'boss-warn': 'assets/audio/sfx/boss-warn.mp3',
+  'boss-release': 'assets/audio/sfx/boss-release.mp3',
+  'boss-hit': 'assets/audio/sfx/boss-hit.mp3',
   deny: 'assets/audio/sfx/deny.mp3',
   phone: 'assets/audio/sfx/phone.mp3',
   train: 'assets/audio/sfx/train.mp3',
@@ -61,6 +85,11 @@ const SFX_FILES: Record<LifeSound, string> = {
   'pickup-cloth': 'assets/audio/sfx/pickup-cloth.mp3',
   'pickup-metal': 'assets/audio/sfx/pickup-metal.mp3',
   'pickup-coin': 'assets/audio/sfx/pickup-coin.mp3',
+  shield: 'assets/audio/sfx/shield.mp3',
+  heal: 'assets/audio/sfx/heal.mp3',
+  dash: 'assets/audio/sfx/dash.mp3',
+  door: 'assets/audio/sfx/door.mp3',
+  lamp: 'assets/audio/sfx/lamp.mp3',
 };
 
 const AMBIENCE_FILES = [
@@ -70,6 +99,9 @@ const AMBIENCE_FILES = [
   'assets/audio/ambience/apartment.mp3',
   'assets/audio/ambience/office.mp3',
   'assets/audio/ambience/hospital.mp3',
+  'assets/audio/ambience/fate-chamber.mp3',
+  'assets/audio/ambience/back-room.mp3',
+  'assets/audio/ambience/light-room.mp3',
 ] as const;
 
 const MUSIC_FILES = [
@@ -81,6 +113,8 @@ const MUSIC_FILES = [
   'assets/audio/music/fluorescent-name.mp3',
   'assets/audio/music/last-lamp.mp3',
   'assets/audio/music/after-breath.mp3',
+  'assets/audio/music/folded-fate.mp3',
+  'assets/audio/music/borrowed-room.mp3',
 ] as const;
 
 const MUSIC_TENSION_FILE = 'assets/audio/music/pressure.mp3';
@@ -109,17 +143,25 @@ function readBoolean(key: string, fallback: boolean): boolean {
 }
 
 function readInitialVolume(): number {
-  const stored = Math.max(0, Math.min(1, readNumber(VOLUME_KEY, 0.42)));
+  let stored = Math.max(0, Math.min(1, readNumber(VOLUME_KEY, DEFAULT_MASTER_VOLUME)));
   try {
     if (localStorage.getItem(DEFAULT_AUDIO_MIGRATION_KEY) !== 'enabled') {
-      const restored = stored > 0
+      stored = stored > 0
         ? stored
-        : Math.max(0.08, Math.min(1, readNumber(LAST_VOLUME_KEY, 0.42)));
+        : Math.max(0.08, Math.min(1, readNumber(LAST_VOLUME_KEY, DEFAULT_MASTER_VOLUME)));
       localStorage.setItem(DEFAULT_AUDIO_MIGRATION_KEY, 'enabled');
       localStorage.setItem(AUDIO_CHOICE_KEY, 'enabled');
-      localStorage.setItem(VOLUME_KEY, restored.toFixed(2));
-      localStorage.setItem(LAST_VOLUME_KEY, restored.toFixed(2));
-      return restored;
+      localStorage.setItem(VOLUME_KEY, stored.toFixed(2));
+      localStorage.setItem(LAST_VOLUME_KEY, stored.toFixed(2));
+    }
+    if (localStorage.getItem(BALANCED_AUDIO_MIGRATION_KEY) !== 'enabled') {
+      const balanced = upgradeLegacyMasterVolume(stored);
+      localStorage.setItem(BALANCED_AUDIO_MIGRATION_KEY, 'enabled');
+      if (balanced !== stored) {
+        localStorage.setItem(VOLUME_KEY, balanced.toFixed(2));
+        localStorage.setItem(LAST_VOLUME_KEY, balanced.toFixed(2));
+      }
+      return balanced;
     }
   } catch {
     // Restricted WebViews may not expose persistent storage.
@@ -139,10 +181,11 @@ export class LifeFeedback {
   private volume = readInitialVolume();
   private effectsVolume = Math.max(0, Math.min(1, readNumber(EFFECTS_VOLUME_KEY, 1)));
   private ambienceVolume = Math.max(0, Math.min(1, readNumber(AMBIENCE_VOLUME_KEY, 1)));
-  private musicVolume = Math.max(0, Math.min(1, readNumber(MUSIC_VOLUME_KEY, 0.78)));
+  private musicVolume = Math.max(0, Math.min(1, readNumber(MUSIC_VOLUME_KEY, DEFAULT_MUSIC_VOLUME)));
   private voiceVolume = Math.max(0, Math.min(1, readNumber(VOICE_VOLUME_KEY, 1)));
   private haptics = readBoolean(HAPTICS_KEY, true);
   private readonly lastPlayed = new Map<LifeSound, number>();
+  private lastAmbienceEventPlayed = -Infinity;
   private readonly sfxBuffers = new Map<LifeSound, AudioBuffer>();
   private readonly sfxLoads = new Map<LifeSound, Promise<AudioBuffer>>();
   private readonly unavailableSfx = new Set<LifeSound>();
@@ -178,6 +221,24 @@ export class LifeFeedback {
   private activeTension?: AudioBufferSourceNode;
   private activeTensionLevel?: GainNode;
 
+  constructor() {
+    try {
+      if (localStorage.getItem(AUDIBLE_MIX_MIGRATION_KEY) !== 'enabled') {
+        this.effectsVolume = 1;
+        this.ambienceVolume = 1;
+        this.musicVolume = DEFAULT_MUSIC_VOLUME;
+        this.voiceVolume = 1;
+        localStorage.setItem(EFFECTS_VOLUME_KEY, '1.00');
+        localStorage.setItem(AMBIENCE_VOLUME_KEY, '1.00');
+        localStorage.setItem(MUSIC_VOLUME_KEY, DEFAULT_MUSIC_VOLUME.toFixed(2));
+        localStorage.setItem(VOICE_VOLUME_KEY, '1.00');
+        localStorage.setItem(AUDIBLE_MIX_MIGRATION_KEY, 'enabled');
+      }
+    } catch {
+      // Restricted WebViews may not expose persistent storage.
+    }
+  }
+
   unlock(): void {
     if (!this.context && typeof AudioContext !== 'undefined') {
       try {
@@ -195,9 +256,9 @@ export class LifeFeedback {
         this.outputLimiter.ratio.value = 20;
         this.outputLimiter.attack.value = 0.003;
         this.outputLimiter.release.value = 0.08;
-        this.sfxGain.gain.value = this.effectsVolume;
+        this.sfxGain.gain.value = SFX_BUS_GAIN * this.effectsVolume;
         this.voiceGain.gain.value = this.voiceVolume;
-        this.ambienceGain.gain.value = 0.58 * this.ambienceVolume;
+        this.ambienceGain.gain.value = AMBIENCE_BUS_GAIN * this.ambienceVolume;
         this.musicGain.gain.value = MUSIC_BUS_GAIN * this.musicVolume;
         this.tensionGain.gain.value = TENSION_BUS_GAIN * this.musicVolume;
         this.sfxGain.connect(this.masterGain);
@@ -255,11 +316,15 @@ export class LifeFeedback {
       const now = this.context.currentTime;
       const voiceActive = Boolean(this.activeVoice);
       if (channel === 'effects' && this.sfxGain) {
-        this.sfxGain.gain.setTargetAtTime(next * (voiceActive ? VOICE_SFX_DUCK : 1), now, 0.02);
+        this.sfxGain.gain.setTargetAtTime(
+          SFX_BUS_GAIN * next * (voiceActive ? VOICE_SFX_DUCK : 1),
+          now,
+          0.02,
+        );
       }
       if (channel === 'ambience' && this.ambienceGain) {
         this.ambienceGain.gain.setTargetAtTime(
-          0.58 * next * (voiceActive ? VOICE_AMBIENCE_DUCK : 1),
+          AMBIENCE_BUS_GAIN * next * (voiceActive ? VOICE_AMBIENCE_DUCK : 1),
           now,
           0.04,
         );
@@ -284,7 +349,9 @@ export class LifeFeedback {
     activeMusic: number | null;
     musicTension: boolean;
     voiceReady: number;
+    voiceActive: boolean;
     mix: { effects: number; ambience: number; music: number; voice: number };
+    bus: { master: number; effects: number; ambience: number; music: number; tension: number; voice: number };
   } {
     return {
       context: this.context?.state ?? 'unavailable',
@@ -297,11 +364,20 @@ export class LifeFeedback {
       activeMusic: this.activeMusicTrack ?? null,
       musicTension: this.musicTension,
       voiceReady: this.voiceBuffers.size,
+      voiceActive: Boolean(this.activeVoice),
       mix: {
         effects: this.effectsVolume,
         ambience: this.ambienceVolume,
         music: this.musicVolume,
         voice: this.voiceVolume,
+      },
+      bus: {
+        master: this.masterGain?.gain.value ?? this.volume,
+        effects: this.sfxGain?.gain.value ?? this.effectsVolume,
+        ambience: this.ambienceGain?.gain.value ?? AMBIENCE_BUS_GAIN * this.ambienceVolume,
+        music: this.musicGain?.gain.value ?? MUSIC_BUS_GAIN * this.musicVolume,
+        tension: this.tensionGain?.gain.value ?? TENSION_BUS_GAIN * this.musicVolume,
+        voice: this.voiceGain?.gain.value ?? this.voiceVolume,
       },
     };
   }
@@ -311,7 +387,9 @@ export class LifeFeedback {
   }
 
   setAudioEnabled(value: boolean): void {
-    const restored = Math.max(0.08, Math.min(1, readNumber(LAST_VOLUME_KEY, 0.42)));
+    const restored = upgradeLegacyMasterVolume(
+      Math.max(0.08, Math.min(1, readNumber(LAST_VOLUME_KEY, DEFAULT_MASTER_VOLUME))),
+    );
     this.setVolume(value ? (this.volume > 0 ? this.volume : restored) : 0);
     if (value) {
       this.unlock();
@@ -365,17 +443,17 @@ export class LifeFeedback {
   }
 
   vibrate(pattern: number | number[]): void {
-    if (!this.haptics || typeof navigator.vibrate !== 'function') return;
-    try {
-      navigator.vibrate(pattern);
-    } catch {
-      // Haptics are best effort only.
-    }
+    if (!this.haptics) return;
+    triggerHaptic(pattern);
   }
 
   play(sound: LifeSound, intensity = 1, material?: ItemMaterial): void {
     const now = performance.now();
-    const throttle = sound === 'hit' ? 55 : sound === 'breath' ? 95 : 18;
+    const throttle = sound === 'hit' ? 55
+      : sound === 'breath' ? 95
+        : ['boss-warn', 'boss-release', 'boss-hit'].includes(sound) ? 160
+        : ['shield', 'heal', 'dash', 'door', 'lamp'].includes(sound) ? 240
+          : 18;
     if (now - (this.lastPlayed.get(sound) ?? -Infinity) < throttle) return;
     this.lastPlayed.set(sound, now);
     this.unlock();
@@ -388,6 +466,39 @@ export class LifeFeedback {
     }
     void this.loadSfx(sound).catch(() => undefined);
     this.playSynthetic(sound, strength);
+  }
+
+  /**
+   * 稀疏场景事件走环境总线，不占普通音效音量，也会跟随对白自动压低。
+   * 素材复用现有 CC0 一次性声音；调用频率由游戏层限制在几十秒一次。
+   */
+  playAmbienceEvent(sound: LifeSound, intensity = 0.3): void {
+    const now = performance.now();
+    if (now - this.lastAmbienceEventPlayed < 900
+      || this.volume <= 0
+      || this.ambienceVolume <= 0) return;
+    this.lastAmbienceEventPlayed = now;
+    this.unlock();
+    const requestedStage = this.requestedAmbience;
+    const playBuffer = (buffer: AudioBuffer): void => {
+      const context = this.context;
+      const output = this.ambienceGain;
+      if (!context || !output
+        || this.volume <= 0
+        || this.ambienceVolume <= 0
+        || this.requestedAmbience !== requestedStage) return;
+      const source = context.createBufferSource();
+      const gain = context.createGain();
+      source.buffer = buffer;
+      source.playbackRate.value = 0.98 + Math.random() * 0.04;
+      gain.gain.value = Math.max(0.04, Math.min(0.32, intensity * 0.28));
+      source.connect(gain);
+      gain.connect(output);
+      source.start();
+    };
+    const buffer = this.sfxBuffers.get(sound);
+    if (buffer) playBuffer(buffer);
+    else void this.loadSfx(sound).then(playBuffer).catch(() => undefined);
   }
 
   setAmbience(stage?: number): void {
@@ -432,18 +543,12 @@ export class LifeFeedback {
     if (!context || !output) return;
     const source = context.createBufferSource();
     const gain = context.createGain();
-    const baseGain: Record<LifeSound, number> = {
-      page: 0.52, breath: 0.34, hit: 0.48, hurt: 0.58, coin: 0.48,
-      wear: 0.46, swallow: 0.52, exhale: 0.42, boss: 0.64, deny: 0.5,
-      phone: 0.66, train: 0.65, monitor: 0.45,
-      'pickup-paper': 0.5, 'pickup-cloth': 0.55, 'pickup-metal': 0.46, 'pickup-coin': 0.5,
-    };
-    const pitchVariance = ['boss', 'deny', 'phone', 'train', 'monitor'].includes(sound)
+    const pitchVariance = ['boss', 'boss-warn', 'boss-release', 'boss-hit', 'deny', 'phone', 'train', 'monitor', 'heal', 'lamp'].includes(sound)
       ? 0
       : (Math.random() - 0.5) * 0.045;
     source.buffer = buffer;
     source.playbackRate.value = Math.max(0.82, Math.min(1.16, 1 + pitchVariance));
-    gain.gain.value = baseGain[sound] * strength;
+    gain.gain.value = sfxMixGain(sound) * strength;
     source.connect(gain);
     gain.connect(output);
     source.start();
@@ -472,6 +577,14 @@ export class LifeFeedback {
     } else if (sound === 'boss') {
       this.tone(66, 420, 0.052 * strength, 'sawtooth', 44);
       this.tone(49, 520, 0.032 * strength, 'triangle', 41, 0.12);
+    } else if (sound === 'boss-warn') {
+      this.tone(520, 150, 0.018 * strength, 'square', 410);
+      this.tone(520, 150, 0.014 * strength, 'square', 410, 0.24);
+    } else if (sound === 'boss-release') {
+      this.tone(620, 260, 0.022 * strength, 'sawtooth', 92);
+    } else if (sound === 'boss-hit') {
+      this.tone(86, 130, 0.038 * strength, 'triangle', 46);
+      this.tone(190, 75, 0.016 * strength, 'square', 90);
     } else if (sound === 'deny') {
       this.tone(150, 82, 0.026 * strength, 'square', 112);
       this.tone(112, 100, 0.022 * strength, 'square', 88, 0.075);
@@ -482,6 +595,21 @@ export class LifeFeedback {
       this.tone(112, 980, 0.024 * strength, 'sawtooth', 62);
     } else if (sound === 'monitor') {
       this.tone(1040, 92, 0.024 * strength, 'sine', 1040);
+    } else if (sound === 'shield') {
+      this.tone(118, 190, 0.032 * strength, 'triangle', 72);
+      this.tone(760, 260, 0.018 * strength, 'sine', 420);
+    } else if (sound === 'heal') {
+      this.tone(294, 280, 0.016 * strength, 'sine', 370);
+      this.tone(370, 260, 0.014 * strength, 'sine', 440, 0.15);
+      this.tone(440, 300, 0.012 * strength, 'sine', 494, 0.32);
+    } else if (sound === 'dash') {
+      this.tone(620, 220, 0.018 * strength, 'sawtooth', 190);
+    } else if (sound === 'door') {
+      this.tone(78, 720, 0.026 * strength, 'triangle', 62);
+      this.tone(310, 180, 0.016 * strength, 'square', 180, 0.68);
+    } else if (sound === 'lamp') {
+      this.tone(522, 480, 0.016 * strength, 'sine', 196);
+      this.tone(196, 700, 0.018 * strength, 'triangle', 92);
     }
   }
 
@@ -588,13 +716,21 @@ export class LifeFeedback {
       const previous = this.activeAmbience;
       const previousLevel = this.activeAmbienceLevel;
       const source = context.createBufferSource();
+      const filter = context.createBiquadFilter();
       const level = context.createGain();
       const now = context.currentTime;
+      const profile = ambienceProfile(stage);
       source.buffer = buffer;
       source.loop = true;
+      source.playbackRate.value = profile.playbackRate;
+      configureAmbienceFilter(filter, profile);
       level.gain.setValueAtTime(0.0001, now);
-      level.gain.exponentialRampToValueAtTime(1, now + 1.25);
-      source.connect(level);
+      level.gain.exponentialRampToValueAtTime(
+        profile.level * ambienceAssetGain(stage),
+        now + 1.25,
+      );
+      source.connect(filter);
+      filter.connect(level);
       level.connect(output);
       source.start(now);
       this.activeAmbience = source;
@@ -646,7 +782,7 @@ export class LifeFeedback {
       source.buffer = buffer;
       source.loop = true;
       level.gain.setValueAtTime(0.0001, now);
-      level.gain.exponentialRampToValueAtTime(1, now + 2.1);
+      level.gain.exponentialRampToValueAtTime(musicAssetGain(track), now + 2.1);
       source.connect(level);
       level.connect(output);
       source.start(now);
@@ -696,7 +832,7 @@ export class LifeFeedback {
       source.buffer = buffer;
       source.loop = true;
       level.gain.setValueAtTime(0.0001, now);
-      level.gain.exponentialRampToValueAtTime(1, now + 1.15);
+      level.gain.exponentialRampToValueAtTime(TENSION_ASSET_GAIN, now + 1.15);
       source.connect(level);
       level.connect(output);
       source.start(now);
@@ -724,6 +860,33 @@ export class LifeFeedback {
   preloadVoices(ids: readonly VoiceCueId[]): void {
     this.unlock();
     for (const id of ids) void this.loadVoice(id).catch(() => undefined);
+  }
+
+  /**
+   * 与平台实现同形（见 audio-platform.ts 的 warmup）。dev/demo 走 Web Audio，
+   * 这里等的是 decodeAudioData 真正解完，而不是请求发出去。
+   */
+  async warmup(
+    voiceIds: readonly VoiceCueId[],
+    stage = 0,
+    onProgress?: (done: number, total: number) => void,
+    budgetMs = 15000,
+  ): Promise<void> {
+    this.unlock();
+    const deadline = performance.now() + budgetMs;
+    let done = 0;
+    const total = voiceIds.length;
+    onProgress?.(0, total);
+    for (let index = 0; index < voiceIds.length; index += 3) {
+      if (performance.now() >= deadline) break;
+      await Promise.all(voiceIds.slice(index, index + 3).map(async (id) => {
+        await this.loadVoice(id).catch(() => undefined);
+        done += 1;
+        onProgress?.(done, total);
+      }));
+    }
+    void stage;
+    onProgress?.(total, total);
   }
 
   playVoice(id: VoiceCueId, treatment?: VoiceTreatment): void {
@@ -816,12 +979,16 @@ export class LifeFeedback {
     const time = this.context.currentTime;
     if (this.sfxGain) {
       this.sfxGain.gain.cancelScheduledValues(time);
-      this.sfxGain.gain.setTargetAtTime(VOICE_SFX_DUCK * this.effectsVolume, time, 0.045);
+      this.sfxGain.gain.setTargetAtTime(
+        SFX_BUS_GAIN * VOICE_SFX_DUCK * this.effectsVolume,
+        time,
+        0.045,
+      );
     }
     if (this.ambienceGain) {
       this.ambienceGain.gain.cancelScheduledValues(time);
       this.ambienceGain.gain.setTargetAtTime(
-        0.58 * VOICE_AMBIENCE_DUCK * this.ambienceVolume,
+        AMBIENCE_BUS_GAIN * VOICE_AMBIENCE_DUCK * this.ambienceVolume,
         time,
         0.08,
       );
@@ -831,7 +998,7 @@ export class LifeFeedback {
       this.musicGain.gain.setTargetAtTime(
         MUSIC_BUS_GAIN * VOICE_MUSIC_DUCK * this.musicVolume,
         time,
-        0.11,
+        0.02,
       );
     }
     if (this.tensionGain) {
@@ -839,7 +1006,7 @@ export class LifeFeedback {
       this.tensionGain.gain.setTargetAtTime(
         TENSION_BUS_GAIN * VOICE_MUSIC_DUCK * this.musicVolume,
         time,
-        0.11,
+        0.02,
       );
     }
   }
@@ -849,11 +1016,15 @@ export class LifeFeedback {
     const time = this.context.currentTime;
     if (this.sfxGain) {
       this.sfxGain.gain.cancelScheduledValues(time);
-      this.sfxGain.gain.setTargetAtTime(this.effectsVolume, time, 0.12);
+      this.sfxGain.gain.setTargetAtTime(SFX_BUS_GAIN * this.effectsVolume, time, 0.12);
     }
     if (this.ambienceGain) {
       this.ambienceGain.gain.cancelScheduledValues(time);
-      this.ambienceGain.gain.setTargetAtTime(0.58 * this.ambienceVolume, time, 0.18);
+      this.ambienceGain.gain.setTargetAtTime(
+        AMBIENCE_BUS_GAIN * this.ambienceVolume,
+        time,
+        0.18,
+      );
     }
     if (this.musicGain) {
       this.musicGain.gain.cancelScheduledValues(time);
@@ -892,7 +1063,9 @@ export class LifeFeedback {
     } else if (treatment === 'pa') {
       filter.type = 'highpass'; filter.frequency.value = 220; filter.Q.value = 0.55;
     } else if (treatment === 'behind-door') {
-      filter.type = 'lowpass'; filter.frequency.value = 1050; filter.Q.value = 0.5;
+      filter.type = 'lowpass';
+      filter.frequency.value = VOICE_BEHIND_DOOR_LOW_PASS_HZ;
+      filter.Q.value = VOICE_BEHIND_DOOR_FILTER_Q;
     } else if (treatment === 'memory') {
       filter.type = 'lowpass'; filter.frequency.value = 2450; filter.Q.value = 0.35;
     } else if (treatment === 'swallowed') {

@@ -279,14 +279,13 @@ def build_pdf() -> None:
     nav_y = title_top - 6.65 * cm
     nav_labels = [
         ("正典", OLD_RED),
-        ("Boss志", OLD_RED_SOFT),
-        ("敌怪志", BLUE),
+        ("章节志", OLD_RED_SOFT),
         ("道具志", GOLD),
         ("语音馆", MUTED),
         ("世界志", BLUE),
         ("特效馆", GOLD),
     ]
-    nav_widths = [3.5 * cm, 4.3 * cm, 4.3 * cm, 4.3 * cm, 4.3 * cm, 4.3 * cm, 4.3 * cm]
+    nav_widths = [3.8 * cm, 4.8 * cm, 4.8 * cm, 4.8 * cm, 4.8 * cm, 4.8 * cm]
     total_nav = sum(nav_widths) + 0.55 * cm * (len(nav_widths) - 1)
     nav_x = (PAGE_W - total_nav) / 2
     for (label, color), chip_w in zip(nav_labels, nav_widths):
@@ -494,7 +493,7 @@ def build_pdf() -> None:
 
     # 07 QR handoff.
     qr_y = y_item - 1.35 * cm
-    draw_section_title(canvas, qr_y, "06", "试玩与完整百科", "游戏 / Boss志 / 敌怪志 / 道具志 / 语音馆 / 世界志 / 特效馆")
+    draw_section_title(canvas, qr_y, "06", "试玩与完整百科", "游戏 / 章节志 / 道具志 / 语音馆 / 世界志 / 特效馆")
     qr_top = qr_y - 1.15 * cm
     qr_h = 12.2 * cm
     y_qr = qr_top - qr_h

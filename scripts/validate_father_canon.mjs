@@ -33,6 +33,7 @@ for (const [token, message] of [
   ['const panelY = this.eliteAlertTime > 0 ? 132 : 96', 'Boss 横幅与剧情字幕仍占同一条屏幕轨道'],
   ["this.caption = '雨衣倒下去，里面有人哭得喘不上气。'", '父亲转阶段文案不符合设计书'],
   ["this.caption = '他说没有哭，手背却一直在擦脸。'", '父亲二阶段短句没有落地'],
+  ["this.playVoiceOnce('boss-father-phase-two')", '父亲二阶段短句仍没有对应语音'],
   ['fatherP2 && this.fatherSecondPhaseLineShown && (enemy.mechTimer ?? 0) >= 3.4', '父亲二阶段第一招仍可能抢在动作短句前开始'],
   ['enemy.mechTimer = 2.2', '父亲二阶段短句后缺少首次攻击节奏'],
   ["'silent-father': '雨衣留下了。话还是没说。'", '父亲击败页没有使用设计书原句'],
@@ -45,6 +46,7 @@ for (const [token, message] of [
   // 章节时长到点但 Boss 还没生成时也会进这一支）允许存在。
   ["elite.type !== 'silent-father'", '父亲战仍会在超时时混入通用“还没有结束”字幕'],
   ["this.showFatherAttackNameOnce(move === 0 ? '进去。' : '站好。')", '父亲一阶段招式名没有进入首次门禁'],
+  ["if (move === 1) this.playVoiceOnce('boss-father-stand')", '父亲一阶段《站好》仍然只有无声字幕'],
   ["this.showFatherAttackNameOnce('不许看')", '《不许看》没有进入首次门禁'],
   ["this.showFatherAttackNameOnce('都怪你')", '《都怪你》没有进入首次门禁'],
   ["this.showFatherAttackNameOnce('我没有哭')", '《我没有哭》没有进入首次门禁'],
@@ -84,6 +86,7 @@ for (const [token, message] of [
   ["trigger('stand_still', '成年章第二次停步让湿鞋追近'", '第二条成年回声合同不正确'],
   ["'hero-became-him': { scene: '屋檐下的家', speaker: '他自己' }", '成年主角回声场景或声源不正确'],
   ["'father-for-your-good': { scene: '放学后的校门口', speaker: '父亲' }", '父亲旧句的场景或声源不正确'],
+  ["trigger('boss_phase', '沉默的父亲雨衣倒下、二阶段短句落下', true, 3, true)", '父亲二阶段语音没有绑定到必播阶段触发'],
 ] ) requireToken(voice, token, message);
 
 for (const source of [design, canon, plan, wiki]) {
@@ -128,7 +131,7 @@ rejectToken(wiki, '<tr><td>沉默的父亲 · 裂开</td><td>成年 Boss 二阶�
 console.log(JSON.stringify({
   valid: errors.length === 0,
   checks,
-  father: '少年章校门口：统一答案后的父亲旧句 -> 无额外父亲配音的双阶段战斗 -> 雨衣原句落幕',
+  father: '少年章校门口：统一答案后的父亲旧句 -> 二阶段年幼父亲否认哭泣 -> 击败后雨衣原句落幕',
   adultEcho: '成年入场与湿鞋追近由主角音色回收旧句',
   errors,
 }, null, 2));

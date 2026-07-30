@@ -62,7 +62,6 @@ for (const [token, message] of [
   ['private renderClosetHandsTelegraph(enemy: EnemyUnit): void', '缺少影手专用预警渲染'],
   ['private renderClosetSlamTelegraph(enemy: EnemyUnit): void', '缺少闭门专用预警渲染'],
   ['for (let hand = 0; hand < 12; hand += 1)', '影手视觉不是十二向'],
-  ['for (let shard = 0; shard < 20; shard += 1)', '闭门缺少二十枚碎木'],
   ["boss.attackKind === 'shadow' && boss.attackAngle !== undefined", '衣柜背景影锥仍会污染局部招式'],
   ["action === 'childhood-boss-hazards'", '缺少童年 Boss 确定性审阅入口'],
   ["variant === 'hands-hit'", '缺少影手命中原子场景'],
@@ -73,6 +72,14 @@ for (const [token, message] of [
   ['bossMechanics: {', '开发状态缺少 Boss 机制总表'],
   ['closet: {', '开发状态没有暴露衣柜招式'],
 ] ) requireToken(game, token, message);
+
+checks += 1;
+const closetSlamBlock = game.slice(game.indexOf("case 'closet-slam':"), game.indexOf("case 'sleeve':"));
+if ((closetSlamBlock.match(/count:\s*6/g) ?? []).length < 2
+  || !/count:\s*4/.test(closetSlamBlock)
+  || !closetSlamBlock.includes("shape: 'streak'")) {
+  errors.push('闭门缺少两束克制木屑与中线碎点');
+}
 
 for (const [token, message] of [
   ['attackTargetX?: number;', '敌人状态缺少 Boss 锁点 X'],

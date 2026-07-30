@@ -13,6 +13,7 @@ checks=(
   validate:breath-specimen
   validate:memory-recall
   validate:fate-background
+  validate:ai-robustness
   validate:fate-residue
   validate:fate-age
   validate:fate-randomness

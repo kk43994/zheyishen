@@ -50,4 +50,8 @@ for source in "$music_dir"/*.wav; do
   fi
 done
 
-printf '%s\n' 'production audio ready: 13 sfx + 6 ambience loops at 64 kbps + 9 music loops at 32 kbps'
+sfx_count="$(find "$sfx_dir" -maxdepth 1 -name '*.mp3' | wc -l | tr -d ' ')"
+ambience_count="$(find "$ambience_dir" -maxdepth 1 -name '*.mp3' | wc -l | tr -d ' ')"
+music_count="$(find "$music_dir" -maxdepth 1 -name '*.mp3' | wc -l | tr -d ' ')"
+printf 'production audio ready: %s sfx + %s ambience loops at 64 kbps + %s music loops at 32 kbps\n' \
+  "$sfx_count" "$ambience_count" "$music_count"

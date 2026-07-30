@@ -41,7 +41,7 @@ const perSound = new Map<string, number>();
 
 /** 只列关心的几种，面板一行放得下。 */
 export function readPerSound(): string {
-  const pick = ['breath', 'hit', 'hurt', 'coin'];
+  const pick = ['breath', 'hit', 'hurt', 'boss-warn', 'boss-release', 'boss-hit'];
   return pick.map((n) => `${n} ${perSound.get(n) ?? 0}`).join(' · ');
 }
 

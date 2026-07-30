@@ -35,7 +35,7 @@ const generateAIFate = section(ai, 'export async function generateAIFate(', 'exp
 assert(/attempt <= 3/.test(generateAIFate), '命运牌后台生成最多允许三轮定向尝试');
 assert(!/styleFateNarrative\s*\(/.test(generateAIFate), '文学化不得串在命运牌就绪关键链上');
 assert(!/mechanicBudget/.test(generateAIFate), '普通命运选项奖励不得再依赖机械证据预算');
-assert(/review\?\.valid\s*!==\s*false/.test(generateAIFate), '现实审稿无返回时不得否决已通过本地硬校验的命运牌');
+assert(/review\?\.valid\s*===\s*true/.test(generateAIFate), '普通命运牌必须由现实审稿明确通过');
 
 const startRun = section(game, '  private startRun(', '  private retryOrigin(');
 assert(/this\.runSerial\s*\+=\s*1/.test(startRun), '新局必须推进 runSerial');
@@ -75,6 +75,7 @@ assert(!/…/.test(wrapLinesComplete) && !/fitText/.test(wrapLinesComplete), '�
 
 const generateAIFreeFate = section(ai, 'export async function generateAIFreeFate(', 'export async function generateAIFateResult(');
 assert(/attempt <= 2/.test(generateAIFreeFate), '亲口回应单轮后台生成必须带两次格式重写');
+assert(/FREE_FATE_TOTAL_TIMEOUT_MS/.test(generateAIFreeFate), '亲口回应必须受整条链路总时限约束');
 assert(!/mechanicBudget/.test(generateAIFreeFate), '亲口回应奖励不得再依赖机械证据预算');
 assert(/validateFreeFateResponse/.test(generateAIFreeFate), '亲口回应必须经过文本与奖励白名单编译器');
 assert(!/机械证据被降级，正在重写/.test(generateAIFreeFate), '安全降级为只留记忆后不得整稿退回');
@@ -91,6 +92,7 @@ assert(
 );
 assert(/preparedFate\?:\s*CheckpointPreparedFate/.test(checkpoint), '断点必须能够保存已就绪命运牌');
 assert(/pendingFreeFate\?:\s*CheckpointPendingFreeFate/.test(checkpoint), '断点必须保存尚未兑现的亲口回应');
+assert(/playerText:\s*playerText\s*\|\|\s*undefined/.test(checkpoint), '断点恢复必须保留已结算回执里的玩家原话');
 assert(/fateResultReturn\?:\s*'destination'\s*\|\s*'battle'/.test(checkpoint), '断点必须防止后台回执二次推进关卡');
 assert(
   /AI 正在按这一身生成命运卡[\s\S]{0,500}generateAIFate\(auditSnapshot\)/.test(game),

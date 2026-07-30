@@ -524,6 +524,32 @@ function statsRewardHint(stats: Partial<Record<FateStatKey, number>>): string {
     .join(' · ');
 }
 
+function resultMentionsItem(result: string, itemId: ItemId): boolean {
+  const name = getItem(itemId).name.trim();
+  if (result.includes(name)) return true;
+  const parts = name.split('的');
+  const afterDe = parts[parts.length - 1]?.trim() ?? '';
+  const suffix = name.length >= 4 ? name.slice(-2) : '';
+  return [afterDe, suffix].some((token) => token.length >= 2 && result.includes(token));
+}
+
+function resultTransfersItemToHero(result: string, itemId: ItemId): boolean {
+  if (!resultMentionsItem(result, itemId)) return false;
+  const item = getItem(itemId);
+  const accountState = item.slot === 'shadow'
+    || /(会员|朋友圈|已读|账号|报告|验证|聊天|连续记录|头像|链接)/.test(item.name);
+  if (accountState) {
+    return /他(?:当场|随后|已经|终于|亲手)?(?:开通|续费|绑定|保存|收到|领取|记入|写入|加入.{0,4}账号)/.test(result)
+      || /(?:他的|为他|给他).{0,10}(?:账号|会员|记录|页面)?.{0,6}(?:开通|续费|绑定|保存|记入|写入)(?:成功|完成|了|到)/.test(result);
+  }
+  return /(?:递给|递回|交给|交回|塞给|给了)他|他.{0,12}(?:收下|带走|拿走|收到|领取|装进|放进.{0,4}口袋|披上|戴上|穿上)/.test(result);
+}
+
+function resultRemovesItemFromHero(result: string, itemId: ItemId): boolean {
+  return resultMentionsItem(result, itemId)
+    && /他.{0,12}(?:递出|递还|交出|交还|交给|归还|退还|丢掉|扔掉|放弃|摘下|脱下|删除|解绑|注销)|(?:从他.{0,8}(?:手里|身上|口袋|账号).{0,8}(?:拿走|收走|删除))/.test(result);
+}
+
 function validateFreeReward(
   value: unknown,
   snapshot: LifeSnapshot,
@@ -603,7 +629,8 @@ function validateFreeReward(
       && !snapshot.items.some((item) => item.id === value.itemId)
       ? value.itemId as ItemId
       : null;
-    if (!itemId) return null;
+    // 奖励元数据不能覆盖现场事实：没有明确交给主角就降级为 none。
+    if (!itemId || !resultTransfersItemToHero(result, itemId)) return null;
     return {
       reward: { kind: 'gain_item', itemId },
       hint: `获得道具「${getItem(itemId).name}」`,
@@ -624,7 +651,7 @@ function validateFreeReward(
       && snapshot.items.some((item) => item.id === value.itemId)
       ? value.itemId as ItemId
       : null;
-    if (!itemId) return null;
+    if (!itemId || !resultRemovesItemFromHero(result, itemId)) return null;
     return {
       reward: { kind: 'remove_item', itemId },
       hint: `失去道具「${getItem(itemId).name}」`,
@@ -653,10 +680,7 @@ function carrierHasConcreteEvidence(
   if (carrier === 'memory' || carrier === 'none') return true;
   if (carrier === 'item') {
     if (!candidateItemId) return false;
-    const name = getItem(candidateItemId).name;
-    const transferContext = result.replace(name, '');
-    return result.includes(name)
-      && /(递给|交给|塞进.{0,4}手|收下|带走|留下|拿走|披上|戴上|穿上|装进|放进.{0,4}口袋|开通|续费|绑定|保存|收到|领取|记入|写入|加入.{0,4}账号)/.test(transferContext);
+    return resultTransfersItemToHero(result, candidateItemId);
   }
   if (carrier === 'resource') {
     return /(钱|零钱|硬币|金额|费用|付费|逾期费|退款|退回|找回|抵扣|余额|扣款|付款|账|治疗|休息|受伤|伤口|生命|医药费|住院)/.test(evidence);

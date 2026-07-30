@@ -109,6 +109,48 @@ requireToken(
   "this.scheduleVoice('narrator-final-breath', LAMP_POCKETS_EMPTY_TO_FINAL_BREATH_DELAY)",
   '最后一口气没有等「口袋空了」说完',
 );
+requireToken(
+  "this.playVoiceOnce('boss-father-phase-two')",
+  '沉默的父亲二阶段仍只有画面和字幕，没有阶段语音',
+);
+checks += 1;
+if (!voice.includes("trigger('boss_phase', '沉默的父亲雨衣倒下、二阶段短句落下', true, 3, true)")) {
+  errors.push('沉默的父亲二阶段语音没有绑定到必播、可打断的阶段触发');
+}
+for (const cue of [
+  'boss-praise-one-seat',
+  'boss-praise-paper',
+  'boss-praise-optimize',
+  'boss-praise-dismiss',
+  'boss-praise-xiaozhang',
+]) {
+  requireToken(
+    `'${cue}'`,
+    `老板二阶段语音 ${cue} 没有接入运行时`,
+  );
+}
+requireToken(
+  "this.playVoiceOnce('boss-praise-xiaozhang')",
+  '小张被岗位机制处罚时，老板没有说出条件剧情台词',
+);
+
+const chapterBossDefeatVoices = {
+  'closet-dark': 'boss-closet-defeat',
+  'silent-father': 'father-childhood-walk',
+  'praise-chair': 'boss-meeting-over',
+  'ringing-phone': 'hero-not-busy',
+  'debt-collector': 'boss-collector-defeat',
+  'lamp-keeper': 'narrator-final-breath',
+};
+for (const [boss, cue] of Object.entries(chapterBossDefeatVoices)) {
+  checks += 2;
+  if (!game.includes(`'${boss}': '${cue}'`)) errors.push(`${boss} 缺少章节 Boss 击败语音映射`);
+  if (!voice.includes(`'${cue}': cue(`)) errors.push(`${boss} 的击败语音 ${cue} 不在语音合同中`);
+}
+requireToken(
+  'CHAPTER_BOSS_DEFEAT_VOICE[enemy.type]',
+  '章节 Boss 击败语音映射没有接入统一死亡结算路径',
+);
 
 const returnDelay = numericConstant('LAMP_STRIP_TO_RELEASE_DELAY');
 const pocketsDelay = numericConstant('LAMP_POCKETS_EMPTY_TO_FINAL_BREATH_DELAY');

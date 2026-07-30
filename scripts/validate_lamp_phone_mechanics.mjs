@@ -21,15 +21,20 @@ const rejectToken = (source, token, message) => {
 };
 
 for (const [token, message] of [
-  ['private phoneFieldPoint(angle: number, radius: number)', '缺少竖屏电话落点函数'],
-  ['const radius = 180 + this.random() * 100', '一阶段来电没有遵守 180-280 距离环'],
-  ['const yOffset = this.clamp(Math.sin(angle) * radius, -144, 144)', '电话实体可能钻进上下 HUD'],
-  ['Math.sqrt(Math.max(0, radius * radius - yOffset * yOffset))', '压缩纵向落点后没有保持真实环距'],
+  ['private phoneCallPoint(enemy: EnemyUnit, angleOffset: number, radius: number)', '缺少相对 Boss 生成独立电话落点的函数'],
+  ['x: enemy.x + Math.cos(angle) * radius', '场地电话没有与 Boss 本体保持独立坐标'],
+  ['136 + this.random() * 22', '一阶段场地电话没有保持清楚但可输出的分离距离'],
+  ["this.drawItemSymbol('unsent-phone', call.x, call.y", '独立来电点没有绘制实体电话'],
+  ['ctx.lineTo(phone.x, phone.y)', '接听时缺少场地电话连回 Boss 的信号线'],
   ['this.phoneCalls = [call]', '一阶段来电没有进入场上实体列表'],
-  ['enemy.x = call.x', '一阶段 Boss 没有移到场上来电位置'],
   ['const count = Math.min(4, 3 + Math.floor(this.phoneMissed / 10))', '二阶段没有分裂为 3-4 通来电'],
-  ['this.phoneAnswer >= 3', '接听窗口不是完整 3 秒'],
+  ['const PHONE_ANSWER_DURATION = 3;', '接听窗口常量不是完整 3 秒'],
+  ['const PHONE_ANSWER_RADIUS = 50;', '接听判定没有与画面金色圈统一为 50px'],
+  ['this.phoneAnswer >= PHONE_ANSWER_DURATION', '接听结算没有使用完整 3 秒常量'],
   ['this.stunTimer = Math.max(this.stunTimer, 0.14)', '接听中没有定身玩家'],
+  ['private renderPhoneAnswerPrompt(): void', '缺少不受剧情字幕覆盖的接听机制提示层'],
+  ["this.feedback.play('monitor', 0.58)", '走进接听圈后缺少明确的电子接通反馈'],
+  ['resolution.phaseTwo ? 0.54 : 0.46', '接通/未接残像仍可能膨胀成接近 Boss 大小'],
   ["this.createSeekingEnemy('missed-call', call.x, call.y + 30)", '未接电话没有从原位置生成追击怪'],
   ['Math.floor(this.phoneMissed / 5) - this.phoneRelief', '未接数没有每 5 个强化一档'],
   ['this.phoneCalls.filter((_, index) => index !== answeredIndex)', '二阶段未处理来电没有分别转成未接'],
@@ -41,6 +46,8 @@ for (const [token, message] of [
   ["const dedicatedPhoneHint = enemy.type === 'ringing-phone' && this.phoneRinging", '响铃电话仍会叠加普通 Boss 红色边缘指示'],
   ['for (const call of this.phoneCalls) this.renderEdgeHint', '场外来电没有紧急边缘指示'],
 ] ) requireToken(game, token, message);
+rejectToken(game, 'enemy.x = target.x', '开始接听时仍会把 Boss 瞬移到场地电话上');
+rejectToken(game, 'resolution.phaseTwo ? 0.96 : 0.9', '结算技能图仍沿用旧的大比例');
 
 for (const [token, message] of [
   ['private visibleInLampLight(x: number, y: number, margin = 0)', '缺少《灯下》可见性判定'],
@@ -48,7 +55,11 @@ for (const [token, message] of [
   ['this.visibleInLampLight(enemy.x, enemy.y, enemy.radius + 28)', '圈外攻击前摇仍会泄露位置'],
   ['!this.visibleInLampLight(projectile.x, projectile.y, projectile.radius + 6)', '圈外飞行物仍会绘制'],
   ['!this.visibleInLampLight(burst.x, burst.y, burst.radius + 8)', '圈外命中特效仍会泄露位置'],
-  ["ctx.fillStyle = 'rgba(5,5,8,.68)'", '光圈外环境压暗不足或被移除'],
+  ["ctx.fillStyle = 'rgba(5,5,8,.50)'", '光圈外环境压暗不足或被移除'],
+  ["ctx.fillStyle = 'rgba(5,6,8,.10)'", '收灯人场景薄暮层被加深或移除'],
+  ['for (let step = 0; step < 5; step += 1)', '终局阶梯暗边没有保持五层可辨上限'],
+  ["this.caption = '灯追了过来。他还没准备好放下，便往旁边让了一步。';", '《收灯》首次追光没有提示玩家侧让'],
+  ["this.sayLore('bing-drop', '饼是真的。账留到离职那天。');", '《画大饼》没有在吃饼前说清后账'],
   ['private beginLampSeize(enemy: EnemyUnit)', '缺少《收灯》光圈收缴入口'],
   ['timer: 6,', '《收灯》追光窗口不是 6 秒'],
   ['speed: 62 * (1 + this.lampSeizeMisses * 0.3)', '躲过追光后下一轮没有加速 30%'],
@@ -77,12 +88,20 @@ for (const [token, message] of [
   ['const returned = Math.max(0, total - this.items.length);', '收灯人 HUD 没有显示真实归还进度'],
 ] ) requireToken(game, token, message);
 
-for (const screen of ['phone-field', 'phone-answer', 'lamp-dark', 'lamp-choice']) {
+for (const screen of ['phone-field', 'phone-approach', 'phone-answer', 'phone-connected', 'phone-missed', 'lamp-dark', 'lamp-choice']) {
   requireToken(game, `auditScreen === '${screen}'`, `缺少 ${screen} 冻结审阅画面`);
 }
 
+const lampAuditStart = game.indexOf("} else if (auditScreen === 'lamp-dark' || auditScreen === 'lamp-choice') {");
+const lampAuditEnd = lampAuditStart >= 0 ? game.indexOf("} else if (auditScreen === 'fate') {", lampAuditStart) : -1;
+const lampAuditBlock = lampAuditStart >= 0 && lampAuditEnd > lampAuditStart
+  ? game.slice(lampAuditStart, lampAuditEnd)
+  : '';
+requireToken(lampAuditBlock, 'this.captionTime = 4.6;', '收灯人审阅字幕没有使用可见的常规时长');
+rejectToken(lampAuditBlock, 'this.captionTime = 99;', '收灯人审阅字幕会因超长初值变成全透明');
+
 for (const [source, label] of [[canon, '正典'], [plan, '升级计划'], [wiki, '百科']]) {
-  requireToken(source, '180–280', `${label}没有记录电话场上实体距离`);
+  requireToken(source, 'Boss 本体与场地电话分离', `${label}没有记录 Boss 与接听物解耦后的正式合同`);
   requireToken(source, '3 秒', `${label}没有记录电话接听的 3 秒决策`);
   requireToken(source, '雨衣', `${label}没有记录雨衣传承`);
 }
@@ -98,7 +117,7 @@ rejectToken(plan, '成年电话的场上光点实体（现为 Boss 本体贴身�
 console.log(JSON.stringify({
   valid: errors.length === 0,
   checks,
-  phone: '180-280 场上来电 -> 三档闪烁/震动 -> 走近定身接听 -> 未接追击与强化',
+  phone: 'Boss 与场地电话分离 -> 箭头/金圈教学 -> 走近定身接听 -> 信号线接通 -> 未接追击与强化',
   lamp: '圈外敌弹不可见 -> 6 秒追光/1.5 秒曝光 -> 真实归还一件 -> 雨衣最后归还 -> 主动放下；亦可硬杀（19999 血彩蛋成就，解锁传承）',
   errors,
 }, null, 2));

@@ -200,9 +200,16 @@ const EIGHT_FRAME_SKILLS: Partial<Record<BossSkillId, EightFrameSpec>> = {
     url: new URL('./assets/enemies/boss-skills-v2/bus-depart-8f.png', import.meta.url).href,
     frame: 64, frames: 8, display: 144,
   },
-  // keeper-name 暂缓：A 表帧3-4 有绿幕键控残留（黄绿光锥被啃），干净版重生成后再挂回
+  'keeper-name': {
+    url: new URL('./assets/enemies/boss-skills-v2/keeper-name-8f.png', import.meta.url).href,
+    frame: 64, frames: 8, display: 160,
+  },
   'keeper-strip': {
     url: new URL('./assets/enemies/boss-skills-v2/keeper-strip-8f.png', import.meta.url).href,
+    frame: 64, frames: 8, display: 160,
+  },
+  'keeper-dim': {
+    url: new URL('./assets/enemies/boss-skills-v2/keeper-dim-8f.png', import.meta.url).href,
     frame: 64, frames: 8, display: 160,
   },
 };
@@ -272,10 +279,17 @@ export class PixelBossSkillRenderer {
     target.save();
     target.imageSmoothingEnabled = false;
     target.translate(Math.round(enemy.x), Math.round(enemy.y));
-    // 挤压拉伸：爆发帧（2）沿水平微拉伸、垂直微压，收势帧（3）反向回弹——
-    // 幅度控制在 ±6%，像素画上读作"发力"而不是"变形"。
-    const stretchX = frame === 2 ? 1.06 : frame === 3 ? 0.97 : 1;
-    const stretchY = frame === 2 ? 0.95 : frame === 3 ? 1.03 : 1;
+    // 四帧图继续跟帧号发力；八帧图跟真实 progress 的爆发/收势段同步。
+    // 否则 8f 已切到第 5–6 帧时，外层仍拿 4f 的 frame=1 做缩放，动作会错拍。
+    const usesEightFrames = progress !== undefined && EIGHT_FRAME_SKILLS[id] !== undefined;
+    const burst = usesEightFrames && progress >= 0.42 && progress < 0.72;
+    const recover = usesEightFrames && progress >= 0.72;
+    const stretchX = usesEightFrames
+      ? burst ? 1.06 : recover ? 0.97 : 1
+      : frame === 2 ? 1.06 : frame === 3 ? 0.97 : 1;
+    const stretchY = usesEightFrames
+      ? burst ? 0.95 : recover ? 1.03 : 1
+      : frame === 2 ? 0.95 : frame === 3 ? 1.03 : 1;
     target.scale((faceLeft ? -1 : 1) * stretchX, stretchY);
     const display = Math.max(1, Math.round(sprite.display * displayScale));
     const offset = Math.floor(display / 2);

@@ -6,8 +6,29 @@ import {
   probeRegisterPlayingCounter,
 } from './audio-probe';
 import { SFX_INLINE_BASE64 } from './audio-sfx-inline';
+import { ambienceProfile, configureAmbienceFilter } from './audio-ambience';
+import {
+  AMBIENCE_BUS_GAIN,
+  DEFAULT_MASTER_VOLUME,
+  DEFAULT_MUSIC_VOLUME,
+  MUSIC_BUS_GAIN,
+  SFX_BUS_GAIN,
+  TENSION_ASSET_GAIN,
+  TENSION_BUS_GAIN,
+  VOICE_AMBIENCE_DUCK,
+  VOICE_BEHIND_DOOR_FILTER_Q,
+  VOICE_BEHIND_DOOR_LOW_PASS_HZ,
+  VOICE_MUSIC_DUCK,
+  VOICE_PLAYBACK_GAIN,
+  VOICE_SFX_DUCK,
+  ambienceAssetGain,
+  musicAssetGain,
+  sfxMixGain,
+  upgradeLegacyMasterVolume,
+} from './audio-mix';
 import { MATERIAL_TONES, type ItemMaterial } from './item-material';
 import { VOICE_CUES, voicePlaybackRate, type VoiceCueId, type VoiceTreatment } from './voice-script';
+import { triggerHaptic } from './haptics';
 
 export type LifeSound =
   | 'page'
@@ -19,6 +40,9 @@ export type LifeSound =
   | 'swallow'
   | 'exhale'
   | 'boss'
+  | 'boss-warn'
+  | 'boss-release'
+  | 'boss-hit'
   | 'deny'
   | 'phone'
   | 'train'
@@ -26,24 +50,24 @@ export type LifeSound =
   | 'pickup-paper'
   | 'pickup-cloth'
   | 'pickup-metal'
-  | 'pickup-coin';
+  | 'pickup-coin'
+  | 'shield'
+  | 'heal'
+  | 'dash'
+  | 'door'
+  | 'lamp';
 
 const VOLUME_KEY = 'zhe-yi-shen:volume';
 const LAST_VOLUME_KEY = 'zhe-yi-shen:last-audible-volume';
 const AUDIO_CHOICE_KEY = 'zhe-yi-shen:audio-choice';
 const DEFAULT_AUDIO_MIGRATION_KEY = 'zhe-yi-shen:default-audio-v2';
+const BALANCED_AUDIO_MIGRATION_KEY = 'zhe-yi-shen:balanced-audio-v3';
+const AUDIBLE_MIX_MIGRATION_KEY = 'zhe-yi-shen:restored-mix-v6';
 const HAPTICS_KEY = 'zhe-yi-shen:haptics';
 const EFFECTS_VOLUME_KEY = 'zhe-yi-shen:effects-volume';
 const AMBIENCE_VOLUME_KEY = 'zhe-yi-shen:ambience-volume';
 const MUSIC_VOLUME_KEY = 'zhe-yi-shen:music-volume';
 const VOICE_VOLUME_KEY = 'zhe-yi-shen:voice-volume';
-const VOICE_PLAYBACK_GAIN = 1.6;
-const VOICE_SFX_DUCK = 0.42;
-const VOICE_AMBIENCE_DUCK = 0.42;
-const VOICE_MUSIC_DUCK = 0.26;
-const MUSIC_BUS_GAIN = 0.34;
-const TENSION_BUS_GAIN = 0.24;
-
 export type AudioMixChannel = 'effects' | 'ambience' | 'music' | 'voice';
 
 const SFX_FILES: Record<LifeSound, string> = {
@@ -56,6 +80,9 @@ const SFX_FILES: Record<LifeSound, string> = {
   swallow: 'assets/audio/sfx/swallow.mp3',
   exhale: 'assets/audio/sfx/exhale.mp3',
   boss: 'assets/audio/sfx/boss.mp3',
+  'boss-warn': 'assets/audio/sfx/boss-warn.mp3',
+  'boss-release': 'assets/audio/sfx/boss-release.mp3',
+  'boss-hit': 'assets/audio/sfx/boss-hit.mp3',
   deny: 'assets/audio/sfx/deny.mp3',
   phone: 'assets/audio/sfx/phone.mp3',
   train: 'assets/audio/sfx/train.mp3',
@@ -66,26 +93,11 @@ const SFX_FILES: Record<LifeSound, string> = {
   'pickup-cloth': 'assets/audio/sfx/pickup-cloth.mp3',
   'pickup-metal': 'assets/audio/sfx/pickup-metal.mp3',
   'pickup-coin': 'assets/audio/sfx/pickup-coin.mp3',
-};
-
-const SFX_GAIN: Record<LifeSound, number> = {
-  page: 0.52,
-  breath: 0.52,
-  hit: 0.48,
-  hurt: 0.58,
-  coin: 0.48,
-  wear: 0.46,
-  swallow: 0.52,
-  exhale: 0.42,
-  boss: 0.64,
-  deny: 0.5,
-  phone: 0.66,
-  train: 0.65,
-  monitor: 0.45,
-  'pickup-paper': 0.5,
-  'pickup-cloth': 0.55,
-  'pickup-metal': 0.46,
-  'pickup-coin': 0.5,
+  shield: 'assets/audio/sfx/shield.mp3',
+  heal: 'assets/audio/sfx/heal.mp3',
+  dash: 'assets/audio/sfx/dash.mp3',
+  door: 'assets/audio/sfx/door.mp3',
+  lamp: 'assets/audio/sfx/lamp.mp3',
 };
 
 const AMBIENCE_FILES = [
@@ -95,6 +107,9 @@ const AMBIENCE_FILES = [
   'assets/audio/ambience/apartment.mp3',
   'assets/audio/ambience/office.mp3',
   'assets/audio/ambience/hospital.mp3',
+  'assets/audio/ambience/fate-chamber.mp3',
+  'assets/audio/ambience/back-room.mp3',
+  'assets/audio/ambience/light-room.mp3',
 ] as const;
 
 const MUSIC_FILES = [
@@ -106,6 +121,8 @@ const MUSIC_FILES = [
   'assets/audio/music/fluorescent-name.mp3',
   'assets/audio/music/last-lamp.mp3',
   'assets/audio/music/after-breath.mp3',
+  'assets/audio/music/folded-fate.mp3',
+  'assets/audio/music/borrowed-room.mp3',
 ] as const;
 
 const MUSIC_TENSION_FILE = 'assets/audio/music/pressure.mp3';
@@ -134,17 +151,25 @@ function readBoolean(key: string, fallback: boolean): boolean {
 }
 
 function readInitialVolume(): number {
-  const stored = Math.max(0, Math.min(1, readNumber(VOLUME_KEY, 0.42)));
+  let stored = Math.max(0, Math.min(1, readNumber(VOLUME_KEY, DEFAULT_MASTER_VOLUME)));
   try {
     if (localStorage.getItem(DEFAULT_AUDIO_MIGRATION_KEY) !== 'enabled') {
-      const restored = stored > 0
+      stored = stored > 0
         ? stored
-        : Math.max(0.08, Math.min(1, readNumber(LAST_VOLUME_KEY, 0.42)));
+        : Math.max(0.08, Math.min(1, readNumber(LAST_VOLUME_KEY, DEFAULT_MASTER_VOLUME)));
       localStorage.setItem(DEFAULT_AUDIO_MIGRATION_KEY, 'enabled');
       localStorage.setItem(AUDIO_CHOICE_KEY, 'enabled');
-      localStorage.setItem(VOLUME_KEY, restored.toFixed(2));
-      localStorage.setItem(LAST_VOLUME_KEY, restored.toFixed(2));
-      return restored;
+      localStorage.setItem(VOLUME_KEY, stored.toFixed(2));
+      localStorage.setItem(LAST_VOLUME_KEY, stored.toFixed(2));
+    }
+    if (localStorage.getItem(BALANCED_AUDIO_MIGRATION_KEY) !== 'enabled') {
+      const balanced = upgradeLegacyMasterVolume(stored);
+      localStorage.setItem(BALANCED_AUDIO_MIGRATION_KEY, 'enabled');
+      if (balanced !== stored) {
+        localStorage.setItem(VOLUME_KEY, balanced.toFixed(2));
+        localStorage.setItem(LAST_VOLUME_KEY, balanced.toFixed(2));
+      }
+      return balanced;
     }
   } catch {
     // Restricted WebViews may not expose persistent storage.
@@ -198,6 +223,7 @@ function findLeadSilence(buffer: AudioBuffer): number {
 class SfxEngine {
   private context?: AudioContext;
   private master?: GainNode;
+  private outputLimiter?: DynamicsCompressorNode;
   private readonly buffers = new Map<string, AudioBuffer>();
   /**
    * 每种音效同时发声数上限。元素路径天然有这层限制——hit 只有 4 个池化元素，
@@ -238,8 +264,15 @@ class SfxEngine {
         this.context = new Ctor();
       }
       this.master = this.context.createGain();
+      this.outputLimiter = this.context.createDynamicsCompressor();
       this.master.gain.value = 1;
-      this.master.connect(this.context.destination);
+      this.outputLimiter.threshold.value = -2.5;
+      this.outputLimiter.knee.value = 1.5;
+      this.outputLimiter.ratio.value = 12;
+      this.outputLimiter.attack.value = 0.004;
+      this.outputLimiter.release.value = 0.12;
+      this.master.connect(this.outputLimiter);
+      this.outputLimiter.connect(this.context.destination);
       void this.context.resume?.();
       this.decodeAll();
     } catch {
@@ -274,7 +307,7 @@ class SfxEngine {
   }
 
   /**
-   * 把语音元素接进 Web Audio 图，返回它专属的滤波器节点。
+   * 把语音或环境音元素接进 Web Audio 图，返回它专属的滤波器节点。
    *
    * 生产包此前完全没有滤波器，76 条语音全是干声——电话/广播/门后/回忆/咽下/吐出
    * 零区别，而开发端（audio.ts 走 Web Audio）听着是对的，所以"本地正常、发布就没了"。
@@ -300,7 +333,7 @@ class SfxEngine {
       filter.frequency.value = 18_000;
       filter.Q.value = 0;
       source.connect(filter);
-      filter.connect(context.destination);
+      filter.connect(this.outputLimiter ?? context.destination);
       this.elementFilters.set(element, filter);
       return filter;
     } catch {
@@ -381,11 +414,13 @@ class SfxEngine {
     const filtered = this.elementFilters.size;
     const hitLead = this.leads.get('hit');
     const trim = typeof hitLead === 'number' ? ` · hit裁${Math.round(hitLead * 1000)}ms` : '';
-    return `${context.state} · ${this.buffers.size}/${Object.keys(SFX_INLINE_BASE64).length} · ${latency}${trim} · 语音滤波${filtered}`;
+    return `${context.state} · ${this.buffers.size}/${Object.keys(SFX_INLINE_BASE64).length} · ${latency}${trim} · 媒体滤波${filtered}`;
   }
 }
 
 const sfxEngine = new SfxEngine();
+let resumePlatformMedia: (() => void) | undefined;
+let platformAudioUnlocked = false;
 
 /** 与 audio.ts 的 configureVoiceFilter 保持逐参数一致，两端听感必须相同。 */
 function configureVoiceFilter(filter: BiquadFilterNode, treatment: VoiceTreatment): void {
@@ -394,7 +429,9 @@ function configureVoiceFilter(filter: BiquadFilterNode, treatment: VoiceTreatmen
   } else if (treatment === 'pa') {
     filter.type = 'highpass'; filter.frequency.value = 220; filter.Q.value = 0.55;
   } else if (treatment === 'behind-door') {
-    filter.type = 'lowpass'; filter.frequency.value = 1050; filter.Q.value = 0.5;
+    filter.type = 'lowpass';
+    filter.frequency.value = VOICE_BEHIND_DOOR_LOW_PASS_HZ;
+    filter.Q.value = VOICE_BEHIND_DOOR_FILTER_Q;
   } else if (treatment === 'memory') {
     filter.type = 'lowpass'; filter.frequency.value = 2450; filter.Q.value = 0.35;
   } else if (treatment === 'swallowed') {
@@ -411,8 +448,23 @@ function configureVoiceFilter(filter: BiquadFilterNode, treatment: VoiceTreatmen
 // 被触发，所以这里显式挂在可见性/焦点事件上补一刀。
 if (typeof document !== 'undefined') {
   const resumeIfVisible = (): void => {
-    if (document.visibilityState === 'visible') sfxEngine.prime();
+    // audio-runtime.ts 会静态引用两套实现；demo 采用 buffered runtime 时，
+    // 这里也会注册事件。用户手势前绝不能为未选用的备用实现抢建 AudioContext，
+    // 否则移动 WebView 可能把唯一的硬件音频会话留给一个 suspended context。
+    if (document.visibilityState !== 'visible' || !platformAudioUnlocked) return;
+    sfxEngine.prime();
+    resumePlatformMedia?.();
   };
+  // 再补一道：任何真实手势都尝试恢复一次。首次 unlock 若落在非手势上下文，
+  // 光靠可见性事件救不回来——玩家不切后台就永远静音。
+  const primeOnGesture = (): void => {
+    if (!platformAudioUnlocked) return;
+    sfxEngine.prime();
+    resumePlatformMedia?.();
+  };
+  for (const type of ['pointerdown', 'touchend', 'keydown'] as const) {
+    document.addEventListener(type, primeOnGesture, { capture: true, passive: true });
+  }
   document.addEventListener('visibilitychange', resumeIfVisible);
   window.addEventListener('focus', resumeIfVisible);
   window.addEventListener('pageshow', resumeIfVisible);
@@ -427,12 +479,15 @@ export class LifeFeedback {
   private volume = readInitialVolume();
   private effectsVolume = Math.max(0, Math.min(1, readNumber(EFFECTS_VOLUME_KEY, 1)));
   private ambienceVolume = Math.max(0, Math.min(1, readNumber(AMBIENCE_VOLUME_KEY, 1)));
-  private musicVolume = Math.max(0, Math.min(1, readNumber(MUSIC_VOLUME_KEY, 0.78)));
+  private musicVolume = Math.max(0, Math.min(1, readNumber(MUSIC_VOLUME_KEY, DEFAULT_MUSIC_VOLUME)));
   private voiceVolume = Math.max(0, Math.min(1, readNumber(VOICE_VOLUME_KEY, 1)));
   private haptics = readBoolean(HAPTICS_KEY, true);
   private unlocked = false;
   private readonly lastPlayed = new Map<LifeSound, number>();
+  private lastAmbienceEventPlayed = -Infinity;
   private readonly sfxPools = new Map<LifeSound, HTMLAudioElement[]>();
+  private readonly ambienceEventPlayers = new Map<LifeSound, HTMLAudioElement>();
+  private readonly ambienceEventLevels = new Map<HTMLAudioElement, number>();
   private readonly ambiencePlayers = new Map<number, HTMLAudioElement>();
   private readonly musicPlayers = new Map<number, HTMLAudioElement>();
   private readonly fadeTokens = new Map<HTMLAudioElement, number>();
@@ -453,16 +508,51 @@ export class LifeFeedback {
   private tensionPlayer?: HTMLAudioElement;
   private activeTension?: HTMLAudioElement;
 
-  unlock(): void {
-    if (!this.unlocked) {
-      this.unlocked = true;
-      // 必须在用户手势里建 AudioContext。成功的话音效池根本不用建——那 30 个
-      // preload='auto' 的元素本身也在占 WebView 的解码器名额。
-      sfxEngine.prime();
-      if (!sfxEngine.ready('hit')) {
-        for (const sound of Object.keys(SFX_FILES) as LifeSound[]) this.ensureSfxPool(sound);
+  constructor() {
+    try {
+      if (localStorage.getItem(AUDIBLE_MIX_MIGRATION_KEY) !== 'enabled') {
+        this.effectsVolume = 1;
+        this.ambienceVolume = 1;
+        this.musicVolume = DEFAULT_MUSIC_VOLUME;
+        this.voiceVolume = 1;
+        localStorage.setItem(EFFECTS_VOLUME_KEY, '1.00');
+        localStorage.setItem(AMBIENCE_VOLUME_KEY, '1.00');
+        localStorage.setItem(MUSIC_VOLUME_KEY, DEFAULT_MUSIC_VOLUME.toFixed(2));
+        localStorage.setItem(VOICE_VOLUME_KEY, '1.00');
+        localStorage.setItem(AUDIBLE_MIX_MIGRATION_KEY, 'enabled');
       }
+    } catch {
+      // Restricted WebViews may not expose persistent storage.
     }
+    // The game owns one feedback instance for the lifetime of the page. Keep the
+    // foreground hook pointed at that instance so host-paused media loops can
+    // resume even when returning to the page is not followed by a game action.
+    resumePlatformMedia = () => this.resumeAfterForeground();
+  }
+
+  unlock(): void {
+    const first = !this.unlocked;
+    if (first) {
+      this.unlocked = true;
+      platformAudioUnlocked = true;
+    }
+    // prime 每次都要再试一遍，不能只在首次：第一次 unlock 很可能压根不在用户手势里
+    // （启动时的标题配乐、断点续局都会走到这儿），那时 AudioContext 只能停在 suspended。
+    // 旧写法把 prime 关在 first 分支里，于是之后真正的点击再也不会恢复它——整局静音。
+    // prime() 自身幂等：已有 context 时只在 state !== 'running' 时补一次 resume。
+    sfxEngine.prime();
+    if (first && !sfxEngine.ready('hit')) {
+      // 成功走 Web Audio 的话音效池根本不用建——那 30 个 preload='auto' 的元素
+      // 本身也在占 WebView 的解码器名额；play() 里另有「引擎没 ready 就退回元素」的兜底。
+      for (const sound of Object.keys(SFX_FILES) as LifeSound[]) this.ensureSfxPool(sound);
+    }
+    this.syncAmbience();
+    this.syncMusic();
+    this.syncMusicTension();
+  }
+
+  private resumeAfterForeground(): void {
+    if (!this.unlocked || this.volume <= 0) return;
     this.syncAmbience();
     this.syncMusic();
     this.syncMusicTension();
@@ -516,7 +606,9 @@ export class LifeFeedback {
     activeMusic: number | null;
     musicTension: boolean;
     voiceReady: number;
+    voiceActive: boolean;
     mix: { effects: number; ambience: number; music: number; voice: number };
+    bus: { master: number; effects: number; ambience: number; music: number; tension: number; voice: number };
   } {
     return {
       context: this.unlocked ? 'running' : 'suspended',
@@ -529,11 +621,20 @@ export class LifeFeedback {
       activeMusic: this.activeMusicTrack ?? null,
       musicTension: this.musicTension,
       voiceReady: this.voicePlayers.size,
+      voiceActive: Boolean(this.activeVoice),
       mix: {
         effects: this.effectsVolume,
         ambience: this.ambienceVolume,
         music: this.musicVolume,
         voice: this.voiceVolume,
+      },
+      bus: {
+        master: this.volume,
+        effects: this.volume * SFX_BUS_GAIN * this.effectsVolume,
+        ambience: this.activeAmbience?.volume ?? 0,
+        music: this.activeMusic?.volume ?? 0,
+        tension: this.activeTension?.volume ?? 0,
+        voice: this.activeVoice?.volume ?? 0,
       },
     };
   }
@@ -543,7 +644,9 @@ export class LifeFeedback {
   }
 
   setAudioEnabled(value: boolean): void {
-    const restored = Math.max(0.08, Math.min(1, readNumber(LAST_VOLUME_KEY, 0.42)));
+    const restored = upgradeLegacyMasterVolume(
+      Math.max(0.08, Math.min(1, readNumber(LAST_VOLUME_KEY, DEFAULT_MASTER_VOLUME))),
+    );
     this.setVolume(value ? (this.volume > 0 ? this.volume : restored) : 0);
     if (value) {
       this.unlock();
@@ -598,17 +701,17 @@ export class LifeFeedback {
   }
 
   vibrate(pattern: number | number[]): void {
-    if (!this.haptics || typeof navigator.vibrate !== 'function') return;
-    try {
-      navigator.vibrate(pattern);
-    } catch {
-      // Haptics are best effort only.
-    }
+    if (!this.haptics) return;
+    triggerHaptic(pattern);
   }
 
   play(sound: LifeSound, intensity = 1, material?: ItemMaterial): void {
     const now = performance.now();
-    const throttle = sound === 'hit' ? 55 : sound === 'breath' ? 95 : 18;
+    const throttle = sound === 'hit' ? 55
+      : sound === 'breath' ? 95
+        : ['boss-warn', 'boss-release', 'boss-hit'].includes(sound) ? 160
+        : ['shield', 'heal', 'dash', 'door', 'lamp'].includes(sound) ? 240
+          : 18;
     // 音量 0 时也要真的不播：HTMLAudioElement 即使 volume=0 仍然走完整解码/起播，
     // 在互动空间 WebView 上这份开销照收不误（玩家把「音效」拉到 0 却依然顿帧）。
     if (now - (this.lastPlayed.get(sound) ?? -Infinity) < throttle
@@ -620,11 +723,11 @@ export class LifeFeedback {
     this.lastPlayed.set(sound, now);
     this.unlock();
     const gain = Math.max(0, Math.min(
-      1,
-      SFX_GAIN[sound] * intensity * this.volume * this.effectsVolume
+      2.5,
+      SFX_BUS_GAIN * sfxMixGain(sound) * intensity * this.volume * this.effectsVolume
         * (this.activeVoice ? VOICE_SFX_DUCK : 1),
     ));
-    const baseRate = ['boss', 'deny', 'phone', 'train', 'monitor'].includes(sound)
+    const baseRate = ['boss', 'boss-warn', 'boss-release', 'boss-hit', 'deny', 'phone', 'train', 'monitor', 'heal', 'lamp'].includes(sound)
       ? 1
       : Math.max(0.92, Math.min(1.08, 1 + (Math.random() - 0.5) * 0.045));
     const rate = material ? baseRate * MATERIAL_TONES[material].rate : baseRate;
@@ -642,16 +745,47 @@ export class LifeFeedback {
     if (player.currentTime !== 0) { player.currentTime = 0; probeSeek(); }
     player.volume = Math.max(0, Math.min(
       1,
-      SFX_GAIN[sound]
+      SFX_BUS_GAIN
+        * sfxMixGain(sound)
         * intensity
         * this.volume
         * this.effectsVolume
         * (this.activeVoice ? VOICE_SFX_DUCK : 1),
     ));
-    player.playbackRate = ['boss', 'deny', 'phone', 'train', 'monitor'].includes(sound)
+    player.playbackRate = ['boss', 'boss-warn', 'boss-release', 'boss-hit', 'deny', 'phone', 'train', 'monitor', 'heal', 'lamp'].includes(sound)
       ? 1
       : Math.max(0.92, Math.min(1.08, 1 + (Math.random() - 0.5) * 0.045));
     probePlay(sound);
+    void player.play().catch(() => undefined);
+  }
+
+  /**
+   * 平台版的低频场景事件故意走独立、可复用的媒体元素：几十秒才触发一次，
+   * 不会形成高频 seek churn，同时能正确跟随环境声滑条与对白 ducking。
+   */
+  playAmbienceEvent(sound: LifeSound, intensity = 0.3): void {
+    const now = performance.now();
+    if (now - this.lastAmbienceEventPlayed < 900
+      || this.volume <= 0
+      || this.ambienceVolume <= 0) return;
+    this.lastAmbienceEventPlayed = now;
+    this.unlock();
+    let player = this.ambienceEventPlayers.get(sound);
+    if (!player) {
+      player = media(SFX_FILES[sound]);
+      this.ambienceEventPlayers.set(sound, player);
+    }
+    if (!player.paused) player.pause();
+    if (player.currentTime !== 0) {
+      player.currentTime = 0;
+      probeSeek();
+    }
+    const level = Math.max(0.04, Math.min(0.28, intensity * 0.22));
+    this.ambienceEventLevels.set(player, level);
+    player.volume = level * this.volume * this.ambienceVolume
+      * (this.activeVoice ? VOICE_AMBIENCE_DUCK : 1);
+    player.playbackRate = 0.98 + Math.random() * 0.04;
+    probePlay(`ambience-${sound}`);
     void player.play().catch(() => undefined);
   }
 
@@ -692,6 +826,64 @@ export class LifeFeedback {
   preloadVoices(ids: readonly VoiceCueId[]): void {
     this.unlock();
     for (const id of ids) this.ensureVoice(id);
+  }
+
+  /**
+   * 进场前把「开局那一段」真正听得到的音频全部缓冲完。
+   *
+   * 为什么必须等：平台包的人声/环境/配乐走 HTMLAudioElement，第一次起播要现场
+   * 读包 + 申请解码器 + 解码——抖音 WebView 的编解码器是有限资源池，这笔开销落在
+   * 开场漫画正在打字机推进的那几秒里，就是评委看到的「一进去很卡，等一会儿才顺」。
+   * preload='auto' 只是「建议」，不等于就绪，所以这里等到 canplaythrough。
+   *
+   * 分批而不是一次性全开：同时唤起十几个媒体元素本身就会卡住主线程一下。
+   * 每个文件都有独立超时、整体也有预算——载不动绝不能把玩家永远关在加载页外。
+   */
+  async warmup(
+    voiceIds: readonly VoiceCueId[],
+    stage = 0,
+    onProgress?: (done: number, total: number) => void,
+    budgetMs = 15000,
+  ): Promise<void> {
+    const elements: HTMLAudioElement[] = [
+      ...voiceIds.map((id) => this.ensureVoice(id)),
+      this.ensureAmbience(stage),
+      this.ensureMusic(stage),
+    ];
+    const deadline = performance.now() + budgetMs;
+    let done = 0;
+    onProgress?.(0, elements.length);
+    const ready = (element: HTMLAudioElement): Promise<void> => new Promise((resolve) => {
+      // readyState 4 = HAVE_ENOUGH_DATA：已经可以从头播到尾不断流。
+      if (element.readyState >= 4) { resolve(); return; }
+      let settled = false;
+      const finish = (): void => {
+        if (settled) return;
+        settled = true;
+        element.removeEventListener('canplaythrough', finish);
+        element.removeEventListener('loadeddata', onData);
+        element.removeEventListener('error', finish);
+        window.clearTimeout(timer);
+        resolve();
+      };
+      // 部分 WebView 对短音频不发 canplaythrough，loadeddata 已经够用。
+      const onData = (): void => { if (element.readyState >= 3) finish(); };
+      const remaining = Math.max(1200, deadline - performance.now());
+      const timer = window.setTimeout(finish, Math.min(6000, remaining));
+      element.addEventListener('canplaythrough', finish);
+      element.addEventListener('loadeddata', onData);
+      element.addEventListener('error', finish);
+      try { element.load(); } catch { finish(); }
+    });
+    for (let index = 0; index < elements.length; index += 3) {
+      if (performance.now() >= deadline) break;
+      await Promise.all(elements.slice(index, index + 3).map(async (element) => {
+        await ready(element);
+        done += 1;
+        onProgress?.(done, elements.length);
+      }));
+    }
+    onProgress?.(elements.length, elements.length);
   }
 
   playVoice(id: VoiceCueId, treatment?: VoiceTreatment): void {
@@ -801,6 +993,10 @@ export class LifeFeedback {
       // （例如新建 AudioContext、来电、切后台）时会 pause 媒体元素，而这里一旦
       // return，环境音就永久沉默。检测到暂停就原地续播，不要 seek 回 0。
       const current = this.activeAmbience;
+      // 首次 setAmbience() 可能发生在 AudioContext.resume() 真正完成之前。那次
+      // elementFilter() 会安全退回干声；后续任一用户手势都要在这里重试接图，
+      // 否则 production 恰好最容易永远漏掉六章滤波，和 buffered 版听感走岔。
+      if (current) this.applyAmbienceProfile(current, stage);
       if (current && current.paused) void current.play().catch(() => undefined);
       return;
     }
@@ -810,13 +1006,7 @@ export class LifeFeedback {
       previous.currentTime = 0;
     }
     const player = this.ensureAmbience(stage);
-    player.volume = Math.max(0, Math.min(
-      1,
-      this.volume
-        * 0.58
-        * this.ambienceVolume
-        * (this.activeVoice ? VOICE_AMBIENCE_DUCK : 1),
-    ));
+    this.applyAmbienceProfile(player, stage);
     player.currentTime = 0;
     this.activeAmbience = player;
     this.activeAmbienceStage = stage;
@@ -842,6 +1032,7 @@ export class LifeFeedback {
     }
     if (track === undefined || this.volume <= 0) return;
     if (track === this.activeMusicTrack && this.activeMusic) {
+      sfxEngine.elementFilter(this.activeMusic);
       // 同一曲目：在播就什么都不做；被宿主暂停就原地续播。绝不能走下面的重建流程，
       // 那里第一句 currentTime = 0 会把曲子拉回开头——unlock() 每次播音效都会调到
       // 这里，于是配乐每打一下就从头开始，听感就是「重播截断」。
@@ -851,6 +1042,9 @@ export class LifeFeedback {
     }
     const previous = this.activeMusic;
     const player = this.ensureMusic(track);
+    // 中性滤波器的目的不是改音色，而是把媒体元素接入共享 limiter；
+    // 否则章节配乐会绕过峰值保护，和语音、环境、音效在系统输出端直接硬叠。
+    sfxEngine.elementFilter(player);
     this.cancelFade(player);
     player.pause();
     player.currentTime = 0;
@@ -860,7 +1054,7 @@ export class LifeFeedback {
     if (previous && previous !== player) this.fadePlayer(previous, 0, 2.1, true);
     void player.play().then(() => {
       if (this.activeMusic !== player || this.activeMusicTrack !== track) return;
-      this.fadePlayer(player, this.musicTargetVolume(MUSIC_BUS_GAIN), 2.1);
+      this.fadePlayer(player, this.musicTargetVolume(MUSIC_BUS_GAIN, musicAssetGain(track)), 2.1);
     }).catch(() => {
       // A later user gesture calls unlock again and retries this requested track.
       if (this.activeMusic === player) {
@@ -887,11 +1081,13 @@ export class LifeFeedback {
     }
     if (!this.musicTension || this.volume <= 0) return;
     if (this.activeTension) {
+      sfxEngine.elementFilter(this.activeTension);
       if (!this.activeTension.paused) return;
       void this.activeTension.play().catch(() => undefined);
       return;
     }
     const player = this.ensureMusicTension();
+    sfxEngine.elementFilter(player);
     this.cancelFade(player);
     player.pause();
     player.currentTime = 0;
@@ -899,7 +1095,11 @@ export class LifeFeedback {
     this.activeTension = player;
     void player.play().then(() => {
       if (this.activeTension !== player || !this.musicTension) return;
-      this.fadePlayer(player, this.musicTargetVolume(TENSION_BUS_GAIN), 1.15);
+      this.fadePlayer(
+        player,
+        this.musicTargetVolume(TENSION_BUS_GAIN, TENSION_ASSET_GAIN),
+        1.15,
+      );
     }).catch(() => {
       if (this.activeTension === player) this.activeTension = undefined;
     });
@@ -911,14 +1111,36 @@ export class LifeFeedback {
     if (player) this.fadePlayer(player, 0, 0.85, true);
   }
 
-  private musicTargetVolume(busGain: number): number {
+  private musicTargetVolume(busGain: number, assetGain = 1): number {
     return Math.max(0, Math.min(
       1,
       this.volume
         * busGain
+        * assetGain
         * this.musicVolume
         * (this.activeVoice ? VOICE_MUSIC_DUCK : 1),
     ));
+  }
+
+  private ambienceTargetVolume(stage = this.activeAmbienceStage): number {
+    if (stage === undefined) return 0;
+    return Math.max(0, Math.min(
+      1,
+      this.volume
+        * AMBIENCE_BUS_GAIN
+        * ambienceAssetGain(stage)
+        * ambienceProfile(stage).level
+        * this.ambienceVolume
+        * (this.activeVoice ? VOICE_AMBIENCE_DUCK : 1),
+    ));
+  }
+
+  private applyAmbienceProfile(player: HTMLAudioElement, stage: number): void {
+    const profile = ambienceProfile(stage);
+    player.playbackRate = profile.playbackRate;
+    player.volume = this.ambienceTargetVolume(stage);
+    const filter = sfxEngine.elementFilter(player);
+    if (filter) configureAmbienceFilter(filter, profile);
   }
 
   private cancelFade(player: HTMLAudioElement): void {
@@ -972,27 +1194,37 @@ export class LifeFeedback {
 
   private refreshActiveVolumes(): void {
     if (this.activeAmbience) {
-      this.activeAmbience.volume = Math.max(0, Math.min(
-        1,
-        this.volume
-          * 0.58
-          * this.ambienceVolume
-          * (this.activeVoice ? VOICE_AMBIENCE_DUCK : 1),
-      ));
+      this.activeAmbience.volume = this.ambienceTargetVolume();
     }
     if (this.activeMusic) {
       this.cancelFade(this.activeMusic);
-      this.activeMusic.volume = this.musicTargetVolume(MUSIC_BUS_GAIN);
+      this.activeMusic.volume = this.musicTargetVolume(
+        MUSIC_BUS_GAIN,
+        musicAssetGain(this.activeMusicTrack ?? 0),
+      );
     }
     if (this.activeTension) {
       this.cancelFade(this.activeTension);
-      this.activeTension.volume = this.musicTargetVolume(TENSION_BUS_GAIN);
+      this.activeTension.volume = this.musicTargetVolume(
+        TENSION_BUS_GAIN,
+        TENSION_ASSET_GAIN,
+      );
     }
     if (this.activeVoice) {
       this.activeVoice.volume = Math.max(0, Math.min(
         1,
         this.activeVoiceBaseVolume * VOICE_PLAYBACK_GAIN * this.volume * this.voiceVolume,
       ));
+    }
+    for (const player of this.ambienceEventPlayers.values()) {
+      player.volume = Math.max(0, Math.min(
+        1,
+        (this.ambienceEventLevels.get(player) ?? 0.08)
+          * this.volume
+          * this.ambienceVolume
+          * (this.activeVoice ? VOICE_AMBIENCE_DUCK : 1),
+      ));
+      if ((this.volume <= 0 || this.ambienceVolume <= 0) && !player.paused) player.pause();
     }
   }
 }

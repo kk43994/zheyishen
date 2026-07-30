@@ -16,6 +16,8 @@ scripts/process_vfx_ui_pack.py 同源（底边对齐，帧内边留 3px，禁触
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from collections import deque
 from pathlib import Path
 
@@ -197,6 +199,14 @@ def main() -> None:
         print(f"{skill_id}: atlas {atlas.width}x{atlas.height}, preview x4", flush=True)
     (OUT_DIR / "manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    # 收灯人的身份母版是运行时 HD 图集，不再接受旧紫袍生图回灌。这里在
+    # 通用 image2 处理完成后重建其 name/dim 八帧、v1 回退与百科头像，
+    # 同时把 canonical source 元数据重新写回 manifest。
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts/rebuild_lamp_keeper_identity_assets.py")],
+        cwd=ROOT,
+        check=True,
     )
     print("done", flush=True)
 

@@ -6,9 +6,10 @@ const read = (file) => readFile(resolve(root, file));
 const readJson = async (file) => JSON.parse((await read(file)).toString('utf8'));
 const errors = [];
 
-const [wiki, projectileManifest, hitManifest, saveManifest, bossV1, bossV2, items, enemies, bosses] =
+const [wiki, chapters, projectileManifest, hitManifest, saveManifest, bossV1, bossV2, items, enemies, bosses] =
   await Promise.all([
     read('docs/这一身百科.html').then((buffer) => buffer.toString('utf8')),
+    read('docs/chapters.html').then((buffer) => buffer.toString('utf8')),
     readJson('src/assets/vfx/projectile-anim.json'),
     readJson('src/assets/vfx/hits.json'),
     readJson('src/assets/vfx/saves.json'),
@@ -84,7 +85,29 @@ for (const boss of bosses) {
     if (!bossSkillIds.has(skill.skillId)) {
       errors.push(`boss ${boss.id} references unknown skill ${skill.skillId}`);
     }
+    const relative = skill.skillId in bossV2.skills
+      ? `boss-skill-8f/${skill.skillId}.gif`
+      : `boss-skill/${skill.skillId}.gif`;
+    if (!chapters.includes(`assets/wiki/gif/${relative}`)) {
+      errors.push(`chapters does not reference current boss skill GIF: ${relative}`);
+    }
   }
+}
+
+for (const enemy of enemies) {
+  for (const motion of ['idle', 'move', 'attack', 'hurt', 'death']) {
+    const relative = `enemy/${enemy.atlas}-${motion}.gif`;
+    if (!chapters.includes(`assets/wiki/gif/${relative}`)) {
+      errors.push(`chapters does not reference ordinary enemy GIF: ${relative}`);
+    }
+  }
+}
+
+const chapterEnemyGifs = new Set(
+  [...chapters.matchAll(/assets\/wiki\/gif\/enemy\/[^"']+\.gif/g)].map((match) => match[0]),
+);
+if (chapterEnemyGifs.size !== 205) {
+  errors.push(`chapters must reference 205 current enemy/Boss motion GIFs, got ${chapterEnemyGifs.size}`);
 }
 
 console.log(JSON.stringify({

@@ -148,6 +148,8 @@ export interface RunCheckpoint {
   origin: OriginProfile;
   hero: CheckpointHero;
   items: ItemId[];
+  /** 终局收灯流程中已经实际归还的物证；旧档缺省为空。 */
+  returnedItemIds: ItemId[];
   poisons: PoisonVector;
   memories: string[];
   /** 本局已经在战场上浮现过的记忆；旧档缺省为空。 */
@@ -193,6 +195,8 @@ const SCREENS: CheckpointScreen[] = ['origin', 'battle', 'fateEvent', 'itemRewar
 const ORIGIN_KINDS: OriginKind[] = ['ordinary', 'mixed', 'favored', 'harsh'];
 const FATE_DESTINATIONS: CheckpointFateDestination[] = ['advance', 'battle', 'shop'];
 const REWARD_DESTINATIONS: CheckpointRewardDestination[] = ['start', 'advance', 'battle'];
+// 《入学通知书》会把章中奖励从三选一扩成四选一；断点边界必须覆盖第 4 张卡。
+const MAX_REWARD_CHOICES = 4;
 const BOSS_TYPES: CheckpointBossType[] = ['closet-dark', 'silent-father', 'praise-chair', 'ringing-phone', 'debt-collector'];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -290,7 +294,7 @@ function rewardAcquire(value: unknown): CheckpointRewardAcquire | undefined {
   const total = finite(value.total, 0.85, 0.1, 2);
   return {
     id: value.id as ItemId,
-    index: integer(value.index, 0, 0, 2),
+    index: integer(value.index, 0, 0, MAX_REWARD_CHOICES - 1),
     timer: finite(value.timer, total, 0, total),
     total,
     destination,
@@ -440,6 +444,7 @@ export function parseRunCheckpoint(value: unknown): RunCheckpoint | null {
     coins: integer(heroValue.coins, 0, 0, 9999),
   };
   const items = itemIds(value.items);
+  const returnedItemIds = itemIds(value.returnedItemIds);
   const poisons = poisonVector(value.poisons);
   const memories = strings(value.memories, 20, 120);
   const recalledMemories = strings(value.recalledMemories, 20, 120)
@@ -477,8 +482,17 @@ export function parseRunCheckpoint(value: unknown): RunCheckpoint | null {
     const direction = entry.direction === 'swallow' || entry.direction === 'exhale' ? entry.direction : null;
     const result = typeof entry.result === 'string' ? entry.result.trim().slice(0, 120) : '';
     const echo = typeof entry.echo === 'string' ? entry.echo.trim().slice(0, 90) : '';
+    const playerText = typeof entry.playerText === 'string'
+      ? entry.playerText.trim().replace(/\s+/g, ' ').slice(0, 24)
+      : '';
     if (!event || !direction || !result) return null;
-    fateReceipts.push({ event, direction, result, echo: echo || undefined });
+    fateReceipts.push({
+      event,
+      direction,
+      result,
+      echo: echo || undefined,
+      playerText: playerText || undefined,
+    });
   }
   const currentFateSnapshot = fateResultReturn === 'battle' && fateDisplayEncounterIndex !== undefined
     ? validationSnapshot(runSeed, fateDisplayEncounterIndex, hero, items, poisons, memories, stats)
@@ -543,6 +557,7 @@ export function parseRunCheckpoint(value: unknown): RunCheckpoint | null {
     origin,
     hero,
     items,
+    returnedItemIds,
     poisons,
     memories,
     recalledMemories,
@@ -564,8 +579,8 @@ export function parseRunCheckpoint(value: unknown): RunCheckpoint | null {
     initialItemReward: value.initialItemReward === true,
     rewardTitle: typeof value.rewardTitle === 'string' ? value.rewardTitle.trim().slice(0, 64) : '',
     rewardReturn,
-    itemRewardChoices: itemIds(value.itemRewardChoices, 3),
-    itemRewardFocus: integer(value.itemRewardFocus, 0, 0, 2),
+    itemRewardChoices: itemIds(value.itemRewardChoices, MAX_REWARD_CHOICES),
+    itemRewardFocus: integer(value.itemRewardFocus, 0, 0, MAX_REWARD_CHOICES - 1),
     rewardAcquire: rewardAcquire(value.rewardAcquire),
     shopOffers: shopOffers(value.shopOffers),
     shopFocus: integer(value.shopFocus, 0, 0, 4),

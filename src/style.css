@@ -7,6 +7,8 @@
   --safe-right: max(0px, env(safe-area-inset-right));
   --safe-bottom: max(8px, env(safe-area-inset-bottom));
   --safe-left: max(0px, env(safe-area-inset-left));
+  --app-viewport-height: 100dvh;
+  --app-viewport-width: 100vw;
 }
 
 * {
@@ -18,6 +20,7 @@ html,
 body {
   width: 100%;
   height: 100%;
+  min-height: -webkit-fill-available;
   margin: 0;
   overflow: hidden;
   overscroll-behavior: none;
@@ -29,8 +32,8 @@ body {
   isolation: isolate;
   display: grid;
   place-items: center;
-  min-height: 100dvh;
-  height: 100dvh;
+  min-height: var(--app-viewport-height);
+  height: var(--app-viewport-height);
   padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
   background-color: #111114;
   background-image: url('./assets/ui/night-texture.png');
@@ -61,10 +64,10 @@ body::before {
   z-index: 1;
   width: min(
     430px,
-    calc((100dvh - var(--safe-top) - var(--safe-bottom)) * 0.5625),
-    calc(100vw - var(--safe-left) - var(--safe-right))
+    calc((var(--app-viewport-height) - var(--safe-top) - var(--safe-bottom)) * 0.5625),
+    calc(var(--app-viewport-width) - var(--safe-left) - var(--safe-right))
   );
-  max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
+  max-height: calc(var(--app-viewport-height) - var(--safe-top) - var(--safe-bottom));
   aspect-ratio: 9 / 16;
   overflow: hidden;
   border: 0;
@@ -115,10 +118,10 @@ body::before {
   padding: 0;
   color: rgb(181 176 167 / 74%);
   background: none;
-  font-size: 18px;
+  font-size: 13px;
   font-weight: 400;
   line-height: 1.2;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   white-space: nowrap;
   transform: translateX(-50%);
 }
@@ -236,6 +239,66 @@ body::before {
   }
 }
 
+.ios-haptic-switch {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0.001;
+  pointer-events: none;
+  clip-path: inset(50%);
+}
+
+#ios-fullscreen-guide {
+  position: fixed;
+  z-index: 2147483645;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding:
+    calc(20px + env(safe-area-inset-top))
+    calc(20px + env(safe-area-inset-right))
+    calc(20px + env(safe-area-inset-bottom))
+    calc(20px + env(safe-area-inset-left));
+  color: #ded7c8;
+  background: rgb(5 5 8 / 78%);
+}
+
+.ios-fullscreen-card {
+  width: min(320px, 100%);
+  border: 1px solid #8f3c4b;
+  padding: 22px 18px 18px;
+  background: #17161b;
+  box-shadow: 8px 8px 0 rgb(0 0 0 / 35%);
+  text-align: left;
+}
+
+.ios-fullscreen-card strong {
+  display: block;
+  margin-bottom: 12px;
+  color: #e8e1d3;
+  font-size: 17px;
+}
+
+.ios-fullscreen-card p {
+  margin: 8px 0;
+  color: #aaa297;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.ios-fullscreen-card button {
+  width: 100%;
+  margin-top: 14px;
+  border: 1px solid #c6a44a;
+  padding: 11px 14px;
+  color: #e8e1d3;
+  background: #242127;
+  font: inherit;
+}
+
 @media (min-width: 700px) and (min-height: 680px) {
   body::before {
     display: block;
@@ -244,7 +307,7 @@ body::before {
   #app {
     width: min(
       456px,
-      calc((100dvh - var(--safe-top) - var(--safe-bottom)) * 0.5625)
+      calc((var(--app-viewport-height) - var(--safe-top) - var(--safe-bottom)) * 0.5625)
     );
   }
 }

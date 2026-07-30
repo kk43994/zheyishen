@@ -100,6 +100,23 @@ def main() -> None:
         fail(f"expected 41 unique skills, got {len(skill_ids)} / {len(set(skill_ids))} unique")
     if set(runtime["skills"]) != set(skill_ids):
         fail("runtime skill manifest does not match source manifest")
+    if (ROOT / "src/boss-skill-vfx.ts").exists():
+        fail("generic boss sample VFX module must not return to production")
+    for token in (
+        "import { bossSkillVfxSpec, type BossSkillVfxMark } from './boss-skill-vfx';",
+        "this.spawnBossSkillAccent(enemy, id);",
+        "this.updateBossSkillParticles(enemy, dt);",
+        "this.spawnBossSkillReleaseParticles(enemy, id);",
+        "this.spawnBossSkillAfterglow(enemy, id);",
+        "this.bossSkillParticleShape(id)",
+        "this.renderBossSkillCanvasVfx('under');",
+        "this.renderBossSkillCanvasVfx('over');",
+        "this.drawBossSkillMarkGlyph(",
+    ):
+        if token in game:
+            fail(f"generic boss sample VFX leaked back into runtime: {token}")
+    if "this.feedback.play('boss-release', 0.96);" not in game:
+        fail("boss release sound must remain independent from visual templates")
     father_p2 = runtime["assets"]["silent-father-p2-skills"]
     if int(father_p2["display"]) < 96:
         fail("silent father phase two has regressed to minion scale")
@@ -171,11 +188,13 @@ def main() -> None:
             fail(f"boss telegraph audit stage drift: {token}")
 
     behavior_contracts = {
-        "phone answer duration": "this.phoneAnswer >= 3",
+        "phone answer duration": "const PHONE_ANSWER_DURATION = 3;",
+        "phone answer duration consumption": "this.phoneAnswer >= PHONE_ANSWER_DURATION",
         "phone answer damage gate": "(!this.phoneRinging || this.phoneAnswer <= 0)",
         "phone answer pauses ring window": "const ringWindowAdvancing = this.phoneAnswer <= 0",
         "phone phase-two split": "const count = Math.min(4, 3 + Math.floor(this.phoneMissed / 10))",
-        "phone phase-two placement": "const radius = 180 + (index % 2) * 40",
+        "phone phase-two placement": "const radius = 142 + (index % 2) * 26",
+        "phone placement helper": "return this.phoneCallPoint(enemy, angleOffset, radius)",
         "phone unresolved-call conversion": "this.phoneCalls.filter((_, index) => index !== answeredIndex)",
         "phone split rendering": "private renderPhoneCalls(): void",
         "phone edge-hint urgency": "const phoneHintFrequency = this.phoneRingWindow < 2 ? 12",

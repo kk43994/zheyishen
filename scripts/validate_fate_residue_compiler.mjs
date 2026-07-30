@@ -120,6 +120,25 @@ assert(itemBranch, 'candidate item branch should compile');
 assert.equal(itemBranch.swallow.gainItemId, 'loose-button');
 assert.equal(itemBranch.swallow.effect, 'none');
 
+const contradictoryReward = fate.validateFreeFateResponse({
+  label: '提醒她收好',
+  poison: {},
+  result: '他提醒以后，女生把那枚纽扣攥回手里，塞进自己的校服口袋。',
+  reward: { kind: 'gain_item', itemId: 'loose-button' },
+}, snapshot, '微光', looseButtonFact);
+assert(contradictoryReward, '合格现场文字不能因错误奖励整稿作废');
+assert.equal(contradictoryReward.gainItemId, undefined, '女生收回的纽扣仍被错误发给主角');
+assert.equal(contradictoryReward.reward.kind, 'none', '归属矛盾的奖励没有安全降级为 none');
+
+const deliveredReward = fate.validateFreeFateResponse({
+  label: '把纽扣收下',
+  poison: {},
+  result: '老师把校服上掉下来的纽扣递给他，他收下后装进口袋。',
+  reward: { kind: 'gain_item', itemId: 'loose-button' },
+}, snapshot, '微光', looseButtonFact);
+assert(deliveredReward, '明确交付的道具奖励未通过');
+assert.equal(deliveredReward.gainItemId, 'loose-button', '明确交付后没有兑现道具');
+
 const inventedItem = fate.validateFateEvent(eventWith('交换', {
   label: '收下木剑',
   poison: {},
@@ -310,7 +329,7 @@ assert.equal(aiGainItemReward.gainItemId, 'loose-button');
 const aiRemoveItemReward = fate.validateFreeFateResponse({
   label: '把纽扣留下',
   poison: { doubt: 1 },
-  result: '老师收起那枚纽扣，转身回到讲台继续上课。',
+  result: '他把那枚纽扣交给老师，老师收起后转身回到讲台继续上课。',
   reward: { kind: 'remove_item', itemId: 'loose-button' },
 }, ownedSnapshot, '反噬', looseButtonFact);
 assert(aiRemoveItemReward, 'AI may remove an item the player currently owns');

@@ -474,7 +474,7 @@ function originComicCaptionProgress(sceneIndex: number, sceneElapsed: number): n
 
 // 标题页右下角与 AI 诊断行都会带上它：上传后扫码第一眼就能确认平台跑的是哪个包，
 // 排查「上传了但行为没变」时不再靠猜。每次要重新上传前手动 +1。
-const BUILD_TAG = '0729-28';
+const BUILD_TAG = '0729-29';
 const TITLE_START_RECT = { x: 88, y: 502, width: 184, height: 46 } as const;
 // 底栏一共 336px（12 → 348）：四颗按钮 75+12 间距刚好铺满。
 // 百科直接在画布内展开，发布包不再依赖会被互动平台拦截的 window.open。
@@ -4996,6 +4996,20 @@ export class ZheYiShenGame {
       this.ctx.imageSmoothingEnabled = false;
     }
     requestAnimationFrame((next) => this.frame(next));
+  }
+
+  /**
+   * 进场闸门的音频段：把开局真正听得到的人声/环境/配乐全部缓冲完再放人进去。
+   * 美术已经有硬闸门（preloadAllProductionArt），音频一直没有——于是开场漫画
+   * 一边打字机推进、一边现场加载解码八句旁白，评委看到的就是「一进去很卡，
+   * 等一会儿才顺」。载不动也不能把人关在门外，所以内部有单文件与总预算两层超时。
+   */
+  async warmupAudio(onProgress?: (done: number, total: number) => void): Promise<void> {
+    await this.feedback.warmup(
+      [...ORIGIN_COMIC_VOICE_CUES, ...(STAGE_VOICE_PRELOADS[0] ?? [])],
+      0,
+      onProgress,
+    );
   }
 
   private update(dt: number): void {

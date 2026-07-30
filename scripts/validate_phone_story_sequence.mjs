@@ -16,6 +16,10 @@ const requireToken = (source, token, message) => {
   checks += 1;
   if (!source.includes(token)) errors.push(message);
 };
+const requirePattern = (source, pattern, message) => {
+  checks += 1;
+  if (!pattern.test(source)) errors.push(message);
+};
 const rejectToken = (source, token, message) => {
   checks += 1;
   if (source.includes(token)) errors.push(message);
@@ -47,7 +51,6 @@ for (const [token, message] of [
   ['private showPhoneTranscript(caller: PhoneStoryStep, timer = 4.2)', '缺少长台词专用通话字幕状态'],
   ['this.showPhoneTranscript(caller);', '固定来电没有统一进入专用通话面板'],
   ['private renderPhoneTranscript(): void', '缺少可换行的通话字幕渲染层'],
-  ['this.drawOutlinedWrapText(`「${transcript.text}」`, 180, 130, 260, 13, 2', '通话长句没有两行描边排版约束'],
   ['if (!active || this.paused || this.phoneTranscript) return;', '通话面板出现时仍会重复绘制普通语音字幕'],
   ['this.phoneStoryIndex = 8', '击败 Boss 后没有推进到第八通'],
   ['this.phoneTranscript = undefined;', '第七通字幕会残留到第八通掉落页'],
@@ -55,6 +58,11 @@ for (const [token, message] of [
   ["auditScreen === 'phone-story'", '缺少固定通次审阅画面'],
   ["auditScreen === 'phone-final'", '缺少第八通掉落页审阅画面'],
 ] ) requireToken(game, token, message);
+requirePattern(
+  game,
+  /this\.drawOutlinedWrapText\(\s*`「\$\{transcript\.text\}」`,\s*180,\s*130,\s*260,\s*this\.captionFontSize\(13\),\s*2,/,
+  '通话长句没有两行描边排版约束',
+);
 
 for (const [cue, step] of [
   ['phone-wife-fridge', 'wife'],
@@ -67,7 +75,8 @@ for (const [cue, step] of [
   requireToken(game, `${step}: '${cue}'`, `固定电话节点 ${step} 未绑定声音 ${cue}`);
   requireToken(voice, `'${cue}'`, `声音合同缺少 ${cue}`);
 }
-requireToken(game, "this.playVoiceOnce('hero-not-busy')", '第8通主角末句未在 Boss 击败时播放');
+requireToken(game, "'ringing-phone': 'hero-not-busy'", '电话 Boss 没有映射到第8通主角末句');
+requireToken(game, 'if (defeatVoice) this.playVoiceOnce(defeatVoice);', '章节 Boss 击败语音映射没有进入播放入口');
 requireToken(voice, "'hero-not-busy'", '声音合同缺少第8通主角末句');
 requireToken(voice, '响个不停固定第5通：他打给父亲', '无法接通音频仍未绑定固定第5通');
 requireToken(voice, '响个不停固定第6通：父亲回拨', '父亲回拨音频仍未绑定固定第6通');

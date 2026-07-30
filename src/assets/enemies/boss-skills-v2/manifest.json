@@ -86,9 +86,9 @@
       "display": 160,
       "loop": false,
       "sourceSheets": [
-        "keeper-name-a.png",
-        "keeper-name-b.png"
-      ]
+        "lamp-keeper-hd.png"
+      ],
+      "sourceMode": "canonical-runtime-atlas"
     },
     "keeper-strip": {
       "atlas": "keeper-strip-8f.png",
@@ -100,6 +100,17 @@
         "keeper-strip-a.png",
         "keeper-strip-b.png"
       ]
+    },
+    "keeper-dim": {
+      "atlas": "keeper-dim-8f.png",
+      "frame": 64,
+      "frames": 8,
+      "display": 160,
+      "loop": false,
+      "sourceSheets": [
+        "lamp-keeper-hd.png"
+      ],
+      "sourceMode": "canonical-runtime-atlas"
     }
   }
 }

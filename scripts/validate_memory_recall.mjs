@@ -17,6 +17,10 @@ const requireToken = (source, token, message) => {
   checks += 1;
   if (!source.includes(token)) errors.push(message);
 };
+const requirePattern = (source, pattern, message) => {
+  checks += 1;
+  if (!pattern.test(source)) errors.push(message);
+};
 const rejectToken = (source, token, message) => {
   checks += 1;
   if (source.includes(token)) errors.push(message);
@@ -30,12 +34,16 @@ for (const [token, message] of [
   ['this.recalledMemories.add(line)', '浮现后没有把记忆记为已读'],
   ['this.memoryRecall = { text: line, time: 4.6, duration: 4.6 }', '回忆没有使用独立显示状态'],
   ["this.drawOutlinedText('想起'", '回忆缺少无底框描边标题'],
-  ['this.drawOutlinedWrapText(`“${active.text}”`', '回忆正文没有使用语音字幕同款描边换行'],
   ['this.renderMemoryRecall()', '战斗画面没有渲染独立回忆字幕'],
   ["auditScreen === 'memory-recall'", '缺少回忆冻结审阅入口'],
   ["if (action === 'memory-recall')", '缺少从 6 秒阈值前推进的真实触发钩子'],
   ['memoryRecall: (() => {', '审阅状态没有暴露站立回忆'],
 ] ) requireToken(game, token, message);
+requirePattern(
+  game,
+  /this\.drawOutlinedWrapText\(\s*`“\$\{active\.text\}”`,\s*180,\s*405,\s*294,\s*this\.captionFontSize\(15\),\s*3,/,
+  '回忆正文没有使用语音字幕同款描边换行',
+);
 
 for (const [token, message] of [
   ['recalledMemories: string[]', '断点合同缺少已浮现记忆'],

@@ -127,7 +127,7 @@ if (!telegraphSource) {
   for (const token of [
     "enemy.attackKind === 'collector-drag'",
     'ctx.arc(enemy.x, enemy.y, COLLECTOR_DRAG_RADIUS, 0, Math.PI * 2);',
-    "COLLECTOR_DRAG_RADIUS,\n          '#d94b61'",
+    "this.drawBossSkillWarningRing(\n          enemy,\n          enemy.x,\n          enemy.y,\n          COLLECTOR_DRAG_RADIUS",
     'COLLECTOR_DRAG_RADIUS - dragCharge * (COLLECTOR_DRAG_RADIUS - enemy.radius - 18)',
     'start: BUS_DASH_SWEEP_START',
     'reach: BUS_DASH_SWEEP_REACH',
@@ -143,10 +143,13 @@ if (!game.includes('const COLLECTOR_DRAG_RADIUS = 280;')) {
 for (const token of [
   'const PRAISE_SLAM_RADIUS = 230;',
   'ctx.arc(0, 0, PRAISE_SLAM_RADIUS, 0, Math.PI * 2);',
-  "PRAISE_SLAM_RADIUS,\n          '#d94b61'",
+  "this.drawBossSkillWarningRing(\n          enemy,\n          enemy.x,\n          enemy.y,\n          PRAISE_SLAM_RADIUS",
   'PRAISE_SLAM_RADIUS - slamCharge * 40',
 ]) {
   if (!game.includes(token)) errors.push(`praise slam fixed-boundary warning contract missing: ${token}`);
+}
+if (!game.includes("this.drawPixelWarningRing(x, y, radius, '#ef5364', alpha, completion, segments);")) {
+  errors.push('shared boss warning ring no longer guarantees the danger-red boundary color');
 }
 for (const token of [
   'private fatherChargeGeometry(enemy: EnemyUnit, angle: number)',

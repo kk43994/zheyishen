@@ -6,48 +6,7 @@ import {
   type ArtProgress,
 } from './art-preload';
 import { installPerformanceMonitor, markPerformance } from './performance-monitor';
-
-type LockableScreenOrientation = ScreenOrientation & {
-  lock?: (orientation: 'portrait') => Promise<void>;
-};
-
-function installMobileFullscreenIntent(): void {
-  const mobileQuery = window.matchMedia('(max-width: 768px) and (pointer: coarse)');
-  const root = document.documentElement;
-  if (!mobileQuery.matches || typeof root.requestFullscreen !== 'function') return;
-
-  let requestInFlight = false;
-  const enterFullscreen = (): void => {
-    if (document.fullscreenElement) {
-      document.removeEventListener('pointerdown', enterFullscreen, true);
-      return;
-    }
-    if (requestInFlight) return;
-    requestInFlight = true;
-    // Browsers only permit fullscreen from a real user gesture. Register in the
-    // capture phase before art loading so the player's first touch can become
-    // the fullscreen gesture without delaying or consuming game input.
-    void root.requestFullscreen({ navigationUI: 'hide' })
-      .then(async () => {
-        root.dataset.mobileFullscreen = 'true';
-        document.removeEventListener('pointerdown', enterFullscreen, true);
-        try {
-          await (window.screen.orientation as LockableScreenOrientation).lock?.('portrait');
-        } catch {
-          // iOS and some Android WebViews keep the current orientation policy.
-        }
-      })
-      .catch(() => {
-        // Keep listening: embedded browsers may reject the first gesture while
-        // their own chrome is still settling, but allow a later game touch.
-      })
-      .finally(() => {
-        requestInFlight = false;
-      });
-  };
-
-  document.addEventListener('pointerdown', enterFullscreen, true);
-}
+import { installMobileFullscreenIntent, installMobileViewportAdaptation } from './mobile-platform';
 
 function loadingElement(): HTMLElement | null {
   return document.getElementById('loading');
@@ -111,6 +70,7 @@ window.addEventListener('unhandledrejection', (event) => {
   showFallback('美术或运行资源校验失败。程序化降级动画已取消，请重新装订。');
 });
 
+installMobileViewportAdaptation();
 installMobileFullscreenIntent();
 installPerformanceMonitor();
 markPerformance('bootstrap_started');
@@ -136,12 +96,20 @@ async function init(): Promise<void> {
       await new Promise((resolve) => window.setTimeout(resolve, Math.min(auditDelay, 10000)));
     }
   }
-  updateInitProgress(92, '唤醒这一身');
+  updateInitProgress(88, '唤醒这一身');
   const { ZheYiShenGame } = await gameModulePromise;
   markPerformance('game_module_ready');
-  new ZheYiShenGame(canvas);
+  const game = new ZheYiShenGame(canvas);
   markGameStarted();
   markPerformance('game_constructed');
+  // 音频也要有硬闸门。美术早就在进场前全部装订完，人声却一直是「用到才加载」——
+  // 开场漫画一边打字机推进、一边现场读包解码八句旁白，第一次进去就是卡，
+  // 等它自己缓存完才顺。这里把开局那一段的人声/环境/配乐等到就绪再放人进去。
+  updateInitProgress(90, '人声与配乐正在载入');
+  await game.warmupAudio((done, total) => {
+    updateInitProgress(90 + Math.round((done / Math.max(1, total)) * 7), `人声与配乐 ${done}/${total}`);
+  });
+  markPerformance('audio_ready');
   updateInitProgress(97, '准备第一口呼吸');
   // 游戏模块内的图集实例复用统一解码注册表；保留两帧给首轮 Canvas 缓存，
   // 确保童年正式美术已经接管画面。

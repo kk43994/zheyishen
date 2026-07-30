@@ -345,41 +345,73 @@ export function isPersonLikeNickname(value: string): boolean {
   return !BARE_ACTION_NICKNAME.test(nickname) || PERSON_NICKNAME_ENDING.test(nickname);
 }
 
-export function validateOriginProfile(value: unknown, expectedKind?: OriginKind): OriginProfile | null {
+export interface OriginValidationOptions {
+  /** 新生成内容走完整合同；旧存档仍可按兼容模式读取。 */
+  strictAI?: boolean;
+}
+
+export function validateOriginProfile(
+  value: unknown,
+  expectedKind?: OriginKind,
+  options: OriginValidationOptions = {},
+): OriginProfile | null {
   if (!isRecord(value)) return null;
+  const strict = options.strictAI === true;
+  // 文案长度属于展示质量，不该让一份已经能显示、能结算的出生档案整份作废。
+  // 新生成内容同样使用有界裁剪；严格模式只硬拦结构与正典冲突。
   const title = readText(value.title, 2, 16);
   const nickname = readText(value.nickname, 2, 7);
   const nicknameReason = readText(value.nicknameReason, 8, 70);
   const returnedKind = typeof value.kind === 'string' && ORIGIN_KINDS.includes(value.kind as OriginKind)
     ? value.kind as OriginKind : null;
-  // kind 是程序在请求前已经抽定的数值预算；模型写错标签时纠正标签，不重写整份故事。
+  // kind 是程序在请求前已经抽定的数值预算。模型回填错标签时以程序预算为准，
+  // 后面的特质过滤仍会守住正负面预算，没必要为了一个重复字段卡死开局。
   const kind = expectedKind ?? returnedKind;
-  const story = Array.isArray(value.story)
-    ? value.story.map((entry) => readText(entry, 8, 100)).filter((entry): entry is string => Boolean(entry))
-    : [];
-  let traits = Array.isArray(value.traits)
-    ? [...new Set(value.traits.filter((entry): entry is OriginTraitId => (
-      typeof entry === 'string' && TRAIT_IDS.includes(entry as OriginTraitId)
-    )))]
-    : [];
+  const rawStory = Array.isArray(value.story) ? value.story : [];
+  const story = rawStory.map((entry) => readText(entry, 8, 100))
+    .filter((entry): entry is string => Boolean(entry));
+  const rawTraits = Array.isArray(value.traits) ? value.traits : [];
+  let traits = [...new Set(rawTraits.filter((entry): entry is OriginTraitId => (
+    typeof entry === 'string' && TRAIT_IDS.includes(entry as OriginTraitId)
+  )))];
   if (kind === 'ordinary') traits = [];
   if (kind === 'favored') traits = traits.filter((id) => ORIGIN_TRAITS[id].tone !== 'negative');
   if (kind === 'harsh') traits = traits.filter((id) => ORIGIN_TRAITS[id].tone !== 'positive');
   traits = traits.slice(0, 2);
-  // 外观字段偶尔漏一项时使用标准出生体型，不让格式小错触发第二次大模型请求。
-  const appearance = validateAppearance(value.appearance) ?? { ...DEFAULT_APPEARANCE };
+  // 外观和属性说明不会改变合同安全边界；缺项时降级到标准出生外观。
+  const validatedAppearance = validateAppearance(value.appearance);
+  const appearance = validatedAppearance ?? { ...DEFAULT_APPEARANCE };
+  const rawTraitReasons = Array.isArray(value.traitReasons) ? value.traitReasons : [];
   const traitReasons = Array.isArray(value.traitReasons)
-    ? value.traitReasons
-      .map((entry) => readText(entry, 8, 44))
+    ? rawTraitReasons
+      .map((entry) => readText(entry, 6, 60))
       .filter((entry): entry is string => Boolean(entry))
       .slice(0, traits.length)
     : undefined;
   const storyLength = story.join('').length;
-  // 运行时只守“能显示、能结算”的技术底线；篇章质量由提示词负责。
+  const storyText = story.join('；');
+  const breaksFatherCanon = /(?:父亲|爸爸|他爸).{0,10}(?:去世|死了|死亡|下葬|遗像|不在人世)|(?:去世|死了|死亡).{0,10}(?:父亲|爸爸|他爸)/.test(storyText);
+  const jumpsPastChildhood = /他(?:长大后|成年后|大学毕业后|结婚后|参加工作后|退休后)|他在(?:中年|晚年)/.test(storyText);
+  const replacesHeroWithSecondPerson = storyText.includes('你') && !storyText.includes('他');
+  const inventsFormalName = /(?:正式姓名|户口本|名字叫|名叫).{0,8}[\p{Script=Han}]{2,4}/u.test(storyText);
+  if (strict && (
+    !nickname
+    || !nicknameReason
+    || rawStory.length < 3
+    || rawStory.length > 4
+    || story.length !== rawStory.length
+    || storyLength < 96
+    || storyLength > 260
+    || breaksFatherCanon
+    || jumpsPastChildhood
+    || replacesHeroWithSecondPerson
+    || inventsFormalName
+  )) return null;
+  // 旧存档只守“能显示、能结算”的技术底线。
   if (!title || !kind || story.length < 1 || storyLength < 24) return null;
   return {
     title,
-    ...(nickname && isPersonLikeNickname(nickname) ? { nickname } : {}),
+    ...(nickname && (strict || isPersonLikeNickname(nickname)) ? { nickname } : {}),
     ...(nicknameReason ? { nicknameReason } : {}),
     story,
     kind,

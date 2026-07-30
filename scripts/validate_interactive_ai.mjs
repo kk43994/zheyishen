@@ -46,8 +46,9 @@ assert(originModel === defaultModel, `出生与后台命运链路必须用同一
 assert(ai.includes('const useStream = true'), '推理模型必须走流式；非流式会在思考期被平台网关掐断');
 assert(platformCall.includes('streamedText += chunk'), '流式分片必须累积，不能边收边交付');
 assert(
-  /if \(event\.eventName === 'done' \|\| event\.data\.trim\(\) === '\[DONE\]'\) resolveText\(streamedText\)/
-    .test(platformCall),
+  platformCall.includes("event?.eventName === 'done'")
+    && platformCall.includes("normalizePlatformSSEData(event?.data) === '[DONE]'")
+    && platformCall.includes('resolveText(streamedText)'),
   '流式只能在 done/[DONE] 之后交付，避免半截 JSON 被判成生成失败',
 );
 assert(platformCall.includes('resolve(parseFirstAIJson(text))'), '交付前必须由 JSON 解析拦住半截内容');
@@ -84,16 +85,16 @@ assert(freeInput.includes("submit('swallow')") && freeInput.includes("submit('ex
 assert(!/\.onclick\s*=|\.onkeydown\s*=/.test(freeInput), '输入交互必须使用 addEventListener');
 assert(!ai.includes('fate-lines') && !prompts.includes("'fate-lines':") && !vite.includes('/api/ai/fate-lines'), '不得保留四句 AI 台词生成链路');
 assert(game.includes("this.say('这句话已经说出口 · 回执会在后台写完')"), '提交后必须立即进入后台回执流程');
-assert(index.includes('<span class="ai-generated-label">AI生成内容</span>'), '加载首屏缺少 AI 生成显式标识');
-assert(style.includes('.ai-generated-label') && style.includes('font-size: 18px'), '首屏 AI 标识尺寸不符合最短边 5%');
+assert(index.includes('<span class="ai-generated-label">本作剧情虚构由AI生成</span>'), '加载首屏缺少剧情虚构与 AI 生成显式标识');
+assert(style.includes('.ai-generated-label') && style.includes('font-size: 13px'), '首屏 AI 标识字号没有保持紧凑可读');
 assert(
   style.includes('left: 50%') && style.includes('bottom: 10px') && style.includes('background: none'),
   '加载首屏 AI 标识没有按漫画风格收纳在底部',
 );
 assert(
-  game.includes("ctx.font = `18px ${UI_FONT_STACK}`")
-    && game.includes("ctx.fillText('AI生成内容', 180, 620)"),
-  '正式标题页缺少位于底部且满足最短边 5% 的 AI 生成标识',
+  game.includes("ctx.font = `13px ${UI_FONT_STACK}`")
+    && game.includes("ctx.fillText('本作剧情虚构由AI生成', 180, 619)"),
+  '正式标题页缺少位于底部且紧凑可读的剧情虚构与 AI 生成标识',
 );
 assert(game.includes('private drawAIDiagnosticBadge('), '平台 AI 诊断没有使用紧凑状态徽标');
 assert(game.includes('AI正在生成回执'), '后台回执没有显式标明 AI 生成');

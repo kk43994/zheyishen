@@ -13,6 +13,10 @@ const ENDING_URLS = {
 
 const CHAPTER_STRIPS_URL = new URL('./assets/ui/chapter-strips.png', import.meta.url).href;
 const FATE_PROFILES_URL = new URL('./assets/ui/fate-profiles.png', import.meta.url).href;
+const PAWN_MERCHANT_URL = new URL(
+  '../output/imagegen/zhe-yi-shen-special-threshold-corrections-v1/processed/merchant-32x64.png',
+  import.meta.url,
+).href;
 
 interface FateProfileManifest {
   cell: number;
@@ -34,6 +38,7 @@ class SceneArt {
   private endings: Partial<Record<EndingArt, HTMLImageElement>> = {};
   private chapterStrips: HTMLImageElement | null = null;
   private fateProfiles: HTMLImageElement | null = null;
+  private pawnMerchant: HTMLImageElement | null = null;
 
   load(): void {
     (Object.entries(ROOM_URLS) as Array<[RoomArt, string]>).forEach(([name, url]) => {
@@ -44,6 +49,7 @@ class SceneArt {
     });
     loadImage(CHAPTER_STRIPS_URL, (image) => { this.chapterStrips = image; });
     loadImage(FATE_PROFILES_URL, (image) => { this.fateProfiles = image; });
+    loadImage(PAWN_MERCHANT_URL, (image) => { this.pawnMerchant = image; });
   }
 
   drawRoom(ctx: CanvasRenderingContext2D, room: RoomArt, alpha = 1): boolean {
@@ -64,6 +70,23 @@ class SceneArt {
     ctx.globalAlpha *= alpha;
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(image, 0, 0, 360, 640);
+    ctx.restore();
+    return true;
+  }
+
+  drawPawnMerchant(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width = 28,
+    height = 56,
+    alpha = 1,
+  ): boolean {
+    if (!this.pawnMerchant) throw new Error('正式当铺商人美术缺失；降级画面已取消');
+    ctx.save();
+    ctx.globalAlpha *= alpha;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(this.pawnMerchant, Math.round(x), Math.round(y), Math.round(width), Math.round(height));
     ctx.restore();
     return true;
   }

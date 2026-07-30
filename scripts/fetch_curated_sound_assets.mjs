@@ -9,6 +9,11 @@ const ROOT = resolve(import.meta.dirname, '..');
 const CACHE_DIR = resolve(ROOT, 'tmp/audio-curation/raw');
 const OUTPUT_DIR = resolve(ROOT, 'public/assets/audio');
 const refresh = process.argv.includes('--refresh');
+const onlyArg = process.argv.find((argument) => argument.startsWith('--only='));
+const only = onlyArg
+  ? new Set(onlyArg.slice('--only='.length).split(',').map((id) => id.trim()).filter(Boolean))
+  : undefined;
+const requested = (id) => !only || only.has(id);
 
 const sources = {
   page: {
@@ -126,6 +131,99 @@ const sources = {
     landing: 'https://freesound.org/people/vestibule-door/sounds/668978/',
     sha256: '8a9b03cac07bba8aa377064a0f528f5b71bc6b1281acaa28f7963ba7e63542ad',
   },
+  shieldBlock: {
+    title: 'magicShield_block.wav', creator: 'rafaelzimrp',
+    openverseId: '3d87a8c3-3f3f-49d2-8b4c-729657396a5c', freesoundId: 570853,
+    url: 'https://cdn.freesound.org/previews/570/570853_12068810-hq.mp3',
+    landing: 'https://freesound.org/people/rafaelzimrp/sounds/570853',
+    sha256: '9206903a53a564582a619a733b547057e262cd0d08cfc6d8dfa16d0063052a93',
+  },
+  healingChime: {
+    title: 'Improvement/Healing Chime', creator: 'Raclure',
+    openverseId: 'd9f771d2-1b35-4e57-917b-06d50b01f424', freesoundId: 483608,
+    url: 'https://cdn.freesound.org/previews/483/483608_6436863-hq.mp3',
+    landing: 'https://freesound.org/people/Raclure/sounds/483608',
+    sha256: '3f9a202caf70aba302e22e4dcc4574dc7c7fe7cb26b94c0bf672a9bf8badf1a1',
+  },
+  dashWhoosh: {
+    title: 'Whoosh / Dash (2)', creator: 'Kastenfrosch',
+    openverseId: 'ac83eed8-568e-44b0-a3ae-d65f7be59441', freesoundId: 521996,
+    url: 'https://cdn.freesound.org/previews/521/521996_311243-hq.mp3',
+    landing: 'https://freesound.org/people/Kastenfrosch/sounds/521996',
+    sha256: 'f1e25babf7531d7f9d8294034f24264a7d274322167ab75301fc4a488c55f618',
+  },
+  quickDoor: {
+    title: 'Squeaky door opened quickly.wav', creator: 'CastIronCarousel',
+    openverseId: '3d8244bd-055f-41b4-88f8-c8e9cc47899d', freesoundId: 216878,
+    url: 'https://cdn.freesound.org/previews/216/216878_4049088-hq.mp3',
+    landing: 'https://freesound.org/people/CastIronCarousel/sounds/216878',
+    sha256: 'ee762d0f6101d474a09836fd4e2c1bcc5bb400caf81461f4c22708a0ba60663e',
+  },
+  oilLantern: {
+    title: 'Oil Lantern Open and Close', creator: 'ImAFoley',
+    openverseId: '5258461b-005e-4c4d-b746-533c4bc35b21', freesoundId: 516740,
+    url: 'https://cdn.freesound.org/previews/516/516740_7117640-hq.mp3',
+    landing: 'https://freesound.org/people/ImAFoley/sounds/516740',
+    sha256: '75bebb27e6b8c1eb776770d26ac4e8b18f459897b6bba250c0e6d442286f7b5e',
+  },
+  bossWarning: {
+    title: 'Beep warning', creator: 'SamsterBirdies', freesoundId: 467882,
+    url: 'https://cdn.freesound.org/previews/467/467882_5487341-hq.mp3',
+    landing: 'https://freesound.org/people/SamsterBirdies/sounds/467882',
+    sha256: 'cb606e539a3ecfb06e652b497b554acffc3a1beadb5097ad7cad869eecc8bdd4',
+  },
+  bossRelease: {
+    title: 'Whoosh', creator: 'thatkellytrna', freesoundId: 445229,
+    url: 'https://cdn.freesound.org/previews/445/445229_7179420-hq.mp3',
+    landing: 'https://freesound.org/people/thatkellytrna/sounds/445229',
+    sha256: '9cf2d7787272f27fccaf06c9db2eb9b3051d04dfe55b210bb44edbcd94b172d6',
+  },
+  bossImpact: {
+    title: 'thud.wav', creator: 'OtisJames', freesoundId: 215162,
+    url: 'https://cdn.freesound.org/previews/215/215162_4027196-hq.mp3',
+    landing: 'https://freesound.org/people/OtisJames/sounds/215162',
+    sha256: '75bdc3c309fd2403a6f3091d79b9a8bb5ed49762a957e7f6704999be8020d31f',
+  },
+  foldedFate: {
+    title: 'Creepy Ambient Loop (v2)', creator: 'epb9000', provider: 'OpenGameArt', format: 'ogg',
+    url: 'https://opengameart.org/sites/default/files/creepyloop-v2_0.ogg',
+    landing: 'https://opengameart.org/content/creepy-ambient-loop',
+    sha256: '609bd62e824d77df3d35af26064bfd824cb6fce95cb9637c467fb80b717d6050',
+  },
+  borrowedRoom: {
+    title: 'Dark Place (loop)', creator: 'SkyleTheFrench', provider: 'OpenGameArt', format: 'ogg',
+    url: 'https://opengameart.org/sites/default/files/dark_place.ogg',
+    landing: 'https://opengameart.org/content/dark-place-loop',
+    sha256: 'c78a433139ace4a050b5d4a1b9b94bcf1f04d059345c849c7c234a2fe0eda102',
+  },
+  fatePaper: {
+    title: 'Book_1(pages, paper, rustle).WAV', creator: 'o_ciz',
+    openverseId: '487b5d03-6d40-46dd-9e0e-a1419219fb5f', freesoundId: 475431,
+    url: 'https://cdn.freesound.org/previews/475/475431_7009965-hq.mp3',
+    landing: 'https://freesound.org/people/o_ciz/sounds/475431',
+    sha256: 'a055f734f6429b4c134b3530e268c9c3cfed8c0d31abf92db8832ad51aca1b73',
+  },
+  backWood: {
+    title: 'wood creaks', creator: 'seth-m',
+    openverseId: '2eb447ed-b9cc-4438-98dc-1ea6411ac6ae', freesoundId: 269722,
+    url: 'https://cdn.freesound.org/previews/269/269722_3366749-hq.mp3',
+    landing: 'https://freesound.org/people/seth-m/sounds/269722',
+    sha256: '91dab86519aad2843bdfb48872db5ae310e7e162cb3bebf3077ae2464ffd5fb8',
+  },
+  corridorSteps: {
+    title: 'STEPS IN CORRIDOR.wav', creator: 'colo777',
+    openverseId: '4cc6cdf7-2219-42b1-a4e7-13b4cf550c50', freesoundId: 251435,
+    url: 'https://cdn.freesound.org/previews/251/251435_4510103-hq.mp3',
+    landing: 'https://freesound.org/people/colo777/sounds/251435',
+    sha256: '4b54e0c8388fa28f50a9d6066aaf70bc3ba49d4673966f623846500d1da67c0e',
+  },
+  candleWick: {
+    title: 'Candle wood wick flame mono 01.wav', creator: 'roisin.gleeson',
+    openverseId: '87d33cb2-53ee-4e88-a646-670ec3d6a87f', freesoundId: 680476,
+    url: 'https://cdn.freesound.org/previews/680/680476_12896641-hq.mp3',
+    landing: 'https://freesound.org/people/roisin.gleeson/sounds/680476',
+    sha256: '029125f44935a8bce56b0f6c5cd52742927a31b3ffd0cb38f366563b1613106c',
+  },
 };
 
 const sfxRecipes = {
@@ -140,15 +238,38 @@ const sfxRecipes = {
   phone: { source: 'phoneRing', trim: '0:3.75', loudness: -24 },
   train: { source: 'trainArrival', trim: '62:73', loudness: -27 },
   monitor: { source: 'monitor', trim: '0:3.323', loudness: -26 },
+  shield: { source: 'shieldBlock', trim: '0:1.85', loudness: -21 },
+  heal: { source: 'healingChime', trim: '0:0.632', loudness: -23 },
+  dash: { source: 'dashWhoosh', trim: '0:0.26', loudness: -21 },
+  door: { source: 'quickDoor', trim: '0:2.44', loudness: -24 },
+  lamp: { source: 'oilLantern', trim: '3.65:4.54', loudness: -23 },
+  'boss-warn': { source: 'bossWarning', trim: '0:1.716', loudness: -25 },
+  'boss-release': { source: 'bossRelease', trim: '0:1.322', loudness: -23 },
+  'boss-hit': { source: 'bossImpact', trim: '0:0.171', loudness: -19 },
 };
 
 const ambienceRecipes = {
   'childhood-room': { source: 'rainWindow', offset: 6, lowpass: 10500, loudness: -25 },
-  classroom: { source: 'classroomTalk', offset: 3, lowpass: 8200, loudness: -24 },
+  classroom: { source: 'classroom', offset: 10, lowpass: 6400 },
   station: { source: 'station', offset: 5, lowpass: 7600 },
   apartment: { source: 'apartment', offset: 10, lowpass: 7200 },
   office: { source: 'officeTyping', offset: 12, lowpass: 8500, loudness: -22 },
   hospital: { source: 'hospital', offset: 4, lowpass: 8200 },
+  'fate-chamber': {
+    source: 'fatePaper', offset: 44, lowpass: 6200, loudness: -34, stage: '6',
+  },
+  'back-room': {
+    source: 'corridorSteps', offset: 1, lowpass: 5200, loudness: -35, stage: '7',
+    secondarySource: 'backWood', secondaryOffset: 0, secondaryGain: 0.42,
+  },
+  'light-room': {
+    source: 'candleWick', offset: 20, lowpass: 9000, loudness: -32, stage: '8',
+  },
+};
+
+const musicRecipes = {
+  'folded-fate': { source: 'foldedFate', loudness: -20 },
+  'borrowed-room': { source: 'borrowedRoom', loudness: -20 },
 };
 
 function hash(bytes) {
@@ -157,7 +278,7 @@ function hash(bytes) {
 
 async function fetchSource(id) {
   const source = sources[id];
-  const path = resolve(CACHE_DIR, `${id}.mp3`);
+  const path = resolve(CACHE_DIR, `${id}.${source.format ?? 'mp3'}`);
   let bytes = refresh ? null : await readFile(path).catch(() => null);
   if (!bytes) {
     const response = await fetch(source.url, { headers: { 'user-agent': 'zhe-yi-shen-audio-curation/1.0' } });
@@ -189,16 +310,60 @@ async function renderSfx(id, recipe) {
 
 async function renderAmbience(id, recipe) {
   const input = await fetchSource(recipe.source);
+  const secondaryInput = recipe.secondarySource
+    ? await fetchSource(recipe.secondarySource)
+    : undefined;
   const output = resolve(OUTPUT_DIR, 'ambience', `${id}.wav`);
+  const sceneInput = secondaryInput
+    ? [
+      `[0:a]atrim=start=${recipe.offset}:duration=9,asetpts=PTS-STARTPTS,highpass=f=55,lowpass=f=${recipe.lowpass},loudnorm=I=${recipe.loudness ?? -31}:TP=-8:LRA=7[p]`,
+      `[1:a]atrim=start=${recipe.secondaryOffset ?? 0}:duration=9,asetpts=PTS-STARTPTS,highpass=f=85,lowpass=f=4300,loudnorm=I=-35:TP=-9:LRA=7,volume=${recipe.secondaryGain ?? 0.4},apad=whole_dur=9,atrim=duration=9[s]`,
+      '[p][s]amix=inputs=2:duration=longest:normalize=0[scene]',
+    ]
+    : [
+      `[0:a]atrim=start=${recipe.offset}:duration=9,asetpts=PTS-STARTPTS,highpass=f=55,lowpass=f=${recipe.lowpass},loudnorm=I=${recipe.loudness ?? -31}:TP=-8:LRA=7[scene]`,
+    ];
   const filter = [
-    `[0:a]atrim=start=${recipe.offset}:duration=9,asetpts=PTS-STARTPTS,highpass=f=55,lowpass=f=${recipe.lowpass},loudnorm=I=${recipe.loudness ?? -31}:TP=-8:LRA=7,asplit=3[h0][m0][t0]`,
+    ...sceneInput,
+    '[scene]asplit=3[h0][m0][t0]',
     '[h0]atrim=start=0:end=1,asetpts=PTS-STARTPTS[h]',
     '[m0]atrim=start=1:end=8,asetpts=PTS-STARTPTS[m]',
     '[t0]atrim=start=8:end=9,asetpts=PTS-STARTPTS[t]',
     '[t][h]acrossfade=d=1:c1=tri:c2=tri[x]',
     '[m][x]concat=n=2:v=0:a=1[out]',
   ].join(';');
-  await run('ffmpeg', ['-y', '-hide_banner', '-loglevel', 'error', '-i', input, '-filter_complex', filter, '-map', '[out]', '-ar', '22050', '-ac', '1', '-c:a', 'pcm_s16le', output]);
+  const inputArgs = ['-i', input, ...(secondaryInput ? ['-i', secondaryInput] : [])];
+  await run('ffmpeg', [
+    '-y', '-hide_banner', '-loglevel', 'error', ...inputArgs,
+    '-filter_complex', filter, '-map', '[out]',
+    '-ar', '22050', '-ac', '1', '-c:a', 'pcm_s16le', output,
+  ]);
+  return {
+    output,
+    sourceId: recipe.source,
+    secondarySourceId: recipe.secondarySource,
+  };
+}
+
+async function renderMusic(id, recipe) {
+  const input = await fetchSource(recipe.source);
+  const output = resolve(OUTPUT_DIR, 'music', `${id}.wav`);
+  const sourceDuration = await wavDuration(input);
+  const seam = 1.5;
+  const tailStart = sourceDuration - seam;
+  const filter = [
+    `[0:a]highpass=f=35,lowpass=f=10500,loudnorm=I=${recipe.loudness}:TP=-5:LRA=8,asplit=3[h0][m0][t0]`,
+    `[h0]atrim=start=0:end=${seam},asetpts=PTS-STARTPTS[h]`,
+    `[m0]atrim=start=${seam}:end=${tailStart},asetpts=PTS-STARTPTS[m]`,
+    `[t0]atrim=start=${tailStart}:end=${sourceDuration},asetpts=PTS-STARTPTS[t]`,
+    `[t][h]acrossfade=d=${seam}:c1=tri:c2=tri[x]`,
+    '[m][x]concat=n=2:v=0:a=1[out]',
+  ].join(';');
+  await run('ffmpeg', [
+    '-y', '-hide_banner', '-loglevel', 'error', '-i', input,
+    '-filter_complex', filter, '-map', '[out]',
+    '-ar', '22050', '-ac', '1', '-c:a', 'pcm_s16le', output,
+  ]);
   return { output, sourceId: recipe.source };
 }
 
@@ -212,9 +377,9 @@ function sourceRecord(sourceId) {
   return {
     title: source.title,
     creator: source.creator,
-    provider: source.openverseId ? 'Freesound via Openverse' : 'Freesound',
     ...(source.openverseId ? { openverseId: source.openverseId } : {}),
     ...(source.freesoundId ? { freesoundId: source.freesoundId } : {}),
+    provider: source.provider ?? (source.openverseId ? 'Freesound via Openverse' : 'Freesound'),
     landing: source.landing,
     license: 'CC0-1.0',
     sourceSha256: source.sha256,
@@ -224,6 +389,7 @@ function sourceRecord(sourceId) {
 await mkdir(CACHE_DIR, { recursive: true });
 await mkdir(resolve(OUTPUT_DIR, 'sfx'), { recursive: true });
 await mkdir(resolve(OUTPUT_DIR, 'ambience'), { recursive: true });
+await mkdir(resolve(OUTPUT_DIR, 'music'), { recursive: true });
 const previous = JSON.parse(await readFile(resolve(OUTPUT_DIR, 'sound-manifest.json'), 'utf8'));
 for (const id of ['boss', 'deny']) {
   if (previous.sfx[id] && !previous.sfx[id].source) {
@@ -232,6 +398,7 @@ for (const id of ['boss', 'deny']) {
 }
 
 for (const [id, recipe] of Object.entries(sfxRecipes)) {
+  if (!requested(id)) continue;
   const rendered = await renderSfx(id, recipe);
   const bytes = await readFile(rendered.output);
   previous.sfx[id] = {
@@ -242,18 +409,38 @@ for (const [id, recipe] of Object.entries(sfxRecipes)) {
 }
 
 for (const [id, recipe] of Object.entries(ambienceRecipes)) {
+  if (!requested(id)) continue;
   const rendered = await renderAmbience(id, recipe);
   const bytes = await readFile(rendered.output);
-  const stage = Object.entries(previous.ambience).find(([, entry]) => entry.file.endsWith(`/${id}.wav`))?.[0];
+  const stage = recipe.stage
+    ?? Object.entries(previous.ambience).find(([, entry]) => entry.file.endsWith(`/${id}.wav`))?.[0];
   if (stage === undefined) throw new Error(`ambience stage missing from manifest: ${id}`);
   previous.ambience[stage] = {
     file: `ambience/${id}.wav`, seconds: await wavDuration(rendered.output), origin: 'curated-field-recording',
     sha256: hash(bytes), source: sourceRecord(rendered.sourceId),
+    ...(rendered.secondarySourceId
+      ? { additionalSources: [sourceRecord(rendered.secondarySourceId)] }
+      : {}),
   };
   console.info(`[sound] curated ambience ${id}`);
 }
 
-previous.license = 'Mixed project-authored procedural audio and curated CC0 field recordings; see each asset source.';
+for (const [id, recipe] of Object.entries(musicRecipes)) {
+  if (!requested(id)) continue;
+  const rendered = await renderMusic(id, recipe);
+  const bytes = await readFile(rendered.output);
+  previous.music[id] = {
+    file: `music/${id}.wav`,
+    seconds: await wavDuration(rendered.output),
+    origin: 'curated-cc0-music',
+    role: 'narrative-bgm',
+    sha256: hash(bytes),
+    source: sourceRecord(rendered.sourceId),
+  };
+  console.info(`[sound] curated music ${id}`);
+}
+
+previous.license = 'Mixed project-authored procedural audio and curated CC0 audio; see each asset source.';
 previous.generatedAt = new Date().toISOString();
 await writeFile(resolve(OUTPUT_DIR, 'sound-manifest.json'), `${JSON.stringify(previous, null, 2)}\n`, 'utf8');
 console.info('[sound] curated pack complete');

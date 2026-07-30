@@ -52,9 +52,6 @@ const EXEMPT = new Map([
   ['pausePointerId', '暂停长按指针，由 resetPauseHold 清理'],
   ['pauseEndHoldStarted', '暂停长按计时，由 resetPauseHold 清理'],
 
-  // —— 玩家设置：必须跨局保留，重置就是把玩家的选择抹掉 ——
-  ['highContrastHud', '玩家的高对比设置，跨局保留'],
-
   // —— 命运牌局部状态：由 openFate / closeFate 管理 ——
   ['fateAnim', '命运牌入场动画，openFate 设定'],
   ['fateExitTimer', '命运牌退场计时，resolveFate 设定'],
@@ -83,7 +80,7 @@ const EXEMPT = new Map([
   ['auditTimeScale', '审阅倍速，启动参数设定'],
   ['devPanelTab', '开发面板当前页，纯 UI 偏好'],
   ['devPanelQuality', '开发面板品质档，纯 UI 偏好'],
-  ['renderScale', '构造期按 DPR 定的渲染倍率，重置会毁掉画布缩放'],
+  ['renderScale', '由 CSS 显示尺寸与 DPR 决定的渲染倍率，重置会毁掉画布缩放'],
 
   // —— 其它有明确归属的 ——
   ['darkCX', '终局黑暗圆心，进入终局时设定'],

@@ -82,6 +82,7 @@ const systemVoiceByRole = {
 // Per-cue overrides keep those speakers distinct without widening the runtime
 // role union, which exists for narrative behavior rather than casting.
 const systemVoiceByCue = {
+  'boss-father-phase-two': 'clever_boy',
   'phone-hospital-not-call': 'female-yujie-jingpin',
   'hospital-family-needed': 'female-yujie-jingpin',
   'clinic-next-number': 'female-yujie-jingpin',

@@ -2,7 +2,7 @@
   "version": 1,
   "cues": {
     "origin-comic-01": {
-      "durationMs": 10188,
+      "durationMs": 10150,
       "assetRevision": 9,
       "segments": [
         {
@@ -24,7 +24,7 @@
       ]
     },
     "origin-comic-02": {
-      "durationMs": 13464,
+      "durationMs": 13447,
       "assetRevision": 9,
       "segments": [
         {
@@ -54,7 +54,7 @@
       ]
     },
     "origin-comic-03": {
-      "durationMs": 6156,
+      "durationMs": 6120,
       "assetRevision": 9,
       "segments": [
         {
@@ -76,7 +76,7 @@
       ]
     },
     "origin-comic-04": {
-      "durationMs": 8496,
+      "durationMs": 8440,
       "assetRevision": 9,
       "segments": [
         {
@@ -98,7 +98,7 @@
       ]
     },
     "origin-comic-05": {
-      "durationMs": 15084,
+      "durationMs": 15067,
       "assetRevision": 9,
       "segments": [
         {
@@ -128,7 +128,7 @@
       ]
     },
     "origin-comic-06": {
-      "durationMs": 12564,
+      "durationMs": 12547,
       "assetRevision": 9,
       "segments": [
         {
@@ -158,7 +158,7 @@
       ]
     },
     "origin-comic-07": {
-      "durationMs": 13392,
+      "durationMs": 13375,
       "assetRevision": 9,
       "segments": [
         {
@@ -188,7 +188,7 @@
       ]
     },
     "origin-comic-08": {
-      "durationMs": 17676,
+      "durationMs": 17659,
       "assetRevision": 9,
       "segments": [
         {

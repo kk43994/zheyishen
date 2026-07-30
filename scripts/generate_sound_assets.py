@@ -203,6 +203,94 @@ def sound_monitor() -> list[float]:
     return fade(samples, 0.002, 0.04)
 
 
+def sound_shield() -> list[float]:
+    """短促的布面承压 + 金属护边回响，和受伤低频明确分开。"""
+    duration = 0.46
+    size = int(SAMPLE_RATE * duration)
+    rng = random.Random(801)
+    noise = shaped_noise(rng, size, 0.42)
+    samples = []
+    for index in range(size):
+        time = index / SAMPLE_RATE
+        thump = math.sin(TAU * (118 - time * 72) * time) * math.exp(-time * 18)
+        rim = math.sin(TAU * 760 * time) * math.exp(-time * 13)
+        cloth = noise[index] * math.exp(-time * 26)
+        samples.append(thump * 0.56 + rim * 0.26 + cloth * 0.22)
+    return fade(samples, 0.002, 0.07)
+
+
+def sound_heal() -> list[float]:
+    """三颗向上落定的暖音，不做明亮 RPG 魔法闪光。"""
+    duration = 0.78
+    size = int(SAMPLE_RATE * duration)
+    notes = ((0.0, 294.0), (0.15, 370.0), (0.32, 440.0))
+    samples = []
+    for index in range(size):
+        time = index / SAMPLE_RATE
+        value = 0.0
+        for start, frequency in notes:
+            age = time - start
+            if age < 0:
+                continue
+            envelope = math.exp(-age * 6.2) * min(1.0, age / 0.012)
+            value += (
+                math.sin(TAU * frequency * age)
+                + math.sin(TAU * frequency * 2.01 * age) * 0.18
+            ) * envelope
+        samples.append(value * 0.42)
+    return fade(samples, 0.002, 0.12)
+
+
+def sound_dash() -> list[float]:
+    """闪身的窄带掠风，前高后低，避免和呼吸声混在一起。"""
+    duration = 0.34
+    size = int(SAMPLE_RATE * duration)
+    rng = random.Random(802)
+    noise = shaped_noise(rng, size, 0.56)
+    samples = []
+    for index in range(size):
+        time = index / SAMPLE_RATE
+        progress = time / duration
+        envelope = math.sin(math.pi * progress) ** 0.7
+        sweep = math.sin(TAU * (620 - progress * 430) * time) * 0.16
+        samples.append((noise[index] * 1.1 + sweep) * envelope)
+    return fade(samples, 0.004, 0.08)
+
+
+def sound_door() -> list[float]:
+    """木门/帘门开启：低木响、短摩擦和末端门闩。"""
+    duration = 0.92
+    size = int(SAMPLE_RATE * duration)
+    rng = random.Random(803)
+    scrape = shaped_noise(rng, size, 0.91)
+    samples = []
+    for index in range(size):
+        time = index / SAMPLE_RATE
+        body = math.sin(TAU * (74 + 9 * math.sin(TAU * 1.4 * time)) * time) * math.exp(-time * 3.6)
+        drag = scrape[index] * math.sin(math.pi * min(1.0, time / duration)) * 0.9
+        latch_age = time - 0.68
+        latch = math.sin(TAU * 310 * latch_age) * math.exp(-latch_age * 22) if latch_age >= 0 else 0.0
+        samples.append(body * 0.42 + drag * 0.55 + latch * 0.28)
+    return fade(samples, 0.012, 0.12)
+
+
+def sound_lamp() -> list[float]:
+    """灯芯被提起/收走的玻璃与火苗声，暖但不做胜利提示。"""
+    duration = 0.86
+    size = int(SAMPLE_RATE * duration)
+    rng = random.Random(804)
+    flame = shaped_noise(rng, size, 0.72)
+    samples = []
+    for index in range(size):
+        time = index / SAMPLE_RATE
+        glass = math.sin(TAU * 522 * time) * math.exp(-time * 8.5)
+        lower = math.sin(TAU * 196 * time) * math.exp(-time * 5.2)
+        snuff_age = max(0.0, time - 0.48)
+        snuff = flame[index] * math.exp(-snuff_age * 7.5) if time >= 0.48 else flame[index] * 0.12
+        samples.append(glass * 0.30 + lower * 0.24 + snuff * 0.50)
+    return fade(samples, 0.006, 0.14)
+
+
 def loop_crossfade(samples: list[float], seconds: float = 0.65) -> list[float]:
     count = min(int(SAMPLE_RATE * seconds), len(samples) // 4)
     result = samples[:]
@@ -320,11 +408,11 @@ MUSIC_SPECS = [
         "root": 45,
         "progression": [(0, 3, 7), (-2, 3, 7), (-4, 0, 5), (-2, 3, 7)],
         "motif": [0, 3, 7, 2],
-        "pulse": 0.12,
-        "bell": 0.56,
+        "pulse": 0.08,
+        "bell": 0.82,
         "felt": 0.08,
-        "pad": 0.48,
-        "air": 0.22,
+        "pad": 0.40,
+        "air": 0.20,
         "seed": 1201,
     },
     {
@@ -398,6 +486,30 @@ MUSIC_SPECS = [
         "pad": 0.66,
         "air": 0.18,
         "seed": 1207,
+    },
+    {
+        "name": "folded-fate",
+        "root": 46,
+        "progression": [(0, 3, 7), (-1, 3, 8), (-5, 0, 3), (-2, 2, 7)],
+        "motif": [0, 8, 3, 7],
+        "pulse": 0.02,
+        "bell": 0.38,
+        "felt": 0.18,
+        "pad": 0.58,
+        "air": 0.24,
+        "seed": 1208,
+    },
+    {
+        "name": "borrowed-room",
+        "root": 43,
+        "progression": [(0, 4, 7), (-3, 0, 4), (-5, 0, 3), (-2, 2, 7)],
+        "motif": [0, 4, 7, 2],
+        "pulse": 0.00,
+        "bell": 0.20,
+        "felt": 0.42,
+        "pad": 0.64,
+        "air": 0.20,
+        "seed": 1209,
     },
 ]
 
@@ -474,6 +586,19 @@ def pressure_track(duration: float = 18.0) -> list[float]:
 
 def main() -> None:
     force = "--force" in sys.argv
+    music_track_name: str | None = None
+    if "--music-track" in sys.argv:
+        argument_index = sys.argv.index("--music-track")
+        try:
+            music_track_name = sys.argv[argument_index + 1]
+        except IndexError as error:
+            raise SystemExit("--music-track requires a track name") from error
+        available_tracks = {str(spec["name"]) for spec in MUSIC_SPECS}
+        if music_track_name not in available_tracks:
+            raise SystemExit(
+                f"unknown music track {music_track_name!r}; "
+                f"choose one of {', '.join(sorted(available_tracks))}"
+            )
     sound_builders = {
         "page": sound_page,
         "breath": sound_breath,
@@ -488,6 +613,11 @@ def main() -> None:
         "phone": sound_phone,
         "train": sound_train,
         "monitor": sound_monitor,
+        "shield": sound_shield,
+        "heal": sound_heal,
+        "dash": sound_dash,
+        "door": sound_door,
+        "lamp": sound_lamp,
     }
     manifest_path = OUTPUT / "sound-manifest.json"
     if manifest_path.exists():
@@ -527,11 +657,14 @@ def main() -> None:
         generated += 1
     for spec in MUSIC_SPECS:
         name = str(spec["name"])
+        if music_track_name is not None and name != music_track_name:
+            continue
         relative = Path("music") / f"{name}.wav"
-        if not (OUTPUT / relative).exists() or force:
-            samples = music_track(spec)
-            write_wav(OUTPUT / relative, samples)
-            generated += 1
+        if (OUTPUT / relative).exists() and not force and music_track_name is None:
+            continue
+        samples = music_track(spec)
+        write_wav(OUTPUT / relative, samples)
+        generated += 1
         manifest["music"][name] = {
             "file": str(relative), "seconds": 18.0,
             "origin": "project-authored-procedural",
@@ -542,11 +675,11 @@ def main() -> None:
         samples = pressure_track()
         write_wav(OUTPUT / pressure_relative, samples)
         generated += 1
-    manifest["music"]["pressure"] = {
-        "file": str(pressure_relative), "seconds": 18.0,
-        "origin": "project-authored-procedural",
-        "role": "adaptive-boss-layer",
-    }
+        manifest["music"]["pressure"] = {
+            "file": str(pressure_relative), "seconds": 18.0,
+            "origin": "project-authored-procedural",
+            "role": "adaptive-boss-layer",
+        }
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"[sound] built {generated} missing fallback assets in {OUTPUT}; use --force to replace curated files")
 

@@ -7,6 +7,7 @@ const runtime = fs.readFileSync('src/art-runtime.ts', 'utf8');
 const game = fs.readFileSync('src/game.ts', 'utf8');
 const html = fs.readFileSync('index.html', 'utf8');
 const style = fs.readFileSync('src/style.css', 'utf8');
+const platformAudio = fs.readFileSync('src/audio-platform.ts', 'utf8');
 const errors = [];
 let checks = 0;
 
@@ -67,7 +68,12 @@ requireToken(game, 'productionArtStageReady(nextStageIndex)', '章节过场结�
 requireToken(game, 'this.transitionTimer = 0.35', '低速解码时没有把玩家安全留在章节过场');
 
 requireToken(html, 'data-art-progress', '装帧页没有进度条');
-requireToken(html, '六章正式美术全部装订完成后才进入 · 不使用降级动画', '装帧页没有明确完整美术硬门禁');
+requireToken(html, '正式美术与开场人声全部装订完成后才进入 · 不使用降级动画', '装帧页没有明确完整美术与人声硬门禁');
+// 大包第一次进入必然要等，装帧页必须先把「为什么等」说清楚，别让人以为卡住了。
+requireToken(html, '资源包较大，第一次进入需要把整本缓存下来', '装帧页没有说明大资源包需要等待');
+// 音频硬闸门：人声/环境/配乐要在放人进去之前缓冲完（开场漫画现场解码就是「一进去很卡」的来源）。
+requireToken(main, 'await game.warmupAudio(', '进场前没有等待音频预热');
+requireToken(platformAudio, 'async warmup(', '平台音频实现缺少预热入口');
 requireToken(style, '.loading-card', '装帧页缺少正式视觉样式');
 
 function listRuntimeImages(dir) {

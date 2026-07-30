@@ -14,11 +14,15 @@ HOST=${1:-kelao}
 ROOT=/opt/zheyishen
 V=$(date +%Y%m%d%H%M)
 WIKI=docs/这一身百科.html
+PAGES=(chapters items voices world vfx review-projectiles boss bestiary)
 
 [ -f "$WIKI" ] || { echo "找不到 $WIKI"; exit 1; }
 
 echo "⓪ 重建并校验百科"
 npm run validate:wiki
+for p in "${PAGES[@]}"; do
+  [ -f "docs/$p.html" ] || { echo "找不到 docs/$p.html"; exit 1; }
+done
 
 echo "① rsync docs/ → $HOST:$ROOT/docs/"
 rsync -az --delete docs/ "$HOST":"$ROOT"/docs/
@@ -35,7 +39,7 @@ ssh "$HOST" "set -e; cd $ROOT
 echo "③ 道具图标图集（/src 反代是 clash-sub 假 200，必须内置到 wiki-public/assets）"
 rsync -az src/assets/items/icons.png "$HOST":"$ROOT"/wiki-public/assets/icons.png
 
-echo "④ 盖版本戳 v=$V 并上传 css 与 index.html"
+echo "④ 盖版本戳 v=$V 并上传 css、首页、分类页、审阅页与旧地址跳转页"
 tmp_css=$(mktemp)
 sed "s|\.\./src/assets/items/icons\.png|assets/icons.png?v=$V|g" docs/wiki-runtime-v1.css > "$tmp_css"
 chmod 644 "$tmp_css"
@@ -50,21 +54,42 @@ chmod 644 "$tmp_html"
 rsync -az "$tmp_html" "$HOST":"$ROOT"/wiki-public/index.html
 rm -f "$tmp_html"
 
+for p in "${PAGES[@]}"; do
+  tmp_page=$(mktemp)
+  sed -E "s|(href=\"wiki-runtime-v1\.css)\"|\1?v=$V\"|g" "docs/$p.html" \
+    | sed 's|href="这一身百科.html"|href="index.html"|g' \
+    | sed "s|\.\./src/assets/items/icons\.png|assets/icons.png?v=$V|g" > "$tmp_page"
+  chmod 644 "$tmp_page"
+  rsync -az "$tmp_page" "$HOST":"$ROOT"/wiki-public/"$p".html
+  rm -f "$tmp_page"
+done
+
 # 美术候选与校验（不是现役资源，从卷目单独进）
 tmp_cand=$(mktemp)
 sed -E "s/(href=\"wiki-runtime-v1\.css|src=\"[a-z0-9-]+-v1\.js)\"/\1?v=$V\"/g" docs/art-candidates.html \
+  | sed 's|href="这一身百科.html"|href="index.html"|g' \
   | sed "s|\.\./src/assets/items/icons\.png|assets/icons.png?v=$V|g" > "$tmp_cand"
 chmod 644 "$tmp_cand"
 rsync -az "$tmp_cand" "$HOST":"$ROOT"/wiki-public/art-candidates.html
 rm -f "$tmp_cand"
 
 echo "⑤ 线上自检"
-for u in "wiki/" "wiki/art-candidates.html" "wiki/wiki-runtime-v1.css?v=$V" "wiki/wiki-runtime-ui-v1.js?v=$V" "wiki/wiki-shell-v1.js?v=$V" "wiki/wiki-runtime-status-v1.js?v=$V"; do
+for u in "wiki/" "wiki/chapters.html" "wiki/items.html" "wiki/voices.html" "wiki/world.html" "wiki/vfx.html" "wiki/review-projectiles.html" "wiki/boss.html" "wiki/bestiary.html" "wiki/art-candidates.html" "wiki/wiki-runtime-v1.css?v=$V" "wiki/wiki-runtime-ui-v1.js?v=$V" "wiki/wiki-shell-v1.js?v=$V" "wiki/wiki-runtime-status-v1.js?v=$V"; do
   code=$(curl -s -o /dev/null -w '%{http_code}' "https://shen.kk666.best/$u")
   echo "  $code  $u"
   [ "$code" = "200" ] || { echo "  ✗ 自检失败"; exit 1; }
 done
+for u in "wiki/boss.html" "wiki/bestiary.html"; do
+  body=$(curl -s "https://shen.kk666.best/$u?v=$V")
+  case "$body" in *chapters.html*) : ;; *) echo "  ✗ $u 没有跳转到章节志"; exit 1;; esac
+done
 ct=$(curl -s -o /dev/null -w '%{content_type}' "https://shen.kk666.best/wiki/assets/icons.png?v=$V")
+gif_ct=$(curl -s -o /dev/null -w '%{content_type}' "https://shen.kk666.best/wiki/assets/wiki/gif/boss-skill-8f/father-charge.gif?v=$V")
+review_ct=$(curl -s -o /dev/null -w '%{content_type}' "https://shen.kk666.best/wiki/assets/wiki/img/review-projectile-anim.png?v=$V")
 echo "  $ct  wiki/assets/icons.png?v=$V"
+echo "  $gif_ct  wiki/assets/wiki/gif/boss-skill-8f/father-charge.gif?v=$V"
+echo "  $review_ct  wiki/assets/wiki/img/review-projectile-anim.png?v=$V"
 case "$ct" in image/png*) : ;; *) echo "  ✗ 图集 content-type 异常"; exit 1;; esac
+case "$gif_ct" in image/gif*) : ;; *) echo "  ✗ gif content-type 异常"; exit 1;; esac
+case "$review_ct" in image/png*) : ;; *) echo "  ✗ 弹体审阅图集 content-type 异常"; exit 1;; esac
 echo "完成 · v=$V · https://shen.kk666.best/wiki/"

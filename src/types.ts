@@ -448,6 +448,10 @@ export interface EnemyUnit {
   bossAnimTimer?: number;
   bossAnimDuration?: number;
   bossAnimLoop?: boolean;
+  /** 统一释放音独立于视觉模板，每次 Boss 动画只播放一次。 */
+  bossReleaseSoundPlayed?: boolean;
+  /** 小怪技能粒子附着层的限频计时。 */
+  minionVfxEmitTimer?: number;
   /** Development audit only: freezes a dedicated Boss action on one atlas frame. */
   bossAnimFrame?: number;
   /** 末班车冲撞：本次冲刺是否已命中。冲撞是接触即判定，一次冲刺只打一次。 */

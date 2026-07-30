@@ -99,7 +99,7 @@ const proofs = {
     "this.hasItem('flash-escape') && this.flashCooldown <= 0",
     'const fromX = this.heroX;',
     "this.burst('ring', fromX, fromY - 10, 30, '#706783');",
-    "this.feedback.play('breath', reversed ? 0.72 : 1.08);",
+    "this.feedback.play('dash', reversed ? 0.72 : 1.08);",
   ],
   'red-packet coin drop feedback': [
     'private redPacketDrop(enemy: EnemyUnit, force = false)',

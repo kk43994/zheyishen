@@ -15,31 +15,41 @@ export function parseFirstAIJson(content: string): unknown {
     // 继续寻找第一个平衡闭合的对象或数组。
   }
 
-  let start = -1;
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-  for (let index = 0; index < text.length; index += 1) {
-    const char = text[index]!;
-    if (start < 0) {
-      if (char !== '{' && char !== '[') continue;
-      start = index;
-      depth = 1;
-      continue;
+  // 包装文字本身也可能带 [] 或伪对象。一个候选解析失败后必须继续找下一个，
+  // 不能让「说明[非JSON]，结果：{"ok":true}」在第一个方括号处提前退出。
+  for (let start = 0; start < text.length; start += 1) {
+    const opener = text[start];
+    if (opener !== '{' && opener !== '[') continue;
+    const stack: string[] = [opener];
+    let inString = false;
+    let escaped = false;
+    for (let index = start + 1; index < text.length; index += 1) {
+      const char = text[index]!;
+      if (inString) {
+        if (escaped) escaped = false;
+        else if (char === '\\') escaped = true;
+        else if (char === '"') inString = false;
+        continue;
+      }
+      if (char === '"') {
+        inString = true;
+        continue;
+      }
+      if (char === '{' || char === '[') {
+        stack.push(char);
+        continue;
+      }
+      if (char !== '}' && char !== ']') continue;
+      const expected = char === '}' ? '{' : '[';
+      if (stack[stack.length - 1] !== expected) break;
+      stack.pop();
+      if (stack.length > 0) continue;
+      try {
+        return JSON.parse(text.slice(start, index + 1));
+      } catch {
+        break;
+      }
     }
-    if (inString) {
-      if (escaped) escaped = false;
-      else if (char === '\\') escaped = true;
-      else if (char === '"') inString = false;
-      continue;
-    }
-    if (char === '"') {
-      inString = true;
-      continue;
-    }
-    if (char === '{' || char === '[') depth += 1;
-    else if (char === '}' || char === ']') depth -= 1;
-    if (depth === 0) return JSON.parse(text.slice(start, index + 1));
   }
   throw new Error('ai_invalid_json');
 }
