@@ -6,7 +6,13 @@
  * 因此这里同时保存声部总线与逐素材补偿；audio.ts / audio-platform.ts
  * 必须共同读取，避免“开发环境正常、正式包忽大忽小”。
  */
-export const VOICE_PLAYBACK_GAIN = 1.18;
+/**
+ * 1.18 → 1.6（+2.6dB，2026-07-31）：真机外放反馈旁白偏小。人声元素音量 =
+ * cue.volume × 本增益 × 总音量(0.68) × 人声滑杆，常规 0.84 档抬到 ≈0.91，
+ * 平台端仍有 Math.min(1,·) 钳位兜底；配乐/环境/音效与闪避比例都不动，
+ * 等效于旁白单独往前站一步。再不够就该动素材响度（normalize:voice:loudness）。
+ */
+export const VOICE_PLAYBACK_GAIN = 1.6;
 export const VOICE_SFX_DUCK = 0.58;
 export const VOICE_AMBIENCE_DUCK = 0.82;
 export const VOICE_MUSIC_DUCK = 0.55;

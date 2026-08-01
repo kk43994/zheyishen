@@ -293,7 +293,7 @@ nickname_wheel = origins[nickname_wheel_start:nickname_wheel_end]
 if "动宾短语" in nickname_wheel or "物件名" in nickname_wheel or "网络ID式" in nickname_wheel:
     fail("birth nickname wheel still permits action phrases or non-person labels")
 for token in (
-    "const nickname = readText(value.nickname, 2, 7)",
+    "const nickname = readText(value.nickname, 2, ",
     "const BARE_ACTION_NICKNAME",
     "return !BARE_ACTION_NICKNAME.test(nickname) || PERSON_NICKNAME_ENDING.test(nickname)",
     "|| !nicknameReason",

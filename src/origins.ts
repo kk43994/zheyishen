@@ -339,7 +339,8 @@ const BARE_ACTION_NICKNAME = /^(?:爱|总爱|老爱|只会|常|老|总)?(?:数|�
 
 export function isPersonLikeNickname(value: string): boolean {
   const nickname = value.trim();
-  if (nickname.length < 2 || nickname.length > 7 || !/^[\p{Script=Han}]+$/u.test(nickname)) return false;
+  // 放宽到 2–9 字：外号是否顺口交给提示词，长一两个字不该让整份出生档案作废。
+  if (nickname.length < 2 || nickname.length > 9 || !/^[\p{Script=Han}]+$/u.test(nickname)) return false;
   // 这里只拦截明显的“动作标题”。外号是否自然、是否像在叫人交给生成提示词，
   // 不再要求命中一小组固定前后缀而把整份出生档案判废。
   return !BARE_ACTION_NICKNAME.test(nickname) || PERSON_NICKNAME_ENDING.test(nickname);
@@ -360,8 +361,8 @@ export function validateOriginProfile(
   // 文案长度属于展示质量，不该让一份已经能显示、能结算的出生档案整份作废。
   // 新生成内容同样使用有界裁剪；严格模式只硬拦结构与正典冲突。
   const title = readText(value.title, 2, 16);
-  const nickname = readText(value.nickname, 2, 7);
-  const nicknameReason = readText(value.nicknameReason, 8, 70);
+  const nickname = readText(value.nickname, 2, 9);
+  const nicknameReason = readText(value.nicknameReason, 6, 90);
   const returnedKind = typeof value.kind === 'string' && ORIGIN_KINDS.includes(value.kind as OriginKind)
     ? value.kind as OriginKind : null;
   // kind 是程序在请求前已经抽定的数值预算。模型回填错标签时以程序预算为准，
@@ -397,11 +398,13 @@ export function validateOriginProfile(
   if (strict && (
     !nickname
     || !nicknameReason
-    || rawStory.length < 3
-    || rawStory.length > 4
+    // 段数与字数放宽（原来 3–4 段 / 96–260 字）：这类展示性门槛一卡就是整份重掷，
+    // 开局要多等一整轮 AI。真正不能让步的是下面几条正典红线。
+    || rawStory.length < 2
+    || rawStory.length > 5
     || story.length !== rawStory.length
-    || storyLength < 96
-    || storyLength > 260
+    || storyLength < 60
+    || storyLength > 320
     || breaksFatherCanon
     || jumpsPastChildhood
     || replacesHeroWithSecondPerson

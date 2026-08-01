@@ -1,6 +1,6 @@
 {
   "sampleRate": 22050,
-  "license": "Mixed project-authored procedural audio and curated CC0 field recordings; see each asset source.",
+  "license": "Mixed project-authored procedural audio and curated CC0 audio; see each asset source.",
   "sfx": {
     "page": {
       "file": "sfx/page.wav",
@@ -176,6 +176,183 @@
         "license": "CC0-1.0",
         "sourceSha256": "8a9b03cac07bba8aa377064a0f528f5b71bc6b1281acaa28f7963ba7e63542ad"
       }
+    },
+    "pickup-paper": {
+      "file": "sfx/pickup-paper.mp3",
+      "seconds": 0.6,
+      "origin": "curated-cc0-pack",
+      "sha256": "b4bc7bae019a644b1819f82f21adb24f5335ff88fea8e83cfd5e85f74509623b",
+      "source": {
+        "title": "RPG Audio · bookFlip1.ogg",
+        "creator": "Kenney",
+        "provider": "Kenney",
+        "landing": "https://kenney.nl/assets/rpg-audio",
+        "license": "CC0-1.0"
+      }
+    },
+    "pickup-cloth": {
+      "file": "sfx/pickup-cloth.mp3",
+      "seconds": 0.415,
+      "origin": "curated-cc0-pack",
+      "sha256": "3b3cec328d9d66386f90ed713db84210aff04a4ef945ea7733e1e7dc4ea56a23",
+      "source": {
+        "title": "RPG Audio · cloth2.ogg",
+        "creator": "Kenney",
+        "provider": "Kenney",
+        "landing": "https://kenney.nl/assets/rpg-audio",
+        "license": "CC0-1.0"
+      }
+    },
+    "pickup-metal": {
+      "file": "sfx/pickup-metal.mp3",
+      "seconds": 0.446,
+      "origin": "curated-cc0-pack",
+      "sha256": "aa8791f4ba85081f4c76ab432cf7c231c2fd23f7372021241afa968812567682",
+      "source": {
+        "title": "RPG Audio · metalClick.ogg",
+        "creator": "Kenney",
+        "provider": "Kenney",
+        "landing": "https://kenney.nl/assets/rpg-audio",
+        "license": "CC0-1.0"
+      }
+    },
+    "pickup-coin": {
+      "file": "sfx/pickup-coin.mp3",
+      "seconds": 0.6,
+      "origin": "curated-cc0-pack",
+      "sha256": "2c330bed60e403b1adb012545a42934177f6af4fff386857c1c611d7d02ef04e",
+      "source": {
+        "title": "RPG Audio · handleCoins.ogg",
+        "creator": "Kenney",
+        "provider": "Kenney",
+        "landing": "https://kenney.nl/assets/rpg-audio",
+        "license": "CC0-1.0"
+      }
+    },
+    "shield": {
+      "file": "sfx/shield.wav",
+      "seconds": 1.85,
+      "origin": "curated-field-recording",
+      "sha256": "bd807efdf3c75531dfef6cd3a4b08e765fd2c59d8c27997df0c0b9b96a712081",
+      "source": {
+        "title": "magicShield_block.wav",
+        "creator": "rafaelzimrp",
+        "openverseId": "3d87a8c3-3f3f-49d2-8b4c-729657396a5c",
+        "freesoundId": 570853,
+        "provider": "Freesound via Openverse",
+        "landing": "https://freesound.org/people/rafaelzimrp/sounds/570853",
+        "license": "CC0-1.0",
+        "sourceSha256": "9206903a53a564582a619a733b547057e262cd0d08cfc6d8dfa16d0063052a93"
+      }
+    },
+    "heal": {
+      "file": "sfx/heal.wav",
+      "seconds": 0.632,
+      "origin": "curated-field-recording",
+      "sha256": "c33cd6134abae1edfefa5974b321a8c2199bca39b54f4155c86d051f5f05a539",
+      "source": {
+        "title": "Improvement/Healing Chime",
+        "creator": "Raclure",
+        "openverseId": "d9f771d2-1b35-4e57-917b-06d50b01f424",
+        "freesoundId": 483608,
+        "provider": "Freesound via Openverse",
+        "landing": "https://freesound.org/people/Raclure/sounds/483608",
+        "license": "CC0-1.0",
+        "sourceSha256": "3f9a202caf70aba302e22e4dcc4574dc7c7fe7cb26b94c0bf672a9bf8badf1a1"
+      }
+    },
+    "dash": {
+      "file": "sfx/dash.wav",
+      "seconds": 0.26,
+      "origin": "curated-field-recording",
+      "sha256": "e7bfb3f63191aa8d9ebef989c35883efe52ae652511e3824960c4e8be2950c9f",
+      "source": {
+        "title": "Whoosh / Dash (2)",
+        "creator": "Kastenfrosch",
+        "openverseId": "ac83eed8-568e-44b0-a3ae-d65f7be59441",
+        "freesoundId": 521996,
+        "provider": "Freesound via Openverse",
+        "landing": "https://freesound.org/people/Kastenfrosch/sounds/521996",
+        "license": "CC0-1.0",
+        "sourceSha256": "f1e25babf7531d7f9d8294034f24264a7d274322167ab75301fc4a488c55f618"
+      }
+    },
+    "door": {
+      "file": "sfx/door.wav",
+      "seconds": 2.44,
+      "origin": "curated-field-recording",
+      "sha256": "3d2af3a5a37fdd3238b2753dad44c4270fca3b3a8986205780d249293767203d",
+      "source": {
+        "title": "Squeaky door opened quickly.wav",
+        "creator": "CastIronCarousel",
+        "openverseId": "3d8244bd-055f-41b4-88f8-c8e9cc47899d",
+        "freesoundId": 216878,
+        "provider": "Freesound via Openverse",
+        "landing": "https://freesound.org/people/CastIronCarousel/sounds/216878",
+        "license": "CC0-1.0",
+        "sourceSha256": "ee762d0f6101d474a09836fd4e2c1bcc5bb400caf81461f4c22708a0ba60663e"
+      }
+    },
+    "lamp": {
+      "file": "sfx/lamp.wav",
+      "seconds": 0.89,
+      "origin": "curated-field-recording",
+      "sha256": "294ea9d6e135843e8a3d00fac15372c8a78b688db71217db572ff9aa746cf3dc",
+      "source": {
+        "title": "Oil Lantern Open and Close",
+        "creator": "ImAFoley",
+        "openverseId": "5258461b-005e-4c4d-b746-533c4bc35b21",
+        "freesoundId": 516740,
+        "provider": "Freesound via Openverse",
+        "landing": "https://freesound.org/people/ImAFoley/sounds/516740",
+        "license": "CC0-1.0",
+        "sourceSha256": "75bebb27e6b8c1eb776770d26ac4e8b18f459897b6bba250c0e6d442286f7b5e"
+      }
+    },
+    "boss-warn": {
+      "file": "sfx/boss-warn.wav",
+      "seconds": 1.716,
+      "origin": "curated-field-recording",
+      "sha256": "4e401279717183c6fbb6cdfd3c80862df4251af598f1c3c90168073d9ab9c650",
+      "source": {
+        "title": "Beep warning",
+        "creator": "SamsterBirdies",
+        "freesoundId": 467882,
+        "provider": "Freesound",
+        "landing": "https://freesound.org/people/SamsterBirdies/sounds/467882",
+        "license": "CC0-1.0",
+        "sourceSha256": "cb606e539a3ecfb06e652b497b554acffc3a1beadb5097ad7cad869eecc8bdd4"
+      }
+    },
+    "boss-release": {
+      "file": "sfx/boss-release.wav",
+      "seconds": 1.322,
+      "origin": "curated-field-recording",
+      "sha256": "8e9e523ded42f4238f992b9ddf811a480e2e27a53314bb312e41472cf9ae2e2e",
+      "source": {
+        "title": "Whoosh",
+        "creator": "thatkellytrna",
+        "freesoundId": 445229,
+        "provider": "Freesound",
+        "landing": "https://freesound.org/people/thatkellytrna/sounds/445229",
+        "license": "CC0-1.0",
+        "sourceSha256": "9cf2d7787272f27fccaf06c9db2eb9b3051d04dfe55b210bb44edbcd94b172d6"
+      }
+    },
+    "boss-hit": {
+      "file": "sfx/boss-hit.wav",
+      "seconds": 0.171,
+      "origin": "curated-field-recording",
+      "sha256": "41cf64b0351b8dfd60d9698cc997f79a49e1c2b9f890e6974136e5a92c52d8e7",
+      "source": {
+        "title": "thud.wav",
+        "creator": "OtisJames",
+        "freesoundId": 215162,
+        "provider": "Freesound",
+        "landing": "https://freesound.org/people/OtisJames/sounds/215162",
+        "license": "CC0-1.0",
+        "sourceSha256": "75bdc3c309fd2403a6f3091d79b9a8bb5ed49762a957e7f6704999be8020d31f"
+      }
     }
   },
   "ambience": {
@@ -198,16 +375,15 @@
       "file": "ambience/classroom.wav",
       "seconds": 8,
       "origin": "curated-field-recording",
-      "sha256": "283d66b0d94808eac8954f8699d2ee1e8a76a008f97201d90b5647c5e6d0d0d5",
+      "sha256": "ace384cd8e5a32e8e9dd55292352f510fc6776932ae04b5a2f8a7c0680becfda",
       "source": {
-        "title": "classrom-talk_01.wav",
-        "creator": "finalobserver",
+        "title": "Classroom Ambience - High School Class",
+        "creator": "okieactor",
         "provider": "Freesound via Openverse",
-        "openverseId": "b9034e93-a2e7-474c-8d24-15dd2a814529",
-        "freesoundId": 330732,
-        "landing": "https://freesound.org/people/finalobserver/sounds/330732/",
+        "openverseId": "b3572f02-df33-44ce-aca0-07bff0c6d8d2",
+        "landing": "https://freesound.org/people/okieactor/sounds/417041",
         "license": "CC0-1.0",
-        "sourceSha256": "219f32428a642fb5595f5ee3d7845d46420047e7785d6d7062a46081daaa2509"
+        "sourceSha256": "e3c94b9678d37134111a7d08f8c843be8c3caa489e192a62a9ad3a5c2a94795b"
       }
     },
     "2": {
@@ -269,9 +445,69 @@
         "license": "CC0-1.0",
         "sourceSha256": "ddfa6fec50da89662e4d283f03547e49c83427c9a0f303ed4eb1ccbd0256819a"
       }
+    },
+    "6": {
+      "file": "ambience/fate-chamber.wav",
+      "seconds": 8,
+      "origin": "curated-field-recording",
+      "sha256": "bdf46d93deb3ef9bff59dc716e2b19f1b4a6fb8438aebc9666f413219ce75e74",
+      "source": {
+        "title": "Book_1(pages, paper, rustle).WAV",
+        "creator": "o_ciz",
+        "openverseId": "487b5d03-6d40-46dd-9e0e-a1419219fb5f",
+        "freesoundId": 475431,
+        "provider": "Freesound via Openverse",
+        "landing": "https://freesound.org/people/o_ciz/sounds/475431",
+        "license": "CC0-1.0",
+        "sourceSha256": "a055f734f6429b4c134b3530e268c9c3cfed8c0d31abf92db8832ad51aca1b73"
+      }
+    },
+    "7": {
+      "file": "ambience/back-room.wav",
+      "seconds": 8,
+      "origin": "curated-field-recording",
+      "sha256": "9a5386917c5c22f00d2193f847c1b819d72e1c905ed88bb1eb3d1f1867ec9d2a",
+      "source": {
+        "title": "STEPS IN CORRIDOR.wav",
+        "creator": "colo777",
+        "openverseId": "4cc6cdf7-2219-42b1-a4e7-13b4cf550c50",
+        "freesoundId": 251435,
+        "provider": "Freesound via Openverse",
+        "landing": "https://freesound.org/people/colo777/sounds/251435",
+        "license": "CC0-1.0",
+        "sourceSha256": "4b54e0c8388fa28f50a9d6066aaf70bc3ba49d4673966f623846500d1da67c0e"
+      },
+      "additionalSources": [
+        {
+          "title": "wood creaks",
+          "creator": "seth-m",
+          "openverseId": "2eb447ed-b9cc-4438-98dc-1ea6411ac6ae",
+          "freesoundId": 269722,
+          "provider": "Freesound via Openverse",
+          "landing": "https://freesound.org/people/seth-m/sounds/269722",
+          "license": "CC0-1.0",
+          "sourceSha256": "91dab86519aad2843bdfb48872db5ae310e7e162cb3bebf3077ae2464ffd5fb8"
+        }
+      ]
+    },
+    "8": {
+      "file": "ambience/light-room.wav",
+      "seconds": 8,
+      "origin": "curated-field-recording",
+      "sha256": "a389ada816947c761ab157130eaea70b8881cf17848f229c1e79fb0f93e7c83e",
+      "source": {
+        "title": "Candle wood wick flame mono 01.wav",
+        "creator": "roisin.gleeson",
+        "openverseId": "87d33cb2-53ee-4e88-a646-670ec3d6a87f",
+        "freesoundId": 680476,
+        "provider": "Freesound via Openverse",
+        "landing": "https://freesound.org/people/roisin.gleeson/sounds/680476",
+        "license": "CC0-1.0",
+        "sourceSha256": "029125f44935a8bce56b0f6c5cd52742927a31b3ffd0cb38f366563b1613106c"
+      }
     }
   },
-  "generatedAt": "2026-07-29T11:37:39.088Z",
+  "generatedAt": "2026-07-29T21:16:57.559Z",
   "music": {
     "fluorescent-name": {
       "file": "music/fluorescent-name.wav",
@@ -299,7 +535,7 @@
     },
     "under-bed": {
       "file": "music/under-bed.wav",
-      "seconds": 18,
+      "seconds": 18.0,
       "origin": "project-authored-procedural",
       "role": "narrative-bgm"
     },
@@ -326,6 +562,36 @@
       "seconds": 18,
       "origin": "project-authored-procedural",
       "role": "adaptive-boss-layer"
+    },
+    "folded-fate": {
+      "file": "music/folded-fate.wav",
+      "seconds": 57.314,
+      "origin": "curated-cc0-music",
+      "role": "narrative-bgm",
+      "sha256": "762531892ee00f47e5d2aac1a8ca3f9b3629de6f6736d87c011ccd34c8288896",
+      "source": {
+        "title": "Creepy Ambient Loop (v2)",
+        "creator": "epb9000",
+        "provider": "OpenGameArt",
+        "landing": "https://opengameart.org/content/creepy-ambient-loop",
+        "license": "CC0-1.0",
+        "sourceSha256": "609bd62e824d77df3d35af26064bfd824cb6fce95cb9637c467fb80b717d6050"
+      }
+    },
+    "borrowed-room": {
+      "file": "music/borrowed-room.wav",
+      "seconds": 53.314,
+      "origin": "curated-cc0-music",
+      "role": "narrative-bgm",
+      "sha256": "60bb54b5411a325dee5f911bb51698125ba51ffe60628f3d863186b4fb862f33",
+      "source": {
+        "title": "Dark Place (loop)",
+        "creator": "SkyleTheFrench",
+        "provider": "OpenGameArt",
+        "landing": "https://opengameart.org/content/dark-place-loop",
+        "license": "CC0-1.0",
+        "sourceSha256": "c78a433139ace4a050b5d4a1b9b94bcf1f04d059345c849c7c234a2fe0eda102"
+      }
     }
   }
 }

@@ -204,6 +204,10 @@ export class LifeFeedback {
   private readonly unavailableVoices = new Set<VoiceCueId>();
   private activeVoice?: AudioBufferSourceNode;
   private activeVoicePriority = 0;
+  /** 字幕对表：当前人声的 cue、在 AudioContext 时间轴上的起播点与语速。 */
+  private activeVoiceId?: VoiceCueId;
+  private activeVoiceStartedAt = 0;
+  private activeVoiceRate = 1;
   private loadingVoicePriority = 0;
   private voiceRequestSerial = 0;
   private queuedVoice?: QueuedVoice;
@@ -862,15 +866,35 @@ export class LifeFeedback {
     for (const id of ids) void this.loadVoice(id).catch(() => undefined);
   }
 
+  /** 与平台同形。dev 走 Web Audio 即时解码，无需温启动：报零让按钮只按美术计。 */
+  audioWarmStatus(): { done: number; total: number; running: boolean } {
+    return { done: 0, total: 0, running: false };
+  }
+
+  startAudioWarm(): void { /* dev 无需温启动 */ }
+
+  stopAudioWarm(): void { /* dev 无需温启动 */ }
+
+  /** 与平台实现同形：cue 在播时返回音频文件内的播放头秒数（按语速折算），否则 null。 */
+  voicePosition(id: VoiceCueId): number | null {
+    if (!this.context || !this.activeVoice || this.activeVoiceId !== id) return null;
+    return Math.max(0, (this.context.currentTime - this.activeVoiceStartedAt) * this.activeVoiceRate);
+  }
+
+  /** 与平台实现同形（见 audio-platform.ts）：这里"就绪"＝ decodeAudioData 已经解完。 */
+  voiceBuffered(id: VoiceCueId): boolean {
+    if (this.volume <= 0 || this.voiceVolume <= 0) return true;
+    return this.voiceBuffers.has(id);
+  }
+
   /**
    * 与平台实现同形（见 audio-platform.ts 的 warmup）。dev/demo 走 Web Audio，
    * 这里等的是 decodeAudioData 真正解完，而不是请求发出去。
    */
   async warmup(
     voiceIds: readonly VoiceCueId[],
-    stage = 0,
     onProgress?: (done: number, total: number) => void,
-    budgetMs = 15000,
+    budgetMs = 60000,
   ): Promise<void> {
     this.unlock();
     const deadline = performance.now() + budgetMs;
@@ -885,7 +909,6 @@ export class LifeFeedback {
         onProgress?.(done, total);
       }));
     }
-    void stage;
     onProgress?.(total, total);
   }
 
@@ -935,6 +958,9 @@ export class LifeFeedback {
 
       this.duckBackgroundForVoice();
       this.activeVoice = source;
+      this.activeVoiceId = id;
+      this.activeVoiceStartedAt = context.currentTime;
+      this.activeVoiceRate = source.playbackRate.value;
       this.activeVoicePriority = cue.trigger.priority;
       source.onended = () => {
         if (this.activeVoice !== source) return;

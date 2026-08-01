@@ -1377,6 +1377,12 @@ def build_projectile_review_page() -> str:
         "review-hits.png?v=2",
         "assets/wiki/img/review-hits.png?v=2",
     )
+    # 审阅模板是独立历史文件，没带 favicon 声明，线上会白刷一条 /favicon.ico 404
+    source = source.replace(
+        '<meta name="viewport" content="width=device-width, initial-scale=1">',
+        '<meta name="viewport" content="width=device-width, initial-scale=1">\n<link rel="icon" href="data:,">',
+        1,
+    )
     source = source.replace(
         "<body>",
         '<body><p style="margin:0 0 12px"><a href="vfx.html" '

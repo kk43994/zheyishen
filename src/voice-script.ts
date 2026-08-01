@@ -319,7 +319,9 @@ const cue = (
   treatment, trigger: voiceTrigger, purpose, volume,
   context: VOICE_CUE_CONTEXT[id],
   file: `assets/audio/voice/${id}.mp3`, cooldownMs,
-  playbackFile: role === 'lamp-keeper' ? `assets/audio/voice-review/${id}.ethereal-v2.mp3` : undefined,
+  // 收灯人的成品混音放在 voice/ 而不是 voice-review/：后者是纯评审目录，打包脚本
+  // 会整个删掉、发布预算校验也把它列为禁区——指过去的话真机上收灯人整局无声（404）。
+  playbackFile: role === 'lamp-keeper' ? `assets/audio/voice/${id}.ethereal-v2.mp3` : undefined,
 });
 
 /** 门外妈妈要比普通远景对白更实一点，否则在童年配乐和小扬声器上会显得轻。 */
@@ -397,7 +399,9 @@ export const VOICE_CUES: Record<VoiceCueId, VoiceCue> = {
   'back-room-keeper': cue('back-room-keeper', 5, 'room-keeper', '拿走可以。<#0.35#>留点东西。', '像当铺，不邪恶、不诱惑表演。', 'behind-door', trigger('special_room_open', '任意阶段进入里屋', false, 2), '代价规则在玩家拿取前说清。'),
   'lamp-time-up': cue('lamp-time-up', 5, 'lamp-keeper', '到点了。', '声音同时从路灯下和远处黑暗传来，平静、准时，不演死神。', 'clear', trigger('boss_spawn', '收灯人在最后一盏路灯下出现', true, 3, true), '用一句报时建立收灯人的职责，而不是威胁。'),
   'lamp-return-due': cue('lamp-return-due', 5, 'lamp-keeper', '该还这一件了。', '低沉近声先到，远声轻贴；不催促，只说明轮到它。', 'clear', trigger('ending_strip', '收灯人的灯光第一次开始追逐一件道具', true, 3, true), '把收灯机制在第一次追逐前说清。'),
-  'lamp-one-returned': cue('lamp-one-returned', 5, 'lamp-keeper', '这一件，<#0.42#>先还回去。', '低沉近声先到，远处同声慢半拍叠上来；空灵但禁止恐怖混响。', 'clear', trigger('ending_strip', '收灯人第一次剥下道具', true, 3, true), '终局不是打败死神，而是逐件归还。'),
+  // 每剥下一件都要响一次。默认 60 秒冷却会把第二件之后的全部吃掉——收灯周期是
+  // LAMP_CYCLE_INTERVAL 8.5 秒，台词约 2.5 秒，4 秒冷却既保证件件都念，又不会自相打断。
+  'lamp-one-returned': cue('lamp-one-returned', 5, 'lamp-keeper', '这一件，<#0.42#>先还回去。', '低沉近声先到，远处同声慢半拍叠上来；空灵但禁止恐怖混响。', 'clear', trigger('ending_strip', '收灯人每剥下一件道具', true, 3, true), '终局不是打败死神，而是逐件归还。', 0.84, 4_000),
   'lamp-pockets-empty': cue('lamp-pockets-empty', 5, 'lamp-keeper', '口袋空了。<#0.4#>再看看手里。', '远近叠声一起收窄，不催促，给玩家检查自己的时间。', 'clear', trigger('ending_strip', '最后一件道具离身', true, 3, true), '把注意力从这一身移到一口气。'),
   'narrator-final-breath': cue('narrator-final-breath', 'ending', 'narrator', '(inhale)手里空了。<#0.82#>这一口气，<#0.46#>也可以放下了。(exhale)', '与开场同一音色，更轻、更遗憾；不是释然地宣布圆满。', 'clear', trigger('ending_choice', '所有道具归还后，最后一次攻击重新有效', true, 3, true), '用同一次呼吸闭合开场；玩家再次攻击就是回答。'),
   'boss-praise-only-you': cue('boss-praise-only-you', 2, 'boss', '这个只有你能做。', '热络得像发任务，句尾上扬却没有温度。', 'clear', trigger('boss_phase', '你很优秀一阶段推出任务波并给出伤害好话', false, 1), '加成是真的，好话也是真的——这正是它可怕的地方。', 0.8, 9_000),

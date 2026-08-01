@@ -143,6 +143,17 @@
     "status": "pass"
   },
   {
+    "id": "boss-closet-defeat",
+    "expected": "好了里面什么也没有",
+    "transcript": "好了 里面什么也没有",
+    "normalizedTranscript": "好了里面什么也没有",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 2.848,
+    "charactersPerSecond": 3.9,
+    "status": "pass"
+  },
+  {
     "id": "father-childhood-walk",
     "expected": "走吧",
     "transcript": "走吧",
@@ -151,6 +162,17 @@
     "pronunciationErrorRate": 0.0,
     "durationSeconds": 1.6,
     "charactersPerSecond": 1.43,
+    "status": "pass"
+  },
+  {
+    "id": "boss-father-phase-two",
+    "expected": "我没有哭",
+    "transcript": "我没有哭",
+    "normalizedTranscript": "我没有哭",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 3.7,
+    "charactersPerSecond": 1.14,
     "status": "pass"
   },
   {
@@ -239,6 +261,17 @@
     "pronunciationErrorRate": 0.0,
     "durationSeconds": 4.106,
     "charactersPerSecond": 2.27,
+    "status": "pass"
+  },
+  {
+    "id": "boss-father-stand",
+    "expected": "站好",
+    "transcript": "站好",
+    "normalizedTranscript": "站好",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 1.15,
+    "charactersPerSecond": 1.74,
     "status": "pass"
   },
   {
@@ -506,6 +539,17 @@
     "status": "pass"
   },
   {
+    "id": "boss-collector-defeat",
+    "expected": "本次欠款已经结清",
+    "transcript": "本次欠款已经洁清",
+    "normalizedTranscript": "本次欠款已经洁清",
+    "characterErrorRate": 0.125,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 3.196,
+    "charactersPerSecond": 2.95,
+    "status": "pass"
+  },
+  {
     "id": "clinic-blood-pressure",
     "expected": "血压有点高坐十分钟再量一次",
     "transcript": "血压有点高做十分钟再量一次",
@@ -712,6 +756,61 @@
     "pronunciationErrorRate": 0.0,
     "durationSeconds": 1.707,
     "charactersPerSecond": 5.31,
+    "status": "pass"
+  },
+  {
+    "id": "boss-praise-one-seat",
+    "expected": "你很优秀可岗位只有一个",
+    "transcript": "你很优秀可岗位只有一个",
+    "normalizedTranscript": "你很优秀可岗位只有一个",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 4.058,
+    "charactersPerSecond": 3.11,
+    "status": "pass"
+  },
+  {
+    "id": "boss-praise-paper",
+    "expected": "这份下班前给我",
+    "transcript": "这份下班钱给我",
+    "normalizedTranscript": "这份下班钱给我",
+    "characterErrorRate": 0.1429,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 2.319,
+    "charactersPerSecond": 3.57,
+    "status": "pass"
+  },
+  {
+    "id": "boss-praise-optimize",
+    "expected": "这个优化掉",
+    "transcript": "这个优化掉",
+    "normalizedTranscript": "这个优化掉",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 2.432,
+    "charactersPerSecond": 2.44,
+    "status": "pass"
+  },
+  {
+    "id": "boss-praise-dismiss",
+    "expected": "你可以离职了",
+    "transcript": "你可以离职了",
+    "normalizedTranscript": "你可以离职了",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 1.416,
+    "charactersPerSecond": 4.93,
+    "status": "pass"
+  },
+  {
+    "id": "boss-praise-xiaozhang",
+    "expected": "小张你自己看着办",
+    "transcript": "小张,你自己看着办。",
+    "normalizedTranscript": "小张你自己看着办",
+    "characterErrorRate": 0.0,
+    "pronunciationErrorRate": 0.0,
+    "durationSeconds": 2.985,
+    "charactersPerSecond": 3.19,
     "status": "pass"
   },
   {

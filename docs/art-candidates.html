@@ -657,8 +657,14 @@
   .strip-h a{color:inherit;text-decoration:none;border-bottom:1px solid var(--oldred)}
   .strip-h a:hover{color:var(--oldred)}
 
-  .wall.wall-icon{grid-template-columns:repeat(auto-fill,minmax(42px,1fr))}
-  .wall .ic{display:block;width:100%;aspect-ratio:1;background-image:url("assets/icons.png");background-repeat:no-repeat;background-position:var(--x) var(--y);background-size:288px 360px;image-rendering:pixelated;border:1px solid var(--line);border-radius:4px;transition:transform .14s,border-color .14s}
+  /* 物证池与体现图墙共用列数与间距：第 N 件道具在两面墙里落在同一列同一行，可以上下对读。
+     改列数只改 --wall-cols 一处，两面墙一起走。 */
+  .wall.wall-icon,.wall.wall-man{--wall-cols:6;grid-template-columns:repeat(var(--wall-cols),1fr);gap:8px}
+  @media(max-width:900px){.wall.wall-icon,.wall.wall-man{--wall-cols:4}}
+  @media(max-width:640px){.wall.wall-icon,.wall.wall-man{--wall-cols:3}}
+  /* 物证池的格子和体现图卡取同一比例（480/250），两面墙的格子完全同形同位 */
+  .wall .ic{position:relative;display:block;width:100%;aspect-ratio:480/250;overflow:hidden;border:1px solid var(--line);border-radius:4px;transition:transform .14s,border-color .14s}
+  .wall .ic::before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);height:86%;aspect-ratio:1;background-image:url("assets/icons.png");background-repeat:no-repeat;background-size:800% 1000%;background-position:calc(var(--col)*100%/7) calc(var(--row)*100%/9);image-rendering:pixelated}
   .wall .ic:hover{transform:scale(2.8);border-color:var(--oldred);z-index:5;position:relative;box-shadow:0 6px 24px rgba(0,0,0,.55)}
   .wall .ic[data-rpc]{cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.018)}
   .wall .ic[data-rpc]:focus-visible{outline:2px solid var(--rainyellow);outline-offset:3px;transform:scale(1.35);position:relative;z-index:3}
@@ -668,11 +674,12 @@
   .wall .ic.q3{border-color:color-mix(in srgb,var(--q3) 55%,var(--line))}
   .wall .ic.q4{border-color:color-mix(in srgb,var(--q4) 55%,var(--line))}
   .wall .ic.q5{border-color:color-mix(in srgb,var(--q5) 60%,var(--line))}
-  .wall.wall-man{grid-template-columns:repeat(auto-fill,minmax(64px,1fr))}
-  /* 版面：左列 0-120px 是素材来源，「正」姿态在 x120-216 y10-130；按比例开窗裁出人 */
-  .wall.wall-man .mm{position:relative;display:block;aspect-ratio:4/5;overflow:hidden;background:#101014;border:1px solid var(--line);border-radius:4px;transition:transform .14s,border-color .14s}
-  .wall.wall-man .mm img{position:absolute;width:500%;max-width:none;height:auto;aspect-ratio:480/250;object-fit:fill;left:-125%;top:-8%;image-rendering:pixelated;border:none;background:none}
-  .wall.wall-man .mm:hover{transform:scale(2.3);border-color:var(--oldred);z-index:5;box-shadow:0 6px 24px rgba(0,0,0,.55)}
+  /* 每格就是整张 480×250 原卡（四向 + 四动作八帧），格子按卡的比例排，不再 CSS 开窗裁正面一态；
+     悬停/聚焦把同一张顶到 min(92vw,860px) 看细节。 */
+  .wall.wall-man .mm{position:relative;display:block;aspect-ratio:480/250;background:#15141a;border:1px solid var(--line);border-radius:4px;transition:border-color .14s,box-shadow .14s;cursor:zoom-in}
+  .wall.wall-man .mm img{display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;border:none;background:none;border-radius:3px}
+  .wall.wall-man .mm:hover,.wall.wall-man .mm:focus{outline:none;border-color:var(--oldred);box-shadow:0 0 0 1px var(--oldred)}
+  .wall.wall-man .mm:hover img,.wall.wall-man .mm:focus img{position:fixed;left:50%;top:50%;width:min(92vw,860px);height:auto;transform:translate(-50%,-50%);z-index:80;border:1px solid var(--oldred);border-radius:6px;background:#15141a;box-shadow:0 18px 60px rgba(0,0,0,.72);pointer-events:none}
 
   /* 实机屏幕：竖屏 360×640，密排不占大屏 */
   .screens{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;margin:10px 0 6px}
@@ -793,6 +800,9 @@
     .difference-table table{min-width:0;font-size:12px}
     .difference-table th,.difference-table td{padding:7px 8px}
   }
+
+  .poison dd.pnum{color:var(--fg-3);font-size:11.5px;line-height:1.7}
+  @media(max-width:560px){.poison .totem{width:28px;height:28px}.poison dd.pnum{font-size:11px}}
 </style>
 </head>
 <body>

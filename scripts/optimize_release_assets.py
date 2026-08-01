@@ -45,6 +45,45 @@ def encode_lossless_webp(source: Path, destination: Path) -> bool:
     return result.returncode == 0 and destination.exists() and destination.stat().st_size > 0
 
 
+# 前置大图白名单：封面、封面光晕、出生档案背景、开场漫画页。它们是摄影感插画、
+# 每局只看一次，有损 q86 与原图肉眼无差，却能省掉小半兆首屏字节。像素画绝不进这张表
+# （像素图有损会糊边），所以这里按文件名精确匹配，不做模式匹配。
+LOSSY_STEMS = (
+    'title-confrontation-base-v1',
+    'title-confrontation-flare-v1',
+    'origin-dossier-background',
+    'origin-comic-page-1',
+    'origin-comic-page-2',
+)
+LOSSY_QUALITY = 86
+
+
+def shrink_front_load_art(target: Path, dry_run: bool) -> int:
+    """把前置大图重编成有损 WebP。返回省下的字节数。"""
+    saved = 0
+    for webp in sorted(target.rglob('*.webp')):
+        stem = webp.stem.rsplit('-', 1)[0]
+        if stem not in LOSSY_STEMS:
+            continue
+        before = webp.stat().st_size
+        with tempfile.TemporaryDirectory() as scratch:
+            candidate = Path(scratch) / webp.name
+            result = subprocess.run(
+                ['cwebp', '-quiet', '-q', str(LOSSY_QUALITY), '-m', '6', str(webp), '-o', str(candidate)],
+                capture_output=True,
+            )
+            if result.returncode != 0 or not candidate.exists():
+                continue
+            after = candidate.stat().st_size
+            if after >= before * (1 - MIN_GAIN_RATIO):
+                continue
+            if not dry_run:
+                webp.write_bytes(candidate.read_bytes())
+        saved += before - after
+        print(f'[assets] 前置大图 {webp.name}: {before} → {after}')
+    return saved
+
+
 def main() -> int:
     target = Path(sys.argv[1] if len(sys.argv) > 1 else "dist")
     dry_run = "--dry-run" in sys.argv
@@ -89,6 +128,9 @@ def main() -> int:
             renames[png.name] = webp.name
             saved += png_bytes - webp_bytes
 
+    front = shrink_front_load_art(target, dry_run)
+    if front:
+        print(f"[assets] 前置大图有损压缩共省 {front} 字节 ({front / 1024:.0f}KB)")
     if not renames:
         print("[assets] 没有可无损替换的 PNG")
         return 0

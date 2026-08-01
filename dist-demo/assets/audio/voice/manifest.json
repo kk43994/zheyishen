@@ -811,6 +811,37 @@
     }
   },
   {
+    "id": "boss-closet-defeat",
+    "file": "assets/audio/voice/boss-closet-defeat.mp3",
+    "role": "caregiver",
+    "voiceId": "Chinese (Mandarin)_Warm_Bestie",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 2848,
+    "bytes": 24756,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-29T23:01:30.630Z",
+    "delivery": {
+      "voice": "成年女声",
+      "tone": "像确认一件家常小事，仍然没有看见孩子刚经历过什么",
+      "emotion": "calm",
+      "speed": 0.9,
+      "pitch": 0,
+      "intensity": "low",
+      "tags": [
+        "pause"
+      ]
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.51,
+      "truePeakDbtp": -2.61
+    }
+  },
+  {
     "id": "father-childhood-walk",
     "file": "assets/audio/voice/father-childhood-walk.mp3",
     "role": "father",
@@ -836,6 +867,37 @@
       "targetTruePeakDbtp": -1.5,
       "integratedLufs": -18.41,
       "truePeakDbtp": -2.29
+    }
+  },
+  {
+    "id": "boss-father-phase-two",
+    "file": "assets/audio/voice/boss-father-phase-two.mp3",
+    "role": "father",
+    "voiceId": "clever_boy",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 3700,
+    "bytes": 31380,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-29T23:01:31.489Z",
+    "delivery": {
+      "voice": "八至十岁男童声",
+      "tone": "哭得喘不上气仍本能否认，短促、防御，不可爱化",
+      "emotion": "fearful",
+      "speed": 0.78,
+      "pitch": 1,
+      "intensity": "low",
+      "tags": [
+        "sniffs"
+      ]
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.49,
+      "truePeakDbtp": -2.25
     }
   },
   {
@@ -1072,6 +1134,34 @@
       "targetTruePeakDbtp": -1.5,
       "integratedLufs": -18.17,
       "truePeakDbtp": -2.38
+    }
+  },
+  {
+    "id": "boss-father-stand",
+    "file": "assets/audio/voice/boss-father-stand.mp3",
+    "role": "father",
+    "voiceId": "ttv-voice-2026072409135526-TsjoP4Ow",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 1150,
+    "bytes": 10932,
+    "draft": false,
+    "delivery": {
+      "voice": "克制中年男声",
+      "tone": "雨里短促命令，不怒吼",
+      "emotion": "calm",
+      "speed": 0.8,
+      "pitch": -2,
+      "intensity": "medium",
+      "tags": []
+    },
+    "derivedFrom": "father-for-your-good",
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.51,
+      "truePeakDbtp": -2.14
     }
   },
   {
@@ -1824,6 +1914,37 @@
     }
   },
   {
+    "id": "boss-collector-defeat",
+    "file": "assets/audio/voice/boss-collector-defeat.mp3",
+    "role": "bank",
+    "voiceId": "Chinese (Mandarin)_News_Anchor",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 3196,
+    "bytes": 27348,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-29T23:01:32.173Z",
+    "delivery": {
+      "voice": "客服女声",
+      "tone": "系统确认口径，平直清楚，不庆祝也不安慰",
+      "emotion": "calm",
+      "speed": 0.96,
+      "pitch": 0,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.57,
+      "truePeakDbtp": -2.54
+    }
+  },
+  {
     "id": "clinic-blood-pressure",
     "file": "assets/audio/voice/clinic-blood-pressure.mp3",
     "role": "doctor",
@@ -2484,6 +2605,159 @@
       "targetTruePeakDbtp": -1.5,
       "integratedLufs": -18.47,
       "truePeakDbtp": -2.66
+    }
+  },
+  {
+    "id": "boss-praise-one-seat",
+    "file": "assets/audio/voice/boss-praise-one-seat.mp3",
+    "role": "boss",
+    "voiceId": "ttv-voice-2026072819561426-prAlwK1P",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 4058,
+    "bytes": 34260,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-29T23:09:12.481Z",
+    "delivery": {
+      "voice": "设计音色·热络空心领导男声",
+      "tone": "先夸一句，再把唯一岗位说成理所当然",
+      "emotion": "calm",
+      "speed": 0.92,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.2,
+      "truePeakDbtp": -2.52
+    }
+  },
+  {
+    "id": "boss-praise-paper",
+    "file": "assets/audio/voice/boss-praise-paper.mp3",
+    "role": "boss",
+    "voiceId": "ttv-voice-2026072819561426-prAlwK1P",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 2319,
+    "bytes": 20436,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-29T23:09:13.135Z",
+    "delivery": {
+      "voice": "设计音色·热络空心领导男声",
+      "tone": "像顺手递来一页文件，不给讨论余地",
+      "emotion": "calm",
+      "speed": 1.08,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.44,
+      "truePeakDbtp": -2.59
+    }
+  },
+  {
+    "id": "boss-praise-optimize",
+    "file": "assets/audio/voice/boss-praise-optimize.mp3",
+    "role": "boss",
+    "voiceId": "ttv-voice-2026072819561426-prAlwK1P",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 2432,
+    "bytes": 21300,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-29T23:09:14.044Z",
+    "delivery": {
+      "voice": "设计音色·热络空心领导男声",
+      "tone": "把清除一个人说成普通流程动作",
+      "emotion": "calm",
+      "speed": 1,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.1,
+      "truePeakDbtp": -2.54
+    }
+  },
+  {
+    "id": "boss-praise-dismiss",
+    "file": "assets/audio/voice/boss-praise-dismiss.mp3",
+    "role": "boss",
+    "voiceId": "ttv-voice-2026072819561426-prAlwK1P",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 1416,
+    "bytes": 13236,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-29T23:09:14.828Z",
+    "delivery": {
+      "voice": "设计音色·热络空心领导男声",
+      "tone": "礼貌宣布，不怒吼，不解释",
+      "emotion": "calm",
+      "speed": 0.96,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": []
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.57,
+      "truePeakDbtp": -2.56
+    }
+  },
+  {
+    "id": "boss-praise-xiaozhang",
+    "file": "assets/audio/voice/boss-praise-xiaozhang.mp3",
+    "role": "boss",
+    "voiceId": "ttv-voice-2026072819561426-prAlwK1P",
+    "model": "speech-2.8-hd",
+    "provider": "MiniMax",
+    "durationMs": 2985,
+    "bytes": 25620,
+    "draft": false,
+    "assetRevision": 0,
+    "generatedAt": "2026-07-29T23:09:15.552Z",
+    "delivery": {
+      "voice": "设计音色·热络空心领导男声",
+      "tone": "点名以后把处罚和责任一并推回小张",
+      "emotion": "calm",
+      "speed": 0.94,
+      "pitch": -1,
+      "intensity": "medium",
+      "tags": [
+        "pause"
+      ]
+    },
+    "loudness": {
+      "standard": "EBU R128",
+      "targetIntegratedLufs": -18,
+      "targetTruePeakDbtp": -1.5,
+      "integratedLufs": -18.47,
+      "truePeakDbtp": -2.36
     }
   },
   {

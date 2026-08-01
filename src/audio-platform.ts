@@ -130,6 +130,8 @@ const MUSIC_TENSION_FILE = 'assets/audio/music/pressure.mp3';
 interface QueuedVoice {
   id: VoiceCueId;
   treatment?: VoiceTreatment;
+  /** 入席时刻：配合保鲜期判断这句话的语境还在不在。 */
+  queuedAt: number;
 }
 
 function readNumber(key: string, fallback: number): number {
@@ -177,6 +179,34 @@ function readInitialVolume(): number {
   return stored;
 }
 
+/**
+ * 同时挂着 src 的人声元素上限。
+ *
+ * 手机 WebView 的媒体元素/解码器是有限池，量级只有十几个，超了之后 play() 静默失败。
+ * 定 10 是因为开场漫画要同时热八句旁白，再留两格给紧接着的过场；环境音与配乐各自
+ * 只保留当前那一份，不计入这里。
+ */
+const VOICE_PLAYER_BUDGET = 10;
+
+/**
+ * 候补席座位数。8 座在实际台词密度下基本不会坐满——真正防「过时台词乱入」的
+ * 守门员不再是挤座位，而是下面的保鲜期：排队超时的台词说明语境已经过去，
+ * 静默作废比迟到乱响强。挤丢只会在极端扎堆时发生，且有计数可查。
+ */
+const VOICE_QUEUE_LIMIT = 8;
+
+/** 候补台词的保鲜期：超过这个时长还没轮上，语境已经翻篇，作废不播。 */
+const VOICE_QUEUE_MAX_AGE_MS = 12_000;
+
+/**
+ * 每首配乐的循环体起点（秒）。烘过「前奏 + 无缝循环体」的曲子在这登记：
+ * 巡逻跳回这里而不是 0——前奏只在进场放一次，循环点落在烘好的交叉淡化里。
+ * 未登记的曲子回 0.02，行为与从前一致。
+ */
+const MUSIC_LOOP_START: Partial<Record<number, number>> = {
+  1: 3, // under-bed：开头 3 秒已烘进结尾（wav 母版未动，随时可重烘）
+};
+
 /** 所有创建过的媒体元素，仅供性能面板统计在播数量（元素本身生命周期不受影响）。 */
 const allMediaElements: HTMLAudioElement[] = [];
 probeRegisterPlayingCounter(() => allMediaElements.reduce((n, el) => n + (el.paused ? 0 : 1), 0));
@@ -188,6 +218,22 @@ function media(file: string): HTMLAudioElement {
   allMediaElements.push(element);
   probeElementCreated();
   return element;
+}
+
+/**
+ * 真正把一个媒体元素还回去。
+ *
+ * 只是丢掉引用不够：元素只要还挂着 src，WebView 就一直占着解复用器与解码器名额。
+ * 必须 removeAttribute('src') + load() 才会释放媒体管线；否则缓存越攒越多，
+ * 到了名额上限之后所有 play() 会静默失败——真机整局没有旁白就是这么来的。
+ */
+function releaseMedia(element: HTMLAudioElement): void {
+  if (!element.paused) element.pause();
+  element.onended = null;
+  element.removeAttribute('src');
+  element.load();
+  const index = allMediaElements.indexOf(element);
+  if (index >= 0) allMediaElements.splice(index, 1);
 }
 
 /**
@@ -475,6 +521,21 @@ export function sfxEngineState(): string {
   return sfxEngine.state();
 }
 
+/**
+ * 人声管线诊断，真机性能面板直读——「漫画没旁白」这类只在设备上出现的故障，
+ * 靠它一眼分辨卡在哪一环：复活=开局手势里把启动期元素重装/开嗓成功了几条；
+ * 自愈=play 被拒后 load 重试救回几条；拒播=重试仍失败、真丢了几句。
+ */
+let voiceReviveCount = 0;
+let voiceHealCount = 0;
+let voiceRejectCount = 0;
+let voiceDropCount = 0;
+let voiceExpireCount = 0;
+let voiceZombieCount = 0;
+export function voicePipelineState(): string {
+  return `复活 ${voiceReviveCount} · 自愈 ${voiceHealCount} · 拒播 ${voiceRejectCount} · 挤丢 ${voiceDropCount} · 过期 ${voiceExpireCount} · 僵尸 ${voiceZombieCount}`;
+}
+
 export class LifeFeedback {
   private volume = readInitialVolume();
   private effectsVolume = Math.max(0, Math.min(1, readNumber(EFFECTS_VOLUME_KEY, 1)));
@@ -497,7 +558,7 @@ export class LifeFeedback {
   private activeVoiceBaseVolume = 0;
   private activeVoicePriority = 0;
   private voiceRequestSerial = 0;
-  private queuedVoice?: QueuedVoice;
+  private readonly queuedVoices: QueuedVoice[] = [];
   private requestedAmbience?: number;
   private activeAmbienceStage?: number;
   private activeAmbience?: HTMLAudioElement;
@@ -507,6 +568,21 @@ export class LifeFeedback {
   private musicTension = false;
   private tensionPlayer?: HTMLAudioElement;
   private activeTension?: HTMLAudioElement;
+  /** mp3 元素循环的尾部空隙巡逻定时器（见 ensureLoopPatrol）。 */
+  private loopPatrolTimer: number | null = null;
+  /** 每个循环元素最近一次被巡逻跳回开头的时刻：防连环 seek。 */
+  private readonly loopJumpAt = new WeakMap<HTMLAudioElement, number>();
+  /** 每个配乐元素的循环体起点（见 MUSIC_LOOP_START）。 */
+  private readonly loopStartByEl = new WeakMap<HTMLAudioElement, number>();
+  /**
+   * BGM 无缝循环的替补元素。真机上 mp3 的 seek 本身要重启解复用管线（可闻空洞），
+   * 巡逻跳回法治不了；正解是同曲双元素：快到尾时替补从循环体起点淡入、主元素
+   * 淡出、换岗。任意时刻配乐最多占 2 个媒体名额。
+   */
+  private musicTwin?: HTMLAudioElement;
+  private musicTwinTrack?: number;
+  private musicCross?: { from: HTMLAudioElement; to: HTMLAudioElement; endAt: number; durationMs: number };
+  private musicSwapAt = 0;
 
   constructor() {
     try {
@@ -541,15 +617,113 @@ export class LifeFeedback {
     // 旧写法把 prime 关在 first 分支里，于是之后真正的点击再也不会恢复它——整局静音。
     // prime() 自身幂等：已有 context 时只在 state !== 'running' 时补一次 resume。
     sfxEngine.prime();
-    if (first && !sfxEngine.ready('hit')) {
-      // 成功走 Web Audio 的话音效池根本不用建——那 30 个 preload='auto' 的元素
-      // 本身也在占 WebView 的解码器名额；play() 里另有「引擎没 ready 就退回元素」的兜底。
-      for (const sound of Object.keys(SFX_FILES) as LifeSound[]) this.ensureSfxPool(sound);
-    }
+    // 这里绝不批量预建音效元素池。旧逻辑在 first && !ready('hit') 时一口气建 30 个
+    // preload='auto' 的 <audio>——而 first 那次 unlock 发生在启动 warmup 里，Web Audio
+    // 的 buffer 还在异步解码、ready 必然 false，于是每次启动都白建 30 个元素，和开场
+    // 漫画那八条人声抢装载通道（真机上人声元素在启动风暴里装载失败＝漫画整段没旁白）。
+    // play() 里本有「引擎没 ready 就现场 ensureSfxPool」的兜底，Web Audio 不可用的
+    // 机器照样有声，只是第一声晚建几毫秒。
+    this.ensureLoopPatrol();
     this.syncAmbience();
     this.syncMusic();
     this.syncMusicTension();
   }
+
+  /**
+   * 干掉 BGM 的「中断循环感」。mp3 在元素上原生 loop 时，尾部必然带一段编码器
+   * 补零静音（几十到几百毫秒），听感就是每一圈结尾咯噔断一下。巡逻以 20Hz 盯着
+   * 三个循环元素，快到尾巴时提前跳回开头——每圈只多一次 seek，churn 可忽略；
+   * timeupdate 事件只有 ~4Hz，抓不住这个窗口，所以用定时器。seek 失败就让原生
+   * loop 兜底，最坏也不比现在差。
+   */
+  private ensureLoopPatrol(): void {
+    if (this.loopPatrolTimer !== null) return;
+    this.loopPatrolTimer = window.setInterval(() => {
+      if (document.hidden) return;
+      const now = performance.now();
+
+      // —— 语音僵尸看门狗 ——
+      // 部分 WebView 在「pause() 落在 play 仍在缓冲的窗口」时会缓冲完照播不误，
+      // 而 JS 侧 paused 仍是 true 直到下一次交互——表现为多句旁白齐响（少年开局）。
+      // 凡是不是当前主播、没被静音、却在出声的池内元素，一律当场掐掉并计数。
+      for (const [, element] of this.voicePlayers) {
+        if (element === this.activeVoice || element.paused || element.muted) continue;
+        element.pause();
+        try { if (element.currentTime !== 0) element.currentTime = 0; } catch { /* seek 失败无碍 */ }
+        voiceZombieCount += 1;
+      }
+
+      // —— BGM 双元素无缝换岗 ——
+      const music = this.activeMusic;
+      if (this.musicCross) {
+        const cross = this.musicCross;
+        const k = Math.max(0, Math.min(1, (cross.endAt - now) / cross.durationMs));
+        const base = this.musicTargetVolume(MUSIC_BUS_GAIN, musicAssetGain(this.activeMusicTrack ?? 0));
+        cross.from.volume = base * k;
+        cross.to.volume = base * (1 - k);
+        if (k <= 0) {
+          cross.from.pause();
+          try { cross.from.currentTime = this.loopStartByEl.get(cross.from) ?? 0.02; } catch { /* 无碍 */ }
+          this.musicCross = undefined;
+        }
+      } else if (music && !music.paused && music.loop) {
+        const total = music.duration;
+        if (Number.isFinite(total) && total > 2 && now - this.musicSwapAt > 1500) {
+          const CROSS_SECONDS = 0.55;
+          if (music.currentTime > total - CROSS_SECONDS) {
+            this.musicSwapAt = now;
+            this.beginMusicCrossloop(music, CROSS_SECONDS);
+          }
+        }
+      }
+
+      // —— 紧张层与环境床仍用提前跳回（织体循环，空隙远不如主旋律扎耳）——
+      for (const el of [this.activeTension, this.activeAmbience]) {
+        if (!el || el.paused || !el.loop || el.seeking) continue;
+        if (now - (this.loopJumpAt.get(el) ?? 0) < 600) continue;
+        const total = el.duration;
+        if (Number.isFinite(total) && total > 1 && el.currentTime > total - 0.18) {
+          this.loopJumpAt.set(el, now);
+          try { el.currentTime = 0.02; } catch { /* 原生 loop 兜底 */ }
+        }
+      }
+    }, 50);
+  }
+
+  /** 起一次换岗：替补从循环体起点静音起播，交叉淡化后接管 activeMusic 身份。 */
+  private beginMusicCrossloop(current: HTMLAudioElement, crossSeconds: number): void {
+    const track = this.activeMusicTrack;
+    if (track === undefined) return;
+    if (this.musicTwinTrack !== track || !this.musicTwin) {
+      if (this.musicTwin) releaseMedia(this.musicTwin);
+      this.musicTwin = media(MUSIC_FILES[track]!);
+      this.musicTwin.loop = true;
+      this.musicTwinTrack = track;
+      this.loopStartByEl.set(this.musicTwin, MUSIC_LOOP_START[track] ?? 0.02);
+    }
+    const twin = this.musicTwin;
+    const loopStart = this.loopStartByEl.get(current) ?? 0.02;
+    try { twin.currentTime = loopStart; } catch { /* 未就绪则从头，误差极小 */ }
+    twin.volume = 0;
+    const attempt = twin.play();
+    if (!attempt) return;
+    attempt.then(() => {
+      // 换岗成功才交接身份：主备互换，旧主淡出后归位待命。
+      this.musicTwin = current;
+      this.musicTwinTrack = track;
+      this.activeMusic = twin;
+      this.musicPlayers.set(track, twin);
+      this.musicCross = {
+        from: current,
+        to: twin,
+        endAt: performance.now() + crossSeconds * 1000,
+        durationMs: crossSeconds * 1000,
+      };
+    }).catch(() => {
+      // 起播被拒（罕见）：什么都不改，原生 loop 兜底，最坏等于旧行为。
+    });
+  }
+
 
   private resumeAfterForeground(): void {
     if (!this.unlocked || this.volume <= 0) return;
@@ -607,6 +781,10 @@ export class LifeFeedback {
     musicTension: boolean;
     voiceReady: number;
     voiceActive: boolean;
+    voiceRevives: number;
+    voiceHeals: number;
+    voiceRejects: number;
+    voiceQueued: number;
     mix: { effects: number; ambience: number; music: number; voice: number };
     bus: { master: number; effects: number; ambience: number; music: number; tension: number; voice: number };
   } {
@@ -622,6 +800,10 @@ export class LifeFeedback {
       musicTension: this.musicTension,
       voiceReady: this.voicePlayers.size,
       voiceActive: Boolean(this.activeVoice),
+      voiceRevives: voiceReviveCount,
+      voiceHeals: voiceHealCount,
+      voiceRejects: voiceRejectCount,
+      voiceQueued: this.queuedVoices.length,
       mix: {
         effects: this.effectsVolume,
         ambience: this.ambienceVolume,
@@ -823,9 +1005,168 @@ export class LifeFeedback {
     this.syncMusicTension();
   }
 
+  /**
+   * 预热必须服从元素池上限。每章的预载表有 14–21 条，六章累计约 99 个元素——
+   * 这正是「攒到后面全局没声音」的来源。超过上限地热只会自己挤自己，还白白多做
+   * 一轮建元素、释放元素的开销，所以这里直接截到上限：排在前面的是本章最早用到的。
+   *
+   * 同时借道「复活」：本方法有一次调用发生在标题页点「开始呼吸」的手势调用栈里
+   * （startRun → preloadVoices），正是给启动期元素解毒的唯一窗口，见 reviveVoice。
+   */
   preloadVoices(ids: readonly VoiceCueId[]): void {
     this.unlock();
-    for (const id of ids) this.ensureVoice(id);
+    for (const id of ids.slice(0, VOICE_PLAYER_BUDGET)) this.reviveVoice(this.ensureVoice(id));
+  }
+
+  /**
+   * 给「启动阶段建出来的人声元素」解毒。真机上开场漫画整段没旁白、而出生档案起
+   * 一切正常的分界线，就是元素诞生在第一次用户手势之前还是之后：装帧期风暴里
+   * 装载失败的元素 error 会被锁存，部分 WebView 还会拒绝为「无手势期」元素的后续
+   * play()。两种毒都能在一次真实手势里洗掉——error 的重新 load()，全部试着无声
+   * 开嗓（muted play 后立即 pause 归零）。桌面上元素早就 ready，这里等于空转。
+   */
+  /** 已开嗓的元素：开嗓一次管一辈子，换章预热不再反复整池 play/pause。 */
+  private readonly blessedVoices = new WeakSet<HTMLAudioElement>();
+
+  private reviveVoice(player: HTMLAudioElement): void {
+    if (player === this.activeVoice || !player.paused) return;
+    if (this.queuedVoices.some((entry) => this.voicePlayers.get(entry.id) === player)) return;
+    if (player.error) {
+      try { player.load(); } catch { return; }
+    } else if (this.blessedVoices.has(player) && player.readyState > 0) {
+      return; // 健康且已开嗓：什么都不用做
+    }
+    // 静音必须用 muted 而不是 volume=0：iOS 的 volume 是只读属性，赋 0 被静默忽略、
+    // 照样满音量出声——整池开嗓就成了好几句旁白同时炸出来（真机上的「旁白打架」）。
+    player.muted = true;
+    const attempt = player.play();
+    if (!attempt) { player.muted = false; return; }
+    attempt.then(() => {
+      if (player !== this.activeVoice) {
+        player.pause();
+        try { if (player.currentTime !== 0) player.currentTime = 0; } catch { /* seek 失败无碍 */ }
+      }
+      player.muted = false;
+      this.blessedVoices.add(player);
+      voiceReviveCount += 1;
+    }).catch(() => {
+      player.muted = false;
+    });
+  }
+
+  /** 「资源预载」的音频温启动进度（见 startAudioWarm）。 */
+  private audioWarmDone = 0;
+  private audioWarmTotal = 0;
+  private audioWarmRunning = false;
+  private audioWarmToken = 0;
+
+  audioWarmStatus(): { done: number; total: number; running: boolean } {
+    return { done: this.audioWarmDone, total: this.audioWarmTotal, running: this.audioWarmRunning };
+  }
+
+  /**
+   * 串行温启动全部音频：一次只开一个临时元素，缓冲到能起播（readyState≥2）就
+   * 立刻释放换下一个。目的不是把 100 多个文件驻留在内存——解码器名额只有十几个，
+   * 那是当初「整局没旁白」的事故根源——而是让设备的文件缓存与解复用管线逐个
+   * 被摸过一遍，正式播放时起播更快。任意时刻只多占一个媒体名额。
+   * 平台若拒绝无播放的冷缓冲（连续 4 个文件毫无进展），诚实作罢，不刷假进度。
+   */
+  startAudioWarm(): void {
+    if (this.audioWarmRunning) return;
+    const files = [...new Set([
+      ...AMBIENCE_FILES,
+      ...MUSIC_FILES,
+      MUSIC_TENSION_FILE,
+      ...Object.values(VOICE_CUES).map((cue) => cue.playbackFile ?? cue.file),
+    ])];
+    this.audioWarmTotal = files.length;
+    this.audioWarmDone = 0;
+    this.audioWarmRunning = true;
+    const token = ++this.audioWarmToken;
+    void (async () => {
+      let coldMisses = 0;
+      let processed = 0;
+      // 总预算：单文件 700ms × 113 个的最坏情况是 79 秒，玩家不会等那么久。
+      // 40 秒到点就诚实收尾——已摸过的那些照样受益，没摸到的按原路径懒加载。
+      const deadline = performance.now() + 40_000;
+      for (const file of files) {
+        if (token !== this.audioWarmToken) break;
+        if (performance.now() > deadline) {
+          this.audioWarmDone = this.audioWarmTotal;
+          break;
+        }
+        // 每 6 个让一帧：标题页的呼吸动画和按钮进度条要保持顺滑，
+        // 建元素/load() 这些同步调用连着做会把主线程占出可见的顿。
+        if (processed % 6 === 5) {
+          await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+        }
+        processed += 1;
+        const element = media(file);
+        const warmed = await new Promise<boolean>((resolve) => {
+          let settled = false;
+          const finish = (good: boolean): void => {
+            if (settled) return;
+            settled = true;
+            element.removeEventListener('loadeddata', onData);
+            element.removeEventListener('canplaythrough', onData);
+            element.removeEventListener('error', onError);
+            window.clearTimeout(timer);
+            resolve(good);
+          };
+          const onData = (): void => { if (element.readyState >= 2) finish(true); };
+          const onError = (): void => finish(false);
+          const timer = window.setTimeout(() => finish(element.readyState >= 2), 700);
+          element.addEventListener('loadeddata', onData);
+          element.addEventListener('canplaythrough', onData);
+          element.addEventListener('error', onError);
+          try { element.load(); } catch { finish(false); }
+        });
+        releaseMedia(element);
+        if (token !== this.audioWarmToken) break;
+        this.audioWarmDone += 1;
+        // 连续摸空才计数；中间只要成功一个就清零——偶发的单文件超时不该
+        // 被误判成「这台机器不给冷缓冲」而提前收工。
+        coldMisses = warmed ? 0 : coldMisses + 1;
+        if (coldMisses >= 4) {
+          // 这台 WebView 不给无播放的冷缓冲：剩下的摸不动，直接收尾。
+          this.audioWarmDone = this.audioWarmTotal;
+          break;
+        }
+      }
+      if (token === this.audioWarmToken) this.audioWarmRunning = false;
+    })();
+  }
+
+  stopAudioWarm(): void {
+    this.audioWarmToken += 1;
+    this.audioWarmRunning = false;
+  }
+
+  /**
+   * 这条人声是否已经缓冲到可以从头连着播。
+   *
+   * 启动时的 warmup 跑在任何用户手势之前，移动 WebView 在那之前根本不会真的去
+   * 缓冲——canplaythrough 等不到、超时放行，漫画于是在没数据的情况下开播，
+   * 表现就是"前几句没有旁白，过一会儿才有声"。开播前用它兜一道。
+   * readyState 3 = HAVE_FUTURE_DATA，够起播了；不必等到 4。
+   */
+  /**
+   * 字幕对表用：这条 cue 正是当前在播的人声时，返回播放头位置（音频文件内秒数），
+   * 否则 null。currentTime 量的是文件位置，与 playbackRate 无关，可直接对时间表。
+   */
+  voicePosition(id: VoiceCueId): number | null {
+    const player = this.voicePlayers.get(id);
+    if (!player || player !== this.activeVoice || player.paused) return null;
+    return player.currentTime;
+  }
+
+  voiceBuffered(id: VoiceCueId): boolean {
+    // 静音时没有可等的东西；error 锁存时等也白等（播放路径自会重装重试）。
+    if (this.volume <= 0 || this.voiceVolume <= 0) return true;
+    const player = this.voicePlayers.get(id);
+    if (!player) return false;
+    if (player.error) return true;
+    return player.readyState >= 3;
   }
 
   /**
@@ -841,14 +1182,16 @@ export class LifeFeedback {
    */
   async warmup(
     voiceIds: readonly VoiceCueId[],
-    stage = 0,
     onProgress?: (done: number, total: number) => void,
-    budgetMs = 15000,
+    budgetMs = 60000,
   ): Promise<void> {
+    // 元素数量必须有上限：手机 WebView 能同时持有的媒体元素/解码器名额只有十几个量级，
+    // 一次建 100+ 个之后所有 play() 会静默失败（0729-31 真机整局无旁白，就是这么来的）。
+    // 只热开场要用的人声，加首章环境音与配乐各一份；后面各章仍走 startStage 逐章加载。
     const elements: HTMLAudioElement[] = [
       ...voiceIds.map((id) => this.ensureVoice(id)),
-      this.ensureAmbience(stage),
-      this.ensureMusic(stage),
+      this.ensureAmbience(0),
+      this.ensureMusic(0),
     ];
     const deadline = performance.now() + budgetMs;
     let done = 0;
@@ -897,8 +1240,7 @@ export class LifeFeedback {
     }
     this.unlock();
     if (this.activeVoicePriority > 0 && !cue.trigger.interrupt) {
-      const queuedPriority = this.queuedVoice ? VOICE_CUES[this.queuedVoice.id].trigger.priority : 0;
-      if (!this.queuedVoice || cue.trigger.priority > queuedPriority) this.queuedVoice = { id, treatment };
+      this.enqueueVoice(id, treatment);
       return;
     }
     if (this.activeVoicePriority > 0) this.cancelCurrentVoice();
@@ -908,8 +1250,13 @@ export class LifeFeedback {
     const player = this.ensureVoice(id);
     const filter = sfxEngine.elementFilter(player);
     if (filter) configureVoiceFilter(filter, treatment ?? cue.treatment);
-    player.pause();
-    player.currentTime = 0;
+    // 给 HTMLAudioElement 赋 currentTime 是一次真 seek：移动 WebView 会冲刷解码缓冲、
+    // 重定位解复用器、重新申请解码器。开场漫画连播八句，等于在打字机推进时连做八次
+    // 管线重建——音效路径早就避开了这条，人声路径一直没有。已经停在 0 的元素不必再动。
+    if (!player.paused) player.pause();
+    if (player.currentTime !== 0) player.currentTime = 0;
+    // 开嗓流程用 muted 静音；正式起播前必须确保它已复位，否则整句无声。
+    player.muted = false;
     player.playbackRate = voicePlaybackRate(id, treatment);
     this.activeVoiceBaseVolume = cue.volume;
     this.activeVoice = player;
@@ -925,16 +1272,39 @@ export class LifeFeedback {
     };
     void player.play().catch(() => {
       if (serial !== this.voiceRequestSerial) return;
-      this.activeVoice = undefined;
-      this.activeVoiceBaseVolume = 0;
-      this.activeVoicePriority = 0;
-      this.refreshActiveVolumes();
-      this.playQueuedVoice();
+      // 两级自愈：启动风暴里装载失败的元素 error 被锁存，play() 会一直拒；
+      // load() 重置装载后大多能活。300ms 一试，1200ms 再试（慢速缓冲需要时间），
+      // 仍失败才放弃——并清掉这条的冷却戳，让后续游戏触发还有机会补一次。
+      try { player.load(); } catch { /* 重装失败则直接走放弃分支 */ }
+      const giveUp = (): void => {
+        if (serial !== this.voiceRequestSerial) return;
+        voiceRejectCount += 1;
+        this.lastVoicePlayed.delete(id);
+        this.activeVoice = undefined;
+        this.activeVoiceBaseVolume = 0;
+        this.activeVoicePriority = 0;
+        this.refreshActiveVolumes();
+        this.playQueuedVoice();
+      };
+      window.setTimeout(() => {
+        if (serial !== this.voiceRequestSerial) return;
+        void player.play().then(() => {
+          voiceHealCount += 1;
+        }).catch(() => {
+          if (serial !== this.voiceRequestSerial) return;
+          window.setTimeout(() => {
+            if (serial !== this.voiceRequestSerial) return;
+            void player.play().then(() => {
+              voiceHealCount += 1;
+            }).catch(giveUp);
+          }, 1200);
+        });
+      }, 300);
     });
   }
 
   stopVoice(): void {
-    this.queuedVoice = undefined;
+    this.queuedVoices.length = 0;
     this.cancelCurrentVoice();
   }
 
@@ -946,12 +1316,67 @@ export class LifeFeedback {
     return pool;
   }
 
+  /**
+   * 人声元素缓存必须封顶并真正释放。
+   *
+   * 全局有 90 多条人声，原先 ensureVoice 只有 get/set、从不淘汰：打到中后期就攒出
+   * 上百个挂着 src 的 <audio>，超过 WebView 的解码器名额之后所有 play() 静默失败
+   * （0729-31 真机整局无旁白）。把上限压到「开场漫画八句 + 环境 + 配乐」还留有余量的
+   * 量级，用 Map 的插入序当 LRU：命中挪到队尾，超了从队头挑没在播的释放。
+   */
+  private evictVoicePlayers(target: number): void {
+    if (this.voicePlayers.size <= target) return;
+    for (const [id, player] of [...this.voicePlayers]) {
+      if (this.voicePlayers.size <= target) break;
+      // 正在播的、以及排队中的下一句，都不能被抽走
+      if (player === this.activeVoice || !player.paused) continue;
+      if (this.queuedVoices.some((entry) => entry.id === id)) continue;
+      this.voicePlayers.delete(id);
+      releaseMedia(player);
+    }
+  }
+
   private ensureVoice(id: VoiceCueId): HTMLAudioElement {
     const cached = this.voicePlayers.get(id);
-    if (cached) return cached;
+    if (cached && !cached.error) {
+      // 命中即刷新 LRU 次序（Map 靠插入序，delete + set 等于挪到队尾）
+      this.voicePlayers.delete(id);
+      this.voicePlayers.set(id, cached);
+      return cached;
+    }
+    if (cached) {
+      // error 被锁存的元素留着只会一直拒播：真正释放掉，换个新的重来。
+      // 唯一例外是它正是当前 activeVoice（播到一半出错）：release 会摘掉 onended，
+      // activeVoicePriority 从此卡死>0，之后所有非打断台词全部进候补席再也轮不上。
+      // 正在播的交给 playVoice 的两级自愈去收拾，这里绝不动它。
+      if (cached === this.activeVoice) return cached;
+      this.voicePlayers.delete(id);
+      releaseMedia(cached);
+    }
+    this.evictVoicePlayers(VOICE_PLAYER_BUDGET - 1);
     const player = media(VOICE_CUES[id].playbackFile ?? VOICE_CUES[id].file);
     this.voicePlayers.set(id, player);
     return player;
+  }
+
+  /**
+   * 环境音一次只可能听得到一份，配乐同理。六章打下来原先会攒满 6 份环境 + 11 首配乐，
+   * 白占 17 个解码器名额。换章时把不在播的旧的还回去，常驻量压到各一份。
+   */
+  private releaseIdleAmbience(keep: number): void {
+    for (const [stage, player] of [...this.ambiencePlayers]) {
+      if (stage === keep || !player.paused) continue;
+      this.ambiencePlayers.delete(stage);
+      releaseMedia(player);
+    }
+  }
+
+  private releaseIdleMusic(keep: number): void {
+    for (const [track, player] of [...this.musicPlayers]) {
+      if (track === keep || !player.paused) continue;
+      this.musicPlayers.delete(track);
+      releaseMedia(player);
+    }
   }
 
   private ensureAmbience(stage: number): HTMLAudioElement {
@@ -960,15 +1385,29 @@ export class LifeFeedback {
     const player = media(AMBIENCE_FILES[stage]!);
     player.loop = true;
     this.ambiencePlayers.set(stage, player);
+    this.releaseIdleAmbience(stage);
     return player;
   }
 
   private ensureMusic(track: number): HTMLAudioElement {
+    // 换曲时立刻收掉上一首的循环替补和进行中的换岗：旧替补白占一个媒体名额，
+    // 进行中的交叉淡化则会让两首歌打架 0.5 秒。
+    if (this.musicTwinTrack !== undefined && this.musicTwinTrack !== track) {
+      if (this.musicCross) {
+        this.musicCross.from.pause();
+        this.musicCross = undefined;
+      }
+      if (this.musicTwin) releaseMedia(this.musicTwin);
+      this.musicTwin = undefined;
+      this.musicTwinTrack = undefined;
+    }
     const cached = this.musicPlayers.get(track);
     if (cached) return cached;
     const player = media(MUSIC_FILES[track]!);
     player.loop = true;
     this.musicPlayers.set(track, player);
+    this.loopStartByEl.set(player, MUSIC_LOOP_START[track] ?? 0.02);
+    this.releaseIdleMusic(track);
     return player;
   }
 
@@ -1186,10 +1625,43 @@ export class LifeFeedback {
     player.currentTime = 0;
   }
 
+  private enqueueVoice(id: VoiceCueId, treatment?: VoiceTreatment): void {
+    if (this.queuedVoices.some((entry) => entry.id === id)) return;
+    this.queuedVoices.push({ id, treatment, queuedAt: performance.now() });
+    if (this.queuedVoices.length > VOICE_QUEUE_LIMIT) {
+      // 满员时挤掉优先级最低的一句（并列挤更晚来的），并记账供性能面板复盘。
+      let drop = 0;
+      for (let i = 1; i < this.queuedVoices.length; i += 1) {
+        if (VOICE_CUES[this.queuedVoices[i]!.id].trigger.priority
+          <= VOICE_CUES[this.queuedVoices[drop]!.id].trigger.priority) drop = i;
+      }
+      this.queuedVoices.splice(drop, 1);
+      voiceDropCount += 1;
+    }
+  }
+
   private playQueuedVoice(): void {
-    const queued = this.queuedVoice;
-    this.queuedVoice = undefined;
-    if (queued) this.playVoice(queued.id, queued.treatment);
+    // 先清掉过了保鲜期的：它们的语境（那口铃、那句议论）已经翻篇，播出来是穿帮。
+    const now = performance.now();
+    for (let i = this.queuedVoices.length - 1; i >= 0; i -= 1) {
+      if (now - this.queuedVoices[i]!.queuedAt > VOICE_QUEUE_MAX_AGE_MS) {
+        this.queuedVoices.splice(i, 1);
+        voiceExpireCount += 1;
+      }
+    }
+    // 出列后 playVoice 可能因冷却/静音早退——那条已被消费，但没人再排下一条，
+    // 候补席剩下的会干等到下一次 onended 才有机会。这里循环出列，直到真的有
+    // 一条开播（activeVoicePriority 抬起来）或队列排空。
+    while (this.queuedVoices.length) {
+      let pick = 0;
+      for (let i = 1; i < this.queuedVoices.length; i += 1) {
+        if (VOICE_CUES[this.queuedVoices[i]!.id].trigger.priority
+          > VOICE_CUES[this.queuedVoices[pick]!.id].trigger.priority) pick = i;
+      }
+      const queued = this.queuedVoices.splice(pick, 1)[0]!;
+      this.playVoice(queued.id, queued.treatment);
+      if (this.activeVoicePriority > 0) return;
+    }
   }
 
   private refreshActiveVolumes(): void {

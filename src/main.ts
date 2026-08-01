@@ -1,10 +1,13 @@
 import './style.css';
 import {
-  preloadAllProductionArt,
+  preloadProductionArt,
+  preloadRemainingProductionArt,
   ProductionArtError,
   productionArtCount,
+  productionBootArtCount,
   type ArtProgress,
 } from './art-preload';
+import { endArtBootPhase } from './art-runtime';
 import { installPerformanceMonitor, markPerformance } from './performance-monitor';
 import { installMobileFullscreenIntent, installMobileViewportAdaptation } from './mobile-platform';
 
@@ -82,12 +85,16 @@ async function init(): Promise<void> {
   // 先等完图片、再串行解析 800KB+ 游戏模块。正式画面仍要等关键图片门禁。
   const gameModulePromise = import('./game');
   markPerformance('game_module_requested');
-  markPerformance('all_art_started', { files: productionArtCount() });
-  // 六章正式美术一次性全部装订完再进游戏：首屏多等一会，换来的是玩起来
-  // 全程零解码。分批后台预热会让主线程在过场、命运和商店里继续 decode，
-  // 本地几乎察觉不到，扫码在手机上就是持续掉帧。
-  await preloadAllProductionArt(updateArtProgress);
-  markPerformance('all_art_ready', { files: productionArtCount() });
+  markPerformance('boot_art_started', {
+    boot: productionBootArtCount(),
+    total: productionArtCount(),
+  });
+  // 只门禁「眼前这一页」：首屏 UI、主角、特效、图标、三间房，加童年一章。
+  // 六章一次性等完是 148 张 / 4.2MB，把全部代价堆在第一屏，互动空间里玩家
+  // 根本进不去。后续章节在装帧页收起之后走后台单通道按人生顺序补，每章开打前
+  // 还有 productionArtStageReady 复核——永不降级，缺图就把玩家留在章节过场。
+  await preloadProductionArt(updateArtProgress);
+  markPerformance('boot_art_ready', { files: productionBootArtCount() });
   if (import.meta.env.DEV) {
     const auditParams = new URLSearchParams(window.location.search);
     if (auditParams.get('audit-art-fail') === '1') throw new ProductionArtError(1);
@@ -119,8 +126,16 @@ async function init(): Promise<void> {
   const loading = loadingElement();
   if (loading) loading.hidden = true;
   markPerformance('interactive_ready');
-  // 这里不再挂后台预热队列：六章美术已经在进游戏前全部装订完，
-  // 游戏内 productionArtStageReady() 会直接放行，不会有任何运行时解码。
+  // 装帧页收起之后才退出启动档：关键队列从启动并发降回战斗的三路，
+  // 之后每一路解码都要和战斗抢主线程。
+  endArtBootPhase();
+  // 后续章节从这里开始后台补，单通道、按人生顺序、战斗中让路。
+  // 必须排在门禁与装帧页之后——提前开就是和首屏抢同一条解码通道。
+  void preloadRemainingProductionArt().catch((error: unknown) => {
+    // 后台补装订失败不该盖掉正在玩的一局；真正的硬闸门在每章开打前。
+    console.error('后续章节美术后台装订失败；章节过场处的门禁会拦住玩家。', error);
+  });
+  markPerformance('background_art_started');
 }
 
 init().catch((error: unknown) => {

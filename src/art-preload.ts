@@ -1,5 +1,5 @@
 import artWeights from './art-loading-weights.json';
-import { loadArtImage, type ArtLoadPriority } from './art-runtime';
+import { loadArtImage, rewarmArtRaster, type ArtLoadPriority } from './art-runtime';
 
 export type ArtProgressPhase = 'boot' | 'background' | 'all';
 
@@ -165,10 +165,27 @@ function isBootArt(entry: ArtEntry): boolean {
     || coreHero
     || path.endsWith('/assets/items/icons.png')
     || path.includes('/assets/vfx/')
+    // 留灯间/里屋/当铺三间房在童年章就能被推开。它们不进首屏门禁的话，
+    // 玩家会在第一章撞见一扇程序化替代门——那正是"降级画面"，红线不允许。
+    || path.includes('/assets/rooms/')
     || path.endsWith('/world/props.png')
     || path.endsWith('/world/entities.png')
     || path.endsWith('/world/plinths.png')
     || belongsToStage(path, 0);
+}
+
+/**
+ * 后台补装订的排队次序：必须按人生顺序（少年 → 青年 → 成年 → 中年 → 暮年）。
+ *
+ * 不排序就是数组原序（大体是字母序），会让暮年的收灯人先装、少年的父亲最后到——
+ * 玩家刚打完童年就撞上没装订完的少年章，等于把门禁的意义抵消掉。
+ */
+function backgroundRank(entry: ArtEntry): number {
+  for (let stage = 1; stage < STAGE_TOKENS.length; stage += 1) {
+    if (belongsToStage(entry.path, stage)) return stage;
+  }
+  // 不属于任何章节的收尾资产（结算页、组合彩蛋、章节条）排在所有章节之后。
+  return STAGE_TOKENS.length;
 }
 
 function progressLabel(phase: ArtProgressPhase, percent: number): string {
@@ -251,11 +268,23 @@ export async function preloadAllProductionArt(
   bootCompleted = true;
 }
 
+/** 首屏门禁之外的全部正式美术，按人生顺序排好队，只走后台单通道。 */
+const BACKGROUND_ENTRIES: readonly ArtEntry[] = ART_ENTRIES
+  .filter((entry) => !isBootArt(entry))
+  .slice()
+  .sort((a, b) => backgroundRank(a) - backgroundRank(b));
+
+/**
+ * 进游戏之后在后台把后续章节补齐。
+ *
+ * 必须排在装帧页收起之后调用：它和首屏门禁抢的是同一条解码通道，提前开就是
+ * 把首屏时间又拖长。失败不阻断——真正的硬闸门在每章开打前的 productionArtStageReady。
+ */
 export function preloadRemainingProductionArt(
   onProgress: ArtProgressListener = () => undefined,
 ): Promise<void> {
   if (!backgroundPromise) {
-    backgroundPromise = loadEntries(ART_ENTRIES, 'background', 'background', onProgress);
+    backgroundPromise = loadEntries(BACKGROUND_ENTRIES, 'background', 'background', onProgress);
   }
   return backgroundPromise;
 }
@@ -263,6 +292,9 @@ export function preloadRemainingProductionArt(
 export function warmProductionArtForStage(stageIndex: number): Promise<void> {
   const index = Math.max(0, Math.min(STAGE_TOKENS.length - 1, Math.trunc(stageIndex)));
   const entries = ART_ENTRIES.filter((entry) => belongsToStage(entry.path, index));
+  // 已装订完的先把首绘成本重付一遍：栅格化缓存可能已被系统回收，等到战斗里
+  // 第一次画出来才发现就晚了。不触发任何加载，纯 CPU、几毫秒，且在过场期间。
+  rewarmArtRaster(entries.filter((entry) => completedPaths.has(entry.path)).map((entry) => entry.url));
   return loadEntries(entries, index === 0 ? 'critical' : 'next', 'background', () => undefined);
 }
 
@@ -278,4 +310,19 @@ export function productionArtCount(): number {
 
 export function productionBootArtCount(): number {
   return ART_ENTRIES.filter(isBootArt).length;
+}
+
+/**
+ * 后台补装订进度快照：给标题页「资源预载」按钮与暂停页那行。
+ * 按解码像素量加权（与装帧页同一标尺），不按文件数——大量小图不制造假快感，
+ * 进度推进与真实解码工作量严格成正比。
+ */
+export function backgroundArtStatus(): { done: number; total: number } {
+  let done = 0;
+  let total = 0;
+  for (const entry of BACKGROUND_ENTRIES) {
+    total += entry.weight;
+    if (completedPaths.has(entry.path)) done += entry.weight;
+  }
+  return { done, total };
 }

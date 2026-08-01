@@ -9,11 +9,12 @@ import {
   readAIDiagnostic,
   type AIGenerationState,
 } from './ai';
-import { productionArtStageReady, warmProductionArtForStage } from './art-preload';
+import { backgroundArtStatus, productionArtStageReady, warmProductionArtForStage } from './art-preload';
 import {
   loadArtImage,
   loadedArtImage,
   reportArtFrameDuration,
+  setArtBoost,
   setArtGameplayActive,
 } from './art-runtime';
 import { LifeFeedback, type AudioMixChannel, type LifeSound } from './audio-runtime';
@@ -426,6 +427,20 @@ const ORIGIN_COMIC_DURATION = ORIGIN_COMIC_SCENE_DURATIONS.reduce(
   (total, duration) => total + duration,
   0,
 );
+/** 开播前最多等多久第一句旁白。等不到也照常开播——绝不把玩家关在门外。 */
+const ORIGIN_COMIC_VOICE_WAIT_MAX = 6;
+
+/**
+ * 断点续局只在本地开发里保留，上传互动空间的生产包一律关掉。
+ *
+ * 理由有两条。其一，平台侧存储配额很小，一份 checkpoint 是整局的深快照（道具、
+ * 命运回执、Boss 状态、记忆…），写进去性价比极低。其二，恢复路径是这个项目已知
+ * 缺陷最密的一块——《游戏逻辑Bug审阅报告-v1》P0-1 一族六个子项全在这里：恢复后
+ * 整章 startStage 没跑（雨衣免伤、乳牙免死、小张盟友静默失灵）、里程碑标记被清
+ * 而 battleTime 已过阈值导致精英/Boss 重刷可无限刷道具、好话叠层与 voiceCuesSeen
+ * 不入档。评审场景下玩家本来就是一局一局扫码进来，续局收益远小于它带来的风险。
+ */
+const RUN_CHECKPOINT_ENABLED = import.meta.env.MODE !== 'production';
 
 function originComicSceneIndex(elapsed: number): number {
   let sceneEnd = 0;
@@ -474,8 +489,15 @@ function originComicCaptionProgress(sceneIndex: number, sceneElapsed: number): n
 
 // 标题页右下角与 AI 诊断行都会带上它：上传后扫码第一眼就能确认平台跑的是哪个包，
 // 排查「上传了但行为没变」时不再靠猜。每次要重新上传前手动 +1。
-const BUILD_TAG = '0729-29';
+const BUILD_TAG = '0801-1';
 const TITLE_START_RECT = { x: 88, y: 502, width: 184, height: 46 } as const;
+/**
+ * 标题页「资源预载」按钮。视觉上在右上角，但必须压在互动空间胶囊区（x≥250 且
+ * y≤56）之下——那块由宿主 WebView 盖在画布上，落在里面的按钮真机上点不到。
+ * 文案叫「预载」不叫「下载」：包已整体在本地，按钮做的是预解码装订；上一次
+ * 拒审理由之一就是「按钮功能与描述不符」，做的和说的必须严格一致。
+ */
+const TITLE_PACK_RECT = { x: 236, y: 64, width: 116, height: 30 } as const;
 // 底栏一共 336px（12 → 348）：四颗按钮 75+12 间距刚好铺满。
 // 百科直接在画布内展开，发布包不再依赖会被互动平台拦截的 window.open。
 const TITLE_UTILITY_WIDTH = 75;
@@ -1110,6 +1132,20 @@ export class ZheYiShenGame {
   private originModifiers: OriginModifiers = getOriginModifiers([]);
   private originElapsed = 0;
   private originComicElapsed = 0;
+  /** 开场漫画的旁白就绪闸门：等第一句缓冲好再开播，最多等 ORIGIN_COMIC_VOICE_WAIT_MAX 秒。 */
+  private originComicVoiceReady = false;
+  private originComicVoiceWait = 0;
+  /**
+   * 漫画字幕的对表状态。字幕的钟与声音的钟本是两条独立时间线：字幕按本地时钟
+   * 打字机推进，声音要等缓冲/解码器（真机冷启动 100~800ms，自愈重试最坏再加
+   * 1.5s）。这里让字幕以音频播放头为权威时钟：声音在播就按 currentTime 走；
+   * 声音没来的前 3 秒字幕冻住等；超 3 秒（这句多半丢了）退回本地钟。单调不回退。
+   */
+  private comicCaptionScene = -1;
+  private comicCaptionShownMs = 0;
+  private comicCaptionAudioSeen = false;
+  /** 标题页「资源预载」加速开关：离开标题页必须关掉，绝不与战斗抢解码通道。 */
+  private titleArtBoost = false;
   private originAttempt = 0;
   private originRequestId = 0;
   private originAbortController?: AbortController;
@@ -1677,6 +1713,14 @@ export class ZheYiShenGame {
       this.pointerY = p.y;
       this.pointerDown = true;
       this.pointerInside = true;
+      // 必须和 keydown 一样排在最前面独占输入。面板是不透明的且盖在暂停层之上，
+      // 一旦它开着的时候 paused 被置真（切后台触发 visibilitychange 自动暂停），
+      // 后面的 paused 分支就会把每一次点击都喂给面板底下那个看不见的暂停菜单，
+      // 「关闭面板」永远收不到事件——手机没 Esc 可逃，就是整局卡死。
+      if (this.devPanelOpen) {
+        this.handleDevPanelPointer(p);
+        return;
+      }
       if (this.paused) {
         this.handlePausePointerDown(p, event.pointerId);
         return;
@@ -1690,6 +1734,18 @@ export class ZheYiShenGame {
           if (pointInRect(p, TITLE_GUIDE_CLOSE_RECT)) {
             this.titleGuideOpen = false;
             this.titleWikiOpen = false;
+            this.feedback.play('page', 0.68);
+          }
+        } else if (pointInRect(p, TITLE_PACK_RECT)) {
+          const packStatus = backgroundArtStatus();
+          const warmStatus = this.feedback.audioWarmStatus();
+          const packAllDone = packStatus.total > 0 && packStatus.done >= packStatus.total
+            && warmStatus.total > 0 && warmStatus.done >= warmStatus.total && !warmStatus.running;
+          if (!packAllDone) {
+            this.titleArtBoost = !this.titleArtBoost;
+            setArtBoost(this.titleArtBoost);
+            if (this.titleArtBoost) this.feedback.startAudioWarm();
+            else this.feedback.stopAudioWarm();
             this.feedback.play('page', 0.68);
           }
         } else if (pointInRect(p, TITLE_GUIDE_RECT)) {
@@ -1768,10 +1824,6 @@ export class ZheYiShenGame {
           if (this.originStoryComplete()) this.openInitialItemReward();
           else this.originElapsed = this.originStoryDuration();
         }
-        return;
-      }
-      if (this.devPanelOpen) {
-        this.handleDevPanelPointer(p);
         return;
       }
       if (this.state === 'battle') {
@@ -2628,6 +2680,8 @@ export class ZheYiShenGame {
 
   /** 每帧调用：仅当可存档且状态签名变化时写盘，避免每帧 localStorage 写入。 */
   private maybePersistCheckpoint(): void {
+    // 生产包不写断点：连签名计算都省掉，彻底不碰平台存储。
+    if (!RUN_CHECKPOINT_ENABLED) return;
     // 签名先行：直接从活状态算 key，签名没变就不做任何数组拷贝/序列化
     // （旧实现每帧 captureCheckpoint 的深拷贝是 60fps 的白白分配）。
     if (!this.origin) return;
@@ -2980,6 +3034,15 @@ export class ZheYiShenGame {
 
   /** 启动时尝试恢复上一局；快照非法或恢复抛错则清档回到标题。 */
   private tryResumeFromCheckpoint(): boolean {
+    // 生产包不续局。顺手把历史版本可能留下的存档清掉，把那份配额还给平台。
+    if (!RUN_CHECKPOINT_ENABLED) {
+      try {
+        clearRunCheckpoint();
+      } catch {
+        // 清不掉也无所谓：既然不读，它就只是块占位的死数据。
+      }
+      return false;
+    }
     let checkpoint: RunCheckpoint | null = null;
     try {
       checkpoint = readRunCheckpoint();
@@ -3033,6 +3096,14 @@ export class ZheYiShenGame {
     this.originModifiers = getOriginModifiers([]);
     this.originElapsed = 0;
     this.originComicElapsed = 0;
+    this.originComicVoiceReady = false;
+    this.originComicVoiceWait = 0;
+    this.comicCaptionScene = -1;
+    this.comicCaptionShownMs = 0;
+    this.comicCaptionAudioSeen = false;
+    this.titleArtBoost = false;
+    setArtBoost(false);
+    this.feedback.stopAudioWarm();
     this.originAttempt = 0;
     this.ledgerEntries = readLifeLedger();
     this.originLedgerOpen = false;
@@ -4552,7 +4623,12 @@ export class ZheYiShenGame {
 
     const alive = this.enemies.filter((enemy) => !enemy.dead).length;
     const maxAlive = this.encounterIndex === 0 ? 10 : this.encounterIndex === 1 ? 12 : MAX_ALIVE_ENEMIES;
-    const majorThreatAlive = this.enemies.some((enemy) => !enemy.dead && (enemy.elite || (enemy.boss && enemy.type !== 'lamp-keeper')));
+    // 湿鞋必须豁免：它是贯穿成年章的追猎者（4049 血、开场即在场、按设计不清场），
+    // 算进「重大威胁」会让整章的池子小怪一只不刷——台灯与热锅这两只教学怪
+    // 也一并消失，电话 Boss 的预习全部落空。另两处精英判定早已豁免，这里漏了。
+    const majorThreatAlive = this.enemies.some((enemy) => !enemy.dead
+      && enemy.type !== 'wet-shoes'
+      && (enemy.elite || (enemy.boss && enemy.type !== 'lamp-keeper')));
     const stillSpawning = (isFinal
       ? this.battleTime < DARKNESS_START + DARKNESS_SHRINK - 4
       : this.battleTime < stage.duration - 4) && !majorThreatAlive;
@@ -5005,11 +5081,20 @@ export class ZheYiShenGame {
    * 等一会儿才顺」。载不动也不能把人关在门外，所以内部有单文件与总预算两层超时。
    */
   async warmupAudio(onProgress?: (done: number, total: number) => void): Promise<void> {
-    await this.feedback.warmup(
-      [...ORIGIN_COMIC_VOICE_CUES, ...(STAGE_VOICE_PRELOADS[0] ?? [])],
-      0,
-      onProgress,
-    );
+    // 只热「开场那一段」，而且必须有上限。
+    // 事故记录（0729-31）：一次给全部 93 条语音 + 环境 + 配乐各建一个 HTMLAudioElement
+    // （124 个），手机 WebView 的媒体资源是有限池，超了之后所有 play() 静默失败——
+    // 真机上整局旁白全没了。后面各章的语音仍按原有 startStage → preloadVoices 走。
+    // 只热开场漫画那八句。别把首章战斗语音也塞进来：人声元素池现在有硬上限
+    // （VOICE_PLAYER_BUDGET），warmup 里多热一句就会把漫画的某一句挤出去释放掉，
+    // 结果正是「漫画没有旁白」。首章语音仍按原有 startStage → preloadVoices 走，
+    // 那时漫画已经放完，被挤掉的也只会是不再需要的漫画旁白。
+    const warmupIds = ORIGIN_COMIC_VOICE_CUES
+      .filter((id, index, all) => all.indexOf(id) === index);
+    // 预算压到 12 秒：部分 WebView 在第一次用户手势之前根本不给媒体元素缓冲，
+    // canplaythrough 永远等不到，默认 60 秒会把装帧页拖成分钟级。真正的兜底在
+    // 手势之后——「开始呼吸」那一下会 reviveVoice，漫画开播前另有 6 秒旁白闸门。
+    await this.feedback.warmup(warmupIds, onProgress, 12_000);
   }
 
   private update(dt: number): void {
@@ -5111,6 +5196,16 @@ export class ZheYiShenGame {
       // 旁白空放完（还没有字幕），重试后漫画从偷跑掉的位置继续，中间那几幕
       // 因为 playVoiceOnce 的一次性语义再也不会响。
       if (!this.auditFreezeOriginComic && this.aiOriginState !== 'error') {
+        // 开播前先等第一句旁白真的缓冲好。启动时的 warmup 跑在用户手势之前，
+        // 移动 WebView 那时不会真去缓冲，超时放行后漫画就在没数据的情况下开播——
+        // 表现正是「前几句没有旁白」。这里最多等 ORIGIN_COMIC_VOICE_WAIT_MAX 秒，
+        // 等不到也照常开播，绝不把玩家关在门外。等待期间画面上有明确提示。
+        if (!this.originComicVoiceReady) {
+          this.originComicVoiceWait += dt;
+          this.originComicVoiceReady = this.feedback.voiceBuffered(ORIGIN_COMIC_VOICE_CUES[0]!)
+            || this.originComicVoiceWait >= ORIGIN_COMIC_VOICE_WAIT_MAX;
+          if (!this.originComicVoiceReady) return;
+        }
         this.originComicElapsed = Math.min(ORIGIN_COMIC_DURATION, this.originComicElapsed + dt);
         const comicVoice = ORIGIN_COMIC_VOICE_CUES[originComicSceneIndex(this.originComicElapsed)];
         if (comicVoice) this.playVoiceOnce(comicVoice, false);
@@ -13532,6 +13627,52 @@ export class ZheYiShenGame {
     this.drawTitleUtilityButton(TITLE_WIKI_RECT, '百科', UI_PALETTE.raincoatYellow);
     this.drawTitleUtilityButton(TITLE_CODEX_RECT, '物证册', UI_PALETTE.oldRed);
     this.drawTitleUtilityButton(TITLE_SETTINGS_RECT, '设置', UI_PALETTE.hospitalBlueGray);
+    // 资源预载按钮：右上角、胶囊区之下。装订完变成静默的「已就绪」。
+    {
+      const pack = backgroundArtStatus();
+      const warm = this.feedback.audioWarmStatus();
+      // 音频按文件计，美术按解码像素量计——用一个折算权重把两轨合进同一条进度。
+      const AUDIO_FILE_WEIGHT = 40_000;
+      const mergedTotal = pack.total + warm.total * AUDIO_FILE_WEIGHT;
+      const mergedDone = pack.done + warm.done * AUDIO_FILE_WEIGHT;
+      // 音频温启动只在点过按钮后开始：没点之前按钮只报美术进度，点了并入同一条。
+      const artDone = pack.total > 0 && pack.done >= pack.total;
+      const audioDone = warm.total > 0 && warm.done >= warm.total && !warm.running;
+      const packDone = artDone && audioDone;
+      const pct = mergedTotal > 0 ? Math.floor((mergedDone / mergedTotal) * 100) : 100;
+      ctx.save();
+      ctx.globalAlpha = packDone ? 0.55 : 0.92;
+      ctx.fillStyle = 'rgba(13,13,18,0.78)';
+      ctx.fillRect(TITLE_PACK_RECT.x, TITLE_PACK_RECT.y, TITLE_PACK_RECT.width, TITLE_PACK_RECT.height);
+      ctx.strokeStyle = packDone ? '#5f6a58' : UI_PALETTE.raincoatYellow;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(TITLE_PACK_RECT.x + 0.5, TITLE_PACK_RECT.y + 0.5, TITLE_PACK_RECT.width - 1, TITLE_PACK_RECT.height - 1);
+      if (!packDone) {
+        // 底部细进度条
+        ctx.fillStyle = 'rgba(216,208,193,0.22)';
+        ctx.fillRect(TITLE_PACK_RECT.x + 2, TITLE_PACK_RECT.y + TITLE_PACK_RECT.height - 4, TITLE_PACK_RECT.width - 4, 2);
+        ctx.fillStyle = UI_PALETTE.raincoatYellow;
+        ctx.fillRect(TITLE_PACK_RECT.x + 2, TITLE_PACK_RECT.y + TITLE_PACK_RECT.height - 4, Math.round((TITLE_PACK_RECT.width - 4) * (pct / 100)), 2);
+      }
+      ctx.textAlign = 'center';
+      ctx.fillStyle = packDone ? '#8a937f' : UI_PALETTE.paperLight;
+      ctx.font = `bold 10px ${UI_FONT_STACK}`;
+      const packLabel = packDone
+        ? '资源已就绪'
+        : this.titleArtBoost
+          ? `预载中 ${pct}%`
+          : `资源预载 ${pct}%`;
+      ctx.fillText(packLabel, TITLE_PACK_RECT.x + TITLE_PACK_RECT.width / 2, TITLE_PACK_RECT.y + 14);
+      ctx.font = `8px ${UI_FONT_STACK}`;
+      ctx.fillStyle = UI_PALETTE.paperDim;
+      if (!packDone) {
+        ctx.fillText('为防运行时顿挫', TITLE_PACK_RECT.x + TITLE_PACK_RECT.width / 2, TITLE_PACK_RECT.y + 24);
+        ctx.fillText(this.titleArtBoost ? '正在预载美术与音频 · 可随时开始' : '建议先点此预载全部资源', TITLE_PACK_RECT.x + TITLE_PACK_RECT.width / 2, TITLE_PACK_RECT.y + 40);
+      } else {
+        ctx.fillText('美术与音频已就绪', TITLE_PACK_RECT.x + TITLE_PACK_RECT.width / 2, TITLE_PACK_RECT.y + 24);
+      }
+      ctx.restore();
+    }
     const disclosurePulse = this.reducedMotion ? 0.45 : (Math.sin(this.visualTime * 1.5) + 1) / 2;
     ctx.textAlign = 'center';
     ctx.globalAlpha = 0.50 + disclosurePulse * 0.12;
@@ -13818,7 +13959,30 @@ export class ZheYiShenGame {
     const artAlpha = fadeIn * fadeOut;
     const captionLines = ORIGIN_COMIC_SCENES[sceneIndex]!;
     const captionCharacters = captionLines.reduce((total, line) => total + line.length, 0);
-    const timedCaptionProgress = originComicCaptionProgress(sceneIndex, elapsed - sceneStart);
+    const clockElapsed = elapsed - sceneStart;
+    if (this.comicCaptionScene !== sceneIndex) {
+      this.comicCaptionScene = sceneIndex;
+      this.comicCaptionShownMs = 0;
+      this.comicCaptionAudioSeen = false;
+    }
+    const comicCueId = ORIGIN_COMIC_VOICE_CUES[sceneIndex];
+    const comicAudioPos = comicCueId ? this.feedback.voicePosition(comicCueId) : null;
+    if (comicAudioPos !== null) {
+      // currentTime 量的是音频文件内的位置，与时间表(json)同轴，直接可用。
+      this.comicCaptionAudioSeen = true;
+      this.comicCaptionShownMs = Math.max(this.comicCaptionShownMs, comicAudioPos * 1000);
+    } else if (this.comicCaptionAudioSeen || clockElapsed >= 3) {
+      // 这句播完后的停顿、或彻底没等来声音（>3s，多半丢了）：退回本地钟推进。
+      this.comicCaptionShownMs = Math.max(
+        this.comicCaptionShownMs,
+        clockElapsed * 1000 * ORIGIN_COMIC_PACE,
+      );
+    }
+    // 声音没起来的前 3 秒：字幕冻在原地等声音，而不是自顾自往前跑。
+    const timedCaptionProgress = originComicCaptionProgress(
+      sceneIndex,
+      this.comicCaptionShownMs / 1000 / ORIGIN_COMIC_PACE,
+    );
     const captionProgress = this.reducedMotion
       ? 1
       : timedCaptionProgress ?? this.clamp((sceneProgress - 0.10) / 0.78, 0, 1);
@@ -13910,6 +14074,22 @@ export class ZheYiShenGame {
         aiFailed ? 'AI 生成人生剧本暂时中断' : `AI 正在生成本局人生剧本 ${dots}`,
         180,
         594,
+      );
+    }
+    // 旁白闸门期间画面是静止的——必须说清楚在等什么，否则看起来就是卡死了。
+    // 点数用 originComicVoiceWait 驱动（漫画时间此刻还没走），让它明显在动。
+    if (!this.originComicVoiceReady) {
+      const waiting = this.originComicVoiceWait;
+      ctx.globalAlpha = this.reducedMotion
+        ? 0.82
+        : 0.58 + (Math.sin(waiting * 2.4) + 1) * 0.15;
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#aebbc0';
+      ctx.font = `10px ${UI_FONT_STACK}`;
+      ctx.fillText(
+        `正在加载旁白音频，请稍等 ${'·'.repeat(1 + Math.floor(waiting * 1.6) % 3)}`,
+        180,
+        576,
       );
     }
     ctx.globalAlpha = 1;
@@ -15095,6 +15275,20 @@ export class ZheYiShenGame {
       ctx.font = `8px ${UI_FONT_STACK}`;
       this.wrapText(item.positive, 166, y + 18, 160, 10, 2);
     });
+    // 后台装订进度：给在意流畅度的玩家一个「等到装完再前进」的选择。
+    // 位置压在页脚上一行，避开物证列表与底部关闭条。
+    const art = backgroundArtStatus();
+    ctx.textAlign = 'center';
+    ctx.font = `8px ${UI_FONT_STACK}`;
+    if (art.total > 0 && art.done < art.total) {
+      const pct = Math.floor((art.done / art.total) * 100);
+      ctx.fillStyle = UI_PALETTE.paperDim;
+      ctx.fillText(`后面的人生正在后台装订 · ${pct}% — 等到装完再前进可完全避免读图顿挫`, 180, 566);
+    } else if (art.total > 0) {
+      ctx.fillStyle = '#7d8a72';
+      ctx.fillText('后面的人生已全部装订 · 后续章节零读图', 180, 566);
+    }
+    ctx.textAlign = 'left';
   }
 
   private renderPauseOrigin(): void {

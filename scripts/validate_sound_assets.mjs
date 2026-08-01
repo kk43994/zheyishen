@@ -54,7 +54,7 @@ for (const token of [
   'export const LEGACY_MASTER_VOLUME = 0.42',
   'export const DEFAULT_MUSIC_VOLUME = 0.42',
   'export function upgradeLegacyMasterVolume(volume: number)',
-  'export const VOICE_PLAYBACK_GAIN = 1.18',
+  'export const VOICE_PLAYBACK_GAIN = 1.6',
   'export const VOICE_SFX_DUCK = 0.58',
   'export const VOICE_AMBIENCE_DUCK = 0.82',
   'export const VOICE_MUSIC_DUCK = 0.55',
@@ -77,8 +77,10 @@ const readMixConstant = (name) => Number(
 const defaultBgmToVoiceRatio = (
   readMixConstant('MUSIC_BUS_GAIN') * readMixConstant('DEFAULT_MUSIC_VOLUME')
 ) / (readMixConstant('VOICE_PLAYBACK_GAIN') * 0.84);
-if (!Number.isFinite(defaultBgmToVoiceRatio) || Math.abs(defaultBgmToVoiceRatio - 1 / 3) > 0.02) {
-  throw new Error(`default BGM/voice amplitude ratio must stay near 1:3, received ${defaultBgmToVoiceRatio}`);
+// 2026-07-31 起正典从 1:3 改为 1:4：真机外放反馈旁白偏小，VOICE_PLAYBACK_GAIN
+// 1.18 → 1.6 单独把人声往前推，配乐床刻意不跟。
+if (!Number.isFinite(defaultBgmToVoiceRatio) || Math.abs(defaultBgmToVoiceRatio - 0.25) > 0.02) {
+  throw new Error(`default BGM/voice amplitude ratio must stay near 1:4, received ${defaultBgmToVoiceRatio}`);
 }
 for (const [name, source] of [['platform', platformAudioSource], ['buffered', bufferedAudioSource]]) {
   for (const token of ['VOICE_BEHIND_DOOR_LOW_PASS_HZ', 'VOICE_BEHIND_DOOR_FILTER_Q']) {
