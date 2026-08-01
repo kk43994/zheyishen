@@ -23,6 +23,7 @@
     "validate:breath-specimen": "node scripts/validate_breath_specimen.mjs",
     "validate:memory-recall": "node scripts/validate_memory_recall.mjs",
     "validate:fate-background": "node scripts/validate_fate_background_pipeline.mjs",
+    "validate:ai-robustness": "node scripts/validate_ai_robustness.mjs",
     "validate:interactive-ai": "node scripts/validate_interactive_ai.mjs",
     "validate:fate-residue": "node scripts/validate_fate_residue_compiler.mjs",
     "validate:fate-age": "node scripts/validate_fate_age_policy.mjs",

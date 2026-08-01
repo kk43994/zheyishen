@@ -131,10 +131,17 @@ async function init(): Promise<void> {
   endArtBootPhase();
   // 后续章节从这里开始后台补，单通道、按人生顺序、战斗中让路。
   // 必须排在门禁与装帧页之后——提前开就是和首屏抢同一条解码通道。
-  void preloadRemainingProductionArt().catch((error: unknown) => {
-    // 后台补装订失败不该盖掉正在玩的一局；真正的硬闸门在每章开打前。
-    console.error('后续章节美术后台装订失败；章节过场处的门禁会拦住玩家。', error);
-  });
+  void preloadRemainingProductionArt()
+    .then(() => {
+      markPerformance('background_art_done');
+      // 美术补完、玩家还停在标题页：音频温启动自动接棒，不再指望玩家去点
+      // 右上角那颗按钮。进了局它自己让路（startRun 里 stopAudioWarm）。
+      game.autoStartAudioWarm();
+    })
+    .catch((error: unknown) => {
+      // 后台补装订失败不该盖掉正在玩的一局；真正的硬闸门在每章开打前。
+      console.error('后续章节美术后台装订失败；章节过场处的门禁会拦住玩家。', error);
+    });
   markPerformance('background_art_started');
 }
 

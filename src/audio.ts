@@ -871,9 +871,21 @@ export class LifeFeedback {
     return { done: 0, total: 0, running: false };
   }
 
-  startAudioWarm(): void { /* dev 无需温启动 */ }
+  startAudioWarm(_auto = false): void { /* dev 无需温启动 */ }
 
   stopAudioWarm(): void { /* dev 无需温启动 */ }
+
+  /** 与平台同形。dev 报零：标题页进度条退回只按美术计。 */
+  audioWarmPlannedTotal(): number {
+    return 0;
+  }
+
+  audioWarmAutoBailed(): boolean {
+    return false;
+  }
+
+  /** 与平台同形。dev 的 Web Audio 缓冲在各自 load 路径里已即时解码，无需分章预热。 */
+  async warmupStageAudio(_stageIndex: number): Promise<void> { /* dev 无需温启动 */ }
 
   /** 与平台实现同形：cue 在播时返回音频文件内的播放头秒数（按语速折算），否则 null。 */
   voicePosition(id: VoiceCueId): number | null {

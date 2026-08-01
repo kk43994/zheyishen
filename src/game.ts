@@ -489,7 +489,7 @@ function originComicCaptionProgress(sceneIndex: number, sceneElapsed: number): n
 
 // 标题页右下角与 AI 诊断行都会带上它：上传后扫码第一眼就能确认平台跑的是哪个包，
 // 排查「上传了但行为没变」时不再靠猜。每次要重新上传前手动 +1。
-const BUILD_TAG = '0801-1';
+const BUILD_TAG = '0801-2';
 const TITLE_START_RECT = { x: 88, y: 502, width: 184, height: 46 } as const;
 /**
  * 标题页「资源预载」按钮。视觉上在右上角，但必须压在互动空间胶囊区（x≥250 且
@@ -1144,6 +1144,9 @@ export class ZheYiShenGame {
   private comicCaptionScene = -1;
   private comicCaptionShownMs = 0;
   private comicCaptionAudioSeen = false;
+  /** 旁白播放头的失速检测：currentTime 超过 1.2 秒不动就当它死了，字幕退回本地钟。 */
+  private comicAudioPosSeen = -1;
+  private comicAudioPosAt = 0;
   /** 标题页「资源预载」加速开关：离开标题页必须关掉，绝不与战斗抢解码通道。 */
   private titleArtBoost = false;
   private originAttempt = 0;
@@ -1730,6 +1733,9 @@ export class ZheYiShenGame {
         return;
       }
       if (this.state === 'title') {
+        // 自动温启动若在无手势期被 WebView 拒绝过，任何一次真实点击都补跑一遍：
+        // 这一下就是它欠的那个手势。
+        if (this.feedback.audioWarmAutoBailed()) this.feedback.startAudioWarm();
         if (this.titleGuideOpen || this.titleWikiOpen) {
           if (pointInRect(p, TITLE_GUIDE_CLOSE_RECT)) {
             this.titleGuideOpen = false;
@@ -1739,8 +1745,10 @@ export class ZheYiShenGame {
         } else if (pointInRect(p, TITLE_PACK_RECT)) {
           const packStatus = backgroundArtStatus();
           const warmStatus = this.feedback.audioWarmStatus();
+          const plannedAudio = Math.max(this.feedback.audioWarmPlannedTotal(), warmStatus.total);
           const packAllDone = packStatus.total > 0 && packStatus.done >= packStatus.total
-            && warmStatus.total > 0 && warmStatus.done >= warmStatus.total && !warmStatus.running;
+            && (plannedAudio === 0
+              || (warmStatus.done >= plannedAudio && !warmStatus.running));
           if (!packAllDone) {
             this.titleArtBoost = !this.titleArtBoost;
             setArtBoost(this.titleArtBoost);
@@ -3101,6 +3109,8 @@ export class ZheYiShenGame {
     this.comicCaptionScene = -1;
     this.comicCaptionShownMs = 0;
     this.comicCaptionAudioSeen = false;
+    this.comicAudioPosSeen = -1;
+    this.comicAudioPosAt = 0;
     this.titleArtBoost = false;
     setArtBoost(false);
     this.feedback.stopAudioWarm();
@@ -3185,6 +3195,15 @@ export class ZheYiShenGame {
     this.lampGuardHintShown = false;
     this.feedback.stopVoice();
     this.feedback.preloadVoices(ORIGIN_COMIC_VOICE_CUES);
+    // 开场漫画播着的时候，把首章战斗配乐与紧张层先摸热（首章环境床与出生配乐
+    // 在装帧页 warmup 已就绪）。6 秒起跑：先让漫画前几句旁白把起播占稳。
+    {
+      const warmSerial = this.runSerial;
+      window.setTimeout(() => {
+        if (this.runSerial !== warmSerial || this.state === 'title') return;
+        void this.feedback.warmupStageAudio(0);
+      }, 6000);
+    }
     this.auditDamageTaken = 0;
     this.toast = '';
     this.toastTime = 0;
@@ -3993,6 +4012,14 @@ export class ZheYiShenGame {
       void warmProductionArtForStage(this.encounterIndex + 1).catch((error: unknown) => {
         console.error('下一章正式美术预热失败；后台完整美术闸门会阻断继续展示。', error);
       });
+      // 下一章的环境床/配乐/紧张层错峰预热：4 秒后起跑，躲开进章这一下的解码高峰。
+      // 走临时元素摸文件，不占媒体名额，也绝不碰人声池（那有硬上限）。
+      const nextStage = this.encounterIndex + 1;
+      const warmSerial = this.runSerial;
+      window.setTimeout(() => {
+        if (this.runSerial !== warmSerial || this.state === 'title') return;
+        void this.feedback.warmupStageAudio(nextStage);
+      }, 4000);
     }
     this.borrowedStat = undefined;
     this.syncBinderCardsFromInventory();
@@ -4166,6 +4193,8 @@ export class ZheYiShenGame {
       this.transitionTimer = 0.35;
       if (!this.waitingForStageArt) {
         this.waitingForStageArt = true;
+        // 既然过场都在等美术了，顺手把下一章音频也摸热（幂等、限时、不阻塞闸门）。
+        void this.feedback.warmupStageAudio(nextStageIndex);
         void warmProductionArtForStage(nextStageIndex)
           .then(() => {
             this.waitingForStageArt = false;
@@ -5080,6 +5109,19 @@ export class ZheYiShenGame {
    * 一边打字机推进、一边现场加载解码八句旁白，评委看到的就是「一进去很卡，
    * 等一会儿才顺」。载不动也不能把人关在门外，所以内部有单文件与总预算两层超时。
    */
+  /**
+   * 标题页的自动音频温启动：后台美术补完后由 main 调起，不再指望玩家发现右上角
+   * 那颗按钮——评委不点它，音频就永远是冷的。已经热完就不重跑；无手势期被 WebView
+   * 拒绝会记账（audioWarmAutoBailed），任何一次标题点击都会补跑一遍。
+   */
+  autoStartAudioWarm(): void {
+    if (this.state !== 'title') return;
+    const planned = this.feedback.audioWarmPlannedTotal();
+    const warm = this.feedback.audioWarmStatus();
+    if (planned > 0 && warm.done >= planned && !warm.running) return;
+    this.feedback.startAudioWarm(true);
+  }
+
   async warmupAudio(onProgress?: (done: number, total: number) => void): Promise<void> {
     // 只热「开场那一段」，而且必须有上限。
     // 事故记录（0729-31）：一次给全部 93 条语音 + 环境 + 配乐各建一个 HTMLAudioElement
@@ -13633,11 +13675,14 @@ export class ZheYiShenGame {
       const warm = this.feedback.audioWarmStatus();
       // 音频按文件计，美术按解码像素量计——用一个折算权重把两轨合进同一条进度。
       const AUDIO_FILE_WEIGHT = 40_000;
-      const mergedTotal = pack.total + warm.total * AUDIO_FILE_WEIGHT;
-      const mergedDone = pack.done + warm.done * AUDIO_FILE_WEIGHT;
-      // 音频温启动只在点过按钮后开始：没点之前按钮只报美术进度，点了并入同一条。
+      // 音频总量从一开始就按静态清单计入，而不是等温启动开跑才出现：否则按钮先显示
+      // 「100%」（其实只算了美术）、一点击又跌回去——评委那句「明明显示资源加载好了」
+      // 就是被这个假 100% 骗的。温启动没跑完，这条进度就到不了头。
+      const plannedAudio = Math.max(this.feedback.audioWarmPlannedTotal(), warm.total);
+      const mergedTotal = pack.total + plannedAudio * AUDIO_FILE_WEIGHT;
+      const mergedDone = pack.done + Math.min(warm.done, plannedAudio) * AUDIO_FILE_WEIGHT;
       const artDone = pack.total > 0 && pack.done >= pack.total;
-      const audioDone = warm.total > 0 && warm.done >= warm.total && !warm.running;
+      const audioDone = plannedAudio === 0 || (warm.done >= plannedAudio && !warm.running);
       const packDone = artDone && audioDone;
       const pct = mergedTotal > 0 ? Math.floor((mergedDone / mergedTotal) * 100) : 100;
       ctx.save();
@@ -13964,10 +14009,24 @@ export class ZheYiShenGame {
       this.comicCaptionScene = sceneIndex;
       this.comicCaptionShownMs = 0;
       this.comicCaptionAudioSeen = false;
+      this.comicAudioPosSeen = -1;
+      this.comicAudioPosAt = 0;
     }
     const comicCueId = ORIGIN_COMIC_VOICE_CUES[sceneIndex];
     const comicAudioPos = comicCueId ? this.feedback.voicePosition(comicCueId) : null;
+    // 失速检测：元素报告在播、currentTime 却停着不走（解码器断流），字幕若继续
+    // 对表就会冻在半句上——评委那句「字幕卡住了」的另一半。1.2 秒不动就当没有声音。
+    let comicAudioAlive = comicAudioPos !== null;
     if (comicAudioPos !== null) {
+      const nowMs = performance.now();
+      if (comicAudioPos !== this.comicAudioPosSeen) {
+        this.comicAudioPosSeen = comicAudioPos;
+        this.comicAudioPosAt = nowMs;
+      } else if (nowMs - this.comicAudioPosAt > 1200) {
+        comicAudioAlive = false;
+      }
+    }
+    if (comicAudioAlive && comicAudioPos !== null) {
       // currentTime 量的是音频文件内的位置，与时间表(json)同轴，直接可用。
       this.comicCaptionAudioSeen = true;
       this.comicCaptionShownMs = Math.max(this.comicCaptionShownMs, comicAudioPos * 1000);
