@@ -169,6 +169,9 @@ class BossSkillAtlas {
 
 const bossSkillAtlas = new BossSkillAtlas();
 
+/** 审阅入口可显式等待技能图集，避免绕过正式章节预载后把“仍在加载”误报成缺帧。 */
+export const bossSkillAssetsReady = (): Promise<void> => bossSkillAtlas.whenReady();
+
 /** v2 8 帧试点：横排条带图集，存在则优先于 v1 四帧 */
 interface EightFrameSpec { url: string; frame: number; frames: number; display: number }
 const EIGHT_FRAME_SKILLS: Partial<Record<BossSkillId, EightFrameSpec>> = {

@@ -993,11 +993,20 @@
     "voiceId": "female-chengshu",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3233,
-    "bytes": 27636,
+    "durationMs": 3370,
+    "bytes": 42612,
     "draft": false,
-    "assetRevision": 1,
+    "assetRevision": 2,
     "generatedAt": "2026-07-28T13:03:49.578Z",
+    "promotedAt": "2026-08-01T20:04:22Z",
+    "renderMode": "audition-promoted-trimmed",
+    "sourceTake": "teacher--female-chengshu.mp3",
+    "trimStartMs": 650,
+    "sha256": "4b97ddc761aea3f55203d5a4886849a37f951c479869bd3c9e8ea0dffc6d0b06",
+    "candidateQa": {
+      "transcript": "最后一排站起来",
+      "pronunciationErrorRate": 0
+    },
     "delivery": {
       "voice": "成熟女教师声",
       "tone": "平静点名，字头清楚，不带训斥腔",
@@ -1014,8 +1023,8 @@
       "standard": "EBU R128",
       "targetIntegratedLufs": -18,
       "targetTruePeakDbtp": -1.5,
-      "integratedLufs": -18.49,
-      "truePeakDbtp": -2.52
+      "integratedLufs": -18.27,
+      "truePeakDbtp": -3.44
     }
   },
   {
@@ -1224,14 +1233,22 @@
     "id": "landlord-rent-deposit",
     "file": "assets/audio/voice/landlord-rent-deposit.mp3",
     "role": "landlord",
-    "voiceId": "Chinese (Mandarin)_Mature_Woman",
+    "voiceId": "female-yujie",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3982,
-    "bytes": 33684,
+    "durationMs": 3385,
+    "bytes": 29076,
     "draft": false,
-    "assetRevision": 1,
+    "assetRevision": 2,
     "generatedAt": "2026-07-28T13:03:51.680Z",
+    "promotedAt": "2026-08-01T20:04:22Z",
+    "renderMode": "audition-promoted",
+    "sourceTake": "landlord--female-yujie.mp3",
+    "sha256": "aa9da125e267ca1ee0ce8027e6e16eabfec247c62049e8528c83014c3b5930e1",
+    "candidateQa": {
+      "transcript": "压一负三水电另算",
+      "pronunciationErrorRate": 0
+    },
     "delivery": {
       "voice": "中年女声",
       "tone": "生活化地直接报条件，咬字清楚",
@@ -1248,8 +1265,8 @@
       "standard": "EBU R128",
       "targetIntegratedLufs": -18,
       "targetTruePeakDbtp": -1.5,
-      "integratedLufs": -18.54,
-      "truePeakDbtp": -2.53
+      "integratedLufs": -18.47,
+      "truePeakDbtp": -3.7
     }
   },
   {
@@ -1525,9 +1542,18 @@
     "voiceId": "female-tianmei",
     "model": "speech-2.8-hd",
     "provider": "MiniMax",
-    "durationMs": 3710,
-    "bytes": 31668,
+    "durationMs": 4012,
+    "bytes": 33972,
     "draft": false,
+    "assetRevision": 2,
+    "promotedAt": "2026-08-01T20:04:22Z",
+    "renderMode": "audition-promoted",
+    "sourceTake": "family--female-tianmei.mp3",
+    "sha256": "1828bd7b508803272ca953aa4664bcf755580edaded9692d004f2a14768c507f",
+    "candidateQa": {
+      "transcript": "饭热过两次了还等你吗",
+      "pronunciationErrorRate": 0
+    },
     "delivery": {
       "voice": "成年女声",
       "tone": "普通询问，句尾等待回答",
@@ -1544,8 +1570,8 @@
       "standard": "EBU R128",
       "targetIntegratedLufs": -18,
       "targetTruePeakDbtp": -1.5,
-      "integratedLufs": -18.52,
-      "truePeakDbtp": -2.58
+      "integratedLufs": -18.59,
+      "truePeakDbtp": -2.56
     }
   },
   {

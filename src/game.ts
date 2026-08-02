@@ -489,7 +489,7 @@ function originComicCaptionProgress(sceneIndex: number, sceneElapsed: number): n
 
 // 标题页右下角与 AI 诊断行都会带上它：上传后扫码第一眼就能确认平台跑的是哪个包，
 // 排查「上传了但行为没变」时不再靠猜。每次要重新上传前手动 +1。
-const BUILD_TAG = '0801-2';
+const BUILD_TAG = '0801-3';
 const TITLE_START_RECT = { x: 88, y: 502, width: 184, height: 46 } as const;
 /**
  * 标题页「资源预载」按钮。视觉上在右上角，但必须压在互动空间胶囊区（x≥250 且
@@ -1331,6 +1331,10 @@ export class ZheYiShenGame {
   private devPanelTab: 'items' | 'stages' = 'items';
   private devPanelQuality: 1 | 2 | 3 | 4 | 5 = 1;
   private devPanelDetail?: ItemId;
+  /** 评委从生产面板跳章前，先把该章正式美术提升到关键通道并完整解码。 */
+  private devPanelStageLoading?: number;
+  private devPanelStageLoadGeneration = 0;
+  private devPanelStageError = '';
   private stallSpawnedAt = -1;
   private worldStall?: { x: number; y: number };
   private stallCooldown = 0;
@@ -1348,6 +1352,8 @@ export class ZheYiShenGame {
   private fateEchoCaptionDuration = 0;
   private transitionTimer = 0;
   private waitingForStageArt = false;
+  private stageArtRetryAt = 0;
+  private stageArtRetryCount = 0;
   private darkActive = false;
   private darkR = 9999;
   private darknessStartedAt = 0;
@@ -2032,9 +2038,16 @@ export class ZheYiShenGame {
       }
       if (event.pointerId === this.fatePointerId) this.resetFateInput();
     });
-    this.canvas.addEventListener('pointerleave', () => {
+    this.canvas.addEventListener('pointerleave', (event) => {
       this.pointerInside = false;
       this.pointerDown = false;
+      // Pointer Capture 在部分嵌入式 WebView 中不存在或会被宿主拒绝。那种环境下
+      // 手指拖出画布后收不到 pointerup/cancel；若这里只清 hover，旧 pointerId 会
+      // 永久占住摇杆/命运拖拽，角色持续自行移动，看起来就是整局卡死。
+      if (event.pointerId === this.specialRoomPointerId) this.resetSpecialRoomHold();
+      if (event.pointerId === this.pausePointerId) this.resetPauseHold();
+      if (event.pointerId === this.joyPointerId) this.resetMovementInput();
+      if (event.pointerId === this.fatePointerId) this.resetFateInput();
     });
     this.canvas.addEventListener('lostpointercapture', (event) => {
       if (event.pointerId === this.specialRoomPointerId) this.resetSpecialRoomHold();
@@ -2256,7 +2269,10 @@ export class ZheYiShenGame {
       this.resetMovementInput();
       this.resetFateInput();
       this.resetSpecialRoomHold();
-      this.feedback.stopVoice();
+      this.resetPauseHold();
+      // 嵌入式宿主打开系统浮层或临时转移音频焦点时会只发 blur，页面仍然
+      // 可见。这里若直接 stopVoice()，会销毁当前旁白的播放头，focus 后即使
+      // 平台音频层能够续播也已经无声；真正切后台交给 visibilitychange 处理。
     });
 
     document.addEventListener('visibilitychange', () => {
@@ -2265,9 +2281,10 @@ export class ZheYiShenGame {
         this.resetMovementInput();
         this.resetFateInput();
         this.resetSpecialRoomHold();
+        this.resetPauseHold();
         if (this.autoPauseOnBlur && (this.state === 'battle' || this.state === 'fateEvent')) {
           this.setPaused(true);
-        }
+        } else this.feedback.stopVoice();
       }
     });
   }
@@ -2281,8 +2298,8 @@ export class ZheYiShenGame {
     if (value) {
       this.resetMovementInput();
       this.resetFateInput();
-      this.feedback.stopVoice();
-    }
+      this.feedback.pauseVoice();
+    } else this.feedback.resumeVoice();
   }
 
   private openTitleSettings(): void {
@@ -2752,6 +2769,7 @@ export class ZheYiShenGame {
     this.prefetchedFate?.controller?.abort();
     this.runSerial += 1;
     this.fateGenerationId += 1; // 作废任何在飞的命运异步请求
+    this.resetStageArtWait();
     this.fateIncomingStart = -1;
     this.pendingFateOpen = undefined;
     this.runSeed = checkpoint.runSeed;
@@ -3088,6 +3106,7 @@ export class ZheYiShenGame {
     this.originAbortController = undefined;
     this.runSerial += 1;
     this.fateGenerationId += 1;
+    this.resetStageArtWait();
     this.titleGuideOpen = false;
     this.titleWikiOpen = false;
     this.paused = false;
@@ -3199,8 +3218,11 @@ export class ZheYiShenGame {
     // 在装帧页 warmup 已就绪）。6 秒起跑：先让漫画前几句旁白把起播占稳。
     {
       const warmSerial = this.runSerial;
+      const warmEncounterIndex = this.encounterIndex;
       window.setTimeout(() => {
-        if (this.runSerial !== warmSerial || this.state === 'title') return;
+        if (this.runSerial !== warmSerial
+          || this.encounterIndex !== warmEncounterIndex
+          || this.state === 'title') return;
         void this.feedback.warmupStageAudio(0);
       }, 6000);
     }
@@ -3229,6 +3251,9 @@ export class ZheYiShenGame {
     this.returnedItemIds = [];
     this.devPanelOpen = false;
     this.devPanelDetail = undefined;
+    this.devPanelStageLoadGeneration = this.devPanelStageLoadGeneration + 1;
+    this.devPanelStageLoading = undefined;
+    this.devPanelStageError = '';
     this.pendingDefeatRewards = [];
     this.scheduledVoices = this.scheduledVoices.filter((entry) => entry.encounterIndex === this.encounterIndex);
     this.eliteAlertName = '';
@@ -3525,6 +3550,7 @@ export class ZheYiShenGame {
     this.originAbortController = undefined;
     this.originRequestId += 1;
     this.runSerial += 1;
+    this.resetStageArtWait();
     this.aiOriginState = 'idle';
     this.origin = undefined;
     this.originElapsed = 0;
@@ -4016,8 +4042,11 @@ export class ZheYiShenGame {
       // 走临时元素摸文件，不占媒体名额，也绝不碰人声池（那有硬上限）。
       const nextStage = this.encounterIndex + 1;
       const warmSerial = this.runSerial;
+      const warmEncounterIndex = this.encounterIndex;
       window.setTimeout(() => {
-        if (this.runSerial !== warmSerial || this.state === 'title') return;
+        if (this.runSerial !== warmSerial
+          || this.encounterIndex !== warmEncounterIndex
+          || this.state === 'title') return;
         void this.feedback.warmupStageAudio(nextStage);
       }, 4000);
     }
@@ -4191,28 +4220,48 @@ export class ZheYiShenGame {
       // 罕见的低速解码只会延长章节过场，不会让下一章以缺图或程序化回退
       // 进入画面。0.35 秒对应过场末段仍完整可见的位置。
       this.transitionTimer = 0.35;
+      // 瞬时解码失败后别每 0.35 秒把整章重新塞进队列。低端 WebView 在内存压力下
+      // 连续拒绝同一图片时，紧密重试会制造请求/日志风暴，把安全等待变成真卡顿。
+      if (performance.now() < this.stageArtRetryAt) return;
       if (!this.waitingForStageArt) {
         this.waitingForStageArt = true;
+        const waitSerial = this.runSerial;
+        const waitEncounterIndex = this.encounterIndex;
         // 既然过场都在等美术了，顺手把下一章音频也摸热（幂等、限时、不阻塞闸门）。
         void this.feedback.warmupStageAudio(nextStageIndex);
-        void warmProductionArtForStage(nextStageIndex)
+        void warmProductionArtForStage(nextStageIndex, true)
           .then(() => {
+            if (this.runSerial !== waitSerial || this.encounterIndex !== waitEncounterIndex) return;
             this.waitingForStageArt = false;
             this.transitionTimer = Math.min(this.transitionTimer, 0.01);
           })
           .catch((error: unknown) => {
+            if (this.runSerial !== waitSerial || this.encounterIndex !== waitEncounterIndex) return;
             this.waitingForStageArt = false;
+            this.stageArtRetryCount += 1;
+            this.stageArtRetryAt = performance.now()
+              + Math.min(8000, 500 * (2 ** Math.min(4, this.stageArtRetryCount - 1)));
             console.error('下一章正式美术未能完成，拒绝进入降级画面。', error);
           });
       }
       return;
     }
     this.waitingForStageArt = false;
+    this.stageArtRetryAt = 0;
+    this.stageArtRetryCount = 0;
     this.pendingStageEndSkipRest = false;
     if (!skipRest) this.healHero(6);
     if (stage.end === 'fate') {
       this.openFate('advance');
     } else this.advanceStage();
+  }
+
+  /** 换局/退标题时让上一局仍在解码的章节闸门彻底失去写回资格。 */
+  private resetStageArtWait(): void {
+    this.waitingForStageArt = false;
+    this.stageArtRetryAt = 0;
+    this.stageArtRetryCount = 0;
+    this.pendingStageEndSkipRest = false;
   }
 
   private livingStageElite(): EnemyUnit | undefined {
@@ -14901,6 +14950,16 @@ export class ZheYiShenGame {
     ctx.globalAlpha *= 0.72;
     ctx.font = `8px ${UI_FONT_STACK}`;
     ctx.fillText(bridge, 180, 416);
+    if (this.waitingForStageArt) {
+      // 低速设备在硬闸门处可能要多等几秒。章节卡若完全静止，玩家无法区分
+      // “仍在解码正式美术”和“主循环已经死掉”；用 visualTime 驱动省略号，既证明
+      // RAF 仍活着，也不放宽任何资源完整性要求。
+      const dots = '·'.repeat(1 + Math.floor(this.visualTime * 2) % 3);
+      ctx.globalAlpha = Math.max(0.72, alpha);
+      ctx.fillStyle = UI_PALETTE.raincoatYellow;
+      ctx.font = `bold 9px ${UI_FONT_STACK}`;
+      ctx.fillText(`下一页还在装订 ${dots}`, 180, 442);
+    }
     ctx.restore();
   }
 
@@ -20913,6 +20972,9 @@ export class ZheYiShenGame {
     this.resetFateInput();
     this.resetPauseHold();
     this.devPanelDetail = undefined;
+    this.devPanelStageLoadGeneration += 1;
+    this.devPanelStageLoading = undefined;
+    this.devPanelStageError = '';
     this.devPanelOpen = true;
     this.accumulator = 0;
     this.lastTime = 0;
@@ -20921,6 +20983,10 @@ export class ZheYiShenGame {
   private closeDevPanel(): void {
     this.devPanelOpen = false;
     this.devPanelDetail = undefined;
+    // 关键图片本身可以继续解码进缓存，但关闭面板必须作废“完成后自动跳章”。
+    this.devPanelStageLoadGeneration += 1;
+    this.devPanelStageLoading = undefined;
+    this.devPanelStageError = '';
     this.resetMovementInput();
     this.resetFateInput();
     this.resetPauseHold();
@@ -20942,6 +21008,9 @@ export class ZheYiShenGame {
       this.closeDevPanel();
       return;
     }
+    // 装订期间只保留两颗关闭出口。否则连续点两个章节会让两份 Promise 争着
+    // 迟到跳转；移动端看起来像“点了少年，最后却自己跳到晚年”。
+    if (this.devPanelStageLoading !== undefined) return;
     if (this.devPanelDetail) {
       if (pointInRect(p, DEV_DETAIL_BACK_RECT)) {
         this.devPanelDetail = undefined;
@@ -20988,6 +21057,36 @@ export class ZheYiShenGame {
   private jumpToStageBoss(index: number): void {
     const stage = STAGES[index];
     if (!stage) return;
+    if (!productionArtStageReady(index)) {
+      const generation = ++this.devPanelStageLoadGeneration;
+      const runSerial = this.runSerial;
+      this.devPanelStageLoading = index;
+      this.devPanelStageError = '';
+      // 正常流程在章末过场有同一硬闸门；生产开发面板此前直接绕过它，评委在
+      // 首章刚开始跳到晚年会让缺失的正式敌帧逐帧抛错，正好表现为严重卡顿。
+      // 面板本身保持 RAF 与关闭按钮可用，目标章最多三路关键解码，完整后才进入。
+      void warmProductionArtForStage(index, true)
+        .then(() => {
+          if (!this.devPanelOpen
+            || this.devPanelStageLoadGeneration !== generation
+            || this.runSerial !== runSerial) return;
+          this.devPanelStageLoading = undefined;
+          this.jumpToStageBoss(index);
+        })
+        .catch((error: unknown) => {
+          if (!this.devPanelOpen
+            || this.devPanelStageLoadGeneration !== generation
+            || this.runSerial !== runSerial) return;
+          this.devPanelStageLoading = undefined;
+          this.devPanelStageError = `${AGE_LABELS[index]}章装订失败 · 点本章重试`;
+          console.error('开发面板目标章正式美术未能完成，拒绝提前进入。', error);
+        });
+      return;
+    }
+    // 跳章是明确的剧情断点。旧章正在播放的旁白若保留，会一路跟进目标章；旧章
+    // 延迟台词也没有继续兑现的语义。BGM 仍交给 setMusic 做平滑换轨，不硬切。
+    this.feedback.stopVoice();
+    this.scheduledVoices = [];
     this.closeDevPanel();
     this.encounterIndex = index;
     this.startStage();
@@ -21170,9 +21269,16 @@ export class ZheYiShenGame {
   private renderDevStagePicker(): void {
     const ctx = this.ctx;
     ctx.textAlign = 'left';
-    ctx.fillStyle = UI_PALETTE.paperDim;
-    ctx.font = `9px ${UI_FONT_STACK}`;
-    ctx.fillText('直接进入该章并立刻召出大 Boss', 20, 108);
+    if (this.devPanelStageLoading !== undefined) {
+      const dots = '·'.repeat(1 + Math.floor(this.visualTime * 2) % 3);
+      ctx.fillStyle = UI_PALETTE.raincoatYellow;
+      ctx.font = `bold 9px ${UI_FONT_STACK}`;
+      ctx.fillText(`正在装订${AGE_LABELS[this.devPanelStageLoading]}章 ${dots} 可随时关闭`, 20, 108);
+    } else {
+      ctx.fillStyle = this.devPanelStageError ? UI_PALETTE.oldRed : UI_PALETTE.paperDim;
+      ctx.font = `9px ${UI_FONT_STACK}`;
+      ctx.fillText(this.devPanelStageError || '正式美术就绪后进入该章并召出大 Boss', 20, 108);
+    }
     STAGES.forEach((stage, index) => {
       const y = DEV_STAGE_ROW.y + index * (DEV_STAGE_ROW.height + DEV_STAGE_ROW.gap);
       const current = index === this.encounterIndex;
@@ -21188,7 +21294,11 @@ export class ZheYiShenGame {
       const bossName = stage.bossType
         ? (DEV_BOSS_NAMES[stage.bossType] ?? stage.bossType)
         : '终局 · 收灯人';
-      ctx.fillText(`Boss：${bossName}`, DEV_STAGE_ROW.x + 12, y + 34);
+      ctx.fillText(
+        this.devPanelStageLoading === index ? '关键美术解码中…' : `Boss：${bossName}`,
+        DEV_STAGE_ROW.x + 12,
+        y + 34,
+      );
     });
   }
 

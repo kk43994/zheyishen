@@ -57,11 +57,11 @@ rm -f dist/assets/audio/sfx/*.wav
 # 放在这里而不是改源码——src 里 226 处 .png 引用与美术门禁 72 处路径断言都不必动。
 python3 scripts/optimize_release_assets.py dist
 
-# 平台包硬上限 8 MiB：public 里保留声音母版，只压缩 dist 副本。
+# 平台包硬上限 20 MiB：public 里保留声音母版，只压缩 dist 的旁白副本。
 # 对白 24 kbps 单声道（22.05 kHz）——用户两次裁决「不需要那么清楚的语音、可以再差一点」，
-# 换更短的首次加载与更小的解码开销；配乐与环境音都在人声后方，同为 24 kbps 单声道。
-# 环境音此前压根没被转码过（570KB 原始码率进包），是最划算的一刀。
-# 三者都不改变时长、响度、混音增益或任何触发内容。
+# 换更短的首次加载与更小的解码开销。配乐与环境床禁止在这里二次有损转码：它们已经
+# 从 WAV 母版一次直编（配乐 64 kbps / 环境床 96 kbps）；再转 24k 的全曲 SI-SDR 实测只剩 21.05/15.42 dB，
+# 会把砂化和瞬态毛刺听成循环撕裂。当前包体余量足够保留一次编码成品。
 ffmpeg_bin="${FFMPEG_BIN:-ffmpeg}"
 if ! command -v "$ffmpeg_bin" >/dev/null 2>&1; then
   printf '%s\n' "package.sh: ffmpeg unavailable (set FFMPEG_BIN); release audio downscale is required for the platform budget" >&2
@@ -86,34 +86,7 @@ for voice_file in "${voice_files[@]}"; do
   mv "${voice_file%.mp3}.tmp.mp3" "$voice_file"
 done
 
-shopt -s nullglob
-music_files=(dist/assets/audio/music/*.mp3)
-shopt -u nullglob
-if [ "${#music_files[@]}" -eq 0 ]; then
-  printf '%s\n' 'package.sh: no music mp3 files found in dist; build output is incomplete' >&2
-  exit 1
-fi
-for music_file in "${music_files[@]}"; do
-  "$ffmpeg_bin" -nostdin -hide_banner -loglevel error -y -i "$music_file" \
-    -map_metadata -1 -ac 1 -ar 22050 -codec:a libmp3lame -b:a 24k \
-    "${music_file%.mp3}.tmp.mp3"
-  mv "${music_file%.mp3}.tmp.mp3" "$music_file"
-done
-
-shopt -s nullglob
-ambience_files=(dist/assets/audio/ambience/*.mp3)
-shopt -u nullglob
-if [ "${#ambience_files[@]}" -eq 0 ]; then
-  printf '%s\n' 'package.sh: no ambience mp3 files found in dist; build output is incomplete' >&2
-  exit 1
-fi
-for ambience_file in "${ambience_files[@]}"; do
-  "$ffmpeg_bin" -nostdin -hide_banner -loglevel error -y -i "$ambience_file" \
-    -map_metadata -1 -ac 1 -ar 22050 -codec:a libmp3lame -b:a 24k \
-    "${ambience_file%.mp3}.tmp.mp3"
-  mv "${ambience_file%.mp3}.tmp.mp3" "$ambience_file"
-done
-
+npm run validate:release-audio
 npm run validate:release-budget
 bash scripts/run-validator.sh --required index.html --max-size 20971520 dist
 mkdir -p "$release_dir"

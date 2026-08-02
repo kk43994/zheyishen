@@ -83,6 +83,7 @@
     "validate:sound": "node scripts/validate_sound_assets.mjs",
     "validate:release-icon": "python3 scripts/image2/release-icon-v1/validate.py --final-only",
     "validate:release-budget": "node scripts/validate_release_budget.mjs dist",
+    "validate:release-audio": "node scripts/validate_release_audio_quality.mjs dist",
     "sync:release-metadata": "node scripts/sync_release_metadata.mjs",
     "validate:release-metadata": "node scripts/sync_release_metadata.mjs --check",
     "validate": "bash scripts/run-validator.sh --required index.html --max-size 20971520 dist",

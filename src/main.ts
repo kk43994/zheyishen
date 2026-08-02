@@ -90,7 +90,7 @@ async function init(): Promise<void> {
     total: productionArtCount(),
   });
   // 只门禁「眼前这一页」：首屏 UI、主角、特效、图标、三间房，加童年一章。
-  // 六章一次性等完是 148 张 / 4.2MB，把全部代价堆在第一屏，互动空间里玩家
+  // 六章一次性等完是 149 张 / 4.2MB，把全部代价堆在第一屏，互动空间里玩家
   // 根本进不去。后续章节在装帧页收起之后走后台单通道按人生顺序补，每章开打前
   // 还有 productionArtStageReady 复核——永不降级，缺图就把玩家留在章节过场。
   await preloadProductionArt(updateArtProgress);

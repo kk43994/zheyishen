@@ -144,7 +144,7 @@ function audioWarmFiles(): readonly string[] {
  * 管线被走过一遍，正式元素随后创建时起播就快。绝不碰正在播的池子——尤其不能借道
  * ensureMusic：它一看 track 变了就会把当前曲目的循环替补连带进行中的换岗一起收掉。
  */
-function touchMediaFile(file: string, timeoutMs: number): Promise<boolean> {
+function touchMediaFile(file: string, timeoutMs: number, signal?: AbortSignal): Promise<boolean> {
   const element = media(file);
   return new Promise<boolean>((resolve) => {
     let settled = false;
@@ -154,16 +154,20 @@ function touchMediaFile(file: string, timeoutMs: number): Promise<boolean> {
       element.removeEventListener('loadeddata', onData);
       element.removeEventListener('canplaythrough', onData);
       element.removeEventListener('error', onError);
+      signal?.removeEventListener('abort', onAbort);
       window.clearTimeout(timer);
       releaseMedia(element);
       resolve(good);
     };
     const onData = (): void => { if (element.readyState >= 2) finish(true); };
     const onError = (): void => finish(false);
+    const onAbort = (): void => finish(false);
     const timer = window.setTimeout(() => finish(element.readyState >= 2), timeoutMs);
     element.addEventListener('loadeddata', onData);
     element.addEventListener('canplaythrough', onData);
     element.addEventListener('error', onError);
+    signal?.addEventListener('abort', onAbort, { once: true });
+    if (signal?.aborted) { finish(false); return; }
     try { element.load(); } catch { finish(false); }
   });
 }
@@ -224,10 +228,15 @@ function readInitialVolume(): number {
  * 同时挂着 src 的人声元素上限。
  *
  * 手机 WebView 的媒体元素/解码器是有限池，量级只有十几个，超了之后 play() 静默失败。
- * 定 10 是因为开场漫画要同时热八句旁白，再留两格给紧接着的过场；环境音与配乐各自
- * 只保留当前那一份，不计入这里。
+ * 定 8 是因为开场漫画恰好八句；第九句发生时最早一幕已经播完，可以安全 LRU 淘汰。
+ * 同时必须给环境、主 BGM、循环替补和紧张层各留一格，使 12 名额的保守 WebView
+ * 也不会在切章开嗓时把第九、第十句直接拒播。
  */
-const VOICE_PLAYER_BUDGET = 10;
+const VOICE_PLAYER_BUDGET = 8;
+/** 所有挂 src 的常驻媒体总预算；与故障注入采用的保守 WebView 解码器池一致。 */
+const PLATFORM_MEDIA_PLAYER_BUDGET = 12;
+/** Web Audio 完全不可用时，元素音效也只能占四席；换音效就 LRU 复用这份预算。 */
+const FALLBACK_SFX_PLAYER_BUDGET = 4;
 
 /**
  * 候补席座位数。8 座在实际台词密度下基本不会坐满——真正防「过时台词乱入」的
@@ -240,17 +249,107 @@ const VOICE_QUEUE_LIMIT = 8;
 const VOICE_QUEUE_MAX_AGE_MS = 12_000;
 
 /**
- * 每首配乐的循环体起点（秒）。烘过「前奏 + 无缝循环体」的曲子在这登记：
- * 巡逻跳回这里而不是 0——前奏只在进场放一次，循环点落在烘好的交叉淡化里。
- * 未登记的曲子回 0.02，行为与从前一致。
+ * 每首配乐原始循环体的起点（秒）。烘过「前奏 + 无缝循环体」的曲子在这登记；
+ * 真正换岗位置还要加上母版已烘入的进度，见 musicCrossloopStart。
  */
 const MUSIC_LOOP_START: Partial<Record<number, number>> = {
   1: 3, // under-bed：开头 3 秒已烘进结尾（wav 母版未动，随时可重烘）
 };
 
+// 与 scripts/build_production_audio.sh 的 bake_loop 参数保持一致。母版末尾已经混入
+// loopStart 起的这段内容；运行时必须从“已经听到的位置”继续，不能再跳回 loopStart
+// 把它重播一遍。
+const MUSIC_BAKED_OVERLAP_SECONDS = 1;
+const AMBIENCE_BAKED_OVERLAP_SECONDS = 0.8;
+const MUSIC_CROSS_SECONDS = 0.55;
+const LOOP_PATROL_LEAD_SECONDS = 0.18;
+const AMBIENCE_LOOP_END_SECONDS = 8;
+const MUSIC_TENSION_LOOP_END_SECONDS = 18;
+const MUSIC_LOOP_END_SECONDS = [18, 18, 18, 18, 18, 18, 18, 18, 57.314, 53.314] as const;
+/** 本地包媒体正常应在数十毫秒内起播；给慢 WebView 留余量，但绝不能永久悬空。 */
+const MEDIA_PLAY_START_TIMEOUT_MS = 1_800;
+
+function musicLoopBase(track: number): number {
+  return MUSIC_LOOP_START[track] ?? 0.02;
+}
+
+/** 双元素交叉开始时，曲尾里已烘到 loopStart + (1.0 - 0.55)。 */
+function musicCrossloopStart(track: number): number {
+  return musicLoopBase(track) + MUSIC_BAKED_OVERLAP_SECONDS - MUSIC_CROSS_SECONDS;
+}
+
 /** 所有创建过的媒体元素，仅供性能面板统计在播数量（元素本身生命周期不受影响）。 */
 const allMediaElements: HTMLAudioElement[] = [];
 probeRegisterPlayingCounter(() => allMediaElements.reduce((n, el) => n + (el.paused ? 0 : 1), 0));
+
+/**
+ * 某些移动 WebView 的 play() 会落入第三种失败态：Promise 既不 resolve 也不 reject。
+ * 旁白因此永远占着 activeVoicePriority，BGM 则停在“已选曲但没起播”的假状态。
+ * 同一元素只允许一个起播事务；超时主动 pause，迟到后才真正响起的 Promise 再掐一次。
+ */
+const mediaPlayInFlight = new WeakMap<HTMLMediaElement, Promise<void>>();
+/**
+ * 同一元素超时后可能已经由自愈逻辑重新 play 成功；旧 Promise 再迟到 resolve 时，
+ * 只能暂停它自己那一代，绝不能把后来的健康播放一起掐掉。
+ */
+const mediaPlayGeneration = new WeakMap<HTMLMediaElement, number>();
+let mediaPlayTimeoutCount = 0;
+let mediaLateStartCount = 0;
+
+function playMediaWithDeadline(
+  element: HTMLMediaElement,
+  timeoutMs = MEDIA_PLAY_START_TIMEOUT_MS,
+): Promise<void> {
+  const active = mediaPlayInFlight.get(element);
+  if (active) return active;
+
+  const generation = (mediaPlayGeneration.get(element) ?? 0) + 1;
+  mediaPlayGeneration.set(element, generation);
+  let attempt: Promise<void> | undefined;
+  try {
+    attempt = element.play();
+  } catch (error) {
+    return Promise.reject(error);
+  }
+  // Safari 旧实现曾返回 void；没有 Promise 时只能让 onended/下一次手势继续兜底。
+  if (!attempt || typeof attempt.then !== 'function') return Promise.resolve();
+
+  const task = new Promise<void>((resolve, reject) => {
+    let settled = false;
+    const timer = window.setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      mediaPlayTimeoutCount += 1;
+      element.pause();
+      reject(new Error('media play start timeout'));
+    }, Math.max(100, timeoutMs));
+    attempt!.then(() => {
+      if (settled) {
+        // pause() 理论上会让原 Promise reject；少数宿主仍会迟到 resolve 并突然出声。
+        // 若这仍是元素最新一次起播，再掐一次避免幽灵旁白或上一首 BGM 复活；若同一
+        // 元素已经由自愈逻辑重新 play 成功，旧回调绝不能暂停那一代健康播放。
+        mediaLateStartCount += 1;
+        if (mediaPlayGeneration.get(element) === generation) element.pause();
+        return;
+      }
+      settled = true;
+      window.clearTimeout(timer);
+      if (element.paused) reject(new Error('media play resolved while paused'));
+      else resolve();
+    }, (error: unknown) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      reject(error);
+    });
+  });
+  mediaPlayInFlight.set(element, task);
+  void task.then(
+    () => { if (mediaPlayInFlight.get(element) === task) mediaPlayInFlight.delete(element); },
+    () => { if (mediaPlayInFlight.get(element) === task) mediaPlayInFlight.delete(element); },
+  );
+  return task;
+}
 
 function media(file: string): HTMLAudioElement {
   const element = document.createElement('audio');
@@ -271,6 +370,12 @@ function media(file: string): HTMLAudioElement {
 function releaseMedia(element: HTMLAudioElement): void {
   if (!element.paused) element.pause();
   element.onended = null;
+  element.onerror = null;
+  element.onpause = null;
+  element.onplaying = null;
+  // createMediaElementSource 会让 AudioContext 的图继续持有这个元素。只清 src
+  // 释放不了那条引用，六章旁白轮换后仍会积出几十个僵尸节点。
+  sfxEngine.releaseElement(element);
   element.removeAttribute('src');
   element.load();
   const index = allMediaElements.indexOf(element);
@@ -325,7 +430,10 @@ class SfxEngine {
    * 不必重导素材：解码后扫一遍波形定位起声点，播放时用 start(when, offset) 跳过。
    */
   private readonly leads = new Map<string, number>();
-  private readonly elementFilters = new Map<HTMLAudioElement, BiquadFilterNode>();
+  private readonly elementFilters = new Map<
+    HTMLAudioElement,
+    { source: MediaElementAudioSourceNode; filter: BiquadFilterNode }
+  >();
   private decoding = false;
   private failed = false;
 
@@ -379,7 +487,12 @@ class SfxEngine {
         const bytes = new Uint8Array(binary.length);
         for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
         // decodeAudioData 的 Promise 形式在旧 WebView 上可能缺失，回调形式两边都吃。
+        // 现代 Chromium 在传入回调时仍会同时返回 Promise；两边都会成功，若不做 once，
+        // 每个音效会重复执行一次整段波形扫描，启动期 CPU 工作白白翻倍。
+        let completed = false;
         const onDone = (buffer: AudioBuffer): void => {
+          if (completed) return;
+          completed = true;
           this.buffers.set(name, buffer);
           this.leads.set(name, findLeadSilence(buffer));
         };
@@ -408,10 +521,10 @@ class SfxEngine {
     if (!context) return undefined;
     if (context.state !== 'running') {
       void context.resume?.();
-      return this.elementFilters.get(element);
+      return this.elementFilters.get(element)?.filter;
     }
     const cached = this.elementFilters.get(element);
-    if (cached) return cached;
+    if (cached) return cached.filter;
     try {
       // 每个元素只能建一次 MediaElementSource，重复调用会抛错。
       const source = context.createMediaElementSource(element);
@@ -421,12 +534,21 @@ class SfxEngine {
       filter.Q.value = 0;
       source.connect(filter);
       filter.connect(this.outputLimiter ?? context.destination);
-      this.elementFilters.set(element, filter);
+      this.elementFilters.set(element, { source, filter });
       return filter;
     } catch {
       // 接不进去就保持原样播放：干声总好过无声。
       return undefined;
     }
+  }
+
+  /** 媒体元素退池时同步拆掉 Web Audio 图，避免 Map 与 AudioContext 双重强引用。 */
+  releaseElement(element: HTMLAudioElement): void {
+    const graph = this.elementFilters.get(element);
+    if (!graph) return;
+    this.elementFilters.delete(element);
+    try { graph.source.disconnect(); } catch { /* 已断开 */ }
+    try { graph.filter.disconnect(); } catch { /* 已断开 */ }
   }
 
   ready(name: string): boolean {
@@ -573,8 +695,17 @@ let voiceRejectCount = 0;
 let voiceDropCount = 0;
 let voiceExpireCount = 0;
 let voiceZombieCount = 0;
+let voiceRuntimeErrorCount = 0;
+let ambienceRuntimeErrorCount = 0;
+let musicRuntimeErrorCount = 0;
+let musicTwinRejectCount = 0;
+let tensionRuntimeErrorCount = 0;
+let fallbackRuntimeErrorCount = 0;
+let ambienceStartRetireCount = 0;
+let musicStartRetireCount = 0;
+let tensionStartRetireCount = 0;
 export function voicePipelineState(): string {
-  return `复活 ${voiceReviveCount} · 自愈 ${voiceHealCount} · 拒播 ${voiceRejectCount} · 挤丢 ${voiceDropCount} · 过期 ${voiceExpireCount} · 僵尸 ${voiceZombieCount}`;
+  return `复活 ${voiceReviveCount} · 自愈 ${voiceHealCount} · 拒播 ${voiceRejectCount} · 中途错误 ${voiceRuntimeErrorCount} · 起播超时 ${mediaPlayTimeoutCount} · 迟播拦截 ${mediaLateStartCount} · 挤丢 ${voiceDropCount} · 过期 ${voiceExpireCount} · 僵尸 ${voiceZombieCount}`;
 }
 
 export class LifeFeedback {
@@ -598,6 +729,8 @@ export class LifeFeedback {
   private activeVoice?: HTMLAudioElement;
   private activeVoiceBaseVolume = 0;
   private activeVoicePriority = 0;
+  /** 游戏暂停只挂起当前播放头；与 stopVoice 的“剧情已取消”语义严格分开。 */
+  private voiceSuspendedByGame = false;
   private voiceRequestSerial = 0;
   private readonly queuedVoices: QueuedVoice[] = [];
   private requestedAmbience?: number;
@@ -609,6 +742,12 @@ export class LifeFeedback {
   private musicTension = false;
   private tensionPlayer?: HTMLAudioElement;
   private activeTension?: HTMLAudioElement;
+  /** 无手势也要自救两次；再失败就等下一次真实交互，避免坏文件形成永久重试环。 */
+  private ambienceStartFailures = 0;
+  private musicStartFailures = 0;
+  private tensionStartFailures = 0;
+  /** 同一个在途 play() 会被多个 sync 调用共享；每个播放代次只允许结算一次失败。 */
+  private readonly loopStartFailureGeneration = new WeakMap<HTMLAudioElement, number>();
   /** mp3 元素循环的尾部空隙巡逻定时器（见 ensureLoopPatrol）。 */
   private loopPatrolTimer: number | null = null;
   /** 每个循环元素最近一次被巡逻跳回开头的时刻：防连环 seek。 */
@@ -624,6 +763,8 @@ export class LifeFeedback {
   private musicTwinTrack?: number;
   private musicCross?: { from: HTMLAudioElement; to: HTMLAudioElement; endAt: number; durationMs: number };
   private musicSwapAt = 0;
+  /** 让仍在等待 play() 的旧换岗回调在停播或换曲后失效。 */
+  private musicCrossSerial = 0;
   /** 循环替补的预备定时器：起曲 1.2 秒后就把替补建好、预 seek 到循环点（见 armMusicTwin）。 */
   private musicTwinArmTimer: number | null = null;
 
@@ -670,6 +811,7 @@ export class LifeFeedback {
     this.syncAmbience();
     this.syncMusic();
     this.syncMusicTension();
+    this.resumeActiveVoice();
   }
 
   /**
@@ -702,34 +844,47 @@ export class LifeFeedback {
         const cross = this.musicCross;
         const k = Math.max(0, Math.min(1, (cross.endAt - now) / cross.durationMs));
         const base = this.musicTargetVolume(MUSIC_BUS_GAIN, musicAssetGain(this.activeMusicTrack ?? 0));
-        // 等功率交叉：曲尾与循环点是不同素材，线性对淡会在中点塌 3dB，听感就是每圈「凹」一下。
-        const phase = (1 - k) * Math.PI / 2;
-        cross.from.volume = base * Math.cos(phase);
-        cross.to.volume = base * Math.sin(phase);
+        // 母版曲尾已经烘入同一段循环开头，替补又从烘焙进度之后接着播；两路是
+        // 高度相关的同一段声音。这里必须做恒和（线性）换岗，等功率曲线会把中点
+        // 叠高约 3 dB，继而让 limiter 每圈泵一下，听感反而像接缝。
+        cross.from.volume = base * k;
+        cross.to.volume = base * (1 - k);
         if (k <= 0) {
           cross.from.pause();
           try { cross.from.currentTime = this.loopStartByEl.get(cross.from) ?? 0.02; } catch { /* 无碍 */ }
           this.musicCross = undefined;
         }
       } else if (music && !music.paused && music.loop) {
-        const total = music.duration;
-        if (Number.isFinite(total) && total > 2 && now - this.musicSwapAt > 1500) {
-          const CROSS_SECONDS = 0.55;
-          if (music.currentTime > total - CROSS_SECONDS) {
+        const loopEnd = MUSIC_LOOP_END_SECONDS[this.activeMusicTrack ?? 0] ?? music.duration;
+        if (Number.isFinite(loopEnd) && loopEnd > 2 && now - this.musicSwapAt > 1500) {
+          if (music.currentTime > loopEnd - MUSIC_CROSS_SECONDS) {
             this.musicSwapAt = now;
-            this.beginMusicCrossloop(music, CROSS_SECONDS);
+            this.beginMusicCrossloop(music, MUSIC_CROSS_SECONDS);
           }
         }
       }
 
-      // —— 紧张层与环境床仍用提前跳回（织体循环，空隙远不如主旋律扎耳）——
-      for (const el of [this.activeTension, this.activeAmbience]) {
+      // —— 紧张层与环境床仍用提前跳回 ——
+      // 母版烘焙已在这个巡逻点前完成淡出/淡入，所以跳转两侧都是同一进度的
+      // 纯 head 波形；既绕过 mp3 尾部补零，也不会硬切掉尚未淡尽的 tail。
+      const patrolLoops: Array<[HTMLAudioElement | undefined, number, number]> = [
+        [
+          this.activeTension,
+          0.02 + MUSIC_BAKED_OVERLAP_SECONDS - LOOP_PATROL_LEAD_SECONDS,
+          MUSIC_TENSION_LOOP_END_SECONDS,
+        ],
+        [
+          this.activeAmbience,
+          0.02 + AMBIENCE_BAKED_OVERLAP_SECONDS - LOOP_PATROL_LEAD_SECONDS,
+          AMBIENCE_LOOP_END_SECONDS,
+        ],
+      ];
+      for (const [el, resumeAt, loopEnd] of patrolLoops) {
         if (!el || el.paused || !el.loop || el.seeking) continue;
         if (now - (this.loopJumpAt.get(el) ?? 0) < 600) continue;
-        const total = el.duration;
-        if (Number.isFinite(total) && total > 1 && el.currentTime > total - 0.18) {
+        if (el.currentTime > loopEnd - LOOP_PATROL_LEAD_SECONDS) {
           this.loopJumpAt.set(el, now);
-          try { el.currentTime = 0.02; } catch { /* 原生 loop 兜底 */ }
+          try { el.currentTime = resumeAt; } catch { /* 原生 loop 兜底 */ }
         }
       }
     }, 50);
@@ -744,12 +899,22 @@ export class LifeFeedback {
   private armMusicTwin(track: number): void {
     if (this.activeMusicTrack !== track) return;
     if (this.musicTwin && this.musicTwinTrack === track) return;
-    if (this.musicTwin) releaseMedia(this.musicTwin);
+    if (this.musicTwin) this.releaseMediaPlayer(this.musicTwin);
+    // 替补是无缝体验优化；十二席已经被真实播放占满时宁可让原生 loop 兜底，
+    // 也不能为了双元素换岗挤爆整条媒体栈。
+    if (!this.reserveNonVoiceMediaSlots(1)) {
+      this.musicTwin = undefined;
+      this.musicTwinTrack = undefined;
+      return;
+    }
     const twin = media(MUSIC_FILES[track]!);
     twin.loop = true;
+    twin.onerror = () => this.recoverMusicMediaError(twin, track);
+    // 替补一旦接管就会成为主播放器，必须从创建时起走同一条 limiter 图。
+    sfxEngine.elementFilter(twin);
     this.musicTwin = twin;
     this.musicTwinTrack = track;
-    const loopStart = MUSIC_LOOP_START[track] ?? 0.02;
+    const loopStart = musicCrossloopStart(track);
     this.loopStartByEl.set(twin, loopStart);
     const seek = (): void => {
       twin.removeEventListener('loadedmetadata', seek);
@@ -777,6 +942,8 @@ export class LifeFeedback {
     this.armMusicTwin(track);
     const twin = this.musicTwin;
     if (!twin) return;
+    // arm 阶段可能发生在 AudioContext 尚未恢复时；换岗前再接一次，确保不绕 limiter。
+    sfxEngine.elementFilter(twin);
     const loopStart = this.loopStartByEl.get(current) ?? 0.02;
     // 预备阶段已 seek 过；这里只在位置漂了（>80ms）时再校一次，避免每圈都做真 seek。
     if (Math.abs(twin.currentTime - loopStart) > 0.08) {
@@ -785,9 +952,17 @@ export class LifeFeedback {
     this.cancelFade(current);
     this.cancelFade(twin);
     twin.volume = 0;
-    const attempt = twin.play();
-    if (!attempt) return;
-    attempt.then(() => {
+    const serial = ++this.musicCrossSerial;
+    void playMediaWithDeadline(twin, crossSeconds * 1000).then(() => {
+      // play() 在部分 WebView 上会晚几百毫秒兑现；期间若已停播或换曲，旧替补
+      // 绝不能反过来覆盖新 activeMusic，把上一首歌重新放出来。
+      if (serial !== this.musicCrossSerial
+        || this.activeMusic !== current
+        || this.activeMusicTrack !== track
+        || this.musicTwin !== twin) {
+        twin.pause();
+        return;
+      }
       // 换岗成功才交接身份：主备互换，旧主淡出后归位待命。
       this.musicTwin = current;
       this.musicTwinTrack = track;
@@ -800,7 +975,19 @@ export class LifeFeedback {
         durationMs: crossSeconds * 1000,
       };
     }).catch(() => {
-      // 起播被拒（罕见）：什么都不改，原生 loop 兜底，最坏等于旧行为。
+      // 宿主可能只拒绝 play() 而不派发 error。旧逻辑会把这个坏替补永久留在
+      // musicTwin，之后每一圈都重试同一个元素，双元素无缝循环从此永久失效。
+      // 主播放器仍健康，故这里只退掉替补并错峰重建，当前一圈由原生 loop 兜底。
+      if (serial !== this.musicCrossSerial
+        || this.activeMusic !== current
+        || this.activeMusicTrack !== track
+        || this.musicTwin !== twin) return;
+      this.musicCrossSerial += 1;
+      this.musicTwin = undefined;
+      this.musicTwinTrack = undefined;
+      musicTwinRejectCount += 1;
+      this.releaseMediaPlayer(twin);
+      if (!document.hidden) this.scheduleMusicTwinArm(track);
     });
   }
 
@@ -810,6 +997,31 @@ export class LifeFeedback {
     this.syncAmbience();
     this.syncMusic();
     this.syncMusicTension();
+    this.resumeActiveVoice();
+  }
+
+  /**
+   * 来电、切后台或宿主音频焦点切换会直接 pause 当前旁白，却不会触发 ended。
+   * 若只恢复循环轨，activeVoicePriority 会永远占用，后续台词全部堵在候补席。
+   * focus/pageshow 与任一后续用户手势都从原播放头续上；期间若剧情已取消这句，
+   * serial 守卫立即掐掉迟到起播，不能让旧旁白复活。
+   */
+  private resumeActiveVoice(): void {
+    const player = this.activeVoice;
+    if (!player
+      || !player.paused
+      || this.voiceSuspendedByGame
+      || this.volume <= 0
+      || this.voiceVolume <= 0) return;
+    const serial = this.voiceRequestSerial;
+    void playMediaWithDeadline(player).then(() => {
+      if (serial !== this.voiceRequestSerial
+        || this.activeVoice !== player
+        || this.voiceSuspendedByGame) player.pause();
+    }).catch(() => {
+      // 保留 active 状态，下一次 focus/pageshow 或真实手势继续重试；不能让一次
+      // 无手势 autoplay 拒绝就吞掉整句，也不能把候补席永久误判成已经开播。
+    });
   }
 
   getVolume(): number {
@@ -840,13 +1052,16 @@ export class LifeFeedback {
       // Persistence is optional in restricted webviews.
     }
     this.refreshActiveVolumes();
-    // 环境音/配乐在静音时会被整条停掉（见 syncAmbience/syncMusic），拉回来必须重新起流，
-    // 否则玩家把滑块推回去只会得到永久的安静。
-    if (channel === 'ambience' && next > 0) this.syncAmbience();
-    if (channel === 'music' && next > 0) {
+    // 0 也必须进 sync：只把元素 volume 设成 0 仍会解码，连续切歌后甚至有旧淡出曲
+    // 没被 refreshActiveVolumes 覆盖而继续可闻。sync 的 0 分支负责真正停流。
+    if (channel === 'ambience') this.syncAmbience();
+    if (channel === 'music') {
       this.syncMusic();
       this.syncMusicTension();
     }
+    if (channel === 'voice' && next <= 0) this.stopVoice();
+    if (channel === 'effects' && next <= 0) this.releaseAllSfxPools();
+    if (channel === 'ambience' && next <= 0) this.releaseAmbienceEventPlayers();
   }
 
   debugState(): {
@@ -864,7 +1079,22 @@ export class LifeFeedback {
     voiceRevives: number;
     voiceHeals: number;
     voiceRejects: number;
+    voiceRuntimeErrors: number;
+    ambienceRuntimeErrors: number;
+    musicRuntimeErrors: number;
+    musicTwinRejects: number;
+    tensionRuntimeErrors: number;
+    fallbackRuntimeErrors: number;
+    ambienceStartRetires: number;
+    musicStartRetires: number;
+    tensionStartRetires: number;
+    mediaPlayTimeouts: number;
+    mediaLateStarts: number;
     voiceQueued: number;
+    mediaReady: number;
+    fadeTokens: number;
+    fallbackSfxPlayers: number;
+    ambienceEventReady: number;
     mix: { effects: number; ambience: number; music: number; voice: number };
     bus: { master: number; effects: number; ambience: number; music: number; tension: number; voice: number };
   } {
@@ -883,7 +1113,22 @@ export class LifeFeedback {
       voiceRevives: voiceReviveCount,
       voiceHeals: voiceHealCount,
       voiceRejects: voiceRejectCount,
+      voiceRuntimeErrors: voiceRuntimeErrorCount,
+      ambienceRuntimeErrors: ambienceRuntimeErrorCount,
+      musicRuntimeErrors: musicRuntimeErrorCount,
+      musicTwinRejects: musicTwinRejectCount,
+      tensionRuntimeErrors: tensionRuntimeErrorCount,
+      fallbackRuntimeErrors: fallbackRuntimeErrorCount,
+      ambienceStartRetires: ambienceStartRetireCount,
+      musicStartRetires: musicStartRetireCount,
+      tensionStartRetires: tensionStartRetireCount,
+      mediaPlayTimeouts: mediaPlayTimeoutCount,
+      mediaLateStarts: mediaLateStartCount,
       voiceQueued: this.queuedVoices.length,
+      mediaReady: this.voicePlayers.size + this.nonVoiceMediaPlayerCount(),
+      fadeTokens: this.fadeTokens.size,
+      fallbackSfxPlayers: this.fallbackSfxPlayerCount(),
+      ambienceEventReady: this.ambienceEventPlayers.size,
       mix: {
         effects: this.effectsVolume,
         ambience: this.ambienceVolume,
@@ -921,7 +1166,7 @@ export class LifeFeedback {
       // 重新开声后 syncAmbience() 直接 return，本章底噪一直缺到下一次 setAmbience()。
       // 与 audio.ts 的 buffered 版保持一致：只有 setAmbience(undefined) 才清请求。
       this.stopAmbience(false);
-      this.stopMusic(false);
+      this.stopMusic(false, true);
     }
   }
 
@@ -944,7 +1189,9 @@ export class LifeFeedback {
     } else if (!wasSilent && this.volume <= 0) {
       this.stopVoice();
       this.stopAmbience(false);
-      this.stopMusic(false);
+      this.stopMusic(false, true);
+      this.releaseAllSfxPools();
+      this.releaseAmbienceEventPlayers();
     }
   }
 
@@ -987,13 +1234,15 @@ export class LifeFeedback {
     const gain = Math.max(0, Math.min(
       2.5,
       SFX_BUS_GAIN * sfxMixGain(sound) * intensity * this.volume * this.effectsVolume
-        * (this.activeVoice ? VOICE_SFX_DUCK : 1),
+        * (this.voiceDuckingActive() ? VOICE_SFX_DUCK : 1),
     ));
     const baseRate = ['boss', 'boss-warn', 'boss-release', 'boss-hit', 'deny', 'phone', 'train', 'monitor', 'heal', 'lamp'].includes(sound)
       ? 1
       : Math.max(0.92, Math.min(1.08, 1 + (Math.random() - 0.5) * 0.045));
     const rate = material ? baseRate * MATERIAL_TONES[material].rate : baseRate;
     if (sfxEngine.play(sound, gain, rate, material)) {
+      // 这个音效已经走 BufferSource；先前解码未就绪时建的元素兜底立即还池。
+      this.releaseSfxPool(sound);
       probePlay(sound);
       return;
     }
@@ -1012,13 +1261,23 @@ export class LifeFeedback {
         * intensity
         * this.volume
         * this.effectsVolume
-        * (this.activeVoice ? VOICE_SFX_DUCK : 1),
+        * (this.voiceDuckingActive() ? VOICE_SFX_DUCK : 1),
     ));
     player.playbackRate = ['boss', 'boss-warn', 'boss-release', 'boss-hit', 'deny', 'phone', 'train', 'monitor', 'heal', 'lamp'].includes(sound)
       ? 1
       : Math.max(0.92, Math.min(1.08, 1 + (Math.random() - 0.5) * 0.045));
     probePlay(sound);
-    void player.play().catch(() => undefined);
+    const task = playMediaWithDeadline(player);
+    const generation = mediaPlayGeneration.get(player) ?? 0;
+    void task.catch(() => {
+      // WebView 可能只 reject play()、不派发 error；池头元素仍 paused，旧逻辑下
+      // 每一声都会再次选中它，整类音效永久静音。只处理本代失败，避免迟到 reject
+      // 误删已经成功复用的同一元素；整池退掉后下一次触发会干净重建。
+      if (mediaPlayGeneration.get(player) !== generation || !player.paused) return;
+      if (!this.sfxPools.get(sound)?.includes(player)) return;
+      fallbackRuntimeErrorCount += 1;
+      this.releaseSfxPool(sound);
+    });
   }
 
   /**
@@ -1034,8 +1293,20 @@ export class LifeFeedback {
     this.unlock();
     let player = this.ambienceEventPlayers.get(sound);
     if (!player) {
-      player = media(SFX_FILES[sound]);
-      this.ambienceEventPlayers.set(sound, player);
+      // 场景点声最短也相隔数秒，只需保留当前一条；按 sound 永久缓存四条会白占
+      // 四个解码器名额，并和 8 句旁白 + BGM/环境叠成 16 条。
+      this.releaseAmbienceEventPlayers(sound);
+      if (!this.reserveNonVoiceMediaSlots(1)) return;
+      const eventPlayer = media(SFX_FILES[sound]);
+      eventPlayer.onerror = () => {
+        if (this.ambienceEventPlayers.get(sound) !== eventPlayer) return;
+        this.ambienceEventPlayers.delete(sound);
+        this.ambienceEventLevels.delete(eventPlayer);
+        fallbackRuntimeErrorCount += 1;
+        this.releaseMediaPlayer(eventPlayer);
+      };
+      this.ambienceEventPlayers.set(sound, eventPlayer);
+      player = eventPlayer;
     }
     if (!player.paused) player.pause();
     if (player.currentTime !== 0) {
@@ -1045,16 +1316,27 @@ export class LifeFeedback {
     const level = Math.max(0.04, Math.min(0.28, intensity * 0.22));
     this.ambienceEventLevels.set(player, level);
     player.volume = level * this.volume * this.ambienceVolume
-      * (this.activeVoice ? VOICE_AMBIENCE_DUCK : 1);
+      * (this.voiceDuckingActive() ? VOICE_AMBIENCE_DUCK : 1);
     player.playbackRate = 0.98 + Math.random() * 0.04;
     probePlay(`ambience-${sound}`);
-    void player.play().catch(() => undefined);
+    const task = playMediaWithDeadline(player);
+    const generation = mediaPlayGeneration.get(player) ?? 0;
+    void task.catch(() => {
+      if (mediaPlayGeneration.get(player) !== generation || !player.paused) return;
+      if (this.ambienceEventPlayers.get(sound) !== player) return;
+      this.ambienceEventPlayers.delete(sound);
+      this.ambienceEventLevels.delete(player);
+      fallbackRuntimeErrorCount += 1;
+      this.releaseMediaPlayer(player);
+    });
   }
 
   setAmbience(stage?: number): void {
-    this.requestedAmbience = stage === undefined
+    const next = stage === undefined
       ? undefined
       : Math.max(0, Math.min(AMBIENCE_FILES.length - 1, Math.floor(stage)));
+    if (next !== this.requestedAmbience) this.ambienceStartFailures = 0;
+    this.requestedAmbience = next;
     if (this.requestedAmbience === undefined) {
       this.stopAmbience(true);
       return;
@@ -1064,9 +1346,11 @@ export class LifeFeedback {
   }
 
   setMusic(track?: number): void {
-    this.requestedMusic = track === undefined
+    const next = track === undefined
       ? undefined
       : Math.max(0, Math.min(MUSIC_FILES.length - 1, Math.floor(track)));
+    if (next !== this.requestedMusic) this.musicStartFailures = 0;
+    this.requestedMusic = next;
     if (this.requestedMusic === undefined) {
       this.stopMusic(true);
       return;
@@ -1076,6 +1360,7 @@ export class LifeFeedback {
   }
 
   setMusicTension(active: boolean): void {
+    if (active !== this.musicTension) this.tensionStartFailures = 0;
     this.musicTension = active;
     if (!active) {
       this.stopMusicTension();
@@ -1089,13 +1374,19 @@ export class LifeFeedback {
    * 预热必须服从元素池上限。每章的预载表有 14–21 条，六章累计约 99 个元素——
    * 这正是「攒到后面全局没声音」的来源。超过上限地热只会自己挤自己，还白白多做
    * 一轮建元素、释放元素的开销，所以这里直接截到上限：排在前面的是本章最早用到的。
+   * 8 格人声 + 环境/BGM/替补/紧张层 4 格，保守上界正好是 12。
    *
    * 同时借道「复活」：本方法有一次调用发生在标题页点「开始呼吸」的手势调用栈里
    * （startRun → preloadVoices），正是给启动期元素解毒的唯一窗口，见 reviveVoice。
    */
   preloadVoices(ids: readonly VoiceCueId[]): void {
     this.unlock();
-    for (const id of ids.slice(0, VOICE_PLAYER_BUDGET)) this.reviveVoice(this.ensureVoice(id));
+    // 预载表按“最早开口 → 最晚开口”排列，而 LRU 从 Map 队首淘汰；倒序插入让
+    // 最早的台词留在队尾。Web Audio 不可用、元素音效来抢席时，先丢较晚的句子。
+    const selected = ids.slice(0, this.voicePlayerBudget());
+    for (let index = selected.length - 1; index >= 0; index -= 1) {
+      this.reviveVoice(this.ensureVoice(selected[index]!));
+    }
   }
 
   /**
@@ -1119,14 +1410,15 @@ export class LifeFeedback {
     // 静音必须用 muted 而不是 volume=0：iOS 的 volume 是只读属性，赋 0 被静默忽略、
     // 照样满音量出声——整池开嗓就成了好几句旁白同时炸出来（真机上的「旁白打架」）。
     player.muted = true;
-    const attempt = player.play();
-    if (!attempt) { player.muted = false; return; }
-    attempt.then(() => {
+    void playMediaWithDeadline(player).then(() => {
       if (player !== this.activeVoice) {
         player.pause();
         try { if (player.currentTime !== 0) player.currentTime = 0; } catch { /* seek 失败无碍 */ }
       }
       player.muted = false;
+      // 切章很快时，这个无声开嗓可能还没落定，播放器就已被硬上限淘汰。
+      // 迟到的 Promise 只负责把自己停干净，不能再把已释放元素记成可复用席位。
+      if (![...this.voicePlayers.values()].includes(player)) return;
       this.blessedVoices.add(player);
       voiceReviveCount += 1;
     }).catch(() => {
@@ -1139,6 +1431,8 @@ export class LifeFeedback {
   private audioWarmTotal = 0;
   private audioWarmRunning = false;
   private audioWarmToken = 0;
+  /** stopAudioWarm 必须真取消当前 load，而不只是让下一轮循环看见 token 变化。 */
+  private audioWarmAbortController?: AbortController;
   /** 无手势自动温启动被 WebView 拒绝过：下一次真实手势里重试一次（见 startAudioWarm）。 */
   private audioWarmBailedWithoutGesture = false;
 
@@ -1168,6 +1462,10 @@ export class LifeFeedback {
    */
   startAudioWarm(auto = false): void {
     if (this.audioWarmRunning) return;
+    // 防御旧任务尚未从微任务尾部退出的窗口；abort 会同步释放它的临时媒体元素。
+    this.audioWarmAbortController?.abort();
+    const abortController = new AbortController();
+    this.audioWarmAbortController = abortController;
     this.audioWarmBailedWithoutGesture = false;
     const files = audioWarmFiles();
     this.audioWarmTotal = files.length;
@@ -1192,7 +1490,7 @@ export class LifeFeedback {
           await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
         }
         processed += 1;
-        const warmed = await touchMediaFile(file, 700);
+        const warmed = await touchMediaFile(file, 700, abortController.signal);
         if (token !== this.audioWarmToken) break;
         this.audioWarmDone += 1;
         // 连续摸空才计数；中间只要成功一个就清零——偶发的单文件超时不该
@@ -1213,17 +1511,35 @@ export class LifeFeedback {
           break;
         }
       }
-      if (token === this.audioWarmToken) this.audioWarmRunning = false;
+      if (token === this.audioWarmToken) {
+        this.audioWarmRunning = false;
+        if (this.audioWarmAbortController === abortController) {
+          this.audioWarmAbortController = undefined;
+        }
+      }
     })();
   }
 
   stopAudioWarm(): void {
     this.audioWarmToken += 1;
+    this.audioWarmAbortController?.abort();
+    this.audioWarmAbortController = undefined;
     this.audioWarmRunning = false;
+    // 新一局/退出标题时也要掐掉旧章节的后台预热。它若继续占着一个解码器，
+    // 会和开场 8 句旁白 + 环境/BGM/替补/紧张层叠到 13，刚好撞穿保守媒体池。
+    this.stageAudioWarmGeneration += 1;
+    this.stageAudioWarmAbortController?.abort();
+    this.stageAudioWarmAbortController = undefined;
+    this.stageAudioWarmTasks.clear();
   }
 
   /** 每章音频预热已摸过的文件：跨章去重，别把同一份环境床反复摸。 */
   private readonly stageAudioWarmed = new Set<string>();
+  /** 章节预热只准一条媒体管线；同章重入共享任务，不并开五条临时解码流。 */
+  private stageAudioWarmTail: Promise<void> = Promise.resolve();
+  private readonly stageAudioWarmTasks = new Map<number, Promise<void>>();
+  private stageAudioWarmGeneration = 0;
+  private stageAudioWarmAbortController?: AbortController;
 
   /**
    * 章节音频预热：把某一章开打要用的环境床、战斗配乐与紧张层提前摸到可起播。
@@ -1233,19 +1549,52 @@ export class LifeFeedback {
    * 本章正在用的席位挤掉，那正是「整局没旁白」的旧事故；人声仍走
    * startStage → preloadVoices 的既有节奏。
    */
-  async warmupStageAudio(stageIndex: number): Promise<void> {
+  warmupStageAudio(stageIndex: number): Promise<void> {
     const stage = Math.max(0, Math.min(AMBIENCE_FILES.length - 1, Math.trunc(stageIndex)));
-    const track = Math.max(0, Math.min(MUSIC_FILES.length - 1, stage + 1));
-    const files = [AMBIENCE_FILES[stage]!, MUSIC_FILES[track]!, MUSIC_TENSION_FILE]
-      .filter((file) => !this.stageAudioWarmed.has(file));
-    const deadline = performance.now() + 5000;
-    for (const file of files) {
-      const remaining = deadline - performance.now();
-      if (remaining <= 0) break;
-      if (await touchMediaFile(file, Math.min(1500, remaining))) {
-        this.stageAudioWarmed.add(file);
+    const existing = this.stageAudioWarmTasks.get(stage);
+    if (existing) return existing;
+    const generation = this.stageAudioWarmGeneration;
+    const run = async (): Promise<void> => {
+      if (generation !== this.stageAudioWarmGeneration) return;
+      const abortController = new AbortController();
+      this.stageAudioWarmAbortController = abortController;
+      try {
+        const track = Math.max(0, Math.min(MUSIC_FILES.length - 1, stage + 1));
+        // 到真正取得单通道执行权时再过滤；排在前面的章节可能已把共用紧张层摸热。
+        const files = [AMBIENCE_FILES[stage]!, MUSIC_FILES[track]!, MUSIC_TENSION_FILE]
+          .filter((file) => !this.stageAudioWarmed.has(file));
+        const deadline = performance.now() + 5000;
+        for (const file of files) {
+          if (generation !== this.stageAudioWarmGeneration || abortController.signal.aborted) break;
+          // 预热是可选优化，不能为了它撞穿媒体池，更不能挤掉本章即将开口的人声。
+          // 当前真实播放与缓存已占满就让路，由正式起播路径自行加载。
+          if (this.voicePlayers.size + this.nonVoiceMediaPlayerCount() + 1
+            > PLATFORM_MEDIA_PLAYER_BUDGET) break;
+          const remaining = deadline - performance.now();
+          if (remaining <= 0) break;
+          const warmed = await touchMediaFile(
+            file,
+            Math.min(1500, remaining),
+            abortController.signal,
+          );
+          if (generation !== this.stageAudioWarmGeneration || abortController.signal.aborted) break;
+          if (warmed) this.stageAudioWarmed.add(file);
+        }
+      } finally {
+        if (this.stageAudioWarmAbortController === abortController) {
+          this.stageAudioWarmAbortController = undefined;
+        }
       }
-    }
+    };
+    // 前一项即使被宿主异常打断，也不能把整条预热线永久锁死。
+    const task = this.stageAudioWarmTail.then(run, run);
+    this.stageAudioWarmTail = task.catch(() => undefined);
+    this.stageAudioWarmTasks.set(stage, task);
+    const clear = (): void => {
+      if (this.stageAudioWarmTasks.get(stage) === task) this.stageAudioWarmTasks.delete(stage);
+    };
+    void task.then(clear, clear);
+    return task;
   }
 
   /**
@@ -1294,8 +1643,9 @@ export class LifeFeedback {
     // 元素数量必须有上限：手机 WebView 能同时持有的媒体元素/解码器名额只有十几个量级，
     // 一次建 100+ 个之后所有 play() 会静默失败（0729-31 真机整局无旁白，就是这么来的）。
     // 只热开场要用的人声，加首章环境音与配乐各一份；后面各章仍走 startStage 逐章加载。
+    const selectedVoiceIds = voiceIds.slice(0, this.voicePlayerBudget()).reverse();
     const elements: HTMLAudioElement[] = [
-      ...voiceIds.map((id) => this.ensureVoice(id)),
+      ...selectedVoiceIds.map((id) => this.ensureVoice(id)),
       this.ensureAmbience(0),
       this.ensureMusic(0),
     ];
@@ -1368,40 +1718,92 @@ export class LifeFeedback {
     this.activeVoice = player;
     this.activeVoicePriority = cue.trigger.priority;
     this.refreshActiveVolumes();
+    let startedAudibly = false;
+    const markStarted = (): void => {
+      if (serial !== this.voiceRequestSerial || this.activeVoice !== player) return;
+      startedAudibly = true;
+      // activeVoice 在 play() 前就入席；只有媒体真正进入 playing 后才允许压低背景。
+      this.refreshActiveVolumes();
+    };
+    const abandonVoice = (): void => {
+      if (serial !== this.voiceRequestSerial || this.activeVoice !== player) return;
+      this.voiceRequestSerial += 1;
+      this.lastVoicePlayed.delete(id);
+      this.activeVoice = undefined;
+      this.activeVoiceBaseVolume = 0;
+      this.activeVoicePriority = 0;
+      player.onended = null;
+      player.onerror = null;
+      player.onpause = null;
+      player.onplaying = null;
+      if (this.voicePlayers.get(id) === player) this.voicePlayers.delete(id);
+      this.releaseMediaPlayer(player);
+      voiceRejectCount += 1;
+      this.refreshActiveVolumes();
+      // 暂停页内只清理坏播放器，不偷偷播放候补；玩家解除暂停时再正常出列。
+      if (!this.voiceSuspendedByGame) this.playQueuedVoice();
+    };
+    player.onpause = () => {
+      if (serial === this.voiceRequestSerial && this.activeVoice === player) {
+        // 宿主只暂停人声而循环轨仍在播时，应立即解除背景闪避。
+        this.refreshActiveVolumes();
+      }
+    };
+    player.onplaying = markStarted;
+    player.onerror = () => {
+      // 首次装载错误仍交给下面两级 load/play 自愈；已经真正开口后再报错，则 ended
+      // 不会到达，必须释放主持权和被毒化的媒体元素，否则候补旁白会永久堵死。
+      if (!startedAudibly) return;
+      voiceRuntimeErrorCount += 1;
+      abandonVoice();
+    };
     player.onended = () => {
       if (this.activeVoice !== player || serial !== this.voiceRequestSerial) return;
+      player.onerror = null;
+      player.onpause = null;
+      player.onplaying = null;
       this.activeVoice = undefined;
       this.activeVoiceBaseVolume = 0;
       this.activeVoicePriority = 0;
       this.refreshActiveVolumes();
       this.playQueuedVoice();
     };
-    void player.play().catch(() => {
+    void playMediaWithDeadline(player).then(() => {
+      if (serial !== this.voiceRequestSerial
+        || this.activeVoice !== player
+        || this.voiceSuspendedByGame) player.pause();
+      else markStarted();
+    }).catch(() => {
       if (serial !== this.voiceRequestSerial) return;
+      // 玩家/后台暂停期间保留当前播放头，不能 load() 把它洗回零点；解除暂停时
+      // resumeActiveVoice 会从原位置继续，并重新获得自己的起播截止线。
+      if (this.voiceSuspendedByGame) return;
       // 两级自愈：启动风暴里装载失败的元素 error 被锁存，play() 会一直拒；
       // load() 重置装载后大多能活。300ms 一试，1200ms 再试（慢速缓冲需要时间），
       // 仍失败才放弃——并清掉这条的冷却戳，让后续游戏触发还有机会补一次。
       try { player.load(); } catch { /* 重装失败则直接走放弃分支 */ }
       const giveUp = (): void => {
-        if (serial !== this.voiceRequestSerial) return;
-        voiceRejectCount += 1;
-        this.lastVoicePlayed.delete(id);
-        this.activeVoice = undefined;
-        this.activeVoiceBaseVolume = 0;
-        this.activeVoicePriority = 0;
-        this.refreshActiveVolumes();
-        this.playQueuedVoice();
+        if (serial !== this.voiceRequestSerial || this.voiceSuspendedByGame) return;
+        abandonVoice();
       };
       window.setTimeout(() => {
-        if (serial !== this.voiceRequestSerial) return;
-        void player.play().then(() => {
-          voiceHealCount += 1;
+        if (serial !== this.voiceRequestSerial || this.voiceSuspendedByGame) return;
+        void playMediaWithDeadline(player).then(() => {
+          if (this.voiceSuspendedByGame) player.pause();
+          else {
+            markStarted();
+            voiceHealCount += 1;
+          }
         }).catch(() => {
-          if (serial !== this.voiceRequestSerial) return;
+          if (serial !== this.voiceRequestSerial || this.voiceSuspendedByGame) return;
           window.setTimeout(() => {
-            if (serial !== this.voiceRequestSerial) return;
-            void player.play().then(() => {
-              voiceHealCount += 1;
+            if (serial !== this.voiceRequestSerial || this.voiceSuspendedByGame) return;
+            void playMediaWithDeadline(player).then(() => {
+              if (this.voiceSuspendedByGame) player.pause();
+              else {
+                markStarted();
+                voiceHealCount += 1;
+              }
             }).catch(giveUp);
           }, 1200);
         });
@@ -1409,15 +1811,131 @@ export class LifeFeedback {
     });
   }
 
+  /** 暂停菜单/自动暂停：保留主持权、候补席与播放头，避免恢复后字幕有字却没声。 */
+  pauseVoice(): void {
+    this.voiceSuspendedByGame = true;
+    const player = this.activeVoice;
+    if (player && !player.paused) player.pause();
+    this.refreshActiveVolumes();
+  }
+
+  /** 只恢复由游戏暂停挂起的旁白；显式 stopVoice() 过的旧句绝不会复活。 */
+  resumeVoice(): void {
+    if (!this.voiceSuspendedByGame) return;
+    this.voiceSuspendedByGame = false;
+    this.refreshActiveVolumes();
+    if (this.activeVoice) this.resumeActiveVoice();
+    else this.playQueuedVoice();
+  }
+
   stopVoice(): void {
+    this.voiceSuspendedByGame = false;
     this.queuedVoices.length = 0;
     this.cancelCurrentVoice();
   }
 
+  /** 退媒体席位时连同淡化令牌的强引用一起删；否则每次换曲都会永久留一个旧元素。 */
+  private releaseMediaPlayer(player: HTMLAudioElement): void {
+    this.fadeTokens.delete(player);
+    releaseMedia(player);
+  }
+
+  private releaseSfxPool(sound: LifeSound): void {
+    const pool = this.sfxPools.get(sound);
+    if (!pool) return;
+    this.sfxPools.delete(sound);
+    for (const player of pool) this.releaseMediaPlayer(player);
+  }
+
+  private releaseAllSfxPools(): void {
+    for (const sound of [...this.sfxPools.keys()]) this.releaseSfxPool(sound);
+  }
+
+  private fallbackSfxPlayerCount(): number {
+    let count = 0;
+    for (const pool of this.sfxPools.values()) count += pool.length;
+    return count;
+  }
+
+  private evictSfxPools(targetPlayers: number): void {
+    let count = this.fallbackSfxPlayerCount();
+    for (const sound of [...this.sfxPools.keys()]) {
+      if (count <= targetPlayers) break;
+      const size = this.sfxPools.get(sound)?.length ?? 0;
+      this.releaseSfxPool(sound);
+      count -= size;
+    }
+  }
+
+  private releaseAmbienceEventPlayers(keep?: LifeSound): void {
+    for (const [sound, player] of [...this.ambienceEventPlayers]) {
+      if (sound === keep) continue;
+      this.ambienceEventPlayers.delete(sound);
+      this.ambienceEventLevels.delete(player);
+      this.releaseMediaPlayer(player);
+    }
+  }
+
+  /** 当前所有非旁白常驻媒体去重计数；用于与旁白共享十二席硬预算。 */
+  private nonVoiceMediaPlayerCount(): number {
+    const players = new Set<HTMLAudioElement>();
+    for (const pool of this.sfxPools.values()) for (const player of pool) players.add(player);
+    for (const player of this.ambienceEventPlayers.values()) players.add(player);
+    for (const player of this.ambiencePlayers.values()) players.add(player);
+    for (const player of this.musicPlayers.values()) players.add(player);
+    if (this.musicTwin) players.add(this.musicTwin);
+    if (this.tensionPlayer) players.add(this.tensionPlayer);
+    return [...players].filter((player) => player.hasAttribute('src')).length;
+  }
+
+  /** 非旁白多占一席，旁白 LRU 就少留一席；活动旁白始终至少保留。 */
+  private voicePlayerBudget(extraNonVoice = 0): number {
+    return Math.max(1, Math.min(
+      VOICE_PLAYER_BUDGET,
+      PLATFORM_MEDIA_PLAYER_BUDGET - this.nonVoiceMediaPlayerCount() - extraNonVoice,
+    ));
+  }
+
+  /** 为可选非旁白媒体腾席；活动旁白不能被截断，腾不出时调用方应放弃可选播放。 */
+  private reserveNonVoiceMediaSlots(count: number): boolean {
+    const availableForVoices = PLATFORM_MEDIA_PLAYER_BUDGET
+      - this.nonVoiceMediaPlayerCount()
+      - count;
+    const target = Math.max(this.activeVoice ? 1 : 0, Math.min(VOICE_PLAYER_BUDGET, availableForVoices));
+    this.evictVoicePlayers(target);
+    return this.voicePlayers.size + this.nonVoiceMediaPlayerCount() + count
+      <= PLATFORM_MEDIA_PLAYER_BUDGET;
+  }
+
+  /** 环境/BGM 属于主混音；极端时先丢可重建的元素音效和点声，也不能让主轨创建失败。 */
+  private reserveEssentialMediaSlot(): void {
+    if (this.reserveNonVoiceMediaSlots(1)) return;
+    this.releaseAllSfxPools();
+    this.releaseAmbienceEventPlayers();
+    this.reserveNonVoiceMediaSlots(1);
+  }
+
   private ensureSfxPool(sound: LifeSound): HTMLAudioElement[] {
     const cached = this.sfxPools.get(sound);
-    if (cached) return cached;
-    const pool = Array.from({ length: sound === 'hit' || sound === 'breath' ? 4 : 2 }, () => media(SFX_FILES[sound]));
+    if (cached && cached.every((player) => !player.error)) {
+      // 命中刷新 LRU；Map 队首永远是最久没用的池。
+      this.sfxPools.delete(sound);
+      this.sfxPools.set(sound, cached);
+      return cached;
+    }
+    if (cached) this.releaseSfxPool(sound);
+    const size = sound === 'hit' || sound === 'breath' ? 4 : 2;
+    this.evictSfxPools(FALLBACK_SFX_PLAYER_BUDGET - size);
+    if (!this.reserveNonVoiceMediaSlots(size)) return [];
+    const pool = Array.from({ length: size }, () => media(SFX_FILES[sound]));
+    for (const player of pool) {
+      player.onerror = () => {
+        if (!this.sfxPools.get(sound)?.includes(player)) return;
+        fallbackRuntimeErrorCount += 1;
+        // 同一池中的其它元素可能共享宿主解码状态；整池释放，下一次触发再干净重建。
+        this.releaseSfxPool(sound);
+      };
+    }
     this.sfxPools.set(sound, pool);
     return pool;
   }
@@ -1434,11 +1952,12 @@ export class LifeFeedback {
     if (this.voicePlayers.size <= target) return;
     for (const [id, player] of [...this.voicePlayers]) {
       if (this.voicePlayers.size <= target) break;
-      // 正在播的、以及排队中的下一句，都不能被抽走
-      if (player === this.activeVoice || !player.paused) continue;
-      if (this.queuedVoices.some((entry) => entry.id === id)) continue;
+      // 只有当前真正听得到的旁白不能被抽走。其余 !paused 元素只是 preloadVoices
+      // 发起的 muted 开嗓；如果也跳过，连续切章时异步开嗓尚未落定，池会从 8 瞬时
+      // 膨胀到十几个并撞穿 WebView 解码器上限。排队项只保存 id，轮到时可重新创建。
+      if (player === this.activeVoice) continue;
       this.voicePlayers.delete(id);
-      releaseMedia(player);
+      this.releaseMediaPlayer(player);
     }
   }
 
@@ -1457,9 +1976,9 @@ export class LifeFeedback {
       // 正在播的交给 playVoice 的两级自愈去收拾，这里绝不动它。
       if (cached === this.activeVoice) return cached;
       this.voicePlayers.delete(id);
-      releaseMedia(cached);
+      this.releaseMediaPlayer(cached);
     }
-    this.evictVoicePlayers(VOICE_PLAYER_BUDGET - 1);
+    this.evictVoicePlayers(this.voicePlayerBudget() - 1);
     const player = media(VOICE_CUES[id].playbackFile ?? VOICE_CUES[id].file);
     this.voicePlayers.set(id, player);
     return player;
@@ -1473,7 +1992,7 @@ export class LifeFeedback {
     for (const [stage, player] of [...this.ambiencePlayers]) {
       if (stage === keep || !player.paused) continue;
       this.ambiencePlayers.delete(stage);
-      releaseMedia(player);
+      this.releaseMediaPlayer(player);
     }
   }
 
@@ -1481,17 +2000,138 @@ export class LifeFeedback {
     for (const [track, player] of [...this.musicPlayers]) {
       if (track === keep || !player.paused) continue;
       this.musicPlayers.delete(track);
-      releaseMedia(player);
+      this.releaseMediaPlayer(player);
     }
+  }
+
+  /** 活动环境床中途损坏时，释放被宿主锁死的元素并按请求重建；不复用 poisoned src。 */
+  private recoverAmbienceMediaError(player: HTMLAudioElement, stage: number): void {
+    const wasActive = this.activeAmbience === player && this.activeAmbienceStage === stage;
+    if (this.ambiencePlayers.get(stage) === player) this.ambiencePlayers.delete(stage);
+    if (wasActive) {
+      this.activeAmbience = undefined;
+      this.activeAmbienceStage = undefined;
+      this.ambienceStartFailures = 0;
+    }
+    ambienceRuntimeErrorCount += 1;
+    this.releaseMediaPlayer(player);
+    if (wasActive
+      && this.requestedAmbience === stage
+      && !document.hidden
+      && this.volume > 0
+      && this.ambienceVolume > 0) this.syncAmbience();
+  }
+
+  /**
+   * 主 BGM 中途损坏时，旧主、替补和交叉淡化引用必须一起清空。只换 active 指针会
+   * 让坏元素继续留在 musicPlayers，下一次 sync 又把它取出来，最终整局永久静音。
+   */
+  private recoverMusicMediaError(player: HTMLAudioElement, track: number): void {
+    if (this.activeMusic !== player) {
+      if (this.musicTwin === player) {
+        this.musicCrossSerial += 1;
+        this.musicTwin = undefined;
+        this.musicTwinTrack = undefined;
+        musicRuntimeErrorCount += 1;
+        this.releaseMediaPlayer(player);
+        if (this.activeMusicTrack === track && !document.hidden) this.scheduleMusicTwinArm(track);
+        return;
+      }
+      if (this.musicPlayers.get(track) === player) this.musicPlayers.delete(track);
+      musicRuntimeErrorCount += 1;
+      this.releaseMediaPlayer(player);
+      return;
+    }
+
+    this.musicCrossSerial += 1;
+    if (this.musicTwinArmTimer !== null) {
+      window.clearTimeout(this.musicTwinArmTimer);
+      this.musicTwinArmTimer = null;
+    }
+    const doomed = new Set<HTMLAudioElement>(this.musicPlayers.values());
+    doomed.add(player);
+    if (this.musicTwin) doomed.add(this.musicTwin);
+    if (this.musicCross) {
+      doomed.add(this.musicCross.from);
+      doomed.add(this.musicCross.to);
+    }
+    this.musicPlayers.clear();
+    this.activeMusic = undefined;
+    this.activeMusicTrack = undefined;
+    this.musicTwin = undefined;
+    this.musicTwinTrack = undefined;
+    this.musicCross = undefined;
+    this.musicStartFailures = 0;
+    musicRuntimeErrorCount += 1;
+    for (const element of doomed) this.releaseMediaPlayer(element);
+    if (this.requestedMusic === track
+      && !document.hidden
+      && this.volume > 0
+      && this.musicVolume > 0) this.syncMusic();
+  }
+
+  /** 紧张层与 BGM 请求分开保存；坏元素退池后仅在仍需要时重建。 */
+  private recoverTensionMediaError(player: HTMLAudioElement): void {
+    const wasActive = this.activeTension === player;
+    if (wasActive) this.activeTension = undefined;
+    if (this.tensionPlayer === player) this.tensionPlayer = undefined;
+    this.tensionStartFailures = 0;
+    tensionRuntimeErrorCount += 1;
+    this.releaseMediaPlayer(player);
+    if (wasActive
+      && this.musicTension
+      && !document.hidden
+      && this.volume > 0
+      && this.musicVolume > 0) this.syncMusicTension();
+  }
+
+  /**
+   * 曲目切换只允许「上一首 + 新一首」同时存在。若玩家或剧情在 2.1 秒淡出尚未
+   * 结束前再次切歌，更早的曲子已经没有叙事作用，继续播放只会叠成第三、第四层。
+   */
+  private releaseObsoleteMusicPlayers(keep: ReadonlySet<HTMLAudioElement>): void {
+    for (const [track, player] of [...this.musicPlayers]) {
+      if (keep.has(player)) continue;
+      this.musicPlayers.delete(track);
+      this.cancelFade(player);
+      player.pause();
+      try { player.currentTime = 0; } catch { /* 未就绪无碍 */ }
+      this.releaseMediaPlayer(player);
+    }
+  }
+
+  /**
+   * 曲目交叉淡出结束后，把已经没有任何播放身份的旧主轨真正退池。
+   *
+   * 只 pause/currentTime=0 仍会让元素带着 src 和 Web Audio 图，占掉一个 WebView
+   * 解码器名额。回调可能在快速切歌后迟到，因此必须逐一确认它没有重新成为主轨、
+   * 循环替补或同曲换岗成员；若它已被重新启用，cancelFade 的代次也会先拦住回调。
+   */
+  private releaseFadedMusicPlayer(player: HTMLAudioElement): void {
+    if (player === this.activeMusic
+      || player === this.musicTwin
+      || this.musicCross?.from === player
+      || this.musicCross?.to === player) return;
+    for (const [track, cached] of [...this.musicPlayers]) {
+      if (cached === player) this.musicPlayers.delete(track);
+    }
+    this.releaseMediaPlayer(player);
   }
 
   private ensureAmbience(stage: number): HTMLAudioElement {
     const cached = this.ambiencePlayers.get(stage);
-    if (cached) return cached;
+    if (cached && !cached.error) return cached;
+    if (cached) {
+      this.ambiencePlayers.delete(stage);
+      this.releaseMediaPlayer(cached);
+    }
+    // syncAmbience 已暂停旧环境床；先释放再创建，避免换章瞬间多占一席。
+    this.releaseIdleAmbience(stage);
+    this.reserveEssentialMediaSlot();
     const player = media(AMBIENCE_FILES[stage]!);
     player.loop = true;
+    player.onerror = () => this.recoverAmbienceMediaError(player, stage);
     this.ambiencePlayers.set(stage, player);
-    this.releaseIdleAmbience(stage);
     return player;
   }
 
@@ -1499,6 +2139,7 @@ export class LifeFeedback {
     // 换曲时立刻收掉上一首的循环替补和进行中的换岗：旧替补白占一个媒体名额，
     // 进行中的交叉淡化则会让两首歌打架 0.5 秒。
     if (this.musicTwinTrack !== undefined && this.musicTwinTrack !== track) {
+      this.musicCrossSerial += 1;
       if (this.musicTwinArmTimer !== null) {
         window.clearTimeout(this.musicTwinArmTimer);
         this.musicTwinArmTimer = null;
@@ -1507,26 +2148,140 @@ export class LifeFeedback {
         this.musicCross.from.pause();
         this.musicCross = undefined;
       }
-      if (this.musicTwin) releaseMedia(this.musicTwin);
+      if (this.musicTwin) this.releaseMediaPlayer(this.musicTwin);
       this.musicTwin = undefined;
       this.musicTwinTrack = undefined;
     }
     const cached = this.musicPlayers.get(track);
-    if (cached) return cached;
+    if (cached && !cached.error) {
+      this.releaseIdleMusic(track);
+      return cached;
+    }
+    if (cached) {
+      this.musicPlayers.delete(track);
+      this.releaseMediaPlayer(cached);
+    }
+    this.reserveEssentialMediaSlot();
     const player = media(MUSIC_FILES[track]!);
     player.loop = true;
+    player.onerror = () => this.recoverMusicMediaError(player, track);
     this.musicPlayers.set(track, player);
-    this.loopStartByEl.set(player, MUSIC_LOOP_START[track] ?? 0.02);
+    this.loopStartByEl.set(player, musicCrossloopStart(track));
     this.releaseIdleMusic(track);
     return player;
   }
 
   private ensureMusicTension(): HTMLAudioElement {
-    if (this.tensionPlayer) return this.tensionPlayer;
+    if (this.tensionPlayer && !this.tensionPlayer.error) return this.tensionPlayer;
+    if (this.tensionPlayer) {
+      const poisoned = this.tensionPlayer;
+      this.tensionPlayer = undefined;
+      if (this.activeTension === poisoned) this.activeTension = undefined;
+      this.releaseMediaPlayer(poisoned);
+    }
+    this.reserveEssentialMediaSlot();
     const player = media(MUSIC_TENSION_FILE);
     player.loop = true;
+    player.onerror = () => this.recoverTensionMediaError(player);
     this.tensionPlayer = player;
     return player;
+  }
+
+  private retryAmbienceStart(player: HTMLAudioElement, stage: number): void {
+    // 旧阶段的迟到 reject 不能消耗新阶段的重试额度。
+    if (this.requestedAmbience !== stage
+      || this.activeAmbience !== player
+      || this.ambiencePlayers.get(stage) !== player) return;
+    const generation = mediaPlayGeneration.get(player) ?? 0;
+    if (this.loopStartFailureGeneration.get(player) === generation) return;
+    this.loopStartFailureGeneration.set(player, generation);
+    this.ambienceStartFailures += 1;
+    if (this.ambienceStartFailures > 2) {
+      // 某些 WebView 对坏解码器只拒绝 play()，并不派发 error。继续保留同一元素，
+      // 之后每次手势都只会重试这条毒管线。三次失败后真正退池；下一次用户手势
+      // 会由 syncAmbience 新建元素，且不会在无手势环境里形成自动重建死循环。
+      this.ambiencePlayers.delete(stage);
+      this.activeAmbience = undefined;
+      this.activeAmbienceStage = undefined;
+      this.ambienceStartFailures = 0;
+      ambienceStartRetireCount += 1;
+      this.releaseMediaPlayer(player);
+      return;
+    }
+    window.setTimeout(() => {
+      if (this.requestedAmbience !== stage
+        || this.ambiencePlayers.get(stage) !== player
+        || this.activeAmbience !== player
+        || !player.paused
+        || this.volume <= 0
+        || this.ambienceVolume <= 0) return;
+      this.syncAmbience();
+    }, 240 * this.ambienceStartFailures);
+  }
+
+  private retryMusicStart(player: HTMLAudioElement, track: number): void {
+    // 切歌后旧曲迟到 reject 不得污染新曲的失败计数。
+    if (this.requestedMusic !== track || this.musicPlayers.get(track) !== player) return;
+    const generation = mediaPlayGeneration.get(player) ?? 0;
+    if (this.loopStartFailureGeneration.get(player) === generation) return;
+    this.loopStartFailureGeneration.set(player, generation);
+    this.musicStartFailures += 1;
+    if (this.musicStartFailures > 2) {
+      this.musicCrossSerial += 1;
+      if (this.musicTwinArmTimer !== null) {
+        window.clearTimeout(this.musicTwinArmTimer);
+        this.musicTwinArmTimer = null;
+      }
+      const doomed = new Set<HTMLAudioElement>(this.musicPlayers.values());
+      if (this.musicTwin) doomed.add(this.musicTwin);
+      if (this.musicCross) {
+        doomed.add(this.musicCross.from);
+        doomed.add(this.musicCross.to);
+      }
+      this.musicPlayers.clear();
+      this.activeMusic = undefined;
+      this.activeMusicTrack = undefined;
+      this.musicTwin = undefined;
+      this.musicTwinTrack = undefined;
+      this.musicCross = undefined;
+      this.musicStartFailures = 0;
+      musicStartRetireCount += 1;
+      for (const element of doomed) this.releaseMediaPlayer(element);
+      return;
+    }
+    window.setTimeout(() => {
+      if (this.requestedMusic !== track
+        || this.musicPlayers.get(track) !== player
+        || this.volume <= 0
+        || this.musicVolume <= 0
+        || (this.activeMusic && !this.activeMusic.paused)) return;
+      this.syncMusic();
+    }, 240 * this.musicStartFailures);
+  }
+
+  private retryTensionStart(player: HTMLAudioElement): void {
+    if (!this.musicTension || this.tensionPlayer !== player) return;
+    const generation = mediaPlayGeneration.get(player) ?? 0;
+    if (this.loopStartFailureGeneration.get(player) === generation) return;
+    this.loopStartFailureGeneration.set(player, generation);
+    this.tensionStartFailures += 1;
+    if (this.tensionStartFailures > 2) {
+      if (this.activeTension === player) this.activeTension = undefined;
+      this.tensionPlayer = undefined;
+      this.tensionStartFailures = 0;
+      tensionStartRetireCount += 1;
+      this.releaseMediaPlayer(player);
+      return;
+    }
+    window.setTimeout(() => {
+      if (!this.musicTension
+        || this.tensionPlayer !== player
+        || this.volume <= 0
+        || this.musicVolume <= 0
+        || (this.activeTension && this.activeTension !== player)
+        || !player.paused) return;
+      this.syncMusicTension();
+    }, 240 * this.tensionStartFailures);
   }
 
   private syncAmbience(): void {
@@ -1546,7 +2301,12 @@ export class LifeFeedback {
       // elementFilter() 会安全退回干声；后续任一用户手势都要在这里重试接图，
       // 否则 production 恰好最容易永远漏掉六章滤波，和 buffered 版听感走岔。
       if (current) this.applyAmbienceProfile(current, stage);
-      if (current && current.paused) void current.play().catch(() => undefined);
+      if (current && current.paused) {
+        void playMediaWithDeadline(current).then(() => {
+          if (this.activeAmbience === current) this.ambienceStartFailures = 0;
+          else current.pause();
+        }).catch(() => this.retryAmbienceStart(current, stage));
+      }
       return;
     }
     const previous = this.activeAmbience;
@@ -1559,7 +2319,11 @@ export class LifeFeedback {
     player.currentTime = 0;
     this.activeAmbience = player;
     this.activeAmbienceStage = stage;
-    void player.play().catch(() => undefined);
+    void playMediaWithDeadline(player).then(() => {
+      if (this.activeAmbience === player && this.activeAmbienceStage === stage) {
+        this.ambienceStartFailures = 0;
+      } else player.pause();
+    }).catch(() => this.retryAmbienceStart(player, stage));
   }
 
   private stopAmbience(clearRequest: boolean): void {
@@ -1576,21 +2340,33 @@ export class LifeFeedback {
     const track = this.requestedMusic;
     // 同 syncAmbience：拉到 0 就停流，不留 volume=0 的循环流继续解码。
     if (this.musicVolume <= 0) {
-      if (this.activeMusic) this.stopMusic(false);
+      this.stopMusic(false, true);
       return;
     }
     if (track === undefined || this.volume <= 0) return;
     if (track === this.activeMusicTrack && this.activeMusic) {
       sfxEngine.elementFilter(this.activeMusic);
+      // 替补可能在后台报错，或仅被宿主拒绝 play() 而没有 error 事件。回到前台后
+      // syncMusic 会走同曲快路；若不在这里补建，整局都会退回有接缝的原生 loop。
+      // 已有定时器时不能反复重排，否则高频音效触发的 unlock 会让 1.2 秒永远到不了。
+      if (!this.musicTwin && this.musicTwinArmTimer === null && !document.hidden) {
+        this.scheduleMusicTwinArm(track);
+      }
       // 同一曲目：在播就什么都不做；被宿主暂停就原地续播。绝不能走下面的重建流程，
       // 那里第一句 currentTime = 0 会把曲子拉回开头——unlock() 每次播音效都会调到
       // 这里，于是配乐每打一下就从头开始，听感就是「重播截断」。
       if (!this.activeMusic.paused) return;
-      void this.activeMusic.play().catch(() => undefined);
+      const player = this.activeMusic;
+      void playMediaWithDeadline(player).then(() => {
+        if (this.activeMusic === player && this.activeMusicTrack === track) this.musicStartFailures = 0;
+      }).catch(() => this.retryMusicStart(player, track));
       return;
     }
     const previous = this.activeMusic;
     const player = this.ensureMusic(track);
+    // 快速连续切歌时，前一次的 previous 仍在 2.1 秒淡出。这里只保留这次真正
+    // 需要交叉的两条，避免 3–4 首曲子同时可闻并争抢移动端解码器。
+    this.releaseObsoleteMusicPlayers(new Set([player, ...(previous ? [previous] : [])]));
     // 中性滤波器的目的不是改音色，而是把媒体元素接入共享 limiter；
     // 否则章节配乐会绕过峰值保护，和语音、环境、音效在系统输出端直接硬叠。
     sfxEngine.elementFilter(player);
@@ -1600,9 +2376,15 @@ export class LifeFeedback {
     player.volume = 0;
     this.activeMusic = player;
     this.activeMusicTrack = track;
-    if (previous && previous !== player) this.fadePlayer(previous, 0, 2.1, true);
-    void player.play().then(() => {
-      if (this.activeMusic !== player || this.activeMusicTrack !== track) return;
+    if (previous && previous !== player) {
+      this.fadePlayer(previous, 0, 2.1, true, () => this.releaseFadedMusicPlayer(previous));
+    }
+    void playMediaWithDeadline(player).then(() => {
+      if (this.activeMusic !== player || this.activeMusicTrack !== track) {
+        player.pause();
+        return;
+      }
+      this.musicStartFailures = 0;
       this.fadePlayer(player, this.musicTargetVolume(MUSIC_BUS_GAIN, musicAssetGain(track)), 2.1);
       // 起播稳了就预备循环替补：等到曲尾才建元素，首圈换岗必然来不及。
       this.scheduleMusicTwinArm(track);
@@ -1612,33 +2394,69 @@ export class LifeFeedback {
         this.activeMusic = undefined;
         this.activeMusicTrack = undefined;
       }
+      this.retryMusicStart(player, track);
     });
   }
 
-  private stopMusic(clearRequest: boolean): void {
+  private stopMusic(clearRequest: boolean, immediate = false): void {
     if (clearRequest) this.requestedMusic = undefined;
+    this.musicCrossSerial += 1;
     if (this.musicTwinArmTimer !== null) {
       window.clearTimeout(this.musicTwinArmTimer);
       this.musicTwinArmTimer = null;
     }
     const player = this.activeMusic;
+    const cross = this.musicCross;
+    this.musicCross = undefined;
+    if (cross) {
+      this.cancelFade(cross.from);
+      this.cancelFade(cross.to);
+      for (const element of [cross.from, cross.to]) {
+        if (element === player) continue;
+        element.pause();
+        try { element.currentTime = this.loopStartByEl.get(element) ?? 0.02; } catch { /* 无碍 */ }
+      }
+    }
+    const twin = this.musicTwin;
+    this.musicTwin = undefined;
+    this.musicTwinTrack = undefined;
+    if (twin && twin !== player) this.releaseMediaPlayer(twin);
+    // 除 active 之外，Map 里还可能有正在淡出的上一首。静音/停播必须把它们也
+    // 一起收掉，否则用户已经拉到 0，旧曲仍会按原音量继续响到淡出结束。
+    this.releaseObsoleteMusicPlayers(new Set(player ? [player] : []));
     this.activeMusic = undefined;
     this.activeMusicTrack = undefined;
-    this.stopMusicTension();
-    if (player) this.fadePlayer(player, 0, 0.85, true);
+    this.stopMusicTension(immediate);
+    if (player) {
+      if (immediate) {
+        this.cancelFade(player);
+        player.pause();
+        player.volume = 0;
+        try { player.currentTime = 0; } catch { /* 未就绪无碍 */ }
+      } else this.fadePlayer(
+        player,
+        0,
+        0.85,
+        true,
+        clearRequest ? () => this.releaseFadedMusicPlayer(player) : undefined,
+      );
+    }
   }
 
   private syncMusicTension(): void {
     // 紧张层挂在配乐总线上，配乐静音时它也不该继续解码。
     if (this.musicVolume <= 0) {
-      if (this.activeTension) this.stopMusicTension();
+      if (this.activeTension) this.stopMusicTension(true);
       return;
     }
     if (!this.musicTension || this.volume <= 0) return;
     if (this.activeTension) {
       sfxEngine.elementFilter(this.activeTension);
       if (!this.activeTension.paused) return;
-      void this.activeTension.play().catch(() => undefined);
+      const player = this.activeTension;
+      void playMediaWithDeadline(player).then(() => {
+        if (this.activeTension === player) this.tensionStartFailures = 0;
+      }).catch(() => this.retryTensionStart(player));
       return;
     }
     const player = this.ensureMusicTension();
@@ -1648,8 +2466,12 @@ export class LifeFeedback {
     player.currentTime = 0;
     player.volume = 0;
     this.activeTension = player;
-    void player.play().then(() => {
-      if (this.activeTension !== player || !this.musicTension) return;
+    void playMediaWithDeadline(player).then(() => {
+      if (this.activeTension !== player || !this.musicTension) {
+        player.pause();
+        return;
+      }
+      this.tensionStartFailures = 0;
       this.fadePlayer(
         player,
         this.musicTargetVolume(TENSION_BUS_GAIN, TENSION_ASSET_GAIN),
@@ -1657,13 +2479,22 @@ export class LifeFeedback {
       );
     }).catch(() => {
       if (this.activeTension === player) this.activeTension = undefined;
+      this.retryTensionStart(player);
     });
   }
 
-  private stopMusicTension(): void {
+  private stopMusicTension(immediate = false): void {
     const player = this.activeTension;
     this.activeTension = undefined;
-    if (player) this.fadePlayer(player, 0, 0.85, true);
+    if (!player) return;
+    if (immediate) {
+      this.cancelFade(player);
+      player.pause();
+      player.volume = 0;
+      try { player.currentTime = 0; } catch { /* 未就绪无碍 */ }
+    } else {
+      this.fadePlayer(player, 0, 0.85, true);
+    }
   }
 
   private musicTargetVolume(busGain: number, assetGain = 1): number {
@@ -1673,7 +2504,7 @@ export class LifeFeedback {
         * busGain
         * assetGain
         * this.musicVolume
-        * (this.activeVoice ? VOICE_MUSIC_DUCK : 1),
+        * (this.voiceDuckingActive() ? VOICE_MUSIC_DUCK : 1),
     ));
   }
 
@@ -1686,8 +2517,12 @@ export class LifeFeedback {
         * ambienceAssetGain(stage)
         * ambienceProfile(stage).level
         * this.ambienceVolume
-        * (this.activeVoice ? VOICE_AMBIENCE_DUCK : 1),
+        * (this.voiceDuckingActive() ? VOICE_AMBIENCE_DUCK : 1),
     ));
+  }
+
+  private voiceDuckingActive(): boolean {
+    return Boolean(this.activeVoice && !this.activeVoice.paused && !this.voiceSuspendedByGame);
   }
 
   private applyAmbienceProfile(player: HTMLAudioElement, stage: number): void {
@@ -1707,6 +2542,7 @@ export class LifeFeedback {
     target: number,
     durationSeconds: number,
     resetWhenSilent = false,
+    onComplete?: () => void,
   ): void {
     const token = (this.fadeTokens.get(player) ?? 0) + 1;
     this.fadeTokens.set(player, token);
@@ -1720,9 +2556,12 @@ export class LifeFeedback {
       player.volume = Math.max(0, Math.min(1, startVolume + (target - startVolume) * eased));
       if (progress < 1) {
         requestAnimationFrame(step);
-      } else if (resetWhenSilent && target <= 0) {
-        player.pause();
-        player.currentTime = 0;
+      } else {
+        if (resetWhenSilent && target <= 0) {
+          player.pause();
+          player.currentTime = 0;
+        }
+        onComplete?.();
       }
     };
     requestAnimationFrame(step);
@@ -1737,6 +2576,9 @@ export class LifeFeedback {
     this.refreshActiveVolumes();
     if (!player) return;
     player.onended = null;
+    player.onerror = null;
+    player.onpause = null;
+    player.onplaying = null;
     player.pause();
     player.currentTime = 0;
   }
@@ -1784,7 +2626,17 @@ export class LifeFeedback {
     if (this.activeAmbience) {
       this.activeAmbience.volume = this.ambienceTargetVolume();
     }
-    if (this.activeMusic) {
+    if (this.musicCross) {
+      const now = performance.now();
+      const cross = this.musicCross;
+      const k = Math.max(0, Math.min(1, (cross.endAt - now) / cross.durationMs));
+      const base = this.musicTargetVolume(
+        MUSIC_BUS_GAIN,
+        musicAssetGain(this.activeMusicTrack ?? 0),
+      );
+      cross.from.volume = base * k;
+      cross.to.volume = base * (1 - k);
+    } else if (this.activeMusic) {
       this.cancelFade(this.activeMusic);
       this.activeMusic.volume = this.musicTargetVolume(
         MUSIC_BUS_GAIN,
@@ -1810,7 +2662,7 @@ export class LifeFeedback {
         (this.ambienceEventLevels.get(player) ?? 0.08)
           * this.volume
           * this.ambienceVolume
-          * (this.activeVoice ? VOICE_AMBIENCE_DUCK : 1),
+          * (this.voiceDuckingActive() ? VOICE_AMBIENCE_DUCK : 1),
       ));
       if ((this.volume <= 0 || this.ambienceVolume <= 0) && !player.paused) player.pause();
     }

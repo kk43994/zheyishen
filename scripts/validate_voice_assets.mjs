@@ -1,11 +1,17 @@
 import { readFile, stat } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { loadVoiceContract } from './load_voice_contract.mjs';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const allowMissing = process.argv.includes('--allow-missing');
 const { VOICE_CUES, VOICE_CUE_IDS, validateVoiceScript } = await loadVoiceContract(ROOT);
+const RESOLVED_ASR_IDS = new Set([
+  'teacher-last-row',
+  'landlord-rent-deposit',
+  'family-dinner-cold',
+]);
 
 validateVoiceScript();
 const gameSource = await readFile(resolve(ROOT, 'src/game.ts'), 'utf8');
@@ -14,6 +20,7 @@ if (unreferenced.length) throw new Error(`voice cues without runtime trigger: ${
 
 const missing = [];
 const invalid = [];
+const resolvedAssetRegressions = [];
 let totalBytes = 0;
 let totalDuration = 0;
 const manifest = JSON.parse(await readFile(resolve(ROOT, 'public/assets/audio/voice/manifest.json'), 'utf8').catch(() => '[]'));
@@ -25,7 +32,8 @@ for (const id of VOICE_CUE_IDS) {
   const path = resolve(ROOT, 'public', VOICE_CUES[id].file);
   try {
     const info = await stat(path);
-    const header = await readFile(path).then((bytes) => bytes.subarray(0, 3));
+    const bytes = await readFile(path);
+    const header = bytes.subarray(0, 3);
     const looksLikeMp3 = header.toString('ascii') === 'ID3' || (header[0] === 0xff && ((header[1] ?? 0) & 0xe0) === 0xe0);
     const probe = spawnSync('ffprobe', [
       '-v', 'error', '-show_entries', 'format=duration:stream=codec_name,sample_rate,channels', '-of', 'json', path,
@@ -39,6 +47,15 @@ for (const id of VOICE_CUE_IDS) {
     const validManifest = entry?.file === VOICE_CUES[id].file
       && ['MiniMax', 'Kokoro'].includes(entry?.provider)
       && JSON.stringify(entry?.delivery) === JSON.stringify(VOICE_CUES[id].delivery);
+    if (RESOLVED_ASR_IDS.has(id)) {
+      const actualSha256 = createHash('sha256').update(bytes).digest('hex');
+      const promotedAssetIsPinned = Number(entry?.assetRevision) >= 2
+        && typeof entry?.promotedAt === 'string'
+        && entry.promotedAt.length > 0
+        && entry?.sha256 === actualSha256
+        && Number(entry?.candidateQa?.pronunciationErrorRate) === 0;
+      if (!promotedAssetIsPinned) resolvedAssetRegressions.push(id);
+    }
     if (!info.isFile() || info.size < 512 || !looksLikeMp3 || !validMedia || !validManifest) invalid.push(id);
     else {
       totalBytes += info.size;
@@ -49,14 +66,22 @@ for (const id of VOICE_CUE_IDS) {
   }
 }
 
+if (resolvedAssetRegressions.length) {
+  throw new Error(`resolved ASR assets lost promoted metadata or hash pin: ${resolvedAssetRegressions.join(', ')}`);
+}
 if (invalid.length) throw new Error(`invalid voice assets: ${invalid.join(', ')}`);
 if (missing.length && !allowMissing) throw new Error(`missing ${missing.length} voice assets: ${missing.join(', ')}`);
 if (!allowMissing) {
   const qaById = new Map(qaReport.map((entry) => [entry.id, entry]));
   const missingQa = VOICE_CUE_IDS.filter((id) => !qaById.has(id));
   const failedQa = VOICE_CUE_IDS.filter((id) => !['pass', 'manual-review'].includes(qaById.get(id)?.status));
+  const regressedResolvedQa = [...RESOLVED_ASR_IDS].filter((id) => {
+    const entry = qaById.get(id);
+    return entry?.status !== 'pass' || Number(entry?.pronunciationErrorRate) !== 0;
+  });
   if (missingQa.length) throw new Error(`missing voice QA entries: ${missingQa.join(', ')}`);
   if (failedQa.length) throw new Error(`voice QA did not pass: ${failedQa.join(', ')}`);
+  if (regressedResolvedQa.length) throw new Error(`resolved ASR cues regressed: ${regressedResolvedQa.join(', ')}`);
 }
 
 console.info(`[voice] contract ${VOICE_CUE_IDS.length} cues; runtime references ${VOICE_CUE_IDS.length - unreferenced.length}`);

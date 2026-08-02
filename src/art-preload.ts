@@ -39,8 +39,17 @@ const canonicalRuntimeModules = import.meta.glob<string>([
   query: '?url',
   import: 'default',
 });
+// 当铺商人是首章就可能绘制的正式角色，但历史上存放在 Image2 产出目录，未被
+// ./assets/** 清单覆盖；把它显式接进同一硬闸门，不能再靠模块导入时顺便排队。
+const externalRuntimeModules = import.meta.glob<string>([
+  '../output/imagegen/zhe-yi-shen-special-threshold-corrections-v1/processed/merchant-32x64.png',
+], {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
 
-const artModules = { ...regularArtModules, ...canonicalRuntimeModules };
+const artModules = { ...regularArtModules, ...canonicalRuntimeModules, ...externalRuntimeModules };
 const weightMap = artWeights as Record<string, number>;
 const ART_ENTRIES: readonly ArtEntry[] = Object.entries(artModules)
   .map(([path, url]) => ({ path, url, weight: Math.max(1, weightMap[path] ?? 1) }))
@@ -122,6 +131,7 @@ const STAGE_TOKENS: readonly (readonly string[])[] = [
   ],
   [
     '/world/stage-floor-5.png',
+    '/ui/ending-lampman.png',
     '/enemies/debt.png',
     '/enemies/forgetter.png',
     '/enemies/empty-chair.png',
@@ -153,17 +163,18 @@ function belongsToStage(path: string, stageIndex: number): boolean {
 
 function isBootArt(entry: ArtEntry): boolean {
   const path = entry.path;
+  // 组合奥义有文本兜底且图集较大；胜利定格由暮年章硬闸门负责。其余 UI 中，
+  // 章节题图可能在首章结束立刻绘制、物证桌可能在首章战败立刻绘制、命运头像
+  // 体积仅 4KB 且绘制缺失会抛错，因此必须随首屏门禁完成，不能排到六章之后。
   const lateUi = path.endsWith('/ui/combo-art.png')
-    || path.endsWith('/ui/chapter-strips.png')
-    || path.endsWith('/ui/ending-lampman.png')
-    || path.endsWith('/ui/ending-table.png')
-    || path.endsWith('/ui/fate-profiles.png');
+    || path.endsWith('/ui/ending-lampman.png');
   const coreHero = path.includes('/assets/hero-style1-profiles/')
     && !path.includes('/raincoat-')
     && !path.includes('/uniform-');
   return (path.includes('/assets/ui/') && !lateUi)
     || coreHero
     || path.endsWith('/assets/items/icons.png')
+    || path.endsWith('/merchant-32x64.png')
     || path.includes('/assets/vfx/')
     // 留灯间/里屋/当铺三间房在童年章就能被推开。它们不进首屏门禁的话，
     // 玩家会在第一章撞见一扇程序化替代门——那正是"降级画面"，红线不允许。
@@ -289,13 +300,16 @@ export function preloadRemainingProductionArt(
   return backgroundPromise;
 }
 
-export function warmProductionArtForStage(stageIndex: number): Promise<void> {
+export function warmProductionArtForStage(stageIndex: number, urgent = false): Promise<void> {
   const index = Math.max(0, Math.min(STAGE_TOKENS.length - 1, Math.trunc(stageIndex)));
   const entries = ART_ENTRIES.filter((entry) => belongsToStage(entry.path, index));
   // 已装订完的先把首绘成本重付一遍：栅格化缓存可能已被系统回收，等到战斗里
   // 第一次画出来才发现就晚了。不触发任何加载，纯 CPU、几毫秒，且在过场期间。
   rewarmArtRaster(entries.filter((entry) => completedPaths.has(entry.path)).map((entry) => entry.url));
-  return loadEntries(entries, index === 0 ? 'critical' : 'next', 'background', () => undefined);
+  // 平时预热仍走单通道，绝不与战斗抢帧；但章节过场已经被硬闸门挡住时，玩家
+  // 正在等这些图，继续按后台单通道串行会像整局卡死。urgent 只由章末闸门使用，
+  // 此时 setArtGameplayActive 已为 false，最多三路完成解码后再进入下一章。
+  return loadEntries(entries, index === 0 || urgent ? 'critical' : 'next', 'background', () => undefined);
 }
 
 export function productionArtStageReady(stageIndex: number): boolean {

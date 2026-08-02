@@ -107,7 +107,7 @@ python3 scripts/build_wiki_art_gallery.py
 
 ## 声音资源管线
 
-游戏使用 16 个固定音效/环境循环和 53 条固定人物语音，运行时不调用 TTS。语音合同逐句记录音色定位、语调、情绪、语速、音高、强度与动作标签，发布前可在 `http://127.0.0.1:5173/voice-review.html` 逐条试听。
+游戏使用 45 个固定音效/环境/BGM 资产（25 条音效、9 条环境床、11 首配乐）和 93 条固定人物语音，运行时不调用 TTS。语音合同逐句记录音色定位、语调、情绪、语速、音高、强度与动作标签，发布前可在 `http://127.0.0.1:5173/voice-review.html` 逐条试听。
 
 ```bash
 # 拉取并制作 CC0 音效与环境循环
@@ -122,7 +122,7 @@ npm run generate:voice:local
 # 用 Whisper 反向转写，检查漏字、错音和异常语速
 npm run audit:voice
 
-# 发布前硬校验 16 个声音资源与 53 条语音
+# 发布前硬校验 45 个声音资源与 93 条语音
 npm run validate:sound
 npm run validate:voice:strict
 ```

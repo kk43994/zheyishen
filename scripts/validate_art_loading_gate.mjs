@@ -23,7 +23,7 @@ function rejectToken(source, token, message) {
 
 rejectToken(main, "import { ZheYiShenGame } from './game'", '游戏模块仍会在美术闸门前静态启动');
 // 2026-07-30：从「全量硬门禁」改回「首屏门禁 + 后台按章补装订」。互动空间里
-// 六章一次性等完（148 张 / 4.2MB）把全部代价堆在第一屏，玩家进不去。
+// 六章一次性等完（149 张 / 4.2MB，含 1 张外部 Image2 正式资产）把全部代价堆在第一屏，玩家进不去。
 // 这里守的不变量不是「等多少张」，而是：①进游戏前童年章必须齐；②后续章节
 // 一定有人在后台补；③每章开打前有硬闸门复核；④永不降级、失败即阻断。
 requireToken(main, 'await preloadProductionArt', '没有在启动游戏前等待首屏与童年章正式美术');
@@ -64,6 +64,10 @@ requireToken(preload, "loadEntries(bootEntries, 'critical', 'boot'", '首屏与�
 requireToken(preload, "loadEntries(BACKGROUND_ENTRIES, 'background', 'background'", '后续正式美术没有走后台单通道队列');
 requireToken(preload, 'function backgroundRank', '后台补装订没有按人生顺序排队（字母序会让暮年先装、少年最后到）');
 requireToken(preload, "path.includes('/assets/rooms/')", '三间房没有进首屏门禁，童年章会画出程序化替代门');
+requireToken(preload, "'../output/imagegen/zhe-yi-shen-special-threshold-corrections-v1/processed/merchant-32x64.png'", '首章当铺商人没有纳入统一美术清单');
+requireToken(preload, "path.endsWith('/merchant-32x64.png')", '首章当铺商人没有纳入首屏硬门禁');
+requireToken(preload, "const lateUi = path.endsWith('/ui/combo-art.png')\n    || path.endsWith('/ui/ending-lampman.png');", '首章过场/战败/命运必需 UI 被错误推迟到后台');
+requireToken(preload, "'/ui/ending-lampman.png',", '胜利定格没有纳入暮年章美术硬闸门');
 requireToken(preload, 'STAGE_TOKENS', '没有按章节声明美术预热边界');
 requireToken(preload, 'isBootArt', '没有单独声明首屏与童年关键美术');
 requireToken(preload, 'warmProductionArtForStage', '没有暴露下一章美术预热入口');
@@ -87,6 +91,8 @@ requireToken(game, 'reportArtFrameDuration(frameDuration)', '主循环没有向�
 requireToken(game, 'warmProductionArtForStage(this.encounterIndex + 1)', '章节开始时没有提高下一章美术优先级');
 requireToken(game, 'productionArtStageReady(nextStageIndex)', '章节过场结束前没有再次确认下一章正式美术');
 requireToken(game, 'this.transitionTimer = 0.35', '低速解码时没有把玩家安全留在章节过场');
+requireToken(game, '下一页还在装订 ${dots}', '章节美术硬闸门缺少动态存活反馈，容易被误认为卡死');
+requireToken(game, 'Math.min(8000, 500 * (2 ** Math.min(4, this.stageArtRetryCount - 1)))', '章节美术失败仍会形成紧密重试风暴');
 
 requireToken(html, 'data-art-progress', '装帧页没有进度条');
 requireToken(html, '不使用降级动画', '装帧页没有明确不使用降级画面');
@@ -127,7 +133,9 @@ if (sourceFilesWithImageCreation.join(',') !== 'art-runtime.ts') {
 console.log(JSON.stringify({
   valid: errors.length === 0,
   checks,
-  gatedAssets: gatedAssets.length,
+  gatedAssets: gatedAssets.length + 1,
+  srcGatedAssets: gatedAssets.length,
+  externalGatedAssets: 1,
   policy: 'boot art (title/dossier/hero/vfx/icons/rooms + chapter 0) must download and decode before the game starts; later chapters stream in life order on one background lane and are re-gated at each chapter transition; failure blocks instead of degrading',
   errors,
 }, null, 2));

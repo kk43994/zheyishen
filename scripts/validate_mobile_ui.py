@@ -170,6 +170,10 @@ mobile_platform = (PROJECT_DIR / "src/mobile-platform.ts").read_text(encoding="u
 for token in (
     "window.visualViewport",
     "--app-viewport-height",
+    "if (height !== lastViewportHeight)",
+    "if (width !== lastViewportWidth)",
+    "requestAnimationFrame(() => {",
+    "window.visualViewport?.addEventListener('scroll', scheduleViewportMetricsUpdate",
     "root.requestFullscreen({ navigationUI: 'hide' })",
     "root.webkitRequestFullscreen",
     "isStandaloneDisplay()",

@@ -119,6 +119,19 @@ const MUSIC_FILES = [
 
 const MUSIC_TENSION_FILE = 'assets/audio/music/pressure.mp3';
 
+// 与 scripts/build_production_audio.sh 的循环烘焙参数保持一致。首次仍从 0 播放；
+// 到文件末尾后从烘进曲尾的那段之后继续，避免把被烘过的开头重复一次。
+const MUSIC_BAKED_OVERLAP_SECONDS = 1;
+const AMBIENCE_BAKED_OVERLAP_SECONDS = 0.8;
+const MUSIC_LOOP_START: Partial<Record<number, number>> = { 1: 3 };
+const AMBIENCE_LOOP_END_SECONDS = 8;
+const MUSIC_TENSION_LOOP_END_SECONDS = 18;
+const MUSIC_LOOP_END_SECONDS = [18, 18, 18, 18, 18, 18, 18, 18, 57.314, 53.314] as const;
+
+function musicLoopResumeAt(track: number): number {
+  return (MUSIC_LOOP_START[track] ?? 0.02) + MUSIC_BAKED_OVERLAP_SECONDS;
+}
+
 interface QueuedVoice {
   id: VoiceCueId;
   treatment?: VoiceTreatment;
@@ -208,6 +221,8 @@ export class LifeFeedback {
   private activeVoiceId?: VoiceCueId;
   private activeVoiceStartedAt = 0;
   private activeVoiceRate = 1;
+  /** Web Audio 无法单独暂停 BufferSource；游戏暂停时挂起整条本地音频时间轴。 */
+  private gameAudioPaused = false;
   private loadingVoicePriority = 0;
   private voiceRequestSerial = 0;
   private queuedVoice?: QueuedVoice;
@@ -286,7 +301,9 @@ export class LifeFeedback {
         this.tensionGain = undefined;
       }
     }
-    if (this.context?.state === 'suspended') void this.context.resume().catch(() => undefined);
+    if (!this.gameAudioPaused && this.context?.state === 'suspended') {
+      void this.context.resume().catch(() => undefined);
+    }
   }
 
   getVolume(): number {
@@ -340,6 +357,20 @@ export class LifeFeedback {
       }
       if (channel === 'voice' && this.voiceGain) this.voiceGain.gain.setTargetAtTime(next, now, 0.02);
     }
+    // 总线拉到 0 以后 AudioBufferSource 仍会在后台解码；平台版与开发版都要真正
+    // 停流，避免静音状态继续占用移动端音频线程。恢复时保留 requested* 并重建。
+    if (channel === 'ambience') {
+      if (next <= 0) this.stopAmbience(0.08, false);
+      else void this.syncAmbience();
+    }
+    if (channel === 'music') {
+      if (next <= 0) this.stopMusic(0.08, false);
+      else {
+        void this.syncMusic();
+        void this.syncMusicTension();
+      }
+    }
+    if (channel === 'voice' && next <= 0) this.stopVoice();
   }
 
   debugState(): {
@@ -709,11 +740,14 @@ export class LifeFeedback {
 
   private async syncAmbience(): Promise<void> {
     const stage = this.requestedAmbience;
-    if (stage === undefined || this.volume <= 0 || stage === this.activeAmbienceStage) return;
+    if (stage === undefined || this.volume <= 0 || this.ambienceVolume <= 0 || stage === this.activeAmbienceStage) return;
     const serial = this.ambienceRequestSerial;
     try {
       const buffer = await this.loadAmbience(stage);
-      if (serial !== this.ambienceRequestSerial || stage !== this.requestedAmbience || this.volume <= 0) return;
+      if (serial !== this.ambienceRequestSerial
+        || stage !== this.requestedAmbience
+        || this.volume <= 0
+        || this.ambienceVolume <= 0) return;
       const context = this.context;
       const output = this.ambienceGain;
       if (!context || !output) return;
@@ -726,6 +760,8 @@ export class LifeFeedback {
       const profile = ambienceProfile(stage);
       source.buffer = buffer;
       source.loop = true;
+      source.loopStart = 0.02 + AMBIENCE_BAKED_OVERLAP_SECONDS;
+      source.loopEnd = AMBIENCE_LOOP_END_SECONDS;
       source.playbackRate.value = profile.playbackRate;
       configureAmbienceFilter(filter, profile);
       level.gain.setValueAtTime(0.0001, now);
@@ -770,11 +806,14 @@ export class LifeFeedback {
 
   private async syncMusic(): Promise<void> {
     const track = this.requestedMusic;
-    if (track === undefined || this.volume <= 0 || track === this.activeMusicTrack) return;
+    if (track === undefined || this.volume <= 0 || this.musicVolume <= 0 || track === this.activeMusicTrack) return;
     const serial = this.musicRequestSerial;
     try {
       const buffer = await this.loadMusic(track);
-      if (serial !== this.musicRequestSerial || track !== this.requestedMusic || this.volume <= 0) return;
+      if (serial !== this.musicRequestSerial
+        || track !== this.requestedMusic
+        || this.volume <= 0
+        || this.musicVolume <= 0) return;
       const context = this.context;
       const output = this.musicGain;
       if (!context || !output) return;
@@ -785,6 +824,8 @@ export class LifeFeedback {
       const now = context.currentTime;
       source.buffer = buffer;
       source.loop = true;
+      source.loopStart = musicLoopResumeAt(track);
+      source.loopEnd = MUSIC_LOOP_END_SECONDS[track] ?? buffer.duration;
       level.gain.setValueAtTime(0.0001, now);
       level.gain.exponentialRampToValueAtTime(musicAssetGain(track), now + 2.1);
       source.connect(level);
@@ -823,10 +864,10 @@ export class LifeFeedback {
   }
 
   private async syncMusicTension(): Promise<void> {
-    if (!this.musicTension || this.activeTension || this.volume <= 0) return;
+    if (!this.musicTension || this.activeTension || this.volume <= 0 || this.musicVolume <= 0) return;
     try {
       const buffer = await this.loadMusicTension();
-      if (!this.musicTension || this.activeTension || this.volume <= 0) return;
+      if (!this.musicTension || this.activeTension || this.volume <= 0 || this.musicVolume <= 0) return;
       const context = this.context;
       const output = this.tensionGain;
       if (!context || !output) return;
@@ -835,6 +876,8 @@ export class LifeFeedback {
       const now = context.currentTime;
       source.buffer = buffer;
       source.loop = true;
+      source.loopStart = 0.02 + MUSIC_BAKED_OVERLAP_SECONDS;
+      source.loopEnd = MUSIC_TENSION_LOOP_END_SECONDS;
       level.gain.setValueAtTime(0.0001, now);
       level.gain.exponentialRampToValueAtTime(TENSION_ASSET_GAIN, now + 1.15);
       source.connect(level);
@@ -992,6 +1035,18 @@ export class LifeFeedback {
   stopVoice(): void {
     this.queuedVoice = undefined;
     this.cancelCurrentVoice(true);
+  }
+
+  /** 暂停整个 Web Audio 时间轴，当前旁白、字幕与循环轨都能在解除暂停后原位续上。 */
+  pauseVoice(): void {
+    this.gameAudioPaused = true;
+    if (this.context?.state === 'running') void this.context.suspend().catch(() => undefined);
+  }
+
+  resumeVoice(): void {
+    if (!this.gameAudioPaused) return;
+    this.gameAudioPaused = false;
+    if (this.context?.state === 'suspended') void this.context.resume().catch(() => undefined);
   }
 
   private cancelCurrentVoice(clearLoading: boolean): void {

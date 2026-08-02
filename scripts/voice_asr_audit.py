@@ -19,9 +19,6 @@ DIGIT_RE = re.compile(r"\d+")
 DIGITS = "零一二三四五六七八九"
 TO_SIMPLIFIED = OpenCC("t2s")
 MANUAL_REVIEW_IDS = {
-    "teacher-last-row",
-    "landlord-rent-deposit",
-    "family-dinner-cold",
     "hero-became-him",
     # 超短句 ASR 不可靠（散会/发什么呆），MiniMax 余额恢复后重掷再人工听
     "boss-meeting-over",

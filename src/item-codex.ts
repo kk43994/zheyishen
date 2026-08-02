@@ -112,16 +112,10 @@ export function codexCollectedCount(): number {
   return Object.keys(loadStore().first).length;
 }
 
-function escapeHtml(text: string): string {
-  return text.replace(/[&<>"']/g, (ch) => (
-    ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch === '"' ? '&quot;' : '&#39;'
-  ));
-}
-
 function firstRecordText(record: CodexFirstRecord | undefined): string {
   if (!record) return '';
   if (record.life <= 0) return '很久以前第一次得到';
-  const who = record.nickname ? `「${escapeHtml(record.nickname)}」` : '他';
+  const who = record.nickname ? `「${record.nickname}」` : '他';
   return `第 ${record.life} 世，${who}第一次得到`;
 }
 
@@ -140,6 +134,23 @@ function iconStyle(id: ItemId, display: number): string {
   return `width:${display}px;height:${display}px;background-image:url('${ICONS_URL}');`
     + `background-size:${iconManifest.cols * iconManifest.cell * scale}px ${iconManifest.rows * iconManifest.cell * scale}px;`
     + `background-position:${-col * display}px ${-row * display}px;`;
+}
+
+function dom<K extends keyof HTMLElementTagNameMap>(
+  tag: K,
+  className = '',
+  text = '',
+): HTMLElementTagNameMap[K] {
+  const element = document.createElement(tag);
+  if (className) element.className = className;
+  if (text) element.textContent = text;
+  return element;
+}
+
+function codexIcon(id: ItemId, display: number, className: string): HTMLSpanElement {
+  const icon = dom('span', className);
+  icon.style.cssText = iconStyle(id, display);
+  return icon;
 }
 
 let overlay: HTMLElement | null = null;
@@ -169,14 +180,18 @@ export function openItemCodex(options: CodexOpenOptions): void {
 
   const header = document.createElement('header');
   header.className = 'cdx-head';
-  header.innerHTML = `
-    <button type="button" class="cdx-close" aria-label="合上物证册">合上</button>
-    <h1>物证册</h1>
-    <span class="cdx-progress">${owned} / ${total}</span>
-    <nav class="cdx-tabs">
-      <button type="button" class="cdx-tab active" data-tab="items">道具</button>
-      <button type="button" class="cdx-tab" data-tab="combos">奥义</button>
-    </nav>`;
+  const close = dom('button', 'cdx-close', '合上');
+  close.type = 'button';
+  close.setAttribute('aria-label', '合上物证册');
+  const tabs = dom('nav', 'cdx-tabs');
+  const itemTab = dom('button', 'cdx-tab active', '道具');
+  itemTab.type = 'button';
+  itemTab.dataset.tab = 'items';
+  const comboTab = dom('button', 'cdx-tab', '奥义');
+  comboTab.type = 'button';
+  comboTab.dataset.tab = 'combos';
+  tabs.append(itemTab, comboTab);
+  header.append(close, dom('h1', '', '物证册'), dom('span', 'cdx-progress', `${owned} / ${total}`), tabs);
   root.appendChild(header);
 
   const body = document.createElement('div');
@@ -191,8 +206,10 @@ export function openItemCodex(options: CodexOpenOptions): void {
     const done = ids.every((id) => collected.has(id) || quality === 5);
     const section = document.createElement('section');
     section.className = 'cdx-band';
-    const stamp = done && ids.every((id) => collected.has(id)) ? '<i class="cdx-stamp">满</i>' : '';
-    section.innerHTML = `<h2>${qualityLabel(quality)}${quality === 5 ? '<small>人生必经，不设剪影</small>' : ''}${stamp}</h2>`;
+    const heading = dom('h2', '', qualityLabel(quality));
+    if (quality === 5) heading.appendChild(dom('small', '', '人生必经，不设剪影'));
+    if (done && ids.every((id) => collected.has(id))) heading.appendChild(dom('i', 'cdx-stamp', '满'));
+    section.appendChild(heading);
     const grid = document.createElement('div');
     grid.className = 'cdx-grid';
     for (const id of ids) {
@@ -205,7 +222,7 @@ export function openItemCodex(options: CodexOpenOptions): void {
       cell.className = `cdx-cell${visible ? '' : ' locked'}${has ? '' : ' unowned'}${fresh ? ' fresh' : ''}`;
       cell.dataset.item = id;
       cell.setAttribute('aria-label', visible ? item.name : '未收录的物证');
-      cell.innerHTML = `<span class="cdx-ico" style="${iconStyle(id, 44)}"></span>`;
+      cell.appendChild(codexIcon(id, 44, 'cdx-ico'));
       cell.addEventListener('click', () => showCard(item, has));
       grid.appendChild(cell);
     }
@@ -228,8 +245,13 @@ export function openItemCodex(options: CodexOpenOptions): void {
     const parts = combo.items
       .map((id) => (collected.has(id) ? ITEM_DEFINITIONS[id].name : '？？？'))
       .join(' × ');
-    row.innerHTML = `<h3>${unlocked ? combo.name : `？？？（${combo.items.filter((id) => collected.has(id)).length}/${combo.items.length}）`}</h3>
-      <p class="cdx-combo-items">${parts}</p>${unlocked ? `<p class="cdx-combo-line">${combo.line}</p>` : ''}`;
+    row.appendChild(dom(
+      'h3',
+      '',
+      unlocked ? combo.name : `？？？（${combo.items.filter((id) => collected.has(id)).length}/${combo.items.length}）`,
+    ));
+    row.appendChild(dom('p', 'cdx-combo-items', parts));
+    if (unlocked) row.appendChild(dom('p', 'cdx-combo-line', combo.line));
     if (unlocked) {
       const art = comboArtAtlas.slice(combo.artKey);
       if (art) {
@@ -251,20 +273,29 @@ export function openItemCodex(options: CodexOpenOptions): void {
   function showCard(item: ItemDefinition, has: boolean): void {
     options.playPageSound?.();
     card.hidden = false;
+    card.replaceChildren();
     if (!has && item.quality !== 5) {
-      card.innerHTML = `
-        <span class="cdx-ico big locked" style="${iconStyle(item.id, 72)}"></span>
-        <h3>？？？</h3>
-        <p class="cdx-hint">${options.sourceHint(item.id)}</p>`;
+      card.append(
+        codexIcon(item.id, 72, 'cdx-ico big locked'),
+        dom('h3', '', '？？？'),
+        dom('p', 'cdx-hint', options.sourceHint(item.id)),
+      );
       return;
     }
     const record = loadStore().first[item.id];
-    card.innerHTML = `
-      <span class="cdx-ico big" style="${iconStyle(item.id, 72)}"></span>
-      <h3>${item.name}</h3>
-      <p class="cdx-flavor">${item.flavor}</p>
-      <p class="cdx-effect"><b>${item.summary}</b> · ${item.positive}${item.negative === '没有负面作用' ? '' : ` · ${item.negative}`}</p>
-      <p class="cdx-meta">${qualityLabel(item.quality)}${record ? ` · ${firstRecordText(record)}` : has ? '' : ' · 本世必经'}</p>`;
+    const effect = dom('p', 'cdx-effect');
+    effect.append(
+      dom('b', '', item.summary),
+      document.createTextNode(` · ${item.positive}${item.negative === '没有负面作用' ? '' : ` · ${item.negative}`}`),
+    );
+    const meta = `${qualityLabel(item.quality)}${record ? ` · ${firstRecordText(record)}` : has ? '' : ' · 本世必经'}`;
+    card.append(
+      codexIcon(item.id, 72, 'cdx-ico big'),
+      dom('h3', '', item.name),
+      dom('p', 'cdx-flavor', item.flavor),
+      effect,
+      dom('p', 'cdx-meta', meta),
+    );
   }
 
   root.addEventListener('click', (event) => {

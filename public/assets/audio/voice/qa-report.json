@@ -211,13 +211,13 @@
   {
     "id": "teacher-last-row",
     "expected": "最后一排站起来",
-    "transcript": "最后一排转起来",
-    "normalizedTranscript": "最后一排转起来",
-    "characterErrorRate": 0.1429,
-    "pronunciationErrorRate": 0.1429,
-    "durationSeconds": 3.233,
-    "charactersPerSecond": 2.51,
-    "status": "manual-review"
+    "transcript": "最后一排站起来",
+    "normalizedTranscript": "最后一排站起来",
+    "characterErrorRate": 0,
+    "pronunciationErrorRate": 0,
+    "durationSeconds": 3.37,
+    "charactersPerSecond": 2.39,
+    "status": "pass"
   },
   {
     "id": "teacher-answer-format",
@@ -299,13 +299,13 @@
   {
     "id": "landlord-rent-deposit",
     "expected": "押一付三水电另算",
-    "transcript": "鸭1-3 水电另算",
-    "normalizedTranscript": "鸭一三水电另算",
+    "transcript": "压一负三水电另算",
+    "normalizedTranscript": "压一负三水电另算",
     "characterErrorRate": 0.25,
-    "pronunciationErrorRate": 0.125,
-    "durationSeconds": 3.982,
-    "charactersPerSecond": 2.25,
-    "status": "manual-review"
+    "pronunciationErrorRate": 0,
+    "durationSeconds": 3.385,
+    "charactersPerSecond": 2.7,
+    "status": "pass"
   },
   {
     "id": "last-bus-arrival",
@@ -409,13 +409,13 @@
   {
     "id": "family-dinner-cold",
     "expected": "饭热过两次了还等你吗",
-    "transcript": "饭肉过两次了还等你吗",
-    "normalizedTranscript": "饭肉过两次了还等你吗",
-    "characterErrorRate": 0.1,
-    "pronunciationErrorRate": 0.1,
-    "durationSeconds": 3.71,
-    "charactersPerSecond": 3.07,
-    "status": "manual-review"
+    "transcript": "饭热过两次了还等你吗",
+    "normalizedTranscript": "饭热过两次了还等你吗",
+    "characterErrorRate": 0,
+    "pronunciationErrorRate": 0,
+    "durationSeconds": 4.012,
+    "charactersPerSecond": 2.81,
+    "status": "pass"
   },
   {
     "id": "hospital-family-needed",

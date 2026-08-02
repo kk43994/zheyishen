@@ -17,6 +17,9 @@ type LockableScreenOrientation = ScreenOrientation & {
 
 const MOBILE_QUERY = '(max-width: 768px) and (pointer: coarse)';
 const MAX_MOBILE_FULLSCREEN_ATTEMPTS = 3;
+let viewportUpdateFrame = 0;
+let lastViewportHeight = -1;
+let lastViewportWidth = -1;
 
 function isMobileLayout(): boolean {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -41,8 +44,25 @@ function updateViewportMetrics(): void {
   const viewport = window.visualViewport;
   const height = Math.round(viewport?.height ?? window.innerHeight);
   const width = Math.round(viewport?.width ?? window.innerWidth);
-  document.documentElement.style.setProperty('--app-viewport-height', `${height}px`);
-  document.documentElement.style.setProperty('--app-viewport-width', `${width}px`);
+  // visualViewport.scroll 在部分 WebView 会跟手连续喷发；每次都写两条根 CSS 变量
+  // 会触发整页样式/布局，并连带 ResizeObserver 反复重建高 DPR Canvas 背板。
+  // 尺寸没变时不写，尺寸真在动画时也只在下一帧合并一次。
+  if (height !== lastViewportHeight) {
+    lastViewportHeight = height;
+    document.documentElement.style.setProperty('--app-viewport-height', `${height}px`);
+  }
+  if (width !== lastViewportWidth) {
+    lastViewportWidth = width;
+    document.documentElement.style.setProperty('--app-viewport-width', `${width}px`);
+  }
+}
+
+function scheduleViewportMetricsUpdate(): void {
+  if (viewportUpdateFrame) return;
+  viewportUpdateFrame = requestAnimationFrame(() => {
+    viewportUpdateFrame = 0;
+    updateViewportMetrics();
+  });
 }
 
 function updateFullscreenDataset(): void {
@@ -56,9 +76,9 @@ function updateFullscreenDataset(): void {
 export function installMobileViewportAdaptation(): void {
   updateViewportMetrics();
   updateFullscreenDataset();
-  window.addEventListener('resize', updateViewportMetrics, { passive: true });
-  window.visualViewport?.addEventListener('resize', updateViewportMetrics, { passive: true });
-  window.visualViewport?.addEventListener('scroll', updateViewportMetrics, { passive: true });
+  window.addEventListener('resize', scheduleViewportMetricsUpdate, { passive: true });
+  window.visualViewport?.addEventListener('resize', scheduleViewportMetricsUpdate, { passive: true });
+  window.visualViewport?.addEventListener('scroll', scheduleViewportMetricsUpdate, { passive: true });
   document.addEventListener('fullscreenchange', updateFullscreenDataset);
   document.addEventListener('webkitfullscreenchange', updateFullscreenDataset);
 }

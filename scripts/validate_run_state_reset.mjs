@@ -86,8 +86,6 @@ const EXEMPT = new Map([
   ['darkCX', '终局黑暗圆心，进入终局时设定'],
   ['darkCY', '终局黑暗圆心，进入终局时设定'],
   ['checkpointWriteBackoffUntil', '存档写入退避，跨局沿用才有意义'],
-  ['waitingForStageArt', '美术预载等待，startStage 前置流程设定'],
-  ['pendingStageEndSkipRest', '章末跳过标记，章节结算流程设定'],
   ['xiaoZhangHelpedAt', '小张援助时间戳，章节内设定'],
 ]);
 

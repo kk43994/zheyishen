@@ -30,6 +30,26 @@ const audioDuration = (id) => {
   return probe.status === 0 ? Number(probe.stdout.trim()) : Number.NaN;
 };
 
+const childhoodPreloadBlock = voice.match(
+  /export const STAGE_VOICE_PRELOADS:[\s\S]*?= \[\s*(?:\/\/[^\n]*\n\s*)?\[([^\]]+)\]/,
+)?.[1] ?? '';
+const childhoodPreloadIds = [...childhoodPreloadBlock.matchAll(/'([^']+)'/g)]
+  .map((match) => match[1]);
+const expectedChildhoodWarmFront = [
+  'narrator-start-breath',
+  'caregiver-lights-out',
+  'child-under-bed',
+  'caregiver-no-monster',
+  'boss-closet-defeat',
+  'caregiver-school-send',
+  'caregiver-fell-again',
+  'narrator-he-fell-asleep',
+];
+checks += 1;
+if (childhoodPreloadIds.slice(0, 8).join('|') !== expectedChildhoodWarmFront.join('|')) {
+  errors.push('童年八席平台预载仍被已经播完的开场漫画占用');
+}
+
 requireToken(
   "this.voiceCuesSeen.has('classmate-family-late')",
   '沉默的父亲仍可能在同学问话前出现',

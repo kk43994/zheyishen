@@ -10,6 +10,8 @@ const bufferedAudioSource = await readFile(resolve(ROOT, 'src/audio.ts'), 'utf8'
 const ambienceProfileSource = await readFile(resolve(ROOT, 'src/audio-ambience.ts'), 'utf8');
 const audioMixSource = await readFile(resolve(ROOT, 'src/audio-mix.ts'), 'utf8');
 const gameSource = await readFile(resolve(ROOT, 'src/game.ts'), 'utf8');
+const productionAudioBuildSource = await readFile(resolve(ROOT, 'scripts/build_production_audio.sh'), 'utf8');
+const packageSource = await readFile(resolve(ROOT, 'scripts/package.sh'), 'utf8');
 const entries = [
   ...Object.entries(manifest.sfx ?? {}).map(([id, value]) => [`sfx:${id}`, value]),
   ...Object.entries(manifest.ambience ?? {}).map(([id, value]) => [`ambience:${id}`, value]),
@@ -98,6 +100,107 @@ for (const token of [
   'sfxEngine.elementFilter(player)',
 ]) {
   if (!platformAudioSource.includes(token)) throw new Error(`production mix limiter is incomplete: ${token}`);
+}
+
+// 循环母版与两套运行时是一份不可拆的合同：母版烘进去多少秒，运行时就必须从
+// 那段之后续播；否则会把已烘过的开头再播一次，双元素换岗还会出现拍点重影。
+for (const token of [
+  'bake_loop "$source" "$target" 96k 0.02 0.8 0.62',
+  '[[ "$(basename "$source")" == "pressure.wav" ]] && fade_duration=0.82',
+  'bake_loop "$source" "$target" 64k "$loop_start" 1.0 "$fade_duration"',
+]) {
+  if (!productionAudioBuildSource.includes(token)) throw new Error(`production loop bake contract missing: ${token}`);
+}
+if (!packageSource.includes('npm run validate:release-audio')) {
+  throw new Error('package must validate the final copied music and ambience encodes');
+}
+for (const forbidden of [
+  'music_files=(dist/assets/audio/music/*.mp3)',
+  'ambience_files=(dist/assets/audio/ambience/*.mp3)',
+]) {
+  if (packageSource.includes(forbidden)) {
+    throw new Error(`package must not apply a second lossy encode to production beds: ${forbidden}`);
+  }
+}
+for (const token of [
+  'const MUSIC_BAKED_OVERLAP_SECONDS = 1',
+  'const AMBIENCE_BAKED_OVERLAP_SECONDS = 0.8',
+  'const AMBIENCE_LOOP_END_SECONDS = 8',
+  'const MUSIC_TENSION_LOOP_END_SECONDS = 18',
+  'const MUSIC_LOOP_END_SECONDS = [18, 18, 18, 18, 18, 18, 18, 18, 57.314, 53.314] as const',
+  'function musicCrossloopStart(track: number)',
+  'sfxEngine.releaseElement(element)',
+  'private musicCrossSerial = 0',
+  'private releaseObsoleteMusicPlayers(',
+  'const MEDIA_PLAY_START_TIMEOUT_MS = 1_800',
+  'const VOICE_PLAYER_BUDGET = 8',
+  'const PLATFORM_MEDIA_PLAYER_BUDGET = 12',
+  'const FALLBACK_SFX_PLAYER_BUDGET = 4',
+  'if (player === this.activeVoice) continue;',
+  'function touchMediaFile(file: string, timeoutMs: number, signal?: AbortSignal)',
+  'private audioWarmAbortController?: AbortController',
+  'touchMediaFile(file, 700, abortController.signal)',
+  'this.audioWarmAbortController?.abort()',
+  'private stageAudioWarmTail: Promise<void> = Promise.resolve()',
+  'private readonly stageAudioWarmTasks = new Map<number, Promise<void>>()',
+  'private stageAudioWarmAbortController?: AbortController',
+  'this.stageAudioWarmAbortController?.abort()',
+  'this.stageAudioWarmTail.then(run, run)',
+  'private nonVoiceMediaPlayerCount(): number',
+  'private releaseMediaPlayer(player: HTMLAudioElement): void',
+  'this.fadeTokens.delete(player)',
+  'private voicePlayerBudget(extraNonVoice = 0): number',
+  'private reserveNonVoiceMediaSlots(count: number): boolean',
+  'for (let index = selected.length - 1; index >= 0; index -= 1)',
+  'this.evictSfxPools(FALLBACK_SFX_PLAYER_BUDGET - size)',
+  'this.releaseAmbienceEventPlayers(sound)',
+  'this.releaseSfxPool(sound)',
+  'const mediaPlayInFlight = new WeakMap<HTMLMediaElement, Promise<void>>()',
+  'const mediaPlayGeneration = new WeakMap<HTMLMediaElement, number>()',
+  'if (mediaPlayGeneration.get(element) === generation) element.pause()',
+  'function playMediaWithDeadline(',
+  'mediaPlayTimeouts: mediaPlayTimeoutCount',
+  'mediaReady: this.voicePlayers.size + this.nonVoiceMediaPlayerCount()',
+  'fadeTokens: this.fadeTokens.size',
+  'this.retryMusicStart(player, track)',
+  'this.retryAmbienceStart(player, stage)',
+  'private resumeActiveVoice(): void',
+  'this.resumeActiveVoice()',
+  'serial !== this.voiceRequestSerial',
+  '|| this.activeVoice !== player',
+  '|| this.voiceSuspendedByGame) player.pause()',
+  'else current.pause()',
+  'cross.from.volume = base * k',
+  'cross.to.volume = base * (1 - k)',
+  'this.stopMusic(false, true)',
+  "if (channel === 'ambience') this.syncAmbience();",
+]) {
+  if (!platformAudioSource.includes(token)) throw new Error(`platform loop/lifecycle contract missing: ${token}`);
+}
+if (platformAudioSource.includes('if (player === this.activeVoice || !player.paused) continue;')) {
+  throw new Error('muted voice revives must remain evictable so the voice-player budget is a hard cap');
+}
+for (const token of [
+  'cross.from.volume = base * Math.cos(',
+  'cross.to.volume = base * Math.sin(',
+]) {
+  if (platformAudioSource.includes(token)) {
+    throw new Error(`correlated baked-loop handoff must not use equal-power gain: ${token}`);
+  }
+}
+for (const token of [
+  'const MUSIC_BAKED_OVERLAP_SECONDS = 1',
+  'const AMBIENCE_BAKED_OVERLAP_SECONDS = 0.8',
+  'source.loopStart = 0.02 + AMBIENCE_BAKED_OVERLAP_SECONDS',
+  'source.loopEnd = AMBIENCE_LOOP_END_SECONDS',
+  'source.loopStart = musicLoopResumeAt(track)',
+  'source.loopEnd = MUSIC_LOOP_END_SECONDS[track] ?? buffer.duration',
+  'source.loopStart = 0.02 + MUSIC_BAKED_OVERLAP_SECONDS',
+  'source.loopEnd = MUSIC_TENSION_LOOP_END_SECONDS',
+  'if (next <= 0) this.stopMusic(0.08, false)',
+  'this.musicVolume <= 0',
+]) {
+  if (!bufferedAudioSource.includes(token)) throw new Error(`buffered loop contract missing: ${token}`);
 }
 
 const ambienceProfileCount = (ambienceProfileSource.match(/\blabel:\s*'/g) ?? []).length;

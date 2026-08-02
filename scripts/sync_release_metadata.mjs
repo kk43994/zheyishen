@@ -1,23 +1,64 @@
 import { createHash } from 'node:crypto';
-import { readFile, readdir, stat, writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const ZIP_PATH = resolve(ROOT, 'release/zhe-yi-shen-mvp.zip');
-const DIST_PATH = resolve(ROOT, 'dist');
 const PLATFORM_MAX_BYTES = 20 * 1024 * 1024;
 const INTERNAL_BUDGET_MIB = 18;
 const PLATFORM_MAX_MIB = 20;
 const checkOnly = process.argv.includes('--check');
 
-async function walk(directory) {
-  const files = [];
-  for (const entry of await readdir(directory, { withFileTypes: true })) {
-    const path = resolve(directory, entry.name);
-    if (entry.isDirectory()) files.push(...await walk(path));
-    else if (entry.isFile()) files.push(path);
+/**
+ * 发布文档只能由最终 ZIP 的中央目录派生，不能读可被 `npm run build` 随时覆盖的
+ * dist/。否则 package 之后再跑一次核心门禁，未优化 dist 就会把同一个 ZIP 误报成
+ * “元数据过期”。当前包远小于 ZIP64 门槛；若未来触碰 ZIP64，明确失败而不是误算。
+ */
+function inspectZipContents(zip) {
+  const eocdSignature = 0x06054b50;
+  const centralSignature = 0x02014b50;
+  const searchStart = Math.max(0, zip.length - 22 - 0xffff);
+  let eocd = -1;
+  for (let offset = zip.length - 22; offset >= searchStart; offset -= 1) {
+    if (zip.readUInt32LE(offset) === eocdSignature) {
+      eocd = offset;
+      break;
+    }
   }
-  return files;
+  if (eocd < 0) throw new Error('release zip has no end-of-central-directory record');
+
+  const entryCount = zip.readUInt16LE(eocd + 10);
+  const centralBytes = zip.readUInt32LE(eocd + 12);
+  const centralOffset = zip.readUInt32LE(eocd + 16);
+  if (entryCount === 0xffff || centralBytes === 0xffffffff || centralOffset === 0xffffffff) {
+    throw new Error('ZIP64 release metadata is not supported');
+  }
+
+  let offset = centralOffset;
+  let fileCount = 0;
+  let unpackedBytes = 0;
+  for (let index = 0; index < entryCount; index += 1) {
+    if (offset + 46 > zip.length || zip.readUInt32LE(offset) !== centralSignature) {
+      throw new Error(`release zip central directory is invalid at entry ${index}`);
+    }
+    const size = zip.readUInt32LE(offset + 24);
+    const nameBytes = zip.readUInt16LE(offset + 28);
+    const extraBytes = zip.readUInt16LE(offset + 30);
+    const commentBytes = zip.readUInt16LE(offset + 32);
+    const nameStart = offset + 46;
+    const nameEnd = nameStart + nameBytes;
+    if (nameEnd > zip.length) throw new Error(`release zip filename is truncated at entry ${index}`);
+    const name = zip.subarray(nameStart, nameEnd).toString('utf8');
+    if (!name.endsWith('/')) {
+      fileCount += 1;
+      unpackedBytes += size;
+    }
+    offset = nameEnd + extraBytes + commentBytes;
+  }
+  if (offset !== centralOffset + centralBytes) {
+    throw new Error('release zip central directory length does not match its end record');
+  }
+  return { fileCount, unpackedBytes };
 }
 
 function comma(bytes) {
@@ -39,16 +80,14 @@ function replaceOne(source, pattern, replacement, label) {
 const zip = await readFile(ZIP_PATH);
 const zipBytes = zip.byteLength;
 const sha256 = createHash('sha256').update(zip).digest('hex');
-const distFiles = await walk(DIST_PATH);
-const unpackedBytes = (await Promise.all(distFiles.map(async (path) => (await stat(path)).size)))
-  .reduce((sum, bytes) => sum + bytes, 0);
+const { fileCount, unpackedBytes } = inspectZipContents(zip);
 const reservedBytes = PLATFORM_MAX_BYTES - unpackedBytes;
 
 const metadata = {
   zipBytes,
   sha256,
   unpackedBytes,
-  fileCount: distFiles.length,
+  fileCount,
   reservedBytes,
 };
 
@@ -62,7 +101,7 @@ const targets = [
       next = replaceOne(next, /^\- 解压内容：.*$/m,
         `- 解压内容：${comma(unpackedBytes)} 字节（${mib(unpackedBytes)} MiB）`, 'publish unpacked size');
       next = replaceOne(next, /^\- 玩家运行时文件：.*$/m,
-        `- 玩家运行时文件：${distFiles.length} 个（zip 目录项不计）`, 'publish file count');
+        `- 玩家运行时文件：${fileCount} 个（zip 目录项不计）`, 'publish file count');
       next = replaceOne(next, /^\- 平台上限余量：.*$/m,
         `- 平台上限余量：${comma(reservedBytes)} 字节（${mib(reservedBytes)} MiB）`, 'publish reserve');
       next = replaceOne(next,
@@ -82,7 +121,7 @@ const targets = [
         `| release zip | **${comma(zipBytes)} 字节（${mib(zipBytes)} MiB）** / 上限 ${PLATFORM_MAX_MIB} MiB | 当前正式包实测；运行时内容以发布验收文档与本行自动同步结果为准 |`,
         'plan zip row');
       next = replaceOne(next, /^\| 解压内容 \| .*$/m,
-        `| 解压内容 | **${comma(unpackedBytes)} 字节（${mib(unpackedBytes)} MiB）** / 上限 ${PLATFORM_MAX_MIB} MiB | ${distFiles.length} 个运行时文件；剩余 ${comma(reservedBytes)} 字节（${mib(reservedBytes)} MiB） |`,
+        `| 解压内容 | **${comma(unpackedBytes)} 字节（${mib(unpackedBytes)} MiB）** / 上限 ${PLATFORM_MAX_MIB} MiB | ${fileCount} 个运行时文件；剩余 ${comma(reservedBytes)} 字节（${mib(reservedBytes)} MiB） |`,
         'plan unpacked row');
       return next;
     },
